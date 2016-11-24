@@ -1,5 +1,5 @@
 #############################################################################
-#  This file is part of the indismo software. 
+#  This file is part of the Stride software. 
 #  It is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by 
 #  the Free Software Foundation, either version 3 of the License, or any 
@@ -16,11 +16,11 @@
 #  Broeckhove J. (2015) Optimizing agent-based transmission models for  
 #  infectious diseases, BMC Bioinformatics.
 #
-#  Copyright 2015, Willem L, Stijven S & Broeckhove J
+#  Copyright 2016, Willem L, Kuylen E & Broeckhove J
 #############################################################################
 #
-#  Indismo is an Open Source project to model close-contact infectious
-#  disease transmission.
+#  Stride is an Open Source project to simulalate transmission of
+#  infectious diseases.
 #
 #  Information on layout, installation, dependencies of the project, and
 #  platforms that are supported, can be found in the files INSTALL.txt,
