@@ -73,14 +73,14 @@ int main(int argc, char** argv)
 		// Set output path.
 		// -----------------------------------------------------------------------------------------
 		string output_prefix = pt_config.get<string>("run.output_prefix");
-		if(output_prefix.length() == 0) {
+		if (output_prefix.length() == 0) {
 			output_prefix = TimeStamp().ToTag();
 		}
 
 		// -----------------------------------------------------------------------------------------
 		// Set additional run configurations.
 		// -----------------------------------------------------------------------------------------
-		if(pt_config.get_optional<bool>("run.num_participants_survey") == false) {
+		if (pt_config.get_optional<bool>("run.num_participants_survey") == false) {
 			pt_config.put("run.num_participants_survey", 1);
 		}
 
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 		// General contacts: 	[CNT] <person1ID> <person1AGE> <person2AGE>  <at_home> <at_work> <at_school> <at_other>
 		// -----------------------------------------------------------------------------------------
 		spdlog::set_async_mode(1048576);
-		auto file_logger = spdlog::rotating_logger_mt("contact_logger", output_prefix+"_logfile",
+		auto file_logger = spdlog::rotating_logger_mt("contact_logger", output_prefix + "_logfile",
 		                        std::numeric_limits<size_t>::max(),  std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 			duration_cast<milliseconds>(total_clock.Get()).count());
 
 		// Person
-		if(pt_config.get<double>("run.generate_person_file") == 1) {
+		if (pt_config.get<double>("run.generate_person_file") == 1) {
 			PersonFile	 person_file(output_prefix);
 			person_file.Print(sim.GetPopulation());
 		}
@@ -155,7 +155,7 @@ int main(int argc, char** argv)
 		exit_status = EXIT_FAILURE;
 		cerr << e.what() << endl;
 	}
-	catch(...) {
+	catch (...) {
 		exit_status = EXIT_FAILURE;
 		cerr << "Unknown exception." << endl;
 	}

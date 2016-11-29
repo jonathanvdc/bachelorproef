@@ -59,140 +59,77 @@ public:
 	}
 
 	/// Is this person not equal to the given person?
-	bool operator!=(const Person& p) const
-	{
-		return p.m_id != m_id;
-	}
+	bool operator!=(const Person& p) const { return p.m_id != m_id; }
 
 	/// Get the id.
-	unsigned int GetId() const
-	{
-		return m_id;
-	}
+	unsigned int GetId() const { return m_id; }
 
 	/// Get the age.
-	double GetAge() const
-	{
-		return m_age;
-	}
+	double GetAge() const { return m_age; }
 
-	char GetGender() const
-	{
-		return m_gender;
-	}
+	char GetGender() const { return m_gender; }
 
 	/// Get the household id.
-	unsigned int GetHouseholdId() const
-	{
-		return m_household;
-	}
+	unsigned int GetHouseholdId() const { return m_household; }
 
 	/// Get the home neighborhood id.
-	unsigned int GetHomeDistrictId() const
-	{
-		return m_home_district;
-	}
+	unsigned int GetHomeDistrictId() const { return m_home_district; }
 
 	/// Get the day cluster id.
-	unsigned int GetDayClusterId() const
-	{
-		return m_day_cluster;
-	}
+	unsigned int GetDayClusterId() const { return m_day_cluster; }
 
 	/// Get the day neighborhood id.
-	unsigned int GetDayDistrictId() const
-	{
-		return m_day_district;
-	}
+	unsigned int GetDayDistrictId() const { return m_day_district; }
 
 	/// Is this person susceptible?
-	bool IsSusceptible() const
-	{
-		return m_susceptible;
-	}
+	bool IsSusceptible() const { return m_susceptible; }
 
 	/// Is this person infected?
-	bool IsInfected() const
-	{
-		return m_infected;
-	}
+	bool IsInfected() const { return m_infected; }
 
 	/// Is this person infectious?
-	bool IsInfectious() const
-	{
-		return m_infectious;
-	}
+	bool IsInfectious() const { return m_infectious; }
 
 	/// Is this person symptomatic?
-	bool IsSymptomatic() const
-	{
-		return m_symptomatic;
-	}
+	bool IsSymptomatic() const { return m_symptomatic; }
 
 	/// Is this person recovered?
-	bool IsRecovered() const
-	{
-		return m_recovered;
-	}
+	bool IsRecovered() const { return m_recovered; }
 
 	/// Is this person immune?
-	bool IsImmune() const
-	{
-		return m_immune;
-	}
+	bool IsImmune() const { return m_immune; }
 
 	/// Get the disease counter.
-	unsigned int GetDiseaseCounter() const
-	{
-		return m_disease_counter;
-	}
+	unsigned int GetDiseaseCounter() const { return m_disease_counter; }
 
 	/// Increment the persons disease counter.
-	void IncrementDiseaseCounter()
-	{
-		m_disease_counter++;
-	}
+	void IncrementDiseaseCounter() { m_disease_counter++; }
 
 	/// Reset the persons disease counter.
-	void ResetDiseaseCounter()
-	{
-		m_disease_counter = 0U;
-	}
+	void ResetDiseaseCounter() { m_disease_counter = 0U; }
 
-	unsigned int GetStartInfectiousness() const
-	{
-		return m_start_infectiousness;
-	}
+	///
+	unsigned int GetStartInfectiousness() const { return m_start_infectiousness; }
 
-	unsigned int GetEndInfectiousness() const
-	{
-		return m_end_infectiousness;
-	}
+	///
+	unsigned int GetEndInfectiousness() const { return m_end_infectiousness; }
 
-	unsigned int GetStartSymptomatic() const
-	{
-		return m_start_symptomatic;
-	}
+	///
+	unsigned int GetStartSymptomatic() const { return m_start_symptomatic; }
 
-	unsigned int GetEndSymptomatic() const
-	{
-		return m_end_symptomatic;
-	}
+	///
+	unsigned int GetEndSymptomatic() const { return m_end_symptomatic; }
 
-	size_t GetHouseholdSize() const {
-		return m_household_size;
-	}
+	///
+	size_t GetHouseholdSize() const { return m_household_size; }
 
-	void SetHouseholdSize(size_t hh_size) {
-		m_household_size = hh_size;
-	}
+	///
+	void SetHouseholdSize(size_t hh_size) { m_household_size = hh_size; }
 
-	/**
-	 * Check if a person is present today in a given cluster
-	 */
+	/// Check if a person is present today in a given cluster
 	bool IsInCluster(std::string cluster_type) const
 	{
-		if(cluster_type == "household") {
+		if (cluster_type == "household") {
 			return m_in_household;
 		} else if (cluster_type == "home_district") {
 			return m_in_home_district;
@@ -205,9 +142,7 @@ public:
 		return false;
 	}
 
-	/**
-	 * Log a contact of this person has with another person.
-	 */
+	/// Log a contact of this person has with another person.
 	void LogContact(std::shared_ptr<spdlog::logger> logger,
 	                const Person* p2, std::string cluster_type,
 	                std::shared_ptr<const WorldEnvironment> world_environ)
@@ -223,6 +158,7 @@ public:
 
 	}
 
+	///
 	void LogTransmission(std::shared_ptr<spdlog::logger> logger,
 	                const Person* p2, std::string cluster_type,
 	                std::shared_ptr<const WorldEnvironment> world_environ)
@@ -307,15 +243,13 @@ public:
 		}
 
 		// update presence in clusters
-		if (m_age > 18) {
-			// adult
+		if (m_age > 18) { // adult
 			if (world_environ->IsHoliday() || world_environ->IsWeekend()) {
 				m_in_day_cluster = false;
 			} else {
 				m_in_day_cluster = true;
 			}
-		} else {
-			// kid, so look at school holidays too
+		} else { // kid, so look at school holidays too
 			if (world_environ->IsHoliday() || world_environ->IsSchoolHoliday() || world_environ->IsWeekend()) {
 				m_in_day_cluster = false;
 			} else {
@@ -338,7 +272,7 @@ public:
 	 */
 	bool IsParticipatingInSurvey() const
 	{
-		return(m_is_participant);
+		return m_is_participant;
 	}
 
 private:
@@ -373,7 +307,6 @@ private:
 
 	bool            m_is_participant;		 ///< Is participating in the social contact study
 };
-
 
 } // end_of_namespace
 } // end_of_namespace

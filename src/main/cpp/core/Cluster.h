@@ -26,7 +26,8 @@
 
 #include "ContactHandler.h"
 #include "Person.h"
-#include "../sim/WorldEnvironment.h"
+#include "sim/WorldEnvironment.h"
+
 #include "spdlog/spdlog.h"
 
 #include <cstddef>
@@ -66,17 +67,14 @@ public:
 		m_index_immune++;
 	}
 
-	size_t GetSize() const {
-		return m_members.size();
-	}
+	///
+	size_t GetSize() const { return m_members.size(); }
 
-	std::string GetClusterType() const {
-		return m_cluster_type;
-	}
+	///
+	std::string GetClusterType() const { return m_cluster_type; }
 
-	void SetClusterType(std::string cluster_type) {
-		m_cluster_type = cluster_type;
-	}
+	///
+	void SetClusterType(std::string cluster_type) { m_cluster_type = cluster_type; }
 
 	/// Update the social contacts between the infectious and susceptible members with sorting on health status.
 	template<LogMode log_level>
