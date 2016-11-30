@@ -20,6 +20,7 @@
 set(LIB_SRC
     core/Cluster.cpp
     core/ClusterType.cpp
+    core/LogMode.cpp
     core/PopulationBuilder.cpp
 	output/CasesFile.cpp
 	output/PersonFile.cpp

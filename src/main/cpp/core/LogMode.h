@@ -17,11 +17,12 @@
 
 /**
  * @file
- * Header for the core Cluster class.
+ * Header for the LogMode class.
  */
 
+#include <string>
+
 namespace indismo {
-namespace core {
 
 /**
 * Enum specifiying the level of logging required:
@@ -32,7 +33,13 @@ namespace core {
 enum class LogMode {None = 0U, Transmissions = 1U, Contacts = 2U};
 
 
-} // end_of_namespace
+/// Converts a LogMode value to corresponding name.
+std::string ToString(LogMode w);
+
+/// Converts a string with name to LogMode value.
+LogMode FromString(std::string s);
+
+
 } // end_of_namespace
 
 #endif // include-guard

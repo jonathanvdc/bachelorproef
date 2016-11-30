@@ -286,11 +286,11 @@ void Simulator::UpdateContacts(std::vector<core::Cluster>& clusters)
 		#pragma omp for schedule(runtime)
 		for (size_t cluster_i = 0; cluster_i < clusters.size(); cluster_i++) {
 			if (m_log_level == "Contacts") {
-				clusters[cluster_i].Update<core::LogMode::Contacts>(m_contact_handler[thread_i], m_state);
+				clusters[cluster_i].Update<LogMode::Contacts>(m_contact_handler[thread_i], m_state);
 			} else if (m_log_level == "Transmissions") {
-				clusters[cluster_i].Update<core::LogMode::Transmissions>(m_contact_handler[thread_i], m_state);
+				clusters[cluster_i].Update<LogMode::Transmissions>(m_contact_handler[thread_i], m_state);
 			} else {
-				clusters[cluster_i].Update<core::LogMode::None>(m_contact_handler[thread_i], m_state);
+				clusters[cluster_i].Update<LogMode::None>(m_contact_handler[thread_i], m_state);
 			}
 		}
 
