@@ -122,46 +122,17 @@ public:
 	void SetHouseholdSize(size_t hh_size) { m_household_size = hh_size; }
 
 	/// Check if a person is present today in a given cluster
-	bool IsInCluster(std::string cluster_type) const
-	{
-		if (cluster_type == "household") {
-			return m_in_household;
-		} else if (cluster_type == "home_district") {
-			return m_in_home_district;
-		} else if (cluster_type == "school" || cluster_type == "work") {
-			return m_in_day_cluster;
-		} else if (cluster_type == "day_district") {
-			return m_in_day_district;
-		}
-
-		return false;
-	}
+	bool IsInCluster(std::string cluster_type) const;
 
 	/// Log a contact of this person has with another person.
 	void LogContact(std::shared_ptr<spdlog::logger> logger,
 	                const Person* p2, std::string cluster_type,
-	                std::shared_ptr<const WorldEnvironment> world_environ)
-	{
-	        unsigned int home   = (cluster_type == "household");
-	        unsigned int work   = (cluster_type == "work");
-	        unsigned int school = (cluster_type == "school");
-	        unsigned int other  = (cluster_type == "home_district" || cluster_type == "day_district");
-
-	        logger->info("[CONT] {} {} {} {} {} {} {} {}",
-	                m_id, m_age, p2->GetAge(),
-	                home, work, school, other, world_environ->GetSimulationDay());
-
-	}
+	                std::shared_ptr<const WorldEnvironment> world_environ);
 
 	///
 	void LogTransmission(std::shared_ptr<spdlog::logger> logger,
 	                const Person* p2, std::string cluster_type,
-	                std::shared_ptr<const WorldEnvironment> world_environ)
-	{
-		logger->info("[TRAN] {} {} {} {}",
-		        m_id, p2->GetId(), cluster_type,
-		        world_environ->GetSimulationDay());
-	}
+	                std::shared_ptr<const WorldEnvironment> world_environ);
 
 	/**
 	 * Set this person as index case.
@@ -211,45 +182,7 @@ public:
 	}
 
 	/// Update the health status and presence in clusters.
-	void Update(std::shared_ptr<const WorldEnvironment> world_environ)
-	{
-		if (IsInfected()) {
-			IncrementDiseaseCounter();
-			if (GetDiseaseCounter() == m_start_infectiousness) {
-				m_infectious = true;
-			}
-			if (GetDiseaseCounter() == m_end_infectiousness) {
-				m_infectious = false;
-				if(!m_symptomatic){
-					StopInfection();
-				}
-			}
-			if (GetDiseaseCounter() == m_start_symptomatic) {
-				m_symptomatic = true;
-			}
-			if (GetDiseaseCounter() == m_end_symptomatic) {
-				m_symptomatic = false;
-				if (!m_infectious){
-					StopInfection();
-				}
-			}
-		}
-
-		// update presence in clusters
-		if (m_age > 18) { // adult
-			if (world_environ->IsHoliday() || world_environ->IsWeekend()) {
-				m_in_day_cluster = false;
-			} else {
-				m_in_day_cluster = true;
-			}
-		} else { // kid, so look at school holidays too
-			if (world_environ->IsHoliday() || world_environ->IsSchoolHoliday() || world_environ->IsWeekend()) {
-				m_in_day_cluster = false;
-			} else {
-				m_in_day_cluster = true;
-			}
-		}
-	}
+	void Update(std::shared_ptr<const WorldEnvironment> world_environ);
 
 	/// Participate in social contact study and log person details
 	void ParticipateInSurvey(std::shared_ptr<spdlog::logger> logger)

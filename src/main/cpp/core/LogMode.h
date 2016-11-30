@@ -36,9 +36,11 @@ enum class LogMode {None = 0U, Transmissions = 1U, Contacts = 2U};
 /// Converts a LogMode value to corresponding name.
 std::string ToString(LogMode w);
 
-/// Converts a string with name to LogMode value.
-LogMode FromString(std::string s);
+/// Check whether string is name of LogMode value.
+bool IsLogMode(std::string s);
 
+/// Converts a string with name to LogMode value.
+LogMode LogModeFromString(std::string s);
 
 } // end_of_namespace
 

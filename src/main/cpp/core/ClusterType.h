@@ -33,8 +33,12 @@ enum class ClusterType
 /// Converts a ClusterType value to corresponding name.
 std::string ToString(ClusterType w);
 
+
+/// Check whether string is name of a ClusterType value.
+bool IsClusterType(std::string s);
+
 /// Converts a string with name to ClusterType value.
-ClusterType FromString(std::string s);
+ClusterType ClusterTypeFromString(std::string s);
 
 } // namespace
 

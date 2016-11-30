@@ -60,14 +60,16 @@ string ToString(ClusterType c)
 	return ret;
 }
 
-ClusterType FromString(string s)
+bool IsClusterType(string s)
 {
-	ClusterType ret = ClusterType::Household;
-	to_upper(s);
-	if (g_name_cluster_type.count(s) == 1) {
-		ret = g_name_cluster_type[s];
-	}
-	return ret;
+        to_upper(s);
+        return (g_name_cluster_type.count(s) == 1);
+}
+
+ClusterType ClusterTypeFromString(string s)
+{
+        to_upper(s);
+	return g_name_cluster_type[s];
 }
 
 } // namespace

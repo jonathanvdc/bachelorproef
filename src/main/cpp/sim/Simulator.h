@@ -21,9 +21,9 @@
  */
 
 #include "WorldEnvironment.h"
-
 #include "core/ContactHandler.h"
 #include "core/Cluster.h"
+#include "core/LogMode.h"
 #include "core/Population.h"
 
 #include <boost/property_tree/ptree.hpp>
@@ -79,7 +79,7 @@ private:
 	unsigned int                                    m_num_threads;          ///< The number of (OpenMP) threads.
 	std::shared_ptr<WorldEnvironment>               m_state;                ///< The current state of the simulated world.
 
-	std::string                                     m_log_level;            ///< Specifies whether only transmissions, all contacts or nothing should be logged.
+	LogMode                                         m_log_level;            ///< Specifies logging mode.
 
 	std::shared_ptr<core::Population>               m_population;           ///< Pointer to the Population.
 	std::vector<core::Cluster>                      m_households;           ///< Container with households Clusters.

@@ -25,15 +25,14 @@
 
 #include <omp.h>
 #include <iostream>
+#include <stdexcept>
 
 namespace indismo {
 
 using namespace std;
 
 Simulator::Simulator(const boost::property_tree::ptree& pt_config)
-	: m_num_threads(1U),
-	  m_population(std::make_shared<core::Population>())
-
+	: m_num_threads(1U), m_population(make_shared<core::Population>())
 {
 	#pragma omp parallel
 	{
@@ -43,14 +42,15 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	}
 
 	// initialize world environment
-	m_state = std::make_shared<WorldEnvironment>(pt_config);
+	m_state = make_shared<WorldEnvironment>(pt_config);
 
 	// get log level
-	m_log_level = pt_config.get<std::string>("run.log_level", "None");
+	const string l = pt_config.get<string>("run.log_level", "None");
+	m_log_level = IsLogMode(l) ? LogModeFromString(l) : throw runtime_error("Invalid input for LogMode");
 
 	// R0 and transmission rate
 	// use linear model fitted to simulation data: Expected(R0) = (b0+b1*transm_rate)
-	const std::string disease_config_file = pt_config.get<std::string>("run.disease_config_file");
+	const string disease_config_file = pt_config.get<string>("run.disease_config_file");
 	boost::property_tree::ptree pt_disease;
 	read_xml(disease_config_file, pt_disease);
 
@@ -60,7 +60,7 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	const double transmission_rate = (r0-b0)/b1;
 
 	for (size_t i = 0; i < m_num_threads; i++) {
-		m_contact_handler.push_back(std::make_shared<ContactHandler>(transmission_rate,
+		m_contact_handler.push_back(make_shared<ContactHandler>(transmission_rate,
 				pt_config.get<double>("run.rng_seed"), m_num_threads, i));
 	}
 
@@ -75,28 +75,28 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 
 	// Initialize contact matrices for each cluster type
 	boost::property_tree::ptree pt_contacts;
-	std::string age_contact_matrix_file = pt_config.get("run.age_contact_matrix_file", "./config/contact_matrix.xml");
+	string age_contact_matrix_file = pt_config.get("run.age_contact_matrix_file", "./config/contact_matrix.xml");
 	read_xml(age_contact_matrix_file, pt_contacts);
 
 	// Household contact matrices
-	std::vector<double> household_contact_nums = GetMeanNumbersOfContacts("household", pt_contacts);
-	std::vector<double> household_contact_rates = GetContactRates(household_contact_nums, avg_household_size);
+	vector<double> household_contact_nums = GetMeanNumbersOfContacts("household", pt_contacts);
+	vector<double> household_contact_rates = GetContactRates(household_contact_nums, avg_household_size);
 
 	// Home district contact matrices
-	std::vector<double> home_district_contact_nums = GetMeanNumbersOfContacts("home_district", pt_contacts);
-	std::vector<double> home_district_contact_rates = GetContactRates(home_district_contact_nums, avg_home_district_size);
+	vector<double> home_district_contact_nums = GetMeanNumbersOfContacts("home_district", pt_contacts);
+	vector<double> home_district_contact_rates = GetContactRates(home_district_contact_nums, avg_home_district_size);
 
 	// Work contact matrices
-	std::vector<double> work_contact_nums = GetMeanNumbersOfContacts("work", pt_contacts);
-	std::vector<double> work_contact_rates = GetContactRates(work_contact_nums, avg_day_cluster_size);
+	vector<double> work_contact_nums = GetMeanNumbersOfContacts("work", pt_contacts);
+	vector<double> work_contact_rates = GetContactRates(work_contact_nums, avg_day_cluster_size);
 
 	// School contact matrices
-	std::vector<double> school_contact_nums = GetMeanNumbersOfContacts("school", pt_contacts);
-	std::vector<double> school_contact_rates = GetContactRates(school_contact_nums, avg_day_cluster_size);
+	vector<double> school_contact_nums = GetMeanNumbersOfContacts("school", pt_contacts);
+	vector<double> school_contact_rates = GetContactRates(school_contact_nums, avg_day_cluster_size);
 
 	// Day district contact matrices
-	std::vector<double> day_district_contact_nums = GetMeanNumbersOfContacts("day_district", pt_contacts);
-	std::vector<double> day_district_contact_rates = GetContactRates(day_district_contact_nums, avg_day_district_size);
+	vector<double> day_district_contact_nums = GetMeanNumbersOfContacts("day_district", pt_contacts);
+	vector<double> day_district_contact_rates = GetContactRates(day_district_contact_nums, avg_day_district_size);
 
 	for (auto contact_handler : m_contact_handler) {
 		contact_handler->addMeanNumsContacts("household", household_contact_nums);
@@ -127,27 +127,24 @@ unsigned int Simulator::GetPopulationSize() const
 	return m_population->GetSize();
 }
 
-const std::shared_ptr<const core::Population> Simulator::GetPopulation() const
+const shared_ptr<const core::Population> Simulator::GetPopulation() const
 {
 	return m_population;
 }
 
-std::vector<double> Simulator::GetContactRates(const std::vector<double>& mean_nums, unsigned int avg_cluster_size)
+vector<double> Simulator::GetContactRates(const vector<double>& mean_nums, unsigned int avg_cluster_size)
 {
-	std::vector<double> rates;
-
+	vector<double> rates;
 	for(double num : mean_nums) {
-		rates.push_back(num / avg_cluster_size);
+		rates.emplace_back(num / avg_cluster_size);
 	}
-
 	return rates;
 }
 
-std::vector<double> Simulator::GetMeanNumbersOfContacts(std::string cluster_type,  const boost::property_tree::ptree& pt_contacts)
+vector<double> Simulator::GetMeanNumbersOfContacts(string cluster_type,  const boost::property_tree::ptree& pt_contacts)
 {
-	std::string key = "matrices." + cluster_type;
-	std::vector<double> meanNums;
-
+	string key = "matrices." + cluster_type;
+	vector<double> meanNums;
 	for(auto& participant: pt_contacts.get_child(key)) {
 		double total_contacts = 0;
 		for (auto& contact: participant.second.get_child("contacts")) {
@@ -156,7 +153,6 @@ std::vector<double> Simulator::GetMeanNumbersOfContacts(std::string cluster_type
 
 		meanNums.push_back(total_contacts);
 	}
-
 	return meanNums;
 }
 
@@ -264,7 +260,7 @@ void Simulator::RunTimeStep()
 		m_state->AdvanceDay();
 }
 
-double Simulator::GetAverageClusterSize(const std::vector<core::Cluster>& clusters)
+double Simulator::GetAverageClusterSize(const vector<core::Cluster>& clusters)
 {
 	double total_size = 0;
 	double num_clusters = clusters.size();
@@ -275,7 +271,7 @@ double Simulator::GetAverageClusterSize(const std::vector<core::Cluster>& cluste
 	return total_size / (num_clusters - 1); // '-1' since we're counting from 1 not 0
 }
 
-void Simulator::UpdateContacts(std::vector<core::Cluster>& clusters)
+void Simulator::UpdateContacts(vector<core::Cluster>& clusters)
 {
 	#pragma omp parallel
 	{
@@ -285,15 +281,19 @@ void Simulator::UpdateContacts(std::vector<core::Cluster>& clusters)
 		#endif
 		#pragma omp for schedule(runtime)
 		for (size_t cluster_i = 0; cluster_i < clusters.size(); cluster_i++) {
-			if (m_log_level == "Contacts") {
-				clusters[cluster_i].Update<LogMode::Contacts>(m_contact_handler[thread_i], m_state);
-			} else if (m_log_level == "Transmissions") {
-				clusters[cluster_i].Update<LogMode::Transmissions>(m_contact_handler[thread_i], m_state);
-			} else {
-				clusters[cluster_i].Update<LogMode::None>(m_contact_handler[thread_i], m_state);
-			}
+		        switch (m_log_level) {
+                                case LogMode::Contacts:
+                                        clusters[cluster_i].Update<LogMode::Contacts>(m_contact_handler[thread_i], m_state);
+                                        break;
+                                case LogMode::Transmissions:
+                                        clusters[cluster_i].Update<LogMode::Transmissions>(m_contact_handler[thread_i], m_state);
+                                        break;
+                                case LogMode::None:
+                                        clusters[cluster_i].Update<LogMode::None>(m_contact_handler[thread_i], m_state);
+                                        break;
+                                default: throw runtime_error("Logging screwed up!");
+		        }
 		}
-
 	}
 }
 

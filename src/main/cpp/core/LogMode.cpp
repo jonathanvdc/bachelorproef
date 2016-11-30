@@ -56,14 +56,15 @@ string ToString(LogMode l)
 	return ret;
 }
 
-LogMode FromString(string s)
+bool IsLogMode(string s)
 {
-	LogMode ret = LogMode::None;
-	to_upper(s);
-	if (g_name_cluster_type.count(s) == 1) {
-		ret = g_name_cluster_type[s];
-	}
-	return ret;
+        to_upper(s);
+        return (g_name_cluster_type.count(s) == 1);
+}
+
+LogMode LogModeFromString(string s)
+{
+	return g_name_cluster_type[s];
 }
 
 } // namespace
