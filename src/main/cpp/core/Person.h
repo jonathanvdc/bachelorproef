@@ -184,9 +184,8 @@ public:
 	{
 		assert(IsSusceptible() && "StartInfection: IsSusceptible() fails.");
 		m_susceptible 	= false;
-		m_infected 	    = true;
+		m_infected 	= true;
 		ResetDiseaseCounter();
-
 		if (TRACK_INDEX_CASE) {
 			StopInfection();
 		}
@@ -200,11 +199,10 @@ public:
 		m_recovered   = true;
 	}
 
-	/// Set this persons immune status on TRUE
+	/// Set this persons immune status to TRUE.
 	void SetImmune()
 	{
 		m_immune                = true;
-
 		m_susceptible           = false;
 		m_start_infectiousness  = 0;
 		m_start_symptomatic     = 0;
@@ -253,18 +251,14 @@ public:
 		}
 	}
 
-	/**
-	 * Participate in social contact study and log person details
-	 */
+	/// Participate in social contact study and log person details
 	void ParticipateInSurvey(std::shared_ptr<spdlog::logger> logger)
 	{
 		m_is_participant = true;
 		logger->info("[PART] {} {} {}", m_id, m_age, m_gender);
 	}
 
-	/**
-	 * Does this person participates in the social contact study?
-	 */
+	/// Does this person participates in the social contact study?
 	bool IsParticipatingInSurvey() const
 	{
 		return m_is_participant;

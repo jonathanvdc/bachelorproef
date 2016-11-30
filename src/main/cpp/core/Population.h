@@ -20,11 +20,10 @@
  * Header file for the core Population class
  */
 
-#include <assert.h>
+#include "core/Person.h"
+
 #include <numeric>
 #include <vector>
-
-#include "core/Person.h"
 
 namespace indismo {
 namespace core {
@@ -43,10 +42,9 @@ public:
 		unsigned int start_symptomatic, unsigned int end_infectiousness,
 		unsigned int end_symptomatic)
 	{
-		auto p = Person(id, age, household_id, home_district_id,
-				day_cluster_id, day_district_id,start_infectiousness,
-				start_symptomatic,end_infectiousness,end_symptomatic);
-		push_back(p);
+		emplace_back(Person(id, age, household_id, home_district_id,
+		                        day_cluster_id, day_district_id,start_infectiousness,
+		                        start_symptomatic,end_infectiousness,end_symptomatic));
 	}
 
 	/// Get the cumulative number of cases.
@@ -57,6 +55,12 @@ public:
 					};
 		return std::accumulate(this->begin(), this->end(), 0U, counter);
 	}
+
+	///
+        const Person& GetPerson(const unsigned int index) const
+        {
+                return (*this)[index];
+        }
 
 	/// Get the Population size.
 	size_t GetSize() const
@@ -80,11 +84,6 @@ public:
 	void SetParticipant(const unsigned int index, std::shared_ptr<spdlog::logger> logger)
 	{
 		(*this)[index].ParticipateInSurvey(logger);
-	}
-
-	const Person& GetPerson(const unsigned int index) const
-	{
-		return (*this)[index];
 	}
 };
 

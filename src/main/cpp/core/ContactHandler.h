@@ -65,12 +65,10 @@ public:
 
 		//double rate = m_age_contact_rates[cluster_type][age] * m_transmission_rate_adult;
 		double rate = m_age_contact_mean_num[cluster_type][age]/cluster_size;
-		if(cluster_type == "household")
-		{
+		if(cluster_type == "household") {
 			rate = 1;
 		}
-		if(cluster_type == "work")
-		{
+		if(cluster_type == "work") {
 			rate = rate*1.7;
 		}
 		rate *= m_transmission_rate_adult;
@@ -86,13 +84,11 @@ public:
 		}
 
 		double rate = (m_age_contact_mean_num[cluster_type][age] / cluster_size);
-		if(cluster_type == "household")
-		{
+		if (cluster_type == "household") {
 			rate = 1;
 		}
-		if(cluster_type == "work")
-		{
-					rate = rate*1.7;
+		if (cluster_type == "work") {
+			rate = rate*1.7;
 		}
 		return m_rng.NextDouble() < rate;
 	}

@@ -146,7 +146,6 @@ std::vector<double> Simulator::GetContactRates(const std::vector<double>& mean_n
 std::vector<double> Simulator::GetMeanNumbersOfContacts(std::string cluster_type,  const boost::property_tree::ptree& pt_contacts)
 {
 	std::string key = "matrices." + cluster_type;
-
 	std::vector<double> meanNums;
 
 	for(auto& participant: pt_contacts.get_child(key)) {

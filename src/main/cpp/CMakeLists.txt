@@ -18,6 +18,9 @@
 # Sources.
 #============================================================================
 set(LIB_SRC
+    core/Cluster.cpp
+    core/ClusterType.cpp
+    core/PopulationBuilder.cpp
 	output/CasesFile.cpp
 	output/PersonFile.cpp
 	output/SummaryFile.cpp
