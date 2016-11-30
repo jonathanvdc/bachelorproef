@@ -1,9 +1,7 @@
 #ifndef SRC_MAIN_CPP_SIM_WORLDENVIRONMENT_H_
 #define SRC_MAIN_CPP_SIM_WORLDENVIRONMENT_H_
-
 /*
- *  This file is part of the indismo software.
- *  It is free software: you can redistribute it and/or modify it
+ *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  any later version.
@@ -14,21 +12,21 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Reference: Willem L, Stijven S, Tijskens E, Beutels P, Hens N and
- *  Broeckhove J. (2015) Optimizing agent-based transmission models for
- *  infectious diseases, BMC Bioinformatics.
- *
  *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
  */
+
 /**
  * @file
  * Header file for the WorldEnvironment class.
  */
 
-#include <cstdlib>
-#include <memory>
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include <boost/property_tree/ptree.hpp>
+
+#include <algorithm>
+#include <cstdlib>
+#include <memory>
+#include <vector>
 
 namespace indismo {
 
@@ -48,35 +46,34 @@ public:
 	void AdvanceDay();
 
 	/// Get the current day of the simulation
-	size_t GetSimulationDay() const;
+	size_t GetSimulationDay() const { return m_day; }
 
 	/// Get the current day of the month
-	size_t GetDay() const;
+	size_t GetDay() const { return m_date.day(); }
 
 	/// Get the current month
-	size_t GetMonth() const;
+	size_t GetMonth() const { return m_date.month(); }
 
 	/// Get the current year
-	size_t GetYear() const;
+	size_t GetYear() const { return m_date.year(); }
 
-	/// Get the current day of the week
-	/// 0 (Sunday), ..., 6 (Saturday)
-	size_t GetDayOfTheWeek() const;
+	/// Get the current day of the week (0 (Sunday), ..., 6 (Saturday))
+	size_t GetDayOfTheWeek() const { return m_date.day_of_week(); }
 
 	/// Check if it's the weekend
-	bool IsWeekend() const;
+	bool IsWeekend() const { return (GetDayOfTheWeek() == 6 || GetDayOfTheWeek() == 0); }
 
 	/// Check if it's a holiday
-	bool IsHoliday() const;
+	bool IsHoliday() const { return (std::find(m_holidays.begin(), m_holidays.end(), m_date) != m_holidays.end()); }
 
 	/// Check if it's a school holiday
-	bool IsSchoolHoliday() const;
+	bool IsSchoolHoliday() const { return (std::find(m_school_holidays.begin(), m_school_holidays.end(), m_date) != m_school_holidays.end()); }
 
 private:
 	void InitializeHolidays(std::string holidays_file);
 
 private:
-	size_t                                 m_day;                     ///< The current simulation day
+	std::size_t                            m_day;                     ///< The current simulation day
 	boost::gregorian::date                 m_date;                    ///< The current simulated day
 
 	std::vector<boost::gregorian::date>    m_holidays;                ///< Vector of general holidays

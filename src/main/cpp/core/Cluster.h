@@ -1,8 +1,7 @@
 #ifndef CLUSTER_H_INCLUDED
 #define CLUSTER_H_INCLUDED
 /*
- *  This file is part of the indismo software.
- *  It is free software: you can redistribute it and/or modify it
+ *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  any later version.
@@ -13,12 +12,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Reference: Willem L, Stijven S, Tijskens E, Beutels P, Hens N and
- *  Broeckhove J. (2015) Optimizing agent-based transmission models for
- *  infectious diseases, BMC Bioinformatics.
- *
- *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
  */
+
 /**
  * @file
  * Header for the core Cluster class.
@@ -27,23 +23,18 @@
 #include "ContactHandler.h"
 #include "Person.h"
 #include "sim/WorldEnvironment.h"
+#include "LogMode.h"
 
 #include "spdlog/spdlog.h"
-
 #include <cstddef>
+#include <iostream>
 #include <memory>
 #include <utility>
 #include <vector>
-#include <iostream>
+
 
 namespace indismo {
 namespace core {
-/**
-* Enum specifiying the level of logging required:
-* none at all, only contacts where transimission occurs or all contacts
-*/
-enum LogMode {None, Transmissions, Contacts};
-
 
 /**
  * Represents a location for social contacts, an group of people.
@@ -80,7 +71,7 @@ public:
 	template<LogMode log_level>
 	void Update(std::shared_ptr<ContactHandler> contact_handler, std::shared_ptr<const WorldEnvironment> sim_state)
 	{
-		if (log_level < 2) {
+		if (log_level < LogMode::Contacts) {
 		//if (!LOG_CONTACTS) {
 			// check if the cluster has infected members and sort
 			bool infectious_cases;
@@ -89,7 +80,7 @@ public:
 
 			if (infectious_cases) {
 
-				UpdatePresentMembers();
+				UpdateMemberPresence();
 				size_t cluster_size = GetSize();
 
 				// match infectious in first part with susceptible in second part, skip last part (immune)
@@ -104,7 +95,7 @@ public:
 									auto p2 = m_members[i_contact].first;
 									if ((*contact_handler)(age1, m_cluster_type,cluster_size)) {
 										//if (LOG_TRANSMISSION) {
-										if (log_level == 1) {
+										if (log_level == LogMode::Transmissions) {
 											// log transmission
 											m_members[i_infected].first->LogTransmission(m_logger, p2,
 													m_cluster_type, sim_state);
@@ -118,7 +109,7 @@ public:
 				}
 			}
 		} else {
-			UpdatePresentMembers();
+			UpdateMemberPresence();
 			size_t cluster_size = GetSize();
 
 			// check all contacts
@@ -202,7 +193,7 @@ private:
 	}
 
 	/// Check which members are present in the cluster on the current day
-	void UpdatePresentMembers()
+	void UpdateMemberPresence()
 	{
 		for (auto member: m_members) {
 			if (member.first->IsInCluster(m_cluster_type)) {

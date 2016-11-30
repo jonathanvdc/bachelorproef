@@ -1,6 +1,5 @@
 #############################################################################
-#  This file is part of the indismo software. 
-#  It is free software: you can redistribute it and/or modify
+#  This is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by 
 #  the Free Software Foundation, either version 3 of the License, or any 
 #  later version.
@@ -12,11 +11,7 @@
 #  along with the software. If not, see <http://www.gnu.org/licenses/>.
 #  see http://www.gnu.org/licenses/.
 #
-#  Reference: Willem L, Stijven S, Tijskens E, Beutels P, Hens N and 
-#  Broeckhove J. (2015) Optimizing agent-based transmission models for  
-#  infectious diseases, BMC Bioinformatics.
-#
-#  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
+#  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
 #############################################################################
 
 #============================================================================
@@ -31,7 +26,7 @@ set(LIB_SRC
 )
 
 set(MAIN_SRC
-	sim/indismo.cpp
+	sim/main.cpp
 )
 
 #============================================================================
@@ -40,7 +35,7 @@ set(MAIN_SRC
 add_library(indismo_lib  STATIC  ${LIB_SRC})
 #
 add_executable(indismo  ${MAIN_SRC})
-target_link_libraries( indismo   indismo_lib ${LIBS}) 
+target_link_libraries(indismo   indismo_lib ${LIBS}) 
 install(TARGETS indismo  DESTINATION   ${BIN_INSTALL_LOCATION})
 
 #============================================================================
@@ -51,7 +46,7 @@ set_target_properties(indismo_lib_omp PROPERTIES COMPILE_FLAGS "-fopenmp" LINK_F
 #
 add_executable(indismo_omp  ${MAIN_SRC})
 set_target_properties(indismo_omp PROPERTIES COMPILE_FLAGS "-fopenmp" LINK_FLAGS "-fopenmp")
-target_link_libraries( indismo_omp   indismo_lib_omp ${LIBS}) 
+target_link_libraries(indismo_omp   indismo_lib_omp ${LIBS}) 
 install(TARGETS indismo_omp  DESTINATION   ${BIN_INSTALL_LOCATION})
 
 #============================================================================

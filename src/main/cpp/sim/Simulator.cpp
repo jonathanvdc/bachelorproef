@@ -1,6 +1,5 @@
 /*
- *  This file is part of the indismo software.
- *  It is free software: you can redistribute it and/or modify it
+ *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  any later version.
@@ -11,23 +10,21 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Reference: Willem L, Stijven S, Tijskens E, Beutels P, Hens N and
- *  Broeckhove J. (2015) Optimizing agent-based transmission models for
- *  infectious diseases, BMC Bioinformatics.
- *
  *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
  */
+
 /**
  * @file
  * Implementation of the Simulator class.
  */
-#include <omp.h>
-#include <iostream>
 
 #include "Simulator.h"
-
-#include "core/PopulationBuilder.h"
+#include "core/LogMode.h"
 #include "core/Population.h"
+#include "core/PopulationBuilder.h"
+
+#include <omp.h>
+#include <iostream>
 
 namespace indismo {
 
@@ -268,7 +265,8 @@ void Simulator::RunTimeStep()
 		m_state->AdvanceDay();
 }
 
-double Simulator::GetAverageClusterSize(const std::vector<core::Cluster>& clusters) {
+double Simulator::GetAverageClusterSize(const std::vector<core::Cluster>& clusters)
+{
 	double total_size = 0;
 	double num_clusters = clusters.size();
 	for (size_t i = 1; i < num_clusters; i++) {

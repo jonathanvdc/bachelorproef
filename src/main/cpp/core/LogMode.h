@@ -1,5 +1,5 @@
-#ifndef TRACKINDEXCASE_H_
-#define TRACKINDEXCASE_H_
+#ifndef LOGMODE_H_INCLUDED
+#define LOGMODE_H_INCLUDED
 /*
  *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
@@ -12,19 +12,27 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
  */
 
 /**
  * @file
- * Utilities to create a binary to estimate R0.
+ * Header for the core Cluster class.
  */
 
-#ifdef TRACKINDEXCASE
-	constexpr bool TRACK_INDEX_CASE {true};
-#else
-	constexpr bool TRACK_INDEX_CASE {false};
-#endif
+namespace indismo {
+namespace core {
+
+/**
+* Enum specifiying the level of logging required:
+* \li none at all
+* \li only contacts where transimission occurs
+* \li all contacts.
+*/
+enum class LogMode {None = 0U, Transmissions = 1U, Contacts = 2U};
 
 
-#endif /* TRACKINDEXCASE_H_ */
+} // end_of_namespace
+} // end_of_namespace
+
+#endif // include-guard

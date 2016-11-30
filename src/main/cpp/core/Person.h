@@ -1,8 +1,7 @@
 #ifndef PERSON_H_INCLUDED
 #define PERSON_H_INCLUDED
 /*
- *  This file is part of the indismo software.
- *  It is free software: you can redistribute it and/or modify it
+ *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  any later version.
@@ -13,19 +12,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Reference: Willem L, Stijven S, Tijskens E, Beutels P, Hens N and
- *  Broeckhove J. (2015) Optimizing agent-based transmission models for
- *  infectious diseases, BMC Bioinformatics.
- *
- *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
  */
+
 /**
  * @file
  * Header file for the Person class.
  */
 
-
-#include "../sim/WorldEnvironment.h"
+#include "sim/WorldEnvironment.h"
 #include "util/TrackIndexCase.h"
 #include "spdlog/spdlog.h"
 
@@ -49,7 +44,7 @@ public:
 		  m_day_cluster(day_cluster_id), m_day_district(day_district_id),
 		  m_in_household(true), m_in_home_district(true),
 		  m_in_day_cluster(true), m_in_day_district(true),
-		  m_susceptible(true),m_infected(false), m_infectious(false),
+		  m_susceptible(true), m_infected(false), m_infectious(false),
 		  m_symptomatic(false), m_recovered(false), m_immune(false), m_disease_counter(0),
 		  m_start_infectiousness(start_infectiousness), m_start_symptomatic(start_symptomatic),
 		  m_is_participant(false)
@@ -231,12 +226,12 @@ public:
 					StopInfection();
 				}
 			}
-			if(GetDiseaseCounter() == m_start_symptomatic) {
+			if (GetDiseaseCounter() == m_start_symptomatic) {
 				m_symptomatic = true;
 			}
-			if(GetDiseaseCounter() == m_end_symptomatic) {
+			if (GetDiseaseCounter() == m_end_symptomatic) {
 				m_symptomatic = false;
-				if(!m_infectious){
+				if (!m_infectious){
 					StopInfection();
 				}
 			}
