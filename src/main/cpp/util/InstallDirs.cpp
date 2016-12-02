@@ -128,7 +128,7 @@ void InstallDirs::Initialize()
 
 		// Really make sure everything is ok
                 const bool exists = boost::filesystem::is_directory(exec_path);
-                g_root_dir = (exists) ? boost::filesystem::system_complete(exec_path) : boost::filesystem::path();
+                g_root_dir = (exists) ? boost::filesystem::system_complete(exec_path).parent_path() : boost::filesystem::path();
 	}
 
 	//------- Exec name
@@ -147,7 +147,7 @@ void InstallDirs::Initialize()
                 const bool exists = boost::filesystem::exists(g_config_dir);
                 g_config_dir = (exists) ? g_config_dir : boost::filesystem::path();
 	}
-	//------- Retrieving Config Dir
+	//------- Data Dir
 	{
                 g_data_dir = g_root_dir / "data";
                 const bool exists = boost::filesystem::exists(g_data_dir);
