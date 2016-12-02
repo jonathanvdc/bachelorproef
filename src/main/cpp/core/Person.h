@@ -20,6 +20,7 @@
  * Header file for the Person class.
  */
 
+#include "ClusterType.h"
 #include "sim/WorldEnvironment.h"
 #include "util/TrackIndexCase.h"
 #include "spdlog/spdlog.h"
@@ -27,7 +28,6 @@
 #include <cstddef>
 
 namespace indismo {
-namespace core {
 
 /**
  * Store and handle person data.
@@ -122,16 +122,16 @@ public:
 	void SetHouseholdSize(size_t hh_size) { m_household_size = hh_size; }
 
 	/// Check if a person is present today in a given cluster
-	bool IsInCluster(std::string cluster_type) const;
+	bool IsInCluster(ClusterType c) const;
 
 	/// Log a contact of this person has with another person.
 	void LogContact(std::shared_ptr<spdlog::logger> logger,
-	                const Person* p2, std::string cluster_type,
+	                const Person* p2, ClusterType cluster_type,
 	                std::shared_ptr<const WorldEnvironment> world_environ);
 
 	///
 	void LogTransmission(std::shared_ptr<spdlog::logger> logger,
-	                const Person* p2, std::string cluster_type,
+	                const Person* p2, ClusterType cluster_type,
 	                std::shared_ptr<const WorldEnvironment> world_environ);
 
 	/**
@@ -157,9 +157,9 @@ public:
 		m_susceptible 	= false;
 		m_infected 	= true;
 		ResetDiseaseCounter();
-		if (TRACK_INDEX_CASE) {
-			StopInfection();
-		}
+                if (TRACK_INDEX_CASE) {
+                        StopInfection();
+                }
 	}
 
 	/// Stop the infection.
@@ -230,7 +230,6 @@ private:
 	bool            m_is_participant;		 ///< Is participating in the social contact study
 };
 
-} // end_of_namespace
 } // end_of_namespace
 
 #endif // end of include guard

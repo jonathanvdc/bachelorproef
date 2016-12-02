@@ -26,7 +26,6 @@
 #include <vector>
 
 namespace indismo {
-namespace core {
 
 /**
  * Container with Person objects.
@@ -87,8 +86,6 @@ public:
 	}
 };
 
-
-} // end_of_namespace
 } // end_of_namespace
 
 #endif // end of include guard

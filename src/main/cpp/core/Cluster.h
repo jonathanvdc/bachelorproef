@@ -21,6 +21,7 @@
  */
 
 #include "ContactHandler.h"
+#include "ClusterType.h"
 #include "Person.h"
 #include "sim/WorldEnvironment.h"
 #include "LogMode.h"
@@ -29,12 +30,11 @@
 #include <cstddef>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
-
 namespace indismo {
-namespace core {
 
 /**
  * Represents a location for social contacts, an group of people.
@@ -43,9 +43,10 @@ class Cluster
 {
 public:
 	/// Constructor
-	Cluster(std::size_t cluster_id, std::string cluster_type):
-		m_cluster_id(cluster_id), m_cluster_type(cluster_type), m_index_immune(0)
+	Cluster(std::size_t cluster_id, std::string cluster_type)
+                : m_cluster_id(cluster_id), m_index_immune(0)
 	{
+	        m_cluster_type = IsClusterType(cluster_type) ? ToClusterType(cluster_type) : throw std::runtime_error("problem with cluster_type");
 		m_logger = spdlog::get("contact_logger");
 	}
 
@@ -60,10 +61,10 @@ public:
 	size_t GetSize() const { return m_members.size(); }
 
 	///
-	std::string GetClusterType() const { return m_cluster_type; }
+	std::string GetClusterType() const { return ToString(m_cluster_type); }
 
 	///
-	void SetClusterType(std::string cluster_type) { m_cluster_type = cluster_type; }
+	void SetClusterType(std::string cluster_type) { m_cluster_type = ToClusterType(cluster_type); }
 
 	/// Update the social contacts between the infectious and susceptible members with sorting on health status.
 	template<LogMode log_level>
@@ -80,14 +81,12 @@ private:
 
 private:
 	std::size_t                               m_cluster_id;     ///< The ID of the Cluster (for logging purposes).
-	std::string                               m_cluster_type;   ///< The type of the Cluster (for logging purposes).
+	ClusterType                               m_cluster_type;   ///< The type of the Cluster (for logging purposes).
 	std::size_t                               m_index_immune;   ///< Index of the first immune member in the Cluster.
 	std::shared_ptr<spdlog::logger>           m_logger;         ///< Pointer to the logger used for recording contacts.
 	std::vector<std::pair<Person*, bool>>     m_members;        ///< Container with pointers to the members of the Cluster.
 };
 
-
-} // end_of_namespace
 } // end_of_namespace
 
 #endif // include-guard

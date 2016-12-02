@@ -32,7 +32,6 @@
 
 
 namespace indismo {
-namespace core {
 
 using namespace std;
 
@@ -102,7 +101,7 @@ void Cluster::Update<LogMode::None>(shared_ptr<ContactHandler> contact_handler, 
                                                 // check if member is present today
                                                 if (m_members[i_contact].second) {
                                                         auto p2 = m_members[i_contact].first;
-                                                        if ((*contact_handler)(age1, m_cluster_type,cluster_size)) {
+                                                        if ((*contact_handler)(age1, ToString(m_cluster_type), cluster_size)) {
                                                                 p2->StartInfection();
                                                         }
                                                 }
@@ -135,7 +134,7 @@ void Cluster::Update<LogMode::Transmissions>(shared_ptr<ContactHandler> contact_
                                                 // check if member is present today
                                                 if (m_members[i_contact].second) {
                                                         auto p2 = m_members[i_contact].first;
-                                                        if ((*contact_handler)(age1, m_cluster_type,cluster_size)) {
+                                                        if ((*contact_handler)(age1, ToString(m_cluster_type), cluster_size)) {
                                                                 // log transmission
                                                                 m_members[i_infected].first->LogTransmission(m_logger, p2, m_cluster_type, sim_state);
                                                                 p2->StartInfection();
@@ -165,7 +164,7 @@ void Cluster::Update<LogMode::Contacts>(shared_ptr<ContactHandler> contact_handl
                                 if ((i_person1 != i_person2) && m_members[i_person2].second) {
                                         auto p2 = m_members[i_person2].first;
                                         // check for contact
-                                        if (contact_handler->contact(age1, m_cluster_type, cluster_size)) {
+                                        if (contact_handler->contact(age1, ToString(m_cluster_type), cluster_size)) {
                                                 // TODO ContactHandler doesn't have a separate transmission function anymore to
                                                 // check for transmission when contact has already been checked.
                                                 // check for transmission
@@ -198,5 +197,4 @@ template void Cluster::Update<LogMode::Transmissions>(shared_ptr<ContactHandler>
 
 template void Cluster::Update<LogMode::Contacts>(shared_ptr<ContactHandler> contact_handler, shared_ptr<const WorldEnvironment> sim_state);
 
-} // end_of_namespace
 } // end_of_namespace

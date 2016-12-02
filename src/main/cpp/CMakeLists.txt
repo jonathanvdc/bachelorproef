@@ -28,6 +28,7 @@ set(LIB_SRC
 	output/SummaryFile.cpp
 	sim/Simulator.cpp
 	sim/WorldEnvironment.cpp
+	util/InstallDirs.cpp
 )
 
 set(MAIN_SRC

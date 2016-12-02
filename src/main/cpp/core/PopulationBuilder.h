@@ -44,7 +44,7 @@ public:
 	 * @param population		    Pointer to the initialized population.
 	 * @param pt_config				The property_tree with configuration settings.
 	 */
-	static bool Build(std::shared_ptr<core::Population> population, const boost::property_tree::ptree& pt_config);
+	static bool Build(std::shared_ptr<Population> population, const boost::property_tree::ptree& pt_config);
 
 private:
 	/**

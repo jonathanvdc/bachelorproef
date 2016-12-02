@@ -32,7 +32,7 @@ namespace indismo {
 using namespace std;
 
 Simulator::Simulator(const boost::property_tree::ptree& pt_config)
-	: m_num_threads(1U), m_population(make_shared<core::Population>())
+	: m_num_threads(1U), m_population(make_shared<Population>())
 {
 	#pragma omp parallel
 	{
@@ -46,7 +46,7 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 
 	// get log level
 	const string l = pt_config.get<string>("run.log_level", "None");
-	m_log_level = IsLogMode(l) ? LogModeFromString(l) : throw runtime_error("Invalid input for LogMode");
+	m_log_level = IsLogMode(l) ? ToLogMode(l) : throw runtime_error("Invalid input for LogMode");
 
 	// R0 and transmission rate
 	// use linear model fitted to simulation data: Expected(R0) = (b0+b1*transm_rate)
@@ -127,7 +127,7 @@ unsigned int Simulator::GetPopulationSize() const
 	return m_population->GetSize();
 }
 
-const shared_ptr<const core::Population> Simulator::GetPopulation() const
+const shared_ptr<const Population> Simulator::GetPopulation() const
 {
 	return m_population;
 }
@@ -163,7 +163,7 @@ void Simulator::InitializeClusters()
 	unsigned int num_day_clusters       = 0U;
 	unsigned int num_home_districts     = 0U;
 	unsigned int num_day_districts      = 0U;
-	core::Population& population        = *m_population;
+	Population& population              = *m_population;
 
 	for (auto p : population) {
 		if (num_households < p.GetHouseholdId()) {
@@ -190,7 +190,7 @@ void Simulator::InitializeClusters()
 	unsigned int cluster_id = 1;
 
 	for (size_t i = 1; i <= num_households; i++) {
-		m_households.push_back(core::Cluster(cluster_id, "household"));
+		m_households.push_back(Cluster(cluster_id, "household"));
 		cluster_id++;
 	}
 
@@ -198,17 +198,17 @@ void Simulator::InitializeClusters()
 		// Day clusters are initialized as school clusters.
 		// However, when a person older than 24 is added to such a cluster,
 		// the cluster type will be changed to "work".
-		m_day_clusters.push_back(core::Cluster(cluster_id, "school"));
+		m_day_clusters.push_back(Cluster(cluster_id, "school"));
 		cluster_id++;
 	}
 
 	for (size_t i = 1; i <= num_home_districts; i++) {
-		m_home_districts.push_back(core::Cluster(cluster_id, "home_district"));
+		m_home_districts.push_back(Cluster(cluster_id, "home_district"));
 		cluster_id++;
 	}
 
 	for (size_t i = 1; i <= num_day_districts; i++) {
-		m_day_districts.push_back(core::Cluster(cluster_id, "day_district"));
+		m_day_districts.push_back(Cluster(cluster_id, "day_district"));
 		cluster_id++;
 	}
 
@@ -260,7 +260,7 @@ void Simulator::RunTimeStep()
 		m_state->AdvanceDay();
 }
 
-double Simulator::GetAverageClusterSize(const vector<core::Cluster>& clusters)
+double Simulator::GetAverageClusterSize(const vector<Cluster>& clusters)
 {
 	double total_size = 0;
 	double num_clusters = clusters.size();
@@ -271,7 +271,7 @@ double Simulator::GetAverageClusterSize(const vector<core::Cluster>& clusters)
 	return total_size / (num_clusters - 1); // '-1' since we're counting from 1 not 0
 }
 
-void Simulator::UpdateContacts(vector<core::Cluster>& clusters)
+void Simulator::UpdateContacts(vector<Cluster>& clusters)
 {
 	#pragma omp parallel
 	{

@@ -40,7 +40,7 @@ std::string ToString(LogMode w);
 bool IsLogMode(std::string s);
 
 /// Converts a string with name to LogMode value.
-LogMode LogModeFromString(std::string s);
+LogMode ToLogMode(std::string s);
 
 } // end_of_namespace
 

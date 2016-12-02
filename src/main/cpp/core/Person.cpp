@@ -20,6 +20,8 @@
 
 #include "Person.h"
 
+#include "ClusterType.h"
+
 #include "sim/WorldEnvironment.h"
 #include "util/TrackIndexCase.h"
 #include "spdlog/spdlog.h"
@@ -27,47 +29,46 @@
 #include <cstddef>
 
 namespace indismo {
-namespace core {
 
 using namespace std;
 
-bool Person::IsInCluster(string cluster_type) const
+bool Person::IsInCluster(ClusterType c) const
 {
-        if (cluster_type == "household") {
-                return m_in_household;
-        } else if (cluster_type == "home_district") {
-                return m_in_home_district;
-        } else if (cluster_type == "school" || cluster_type == "work") {
-                return m_in_day_cluster;
-        } else if (cluster_type == "day_district") {
-                return m_in_day_district;
+        switch(c) {
+                case ClusterType::Household:
+                        return m_in_household; break;
+                case ClusterType::HomeDistrict:
+                        return m_in_home_district; break;
+                case ClusterType::School:
+                case ClusterType::Work:
+                        return m_in_day_cluster; break;
+                case ClusterType::DayDistrict:
+                        return m_in_day_district; break;
+                default:
+                        return false;
         }
-
-        return false;
 }
 
 void Person::LogContact(shared_ptr<spdlog::logger> logger,
-                const Person* p2, string cluster_type,
+                const Person* p2, ClusterType cluster_type,
                 shared_ptr<const WorldEnvironment> world_environ)
 {
-        unsigned int home   = (cluster_type == "household");
-        unsigned int work   = (cluster_type == "work");
-        unsigned int school = (cluster_type == "school");
-        unsigned int other  = (cluster_type == "home_district" || cluster_type == "day_district");
+        unsigned int home   = (cluster_type == ClusterType::Household);
+        unsigned int work   = (cluster_type == ClusterType::Work);
+        unsigned int school = (cluster_type == ClusterType::School);
+        unsigned int other  = (cluster_type == ClusterType::HomeDistrict || cluster_type == ClusterType::DayDistrict);
 
         logger->info("[CONT] {} {} {} {} {} {} {} {}",
-                m_id, m_age, p2->GetAge(),
-                home, work, school, other, world_environ->GetSimulationDay());
+                m_id, m_age, p2->GetAge(), home, work, school, other, world_environ->GetSimulationDay());
 
 }
 
 void Person::LogTransmission(shared_ptr<spdlog::logger> logger,
-                const Person* p2, string cluster_type,
+                const Person* p2, ClusterType cluster_type,
                 shared_ptr<const WorldEnvironment> world_environ)
 {
         logger->info("[TRAN] {} {} {} {}",
-                m_id, p2->GetId(), cluster_type,
-                world_environ->GetSimulationDay());
+                m_id, p2->GetId(), ToString(cluster_type), world_environ->GetSimulationDay());
 }
 
 void Person::Update(shared_ptr<const WorldEnvironment> world_environ)
@@ -110,5 +111,4 @@ void Person::Update(shared_ptr<const WorldEnvironment> world_environ)
         }
 }
 
-} // end_of_namespace
 } // end_of_namespace

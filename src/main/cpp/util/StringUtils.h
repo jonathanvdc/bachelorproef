@@ -82,6 +82,15 @@ public:
 		return ss.str();
 	}
 
+        /// Builds a string with lower case characters only.
+        static std::string ToLower(std::string const& source)
+        {
+                auto lower = [](int c)->int {return std::toupper(c);};
+                std::string copy;
+                std::transform(source.begin(), source.end(), std::back_inserter(copy), lower);
+                return copy;
+        }
+
 	/// Builds a string with upper case characters only.
 	static std::string ToUpper(std::string const& source)
 	{

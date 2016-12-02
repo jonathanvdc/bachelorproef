@@ -66,7 +66,7 @@ bool IsClusterType(string s)
         return (g_name_cluster_type.count(s) == 1);
 }
 
-ClusterType ClusterTypeFromString(string s)
+ClusterType ToClusterType(string s)
 {
         to_upper(s);
 	return g_name_cluster_type[s];

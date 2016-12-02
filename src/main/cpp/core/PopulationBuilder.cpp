@@ -38,7 +38,7 @@ namespace indismo {
 
 using namespace std;
 
-bool PopulationBuilder::Build(shared_ptr<core::Population> population, const boost::property_tree::ptree& pt_config)
+bool PopulationBuilder::Build(shared_ptr<Population> population, const boost::property_tree::ptree& pt_config)
 {
         bool status = true;
 
@@ -198,6 +198,5 @@ unsigned int PopulationBuilder::SampleFromDistribution(util::Random& rng, const 
         cerr << "WARNING: PROBLEM WITH DISEASE DISTRIBUTION [PopulationBuilder]" << endl;
         return distribution.size();
 }
-
 
 } // end_of_namespace

@@ -22,11 +22,13 @@
 #include "output/CasesFile.h"
 #include "output/PersonFile.h"
 #include "output/SummaryFile.h"
+#include "util/InstallDirs.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/filesystem.hpp>
 #include "spdlog/spdlog.h"
 #include "tclap/CmdLine.h"
 
@@ -34,6 +36,7 @@
 #include <iostream>
 #include <limits>
 #include <string>
+#include <stdexcept>
 #include <unistd.h>
 #include <omp.h>
 
@@ -49,13 +52,37 @@ int main(int argc, char** argv)
 {
 	int exit_status = EXIT_SUCCESS;
 	try {
+                // -----------------------------------------------------------------------------------------
+                // Print output to command line.
+                // -----------------------------------------------------------------------------------------
+                cout << "\n*************************************************************" << endl;
+                cout << "Starting up at:      " << TimeStamp().ToString() << endl;
+                cout << "Executing:           " << InstallDirs::GetExecName().string() << endl;
+                cout << "Current directory:   " << InstallDirs::GetCurrentDir().string() << endl;
+                cout << "Install directory:   " << InstallDirs::GetRootDir().string() << endl;
+                cout << "Config  directory:   " << InstallDirs::GetConfigDir().string() << endl;
+                cout << "Data    directory:   " << InstallDirs::GetConfigDir().string() << endl;
+
+                // -----------------------------------------------------------------------------------------
+                // Check execution environment.
+                // -----------------------------------------------------------------------------------------
+	        if ( InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0 ) {
+	                throw runtime_error("Current directory is not install root! Aborting.");
+	        }
+                if ( InstallDirs::GetConfigDir().empty() ) {
+                        throw runtime_error("Config dir not present! Aborting.");
+                }
+                if ( InstallDirs::GetDataDir().empty() ) {
+                        throw runtime_error("Data dir not present! Aborting.");
+                }
+
 		// -----------------------------------------------------------------------------------------
 		// Parse command line.
 		// -----------------------------------------------------------------------------------------
 		CmdLine cmd("indismo", ' ', "3.0", false);
 
 		ValueArg<string> 	config_file_Arg(
-		"c", "config_file", "Configuration File", false, "./config/run_config_default.xml", "CONFIGURATION FILE", cmd);
+		"c", "config_file", "Config File", false, "run_config_default.xml", "CONFIGURATION FILE", cmd);
 
 		cmd.parse(argc, argv);
 
@@ -63,7 +90,8 @@ int main(int argc, char** argv)
 		// Parse configuration file.
 		// -----------------------------------------------------------------------------------------
 		boost::property_tree::ptree pt_config;
-		read_xml(config_file_Arg.getValue(), pt_config);
+		const string config_file = (InstallDirs::GetConfigDir() /= config_file_Arg.getValue()).string();
+		read_xml(config_file, pt_config);
 
 		// -----------------------------------------------------------------------------------------
 		// Set output path.
@@ -93,11 +121,8 @@ int main(int argc, char** argv)
 		// -----------------------------------------------------------------------------------------
 		// Print output to command line.
 		// -----------------------------------------------------------------------------------------
-		cout << "\n*************************************************************" << endl;
-		cout << "indismo 3.0 starting up at " << TimeStamp().ToString() << endl;
-		cout << "Executing:           " << argv[0]<< endl;
-		cout << "Working directory:   " << getcwd(NULL, 0) << endl;
 		cout << "Project output tag:  " << output_prefix << endl;
+		cout << "Configuration file:  " << config_file << endl;
 		cout << endl << endl;
 
 		// -----------------------------------------------------------------------------------------
@@ -138,14 +163,12 @@ int main(int argc, char** argv)
 			person_file.Print(sim.GetPopulation());
 		}
 
-		// Log
-		cerr << "  run_time: " << run_clock.ToString()
-			<< "  -- total time: " << total_clock.ToString() << endl << endl;
-
 		// -----------------------------------------------------------------------------------------
 		// Print final message to command line.
 		// -----------------------------------------------------------------------------------------
-		cout << "indismo exiting at: " << TimeStamp().ToString() << endl << endl;
+                cerr << "  run_time: " << run_clock.ToString()
+                        << "  -- total time: " << total_clock.ToString() << endl << endl;
+		cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
 	}
 	catch (exception& e) {
 		exit_status = EXIT_FAILURE;

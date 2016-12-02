@@ -62,7 +62,7 @@ bool IsLogMode(string s)
         return (g_name_cluster_type.count(s) == 1);
 }
 
-LogMode LogModeFromString(string s)
+LogMode ToLogMode(string s)
 {
 	return g_name_cluster_type[s];
 }

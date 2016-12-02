@@ -19,7 +19,7 @@
 #  Copyright 2015, Willem L, Stijven S & Broeckhove J
 #############################################################################
 #
-#  CMake config related to simshell use.
+#  CMake config.
 #
 #############################################################################
 cmake_minimum_required(VERSION 2.8)
@@ -47,14 +47,30 @@ include( CMakeBuildConfig.txt )
 # Configuration for CPP.
 #============================================================================
 include( CMakeCPPConfig.txt    )
-
+  	
 #============================================================================
-# Configuration for DOXYGEN.
+# Configuration for Git.
 #============================================================================
-if( STRIDE_INCLUDE_DOC ) 	
-	find_package( Doxygen )
+find_package( Git QUIET)
+if( GIT_FOUND )
+	GIT_WC_INFO(${CMAKE_SOURCE_DIR}/.. STRIDE)
+else()
+    # This is done to eliminate blank output of undefined CMake variables.
+    set( GIT_FOUND FALSE ) 
+	set( STRIDE_WC_REVISION_HASH    "0000-0000-000" )	
+	set( STRIDE_WC_LAST_CHANGED_DATE   "0000 0000 0000" )
 endif()
 
+#============================================================================
+# Configuration for DOC: DOXYGEN AND LATEX
+#============================================================================
+if( STRIDE_INCLUDE_DOC )
+    find_package( Doxygen Quiet)	
+    find_package( LATEX Quiet)
+    if( NOT "${PDFLATEX_COMPILER}" STREQUAL "PDFLATEX_COMPILER-NOTFOUND" )
+    	set( LATEX_FOUND YES )
+    endif()
+endif()
 #============================================================================
 # Add subdirs
 #============================================================================

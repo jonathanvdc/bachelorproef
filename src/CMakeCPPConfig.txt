@@ -80,7 +80,7 @@ set( LIBS ${LIBS} trng )
 #----------------------------------------------------------------------------
 # Boost
 #----------------------------------------------------------------------------
-find_package( Boost COMPONENTS thread date_time REQUIRED )
+find_package( Boost COMPONENTS filesystem thread date_time REQUIRED )
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS} )
 set( LIBS   ${LIBS}    ${Boost_LIBRARIES} )
 
@@ -117,7 +117,7 @@ endif()
 #----------------------------------------------------------------------------
 # Linking.
 #----------------------------------------------------------------------------
-set( BUILD_SHARED_LIBS 	    ON 	 )
-set( CMAKE_INSTALL_RPATH    ${CMAKE_INSTALL_PREFIX}/bin )
+#set( BUILD_SHARED_LIBS 	    ON 	 )
+#set( CMAKE_INSTALL_RPATH    ${CMAKE_INSTALL_PREFIX}/bin )
 
 #############################################################################

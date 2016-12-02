@@ -50,7 +50,7 @@ public:
 	unsigned int GetPopulationSize() const;
 
 	/// Get the population.
-	const std::shared_ptr<const core::Population> GetPopulation() const;
+	const std::shared_ptr<const Population> GetPopulation() const;
 
 	/// Run one time step.
 	void RunTimeStep();
@@ -70,22 +70,22 @@ private:
 	void InitializePopulation(const boost::property_tree::ptree& pt_config);
 
 	/// Get average size of given clusters
-	double GetAverageClusterSize(const std::vector<core::Cluster>& clusters);
+	double GetAverageClusterSize(const std::vector<Cluster>& clusters);
 
 	/// Update the contacts in the given clusters.
-	void UpdateContacts(std::vector<core::Cluster>& clusters);
+	void UpdateContacts(std::vector<Cluster>& clusters);
 
 private:
-	unsigned int                                    m_num_threads;          ///< The number of (OpenMP) threads.
-	std::shared_ptr<WorldEnvironment>               m_state;                ///< The current state of the simulated world.
+	unsigned int                              m_num_threads;          ///< The number of (OpenMP) threads.
+	std::shared_ptr<WorldEnvironment>         m_state;                ///< The current state of the simulated world.
 
-	LogMode                                         m_log_level;            ///< Specifies logging mode.
+	LogMode                                   m_log_level;            ///< Specifies logging mode.
 
-	std::shared_ptr<core::Population>               m_population;           ///< Pointer to the Population.
-	std::vector<core::Cluster>                      m_households;           ///< Container with households Clusters.
-	std::vector<core::Cluster>                      m_day_clusters;         ///< Container with day Clusters.
-	std::vector<core::Cluster>                      m_home_districts;       ///< Container with home district Clusters.
-	std::vector<core::Cluster>                      m_day_districts;        ///< Container with day district Clusters.
+	std::shared_ptr<Population>               m_population;           ///< Pointer to the Population.
+	std::vector<Cluster>                      m_households;           ///< Container with households Clusters.
+	std::vector<Cluster>                      m_day_clusters;         ///< Container with day Clusters.
+	std::vector<Cluster>                      m_home_districts;       ///< Container with home district Clusters.
+	std::vector<Cluster>                      m_day_districts;        ///< Container with day district Clusters.
 
 	std::vector<std::shared_ptr<ContactHandler>>    m_contact_handler;      ///< Pointer to the ContactHandler.
 };

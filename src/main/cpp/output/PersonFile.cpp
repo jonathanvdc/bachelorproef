@@ -52,7 +52,7 @@ void PersonFile::Initialize(const std::string& file)
 			<< "end_infectiousness;start_symptomatic;end_symptomatic" << endl;
 }
 
-void PersonFile::Print(const std::shared_ptr<const core::Population> population)
+void PersonFile::Print(const std::shared_ptr<const Population> population)
 {
 	for(unsigned int i = 0; i < population->GetSize(); i++) {
 		if(!population->GetPerson(i).IsSusceptible()) {
