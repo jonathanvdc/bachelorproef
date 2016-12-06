@@ -23,6 +23,8 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/predef/os.h>
+#include <ios>
+#include <iostream>
 #include <algorithm>
 #include <string>
 
@@ -40,17 +42,17 @@
 
 
 using namespace std;
-using namespace boost;
+using namespace boost::filesystem;
 using namespace indismo::util;
 
 namespace indismo {
 
-boost::filesystem::path     InstallDirs::g_bin_dir;
-boost::filesystem::path     InstallDirs::g_config_dir;
-boost::filesystem::path     InstallDirs::g_current_dir;
-boost::filesystem::path     InstallDirs::g_data_dir;
-boost::filesystem::path     InstallDirs::g_exec_name;
-boost::filesystem::path     InstallDirs::g_root_dir;
+path     InstallDirs::g_bin_dir;
+path     InstallDirs::g_config_dir;
+path     InstallDirs::g_current_dir;
+path     InstallDirs::g_data_dir;
+path     InstallDirs::g_exec_path;
+path     InstallDirs::g_root_dir;
 
 inline void InstallDirs::Check()
 {
@@ -63,11 +65,7 @@ inline void InstallDirs::Check()
 
 void InstallDirs::Initialize()
 {
-        // Empty path.
-        boost::filesystem::path exec_path;
-        boost::filesystem::path exec_name;
-
-	//------- Retrieving Install Root Path
+	//------- Retrieving path of executable
 	{
 		// Returns the full path to the currently running executable, or an empty string in case of failure.
 		// http://stackoverflow.com/questions/1023306/finding-current-executables-path-without-proc-self-exe/33249023#33249023
@@ -76,124 +74,110 @@ void InstallDirs::Initialize()
                         char exePath[MAX_PATH];
                         HMODULE hModule = GetModuleHandle(NULL);
                         if (GetModuleFileName(NULL, exePath, sizeof(exePath)) !=0); {
-                                exec_name = boost::filesystem::system_complete(exePath);
-                                exec_path = exec_name.parent_path();
+                                g_exec_path = canonical(system_complete(exePath));
                         }
 		#elif (BOOST_OS_LINUX)
 			char exePath[PATH_MAX];
 			size_t size = ::readlink("/proc/self/exe", exePath, sizeof(exePath));
 		        if (size > 0 && size != sizeof(exePath)) {
-                                exec_name = boost::filesystem::system_complete(exePath);
-                                exec_path = exec_name.parent_path();
+                                g_exec_path = canonical(system_complete(exePath));
 		        }
 		#elif (BOOST_OS_MACOS)
 			char exePath[PATH_MAX];
 			uint32_t size = sizeof(exePath);
 		        if (_NSGetExecutablePath(exePath, &size) == 0) {
-                                exec_name = boost::filesystem::system_complete(exePath);
-                                exec_path = exec_name.parent_path();
+                                g_exec_path = canonical(system_complete(exePath));
 		        }
 		#endif
+	}
 
-		if (!exec_path.empty()) {
+	//------- Retrieving root and bin directory (the subdirectory of the install root)
+	{
+	        path exec_dir = g_exec_path.parent_path();
+		if (!g_exec_path.empty()) {
                         #if (BOOST_OS_MACOS)
-                                if (exec_path.filename().string() == "MacOS") {
+                                if (exec_dir.filename().string() == "MacOS") {
                                         // app
                                         //      -Contents               <-Root Path
                                         //              -MacOS
-                                        //                   -binaries
-                                        exec_path = exec_path.parent_path();
+                                        //                   -executables
+                                        g_bin_dir = exec_dir;
+                                        g_root_dir = exec_dir.parent_path();
                                 } else
                         #endif
-                                if (StringUtils::ToLower(exec_path.filename().string()) == "debug"
-                                        || StringUtils::ToLower(exec_path.filename().string()) == "release") {
+                                if (StringUtils::ToLower(exec_dir.filename().string()) == "debug"
+                                        || StringUtils::ToLower(exec_dir.filename().string()) == "release") {
                                         //x/exec                <-Root Path
                                         //      -bin
                                         //              -release/debug
-                                        //                      -binaries
-                                        exec_path = exec_path.parent_path().parent_path();
+                                        //                      -executables
+                                        g_bin_dir  = exec_dir.parent_path();
+                                        g_root_dir = exec_dir.parent_path().parent_path();
                                 } else
                         #if (BOOST_OS_WINDOWS)
-                                if (exec_path.filename().string() != "bin") {
-                                        // Do Nothing, binaries in root folder
+                                if (exec_dir.filename().string() != "bin") {
+                                        // Executables in root folder
+                                        g_bin_dir  = exec_dir;
+                                        g_root_dir = exec_dir;
                                 } else
                         #endif
                                 {
                                         //x/exec                <-Root Path
                                         //      -bin
-                                        //              -binaries
-                                        exec_path = exec_path.parent_path();
+                                        //              -executables
+                                        g_bin_dir  = exec_dir;
+                                        g_root_dir = exec_dir.parent_path();
                                 }
 		}
-
-		// Really make sure everything is ok
-                const bool exists = boost::filesystem::is_directory(exec_path);
-                g_root_dir = (exists) ? boost::filesystem::system_complete(exec_path) : boost::filesystem::path();
 	}
 
-	//------- Exec name
-	{
-	        g_exec_name = boost::filesystem::system_complete(exec_name);
-	}
-        //------- Bin Dir
-        {
-                g_bin_dir = g_root_dir;
-                g_bin_dir /= "bin";
-                const bool exists = boost::filesystem::is_directory(g_bin_dir);
-                g_bin_dir = (exists) ? g_bin_dir : boost::filesystem::path();
-        }
 	//------- Config Dir
 	{
-                g_config_dir = g_root_dir;
-                g_config_dir /= "config";
-                const bool exists = boost::filesystem::exists(g_config_dir);
-                g_config_dir = (exists) ? g_config_dir : boost::filesystem::path();
+                g_config_dir = g_root_dir / "config";
+                g_config_dir = is_directory(g_config_dir) ? g_config_dir : path();
 	}
 	//------- Data Dir
 	{
-                g_data_dir = g_root_dir;
-                g_data_dir /= "data";
-                const bool exists = boost::filesystem::is_directory(g_data_dir);
-                g_data_dir = (exists) ? g_data_dir : boost::filesystem::path();
+                g_data_dir = g_root_dir / "data";
+                g_data_dir = is_directory(g_data_dir) ? g_data_dir : path();
 	}
 	//------- Current Dir
 	{
-	        boost::filesystem::path executablePath;
-	        g_current_dir = boost::filesystem::system_complete(boost::filesystem::current_path());
+	        g_current_dir = system_complete(current_path());
 	}
 }
 
-boost::filesystem::path InstallDirs::GetBinDir()
+path InstallDirs::GetBinDir()
 {
         Check();
         return g_bin_dir;
 }
 
-boost::filesystem::path InstallDirs::GetConfigDir()
+path InstallDirs::GetConfigDir()
 {
         Check();
         return g_config_dir;
 }
 
-boost::filesystem::path InstallDirs::GetCurrentDir()
+path InstallDirs::GetCurrentDir()
 {
         Check();
         return g_current_dir;
 }
 
-boost::filesystem::path InstallDirs::GetDataDir()
+path InstallDirs::GetDataDir()
 {
 	Check();
 	return g_data_dir;
 }
 
-boost::filesystem::path InstallDirs::GetExecName()
+path InstallDirs::GetExecPath()
 {
         Check();
-        return g_exec_name;
+        return g_exec_path;
 }
 
-boost::filesystem::path InstallDirs::GetRootDir()
+path InstallDirs::GetRootDir()
 {
 	Check();
 	return g_root_dir;

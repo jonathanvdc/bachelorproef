@@ -42,7 +42,7 @@ public:
         static boost::filesystem::path GetDataDir();
 
         /// Utility method: get name of executable.
-        static boost::filesystem::path GetExecName();
+        static boost::filesystem::path GetExecPath();
 
 	/// Utility method: get application installation root directory.
 	static boost::filesystem::path GetRootDir();
@@ -59,7 +59,7 @@ private:
         static boost::filesystem::path  g_config_dir;
         static boost::filesystem::path  g_current_dir;
 	static boost::filesystem::path 	g_data_dir;
-        static boost::filesystem::path  g_exec_name;
+        static boost::filesystem::path  g_exec_path;
 	static boost::filesystem::path 	g_root_dir;
 };
 

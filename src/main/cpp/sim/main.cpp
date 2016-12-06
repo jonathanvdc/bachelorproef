@@ -57,7 +57,7 @@ int main(int argc, char** argv)
                 // -----------------------------------------------------------------------------------------
                 cout << "\n*************************************************************" << endl;
                 cout << "Starting up at:      " << TimeStamp().ToString() << endl;
-                cout << "Executing:           " << InstallDirs::GetExecName().string() << endl;
+                cout << "Executing:           " << InstallDirs::GetExecPath().string() << endl;
                 cout << "Current directory:   " << InstallDirs::GetCurrentDir().string() << endl;
                 cout << "Install directory:   " << InstallDirs::GetRootDir().string() << endl;
                 cout << "Config  directory:   " << InstallDirs::GetConfigDir().string() << endl;
@@ -172,11 +172,11 @@ int main(int argc, char** argv)
 	}
 	catch (exception& e) {
 		exit_status = EXIT_FAILURE;
-		cerr << e.what() << endl;
+		cerr << "\nEXCEPION THROWN: " << e.what() << endl;
 	}
 	catch (...) {
 		exit_status = EXIT_FAILURE;
-		cerr << "Unknown exception." << endl;
+		cerr << "\nEXCEPION THROWN: " << "Unknown exception." << endl;
 	}
 	return exit_status;
 }

@@ -24,6 +24,7 @@
 #include "util/Random.h"
 
 #include <boost/property_tree/xml_parser.hpp>
+#include <memory>
 #include <string>
 #include <vector>
 
