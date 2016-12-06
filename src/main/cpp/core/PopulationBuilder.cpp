@@ -18,7 +18,7 @@
  * Initialize populations.
  */
 
-#include "populationBuilder.h"
+#include "PopulationBuilder.h"
 
 #include "core/Population.h"
 #include "util/StringUtils.h"

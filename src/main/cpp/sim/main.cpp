@@ -61,7 +61,7 @@ int main(int argc, char** argv)
                 cout << "Current directory:   " << InstallDirs::GetCurrentDir().string() << endl;
                 cout << "Install directory:   " << InstallDirs::GetRootDir().string() << endl;
                 cout << "Config  directory:   " << InstallDirs::GetConfigDir().string() << endl;
-                cout << "Data    directory:   " << InstallDirs::GetConfigDir().string() << endl;
+                cout << "Data    directory:   " << InstallDirs::GetDataDir().string() << endl;
 
                 // -----------------------------------------------------------------------------------------
                 // Check execution environment.

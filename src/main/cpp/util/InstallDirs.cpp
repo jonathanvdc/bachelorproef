@@ -81,8 +81,8 @@ void InstallDirs::Initialize()
                         }
 		#elif (BOOST_OS_LINUX)
 			char exePath[PATH_MAX];
-			size_t len = ::readlink("/proc/self/exe", exePath, sizeof(exePath));
-		        if (size > 0 && size != sizeof(path)) {
+			size_t size = ::readlink("/proc/self/exe", exePath, sizeof(exePath));
+		        if (size > 0 && size != sizeof(exePath)) {
                                 exec_name = boost::filesystem::system_complete(exePath);
                                 exec_path = exec_name.parent_path();
 		        }
@@ -128,7 +128,7 @@ void InstallDirs::Initialize()
 
 		// Really make sure everything is ok
                 const bool exists = boost::filesystem::is_directory(exec_path);
-                g_root_dir = (exists) ? boost::filesystem::system_complete(exec_path).parent_path() : boost::filesystem::path();
+                g_root_dir = (exists) ? boost::filesystem::system_complete(exec_path) : boost::filesystem::path();
 	}
 
 	//------- Exec name
@@ -137,20 +137,23 @@ void InstallDirs::Initialize()
 	}
         //------- Bin Dir
         {
-                g_bin_dir = g_root_dir / "bin";
-                const bool exists = boost::filesystem::exists(g_bin_dir);
+                g_bin_dir = g_root_dir;
+                g_bin_dir /= "bin";
+                const bool exists = boost::filesystem::is_directory(g_bin_dir);
                 g_bin_dir = (exists) ? g_bin_dir : boost::filesystem::path();
         }
 	//------- Config Dir
 	{
-                g_config_dir = g_root_dir / "config";
+                g_config_dir = g_root_dir;
+                g_config_dir /= "config";
                 const bool exists = boost::filesystem::exists(g_config_dir);
                 g_config_dir = (exists) ? g_config_dir : boost::filesystem::path();
 	}
 	//------- Data Dir
 	{
-                g_data_dir = g_root_dir / "data";
-                const bool exists = boost::filesystem::exists(g_data_dir);
+                g_data_dir = g_root_dir;
+                g_data_dir /= "data";
+                const bool exists = boost::filesystem::is_directory(g_data_dir);
                 g_data_dir = (exists) ? g_data_dir : boost::filesystem::path();
 	}
 	//------- Current Dir
