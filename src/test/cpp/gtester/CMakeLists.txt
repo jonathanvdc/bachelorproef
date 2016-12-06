@@ -19,41 +19,32 @@
 #  Copyright 2015, Willem L, Stijven S & Broeckhove J
 #############################################################################
 
+
 #============================================================================
-# Build & install gtester
+# Build & install the (OpenMP enabled if OpenMP available) executable.
 #============================================================================
 set( EXEC       gtester     )
-set( EXEC_OMP   gtester_omp )
 set( SRC
 		main.cpp
 		BatchDemos.cpp
 )
 
-#------------------------------ non omp gtester ------------------------------
 add_executable(${EXEC}   ${SRC})
-target_link_libraries( ${EXEC}   indismo_lib ${LIBS} gtest pthread ${TRNG_LIBRARY})  
+target_link_libraries( ${EXEC}   indismo_lib ${LIBS} gtest pthread)  
 install(TARGETS ${EXEC}  DESTINATION   ${BIN_INSTALL_LOCATION})
 
-#------------------------------ omp gtester ----------------------------------
-add_executable(${EXEC_OMP}   ${SRC})
-set_target_properties(${EXEC_OMP} PROPERTIES COMPILE_FLAGS "-fopenmp" LINK_FLAGS "-fopenmp")
-target_link_libraries( ${EXEC_OMP}  indismo_lib_omp ${LIBS} gtest_omp pthread ${TRNG_LIBRARY})  
-install(TARGETS ${EXEC_OMP}  DESTINATION   ${BIN_INSTALL_LOCATION})
-
-#------------------------------ run test ------------------------------------
+#============================================================================
+# Define tests.
+#============================================================================
 add_test( NAME  ${EXEC} 
 		WORKING_DIRECTORY  ${TESTS_DIR}
 		COMMAND   ${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_LOCATION}/${EXEC} 
 			--gtest_filter=*:-*Perf*.* --gtest_output=xml:reports/${EXEC}.xml 
 )
-add_test( NAME  ${EXEC_OMP}
-		WORKING_DIRECTORY  ${TESTS_DIR}
-		COMMAND   ${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_LOCATION}/${EXEC_OMP} 
-			--gtest_filter=*:-*Perf*.* --gtest_output=xml:reports/${EXEC_OMP}.xml 
-)
 
-#------------------------------ clean up -----------------------------------
-unset( EXEC_OMP  )	
+#============================================================================
+# Clean up.
+#============================================================================
 unset( EXEC      )
 unset( SRC       )
 

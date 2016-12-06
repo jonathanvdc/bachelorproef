@@ -56,6 +56,14 @@ message( STATUS "------> Boost_VERSION               : ${Boost_VERSION} "       
 message( STATUS "------> Boost_INCLUDE_DIRS          : ${Boost_INCLUDE_DIRS} "        )
 message( STATUS "------> Boost_Libraries             : ${Boost_LIBRARIES} "           )
 #
+message( STATUS " " )
+if( NOT SIMPT_FORCE_NO_OPENMP )
+	message( STATUS "------> HAVE_CHECKED_OpenMP         : ${HAVE_CHECKED_OpenMP}"     )
+	message( STATUS "------> HAVE_FOUND_OpenMP           : ${HAVE_FOUND_OpenMP}"       )
+	message( STATUS "------> OpenMP_C_FLAGS              : ${OpenMP_C_FLAGS}"          )
+	message( STATUS "------> OpenMP_CXX_FLAGS            : ${OpenMP_CXX_FLAGS} "       )
+endif()
+#
 message( STATUS "" )
 if ( STRIDE_INCLUDE_DOC )
 	message( STATUS "------> DOXYGEN_FOUND               : ${DOXYGEN_FOUND} "              )
