@@ -22,7 +22,6 @@
 
 #include "ClusterType.h"
 #include "sim/WorldEnvironment.h"
-#include "util/TrackIndexCase.h"
 #include "spdlog/spdlog.h"
 
 #include <cstddef>
@@ -134,11 +133,7 @@ public:
 	                const Person* p2, ClusterType cluster_type,
 	                std::shared_ptr<const WorldEnvironment> world_environ);
 
-	/**
-	 * Set this person as index case.
-	 *
-	 * @note StartInfection() is not used since this method can be adapted to estimate R0
-	 */
+	/// Set this person as index case.
 	void SetIndexCase()
 	{
 		m_susceptible 	= false;
@@ -146,20 +141,13 @@ public:
 		ResetDiseaseCounter();
 	}
 
-	/**
-	 * Start infection.
-	 *
-	 * @note To estimate R0, we need to track only the index case(s) so secondary cases are not infectious.
-	 */
+	/// Start infection.
 	void StartInfection()
 	{
 		assert(IsSusceptible() && "StartInfection: IsSusceptible() fails.");
 		m_susceptible 	= false;
 		m_infected 	= true;
 		ResetDiseaseCounter();
-                if (TRACK_INDEX_CASE) {
-                        StopInfection();
-                }
 	}
 
 	/// Stop the infection.

@@ -19,9 +19,11 @@
  */
 
 #include "Cluster.h"
+#include "LogMode.h"
 #include "Person.h"
 #include "sim/WorldEnvironment.h"
-#include "LogMode.h"
+#include "util/TrackIndexCase.h"
+
 
 #include "spdlog/spdlog.h"
 #include <cstddef>
@@ -103,6 +105,9 @@ void Cluster::Update<LogMode::None>(shared_ptr<ContactHandler> contact_handler, 
                                                         auto p2 = m_members[i_contact].first;
                                                         if ((*contact_handler)(age1, ToString(m_cluster_type), cluster_size)) {
                                                                 p2->StartInfection();
+                                                                if (TRACK_INDEX_CASE) {
+                                                                        p2->StopInfection();
+                                                                }
                                                         }
                                                 }
                                         }
@@ -138,6 +143,9 @@ void Cluster::Update<LogMode::Transmissions>(shared_ptr<ContactHandler> contact_
                                                                 // log transmission
                                                                 m_members[i_infected].first->LogTransmission(m_logger, p2, m_cluster_type, sim_state);
                                                                 p2->StartInfection();
+                                                                if (TRACK_INDEX_CASE) {
+                                                                        p2->StopInfection();
+                                                                }
                                                         }
                                                 }
                                         }
@@ -174,10 +182,16 @@ void Cluster::Update<LogMode::Contacts>(shared_ptr<ContactHandler> contact_handl
                                                         if (p1->IsInfectious() && p2->IsSusceptible()) {
                                                                 infecter = 1;
                                                                 p2->StartInfection();
+                                                                if (TRACK_INDEX_CASE) {
+                                                                        p2->StopInfection();
+                                                                }
                                                         }
                                                         else if (p2->IsInfectious() && p1->IsSusceptible()) {
                                                                 infecter = 2;
                                                                 p1->StartInfection();
+                                                                if (TRACK_INDEX_CASE) {
+                                                                        p1->StopInfection();
+                                                                }
                                                         }
                                                         //TODO log transmission?
                                                 }*/
