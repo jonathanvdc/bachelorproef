@@ -27,17 +27,17 @@ namespace indismo {
 /// Enumerates the cluster types.
 enum class ClusterType
 {
-	Household, School, Work, HomeDistrict, DayDistrict
+	Household, School, Work, HomeDistrict, DayDistrict, Null
 };
 
 /// Converts a ClusterType value to corresponding name.
 std::string ToString(ClusterType w);
 
 /// Check whether string is name of a ClusterType value.
-bool IsClusterType(std::string s);
+bool IsClusterType(const std::string& s);
 
 /// Converts a string with name to ClusterType value.
-ClusterType ToClusterType(std::string s);
+ClusterType ToClusterType(const std::string& s);
 
 } // namespace
 

@@ -7,10 +7,10 @@
 	"r0":[1.1, 1.25, 1.4, 1.8, 3],
 	"seeding_rate":[0.0001],
 	"immunity_rates": [0.1],
-	"population_file":["./data/alaska_synt_pop_sorted.csv"],
+	"population_file":["alaska_synt_pop_sorted.csv"],
 	"num_days":100,
 	"output_tag":"ar_alaska",
-	"disease_config_file":"./config/disease_config_influenza.xml",
+	"disease_config_file":"disease_config_influenza.xml",
 	"generate_person_file":0,
 	"num_participants_survey":0
 }

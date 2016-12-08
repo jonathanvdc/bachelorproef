@@ -37,6 +37,15 @@ namespace indismo {
 
 using namespace std;
 
+Cluster::Cluster(std::size_t cluster_id, std::string cluster_type)
+        : m_cluster_id(cluster_id), m_index_immune(0)
+{
+        m_cluster_type = IsClusterType(cluster_type) ?
+                ToClusterType(cluster_type)
+                : throw std::runtime_error(std::string(__func__) + "> Problem with cluster_type" + cluster_type);
+        m_logger = spdlog::get("contact_logger");
+}
+
 tuple<bool, size_t> Cluster::SortMembers()
 {
         bool infectious_cases = false;

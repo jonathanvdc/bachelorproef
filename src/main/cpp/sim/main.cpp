@@ -46,6 +46,8 @@ using namespace TCLAP;
 using namespace indismo;
 using namespace output;
 using namespace util;
+using namespace boost::filesystem;
+using namespace boost::property_tree;
 
 /// Main program of the indismo2 simulator.
 int main(int argc, char** argv)
@@ -67,39 +69,46 @@ int main(int argc, char** argv)
                 // Check execution environment.
                 // -----------------------------------------------------------------------------------------
 	        if ( InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0 ) {
-	                throw runtime_error("Current directory is not install root! Aborting.");
+	                throw runtime_error(string(__func__) + "> Current directory is not install root! Aborting.");
 	        }
                 if ( InstallDirs::GetConfigDir().empty() ) {
-                        throw runtime_error("Config dir not present! Aborting.");
+                        throw runtime_error(string(__func__) + "Config dir not present! Aborting.");
                 }
                 if ( InstallDirs::GetDataDir().empty() ) {
-                        throw runtime_error("Data dir not present! Aborting.");
+                        throw runtime_error(string(__func__) + "> Data dir not present! Aborting.");
                 }
 
 		// -----------------------------------------------------------------------------------------
 		// Parse command line.
 		// -----------------------------------------------------------------------------------------
 		CmdLine cmd("indismo", ' ', "3.0", false);
-
-		ValueArg<string> 	config_file_Arg(
-		"c", "config_file", "Config File", false, "run_config_default.xml", "CONFIGURATION FILE", cmd);
-
+		ValueArg<string>  config_file_Arg("c", "config_file", "Config File", false,
+		                                "run_config_default.xml", "CONFIGURATION FILE", cmd);
 		cmd.parse(argc, argv);
 
 		// -----------------------------------------------------------------------------------------
 		// Parse configuration file.
 		// -----------------------------------------------------------------------------------------
-		boost::property_tree::ptree pt_config;
-		const string config_file = (InstallDirs::GetConfigDir() /= config_file_Arg.getValue()).string();
-		read_xml(config_file, pt_config);
+		ptree pt_config;
+		{
+		        const auto file_name = config_file_Arg.getValue();
+                        const auto file_path = InstallDirs::GetConfigDir() /= file_name;
+                        if ( !is_regular_file(file_path) ) {
+                                throw runtime_error(string(__func__)
+                                        + ">Config file " + file_path.string() + " not present. Aborting.");
+                        }
+                        read_xml(file_path.string(), pt_config);
+                        cout << "Configuration file:  " << file_path << endl;
+		}
 
 		// -----------------------------------------------------------------------------------------
-		// Set output path.
+		// Set output path prefix.
 		// -----------------------------------------------------------------------------------------
-		string output_prefix = pt_config.get<string>("run.output_prefix");
+		auto output_prefix = pt_config.get<string>("run.output_prefix", "");
 		if (output_prefix.length() == 0) {
 			output_prefix = TimeStamp().ToTag();
 		}
+                cout << "Project output tag:  " << output_prefix << endl;
 
 		// -----------------------------------------------------------------------------------------
 		// Set additional run configurations.
@@ -110,20 +119,13 @@ int main(int argc, char** argv)
 
 		// -----------------------------------------------------------------------------------------
 		// Create logger
-		// Transmissions: 		[TRANSMISSION] <infecterID> <infectedID> <clusterID> <day>
-		// General contacts: 	[CNT] <person1ID> <person1AGE> <person2AGE>  <at_home> <at_work> <at_school> <at_other>
+		// Transmissions:     [TRANSMISSION] <infecterID> <infectedID> <clusterID> <day>
+		// General contacts:  [CNT] <person1ID> <person1AGE> <person2AGE>  <at_home> <at_work> <at_school> <at_other>
 		// -----------------------------------------------------------------------------------------
 		spdlog::set_async_mode(1048576);
 		auto file_logger = spdlog::rotating_logger_mt("contact_logger", output_prefix + "_logfile",
 		                        std::numeric_limits<size_t>::max(),  std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
-
-		// -----------------------------------------------------------------------------------------
-		// Print output to command line.
-		// -----------------------------------------------------------------------------------------
-		cout << "Project output tag:  " << output_prefix << endl;
-		cout << "Configuration file:  " << config_file << endl;
-		cout << endl << endl;
 
 		// -----------------------------------------------------------------------------------------
 		// Run the simulation.
@@ -134,7 +136,7 @@ int main(int argc, char** argv)
 
 		// Run
 		Stopwatch<> run_clock("run_clock");
-		unsigned int num_days = pt_config.get<unsigned int>("run.num_days");
+		const unsigned int num_days = pt_config.get<unsigned int>("run.num_days");
 		vector<unsigned int> cases(num_days);
 		for (unsigned int i = 0; i < num_days; i++) {
 			run_clock.Start();
@@ -166,7 +168,8 @@ int main(int argc, char** argv)
 		// -----------------------------------------------------------------------------------------
 		// Print final message to command line.
 		// -----------------------------------------------------------------------------------------
-                cerr << "  run_time: " << run_clock.ToString()
+		cout << endl << endl;
+                cout << "  run_time: " << run_clock.ToString()
                         << "  -- total time: " << total_clock.ToString() << endl << endl;
 		cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
 	}

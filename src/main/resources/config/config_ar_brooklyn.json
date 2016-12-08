@@ -6,11 +6,11 @@
 	"r0":[1.1, 1.25, 1.4, 1.8, 3],
 	"seeding_rate":[0.0001],
 	"immunity_rates": [0.1],
-	"population_file":["./data/brooklyn_synt_pop_sorted.csv"],
+	"population_file":["brooklyn_synt_pop_sorted.csv"],
 	"threads":[0],
 	"num_days":100,
 	"output":"ar_brooklyn",
-	"disease_config_file":"./config/disease_config_influenza.xml",
+	"disease_config_file":"disease_config_influenza.xml",
 	"generate_person_file":0,
 	"num_participants_survey":0
 }

@@ -23,6 +23,7 @@
 #include <boost/algorithm/string.hpp>
 #include <map>
 #include <string>
+#include <iostream>
 
 using namespace std;
 using boost::to_upper;
@@ -36,15 +37,17 @@ map<ClusterType, string> g_cluster_type_name {
                 make_pair(ClusterType::School,         "school"),
                 make_pair(ClusterType::Work,           "work"),
                 make_pair(ClusterType::HomeDistrict,   "home_district"),
-                make_pair(ClusterType::DayDistrict,    "day_district")
+                make_pair(ClusterType::DayDistrict,    "day_district"),
+                make_pair(ClusterType::Null,           "null")
 };
 
 map<string, ClusterType> g_name_cluster_type {
                 make_pair("HOUSEHOLD",            ClusterType::Household),
                 make_pair("SCHOOL",               ClusterType::School),
                 make_pair("WORK",                 ClusterType::Work),
-                make_pair("HOME_DISRICT",         ClusterType::HomeDistrict),
-                make_pair("DAY_DISTRICT",         ClusterType::DayDistrict)
+                make_pair("HOME_DISTRICT",        ClusterType::HomeDistrict),
+                make_pair("DAY_DISTRICT",         ClusterType::DayDistrict),
+                make_pair("NULL",                 ClusterType::Null)
 };
 
 }
@@ -53,23 +56,21 @@ namespace indismo {
 
 string ToString(ClusterType c)
 {
-	string ret = "Unknown";
-	if (g_cluster_type_name.count(c) == 1)  {
-		ret = g_cluster_type_name[c];
-	}
-	return ret;
+	return (g_cluster_type_name.count(c) == 1)  ? g_cluster_type_name[c] : "Null";
 }
 
-bool IsClusterType(string s)
+bool IsClusterType(const string& s)
 {
-        to_upper(s);
-        return (g_name_cluster_type.count(s) == 1);
+        std::string t {s};
+        to_upper(t);
+        return (g_name_cluster_type.count(t) == 1);
 }
 
-ClusterType ToClusterType(string s)
+ClusterType ToClusterType(const string& s)
 {
-        to_upper(s);
-	return g_name_cluster_type[s];
+        std::string t {s};
+        to_upper(t);
+        return (g_name_cluster_type.count(s) == 1) ? g_name_cluster_type[s] : ClusterType::Null;
 }
 
 } // namespace

@@ -21,12 +21,14 @@
 #include "PopulationBuilder.h"
 
 #include "core/Population.h"
-#include "util/StringUtils.h"
+#include "util/InstallDirs.h"
 #include "util/Random.h"
+#include "util/StringUtils.h"
 
 #include "spdlog/spdlog.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/filesystem.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -37,19 +39,22 @@
 namespace indismo {
 
 using namespace std;
+using namespace boost::filesystem;
+using namespace boost::property_tree;
 
-bool PopulationBuilder::Build(shared_ptr<Population> population, const boost::property_tree::ptree& pt_config)
+bool PopulationBuilder::Build(shared_ptr<Population> population,
+                        const boost::property_tree::ptree& pt_config,
+                        const boost::property_tree::ptree& pt_disease)
 {
-        bool status = true;
-
+        //------------------------------------------------
+        // setup.
+        //------------------------------------------------
         const string population_file      = pt_config.get<string>("run.population_file");
         const double seeding_rate         = pt_config.get<double>("run.seeding_rate");
         const double immunity_rate        = pt_config.get<double>("run.immunity_rate");
         const unsigned int rng_seed       = pt_config.get<double>("run.rng_seed");
         const string disease_config_file  = pt_config.get<string>("run.disease_config_file");
 
-        boost::property_tree::ptree pt_disease;
-        read_xml(disease_config_file, pt_disease);
         vector<double> start_infectiousness = GetDistribution(pt_disease,"disease.start_infectiousness");
         vector<double> start_symptomatic    = GetDistribution(pt_disease,"disease.start_symptomatic");
         vector<double> time_infectious      = GetDistribution(pt_disease,"disease.time_infectious");
@@ -58,20 +63,23 @@ bool PopulationBuilder::Build(shared_ptr<Population> population, const boost::pr
         //------------------------------------------------
         // Check input.
         //------------------------------------------------
-        if (seeding_rate > 1 || immunity_rate > 1 || seeding_rate + immunity_rate > 1) {
-                status = false;
-        }
-        if (seeding_rate > 1 || immunity_rate > 1 || seeding_rate + immunity_rate > 1) {
-                status = false;
-        }
+        bool status = (seeding_rate <= 1) && (immunity_rate <= 1) && ((seeding_rate + immunity_rate) <= 1);
 
         //------------------------------------------------
         // Add persons to population.
         //------------------------------------------------
         if (status) {
                 status = false;
+                const auto file_name = population_file;
+                const auto file_path = InstallDirs::GetDataDir() /= file_name;
+                if ( !is_regular_file(file_path) ) {
+                        throw runtime_error(string(__func__)
+                                + "> Population file " + file_path.string() + " not present. Aborting.");
+                }
+
                 ifstream popFile;
-                popFile.open(population_file);
+                popFile.open(file_path.string());
+
                 if (popFile.is_open()) {;
                         util::Random rng_disease(rng_seed); // random numbers for disease characteristics
                         string line;
@@ -177,7 +185,7 @@ bool PopulationBuilder::Build(shared_ptr<Population> population, const boost::pr
 }
 
 
-vector<double> PopulationBuilder::GetDistribution(boost::property_tree::ptree& pt_root, string xml_tag)
+vector<double> PopulationBuilder::GetDistribution(const boost::property_tree::ptree& pt_root, string xml_tag)
 {
         vector<double> values;
         boost::property_tree::ptree subtree = pt_root.get_child(xml_tag);

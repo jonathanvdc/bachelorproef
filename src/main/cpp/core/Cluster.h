@@ -31,6 +31,7 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -43,12 +44,7 @@ class Cluster
 {
 public:
 	/// Constructor
-	Cluster(std::size_t cluster_id, std::string cluster_type)
-                : m_cluster_id(cluster_id), m_index_immune(0)
-	{
-	        m_cluster_type = IsClusterType(cluster_type) ? ToClusterType(cluster_type) : throw std::runtime_error("problem with cluster_type");
-		m_logger = spdlog::get("contact_logger");
-	}
+	Cluster(std::size_t cluster_id, std::string cluster_type);
 
 	/// Add the given Person to the Cluster.
 	void AddPerson(Person* p)

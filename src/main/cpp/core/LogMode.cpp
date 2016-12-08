@@ -34,13 +34,15 @@ using indismo::LogMode;
 map<LogMode, string> g_cluster_type_name {
                 make_pair(LogMode::None,             "None"),
                 make_pair(LogMode::Transmissions,    "Transmissions"),
-                make_pair(LogMode::Contacts,         "Contacts")
+                make_pair(LogMode::Contacts,         "Contacts"),
+                make_pair(LogMode::Null,             "Null")
 };
 
 map<string, LogMode> g_name_cluster_type {
                 make_pair("NONE",            LogMode::None),
                 make_pair("TRANSMISSIONS",   LogMode::Transmissions),
-                make_pair("CONTACTS",        LogMode::Contacts)
+                make_pair("CONTACTS",        LogMode::Contacts),
+                make_pair("NULL",        LogMode::Null)
 };
 
 }
@@ -49,22 +51,21 @@ namespace indismo {
 
 string ToString(LogMode l)
 {
-	string ret = "Unknown";
-	if (g_cluster_type_name.count(l) == 1)  {
-		ret = g_cluster_type_name[l];
-	}
-	return ret;
+	return (g_cluster_type_name.count(l) == 1) ? g_cluster_type_name[l] : "Null";
 }
 
-bool IsLogMode(string s)
+bool IsLogMode(const string& s)
 {
-        to_upper(s);
-        return (g_name_cluster_type.count(s) == 1);
+        std::string t {s};
+        to_upper(t);
+        return (g_name_cluster_type.count(t) == 1);
 }
 
-LogMode ToLogMode(string s)
+LogMode ToLogMode(const string& s)
 {
-	return g_name_cluster_type[s];
+        std::string t {s};
+        to_upper(t);
+	return (g_name_cluster_type.count(t) == 1) ? g_name_cluster_type[s] : LogMode::Null;
 }
 
 } // namespace

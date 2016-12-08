@@ -6,10 +6,10 @@
 	"r0":[12],
 	"seeding_rate":[0.0001],
 	"immunity_rate": [0.9],
-	"population_file":["./data/flanders500_pop_data_random.csv"],
+	"population_file":["flanders500_pop_data_random.csv"],
 	"num_days":300,
 	"output_tag":"measles_with_holidays",
-	"disease_config_file":"./config/disease_config_measles.xml",
+	"disease_config_file":"disease_config_measles.xml",
 	"generate_person_file":0,
     "num_participants_survey":500000
 }

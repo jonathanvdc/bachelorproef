@@ -45,13 +45,14 @@ public:
 	 * @param population		    Pointer to the initialized population.
 	 * @param pt_config				The property_tree with configuration settings.
 	 */
-	static bool Build(std::shared_ptr<Population> population, const boost::property_tree::ptree& pt_config);
+	static bool Build(std::shared_ptr<Population> population,
+	        const boost::property_tree::ptree& pt_config, const boost::property_tree::ptree& pt_disease);
 
 private:
 	/**
 	 *
 	 */
-	static std::vector<double> GetDistribution(boost::property_tree::ptree& pt_root, std::string xml_tag);
+	static std::vector<double> GetDistribution(const boost::property_tree::ptree& pt_root, std::string xml_tag);
 
 	/**
 	 *

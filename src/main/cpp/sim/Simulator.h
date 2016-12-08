@@ -66,9 +66,6 @@ private:
 	/// Initialize the clusters.
 	void InitializeClusters();
 
-	/// Initialize the population
-	void InitializePopulation(const boost::property_tree::ptree& pt_config);
-
 	/// Get average size of given clusters
 	double GetAverageClusterSize(const std::vector<Cluster>& clusters);
 

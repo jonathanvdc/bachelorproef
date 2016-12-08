@@ -7,10 +7,10 @@
 	"r0":[1.1],
 	"seeding_rate":[0.0001],
 	"immunity_rate": [0.1],
-	"population_file":["./data/flanders500_pop_data_random.csv"],
+	"population_file":["flanders500_pop_data_random.csv"],
 	"num_days":1,
 	"output_tag":"default_contacts",
-	"disease_config_file":"./config/disease_config_influenza.xml",
+	"disease_config_file":"disease_config_influenza.xml",
 	"generate_person_file":0,
 	"num_participants_survey":10000
 }

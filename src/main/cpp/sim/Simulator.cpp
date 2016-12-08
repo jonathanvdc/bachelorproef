@@ -22,7 +22,11 @@
 #include "core/LogMode.h"
 #include "core/Population.h"
 #include "core/PopulationBuilder.h"
+#include "util/InstallDirs.h"
 
+#include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include <omp.h>
 #include <iostream>
 #include <stdexcept>
@@ -30,6 +34,8 @@
 namespace indismo {
 
 using namespace std;
+using namespace boost::filesystem;
+using namespace boost::property_tree;
 
 Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	: m_num_threads(1U), m_population(make_shared<Population>())
@@ -46,14 +52,24 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 
 	// get log level
 	const string l = pt_config.get<string>("run.log_level", "None");
-	m_log_level = IsLogMode(l) ? ToLogMode(l) : throw runtime_error("Invalid input for LogMode");
+	m_log_level = IsLogMode(l) ?
+	                ToLogMode(l)
+	                : throw runtime_error(std::string(__func__) + "> Invalid input for LogMode");
 
-	// R0 and transmission rate
-	// use linear model fitted to simulation data: Expected(R0) = (b0+b1*transm_rate)
-	const string disease_config_file = pt_config.get<string>("run.disease_config_file");
-	boost::property_tree::ptree pt_disease;
-	read_xml(disease_config_file, pt_disease);
+	// Get the disease configuration
+	ptree pt_disease;
+	{
+	        const auto file_name = pt_config.get<string>("run.disease_config_file");
+	        const auto file_path = InstallDirs::GetConfigDir() /= file_name;
+                if ( !is_regular_file(file_path) ) {
+                        throw runtime_error(std::string(__func__)
+                                + ">Disease file " + file_path.string() + " not present. Aborting.");
+                }
+	        read_xml(file_path.string(), pt_disease);
+	}
 
+        // R0 and transmission rate
+        // use linear model fitted to simulation data: Expected(R0) = (b0+b1*transm_rate)
 	const double r0	  = pt_config.get<double>("run.r0");
 	const double b0   = pt_disease.get<double>("disease.transmission.b0");
 	const double b1   = pt_disease.get<double>("disease.transmission.b1");
@@ -64,7 +80,8 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 				pt_config.get<double>("run.rng_seed"), m_num_threads, i));
 	}
 
-	InitializePopulation(pt_config);
+	// Build populaion and initialize clusters.
+	PopulationBuilder::Build(m_population, pt_config, pt_disease);
 	InitializeClusters();
 
 	// Calculate average cluster sizes
@@ -73,10 +90,17 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	double avg_day_cluster_size   = GetAverageClusterSize(m_day_clusters);
 	double avg_day_district_size  = GetAverageClusterSize(m_day_districts);
 
-	// Initialize contact matrices for each cluster type
-	boost::property_tree::ptree pt_contacts;
-	string age_contact_matrix_file = pt_config.get("run.age_contact_matrix_file", "./config/contact_matrix.xml");
-	read_xml(age_contact_matrix_file, pt_contacts);
+	// Get the contact configuration to initialize contact matrices for each cluster type
+	ptree pt_contacts;
+	{
+	        const auto file_name = pt_config.get("run.age_contact_matrix_file", "contact_matrix.xml");
+                const auto file_path  = InstallDirs::GetConfigDir() /= file_name;
+                if ( !is_regular_file(file_path) ) {
+                        throw runtime_error(std::string(__func__)
+                                + "> Contact file " + file_path.string() + " not present. Aborting.");
+                }
+                read_xml(file_path.string(), pt_contacts);
+	}
 
 	// Household contact matrices
 	vector<double> household_contact_nums = GetMeanNumbersOfContacts("household", pt_contacts);
@@ -243,11 +267,6 @@ void Simulator::InitializeClusters()
 	}
 }
 
-void Simulator::InitializePopulation(const boost::property_tree::ptree& pt_config)
-{
-	PopulationBuilder::Build(m_population, pt_config);
-}
-
 void Simulator::RunTimeStep()
 {
 		UpdateContacts(m_households);
@@ -291,7 +310,7 @@ void Simulator::UpdateContacts(vector<Cluster>& clusters)
                                 case LogMode::None:
                                         clusters[cluster_i].Update<LogMode::None>(m_contact_handler[thread_i], m_state);
                                         break;
-                                default: throw runtime_error("Logging screwed up!");
+                                default: throw runtime_error(std::string(__func__) + "Logging screwed up!");
 		        }
 		}
 	}

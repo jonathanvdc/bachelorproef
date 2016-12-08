@@ -70,7 +70,8 @@ public:
 	bool IsSchoolHoliday() const { return (std::find(m_school_holidays.begin(), m_school_holidays.end(), m_date) != m_school_holidays.end()); }
 
 private:
-	void InitializeHolidays(std::string holidays_file);
+	///
+	void InitializeHolidays(const boost::property_tree::ptree& pt_config);
 
 private:
 	std::size_t                            m_day;                     ///< The current simulation day

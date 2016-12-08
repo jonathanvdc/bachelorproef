@@ -30,17 +30,17 @@ namespace indismo {
 * \li only contacts where transimission occurs
 * \li all contacts.
 */
-enum class LogMode {None = 0U, Transmissions = 1U, Contacts = 2U};
+enum class LogMode {None = 0U, Transmissions = 1U, Contacts = 2U, Null};
 
 
 /// Converts a LogMode value to corresponding name.
 std::string ToString(LogMode w);
 
 /// Check whether string is name of LogMode value.
-bool IsLogMode(std::string s);
+bool IsLogMode(const std::string& s);
 
 /// Converts a string with name to LogMode value.
-LogMode ToLogMode(std::string s);
+LogMode ToLogMode(const std::string& s);
 
 } // end_of_namespace
 

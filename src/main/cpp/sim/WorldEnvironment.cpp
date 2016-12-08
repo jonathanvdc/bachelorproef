@@ -19,23 +19,24 @@
  */
 
 #include "WorldEnvironment.h"
+#include "util/InstallDirs.h"
 
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
 namespace indismo {
 
 using namespace std;
+using namespace boost::filesystem;
 
 WorldEnvironment::WorldEnvironment(const boost::property_tree::ptree& pt_config) : m_day(0)
 {
 	// Set start date
 	const string start_date = pt_config.get<string>("run.start_date", "2016-01-01");
-	boost::gregorian::date d(boost::gregorian::from_simple_string(start_date));
-	m_date = d;
+	m_date = boost::gregorian::from_simple_string(start_date);
 
 	// Set holidays & school holidays
-	const string holidays_file = pt_config.get<string>("run.holidays_file", "./config/holidays_flanders_2016.json") ;
-	InitializeHolidays(holidays_file);
+	InitializeHolidays(pt_config);
 }
 
 WorldEnvironment::~WorldEnvironment() {}
@@ -47,13 +48,21 @@ void WorldEnvironment::AdvanceDay()
 	m_date = m_date + boost::gregorian::date_duration(1);
 }
 
-void WorldEnvironment::InitializeHolidays(std::string holidays_file)
+void WorldEnvironment::InitializeHolidays(const boost::property_tree::ptree& pt_config)
 {
-	// load json file
+	// Load json file
 	boost::property_tree::ptree pt_holidays;
-	read_json(holidays_file, pt_holidays);
+	{
+	        const auto file_name = pt_config.get<string>("run.holidays_file", "holidays_flanders_2016.json") ;
+	        const auto file_path = InstallDirs::GetConfigDir() /= file_name;
+	        if ( !is_regular_file(file_path) ) {
+	                throw runtime_error(std::string(__func__)
+                                + "Holidays file " + file_path.string() + " not present. Aborting.");
+	        }
+	        read_json(file_path.string(), pt_holidays);
+        }
 
-	// read in holidays
+	// Read in holidays
 	for (int i = 1; i < 13; i++) {
 		const string month = std::to_string(i);
 		const string year = pt_holidays.get<std::string>("year", "2016");

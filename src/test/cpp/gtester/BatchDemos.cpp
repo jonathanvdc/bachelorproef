@@ -78,20 +78,20 @@ protected:
 };
 
 // Default values
-const string         BatchDemos::g_population_file             = "../data/nassau_synt_pop_sorted.csv";
+const string         BatchDemos::g_population_file             = "nassau_synt_pop_sorted.csv";
 const double         BatchDemos::g_r0                          = 1.1;
 const unsigned int   BatchDemos::g_num_days                    = 100U;
 const unsigned int   BatchDemos::g_rng_seed                    = 2015U;
 const double         BatchDemos::g_seeding_rate                = 0.00001;
 const double         BatchDemos::g_immunity_rate               = 0.0;
 const double         BatchDemos::g_transmission_rate           = 0.00003;
-const string         BatchDemos::g_disease_config_file         = "../config/disease_config_influenza.xml";
+const string         BatchDemos::g_disease_config_file         = "disease_config_influenza.xml";
 
 const unsigned int   BatchDemos::g_rng_seed_adapted            = 1U;
 const double         BatchDemos::g_seeding_rate_adapted        = 0.00002;
 const double         BatchDemos::g_immunity_rate_adapted       = 0.1;
 const double         BatchDemos::g_transmission_rate_adapted   = 0.000035;
-const string         BatchDemos::g_disease_config_file_adapted = "../config/disease_config_measles.xml";
+const string         BatchDemos::g_disease_config_file_adapted = "disease_config_measles.xml";
 
 /// map<tranmsmission rate, number of cases>
 const map<string, unsigned int> BatchDemos::g_results {
@@ -105,32 +105,19 @@ const map<string, unsigned int> BatchDemos::g_results {
 
 TEST_P( BatchDemos, RunOnce )
 {
-	const string test_tag = GetParam();
-
 #ifdef _OPENMP
 	// set nb of threads to 1 to reproduce serial execution results
 	omp_set_num_threads(1);
 	omp_set_schedule(omp_sched_dynamic,1);
 #endif
 
-	// Check population file and disease config file
-	// to perform test with the make target: use path ../data/<file name>" (default)
-	// to perform test from the workspace: use path ./data/<file name>
-	string disease_config_file = g_disease_config_file;
-	if(test_tag == "measles"){
-		disease_config_file = g_disease_config_file_adapted;
-	}
-	string population_file = g_population_file;
-	std::ifstream infile(population_file);
-	if(!infile.good()){
-		population_file     = population_file.substr(1,string::npos);
-		disease_config_file = disease_config_file.substr(1,string::npos);
-	}
+	// Prepare the configuration
+        const string test_tag = GetParam();
+	const string disease_config_file = (test_tag != "measles") ? g_disease_config_file : g_disease_config_file_adapted;
 
-	// create pt_config
 	boost::property_tree::ptree pt_config;
 	pt_config.put("run.r0", g_r0);
-	pt_config.put("run.population_file", population_file);
+	pt_config.put("run.population_file", g_population_file);
 	pt_config.put("run.transmission_rate",g_transmission_rate);
 	pt_config.put("run.num_days", g_num_days);
 	pt_config.put("run.rng_seed", g_rng_seed);
@@ -139,26 +126,24 @@ TEST_P( BatchDemos, RunOnce )
 	pt_config.put("run.disease_config_file", disease_config_file);
 
 	// override scenario setting
-	if(test_tag == "default"){
+	if (test_tag == "default"){
 		// do nothing
 	}
-	if(test_tag == "rng_seed"){
+	if (test_tag == "rng_seed"){
 		pt_config.put("run.rng_seed", g_rng_seed_adapted);
 	}
-	if(test_tag == "seeding_rate"){
+	if (test_tag == "seeding_rate"){
 		pt_config.put("run.seeding_rate", g_seeding_rate_adapted);
 	}
-	if(test_tag == "immunity_rate"){
+	if (test_tag == "immunity_rate"){
 		pt_config.put("run.immunity_rate", g_immunity_rate_adapted);
 	}
-	if(test_tag == "transmission_rate"){
+	if (test_tag == "transmission_rate"){
 		pt_config.put("run.transmission_rate", g_transmission_rate_adapted);
 	}
 
-	// Initialize simulator
+	// Initialize simulator and run it.
 	Simulator sim(pt_config);
-
-	// Run simulation
 	cerr << "  starting up: " << test_tag << endl;
 	for(size_t i = 0U; i < g_num_days; i++){
 		sim.RunTimeStep();
@@ -184,27 +169,17 @@ const map<string, unsigned int> BatchDemos::g_results_omp {
 
 TEST_P( BatchDemos, RunOnce_omp )
 {
-	const string test_tag = GetParam();
-
-	// set nb of threads to 4
+	// set nb of threads to 4 and use static scheduling to obtain repeatable results
 	omp_set_num_threads(4);
-	// use static scheduling to obtain repeatable results
 	omp_set_schedule(omp_sched_static,1);
 
-	string disease_config_file = g_disease_config_file;
-	if(test_tag == "measles"){
-		disease_config_file = g_disease_config_file_adapted;
-	}
-	string population_file = g_population_file;
-	std::ifstream infile(population_file);
-	if(!infile.good()){
-		population_file     = population_file.substr(1,string::npos);
-		disease_config_file = disease_config_file.substr(1,string::npos);
-	}
+        // Prepare the configuration
+        const string test_tag = GetParam();
+	const string disease_config_file = (test_tag != "measles") ? g_disease_config_file : g_disease_config_file_adapted;
 
 	// create pt_config
 	boost::property_tree::ptree pt_config;
-	pt_config.put("run.population_file", population_file);
+	pt_config.put("run.population_file", g_population_file);
 	pt_config.put("run.transmission_rate",g_transmission_rate);
 	pt_config.put("run.num_days", g_num_days);
 	pt_config.put("run.rng_seed", g_rng_seed);
@@ -213,29 +188,27 @@ TEST_P( BatchDemos, RunOnce_omp )
 	pt_config.put("run.disease_config_file", disease_config_file);
 
 	// override scenario setting
-	if(test_tag == "default"){
+	if (test_tag == "default"){
 		// do nothing
 	}
-	if(test_tag == "rng_seed"){
+	if (test_tag == "rng_seed"){
 		pt_config.put("run.rng_seed", g_rng_seed_adapted);
 	}
-	if(test_tag == "seeding_rate"){
+	if (test_tag == "seeding_rate"){
 		pt_config.put("run.seeding_rate", g_seeding_rate_adapted);
 	}
-	if(test_tag == "immunity_rate"){
+	if (test_tag == "immunity_rate"){
 		pt_config.put("run.immunity_rate", g_immunity_rate_adapted);
 	}
-	if(test_tag == "transmission_rate"){
+	if (test_tag == "transmission_rate"){
 		pt_config.put("run.transmission_rate", g_transmission_rate_adapted);
 	}
 
 
-	// Initialize simulator
+	// Initialize simulator and run it.
 	Simulator sim(pt_config);
-
-	// Run simulation
 	cerr << "  starting up ..." << endl;
-	for(size_t i = 0U; i < g_num_days; i++){
+	for (size_t i = 0U; i < g_num_days; i++){
 		sim.RunTimeStep();
 	}
 
@@ -245,7 +218,6 @@ TEST_P( BatchDemos, RunOnce_omp )
 	cerr << "  finished:    " << test_tag << endl;
 }
 #endif
-
 
 namespace {
 	string scenarios[] {
