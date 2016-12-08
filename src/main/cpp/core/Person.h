@@ -61,22 +61,47 @@ public:
 	/// Get the age.
 	double GetAge() const { return m_age; }
 
+        /// Get the day cluster id.
+        unsigned int GetDayClusterId() const { return m_day_cluster; }
+
+        /// Get the day neighborhood id.
+        unsigned int GetDayDistrictId() const { return m_day_district; }
+
+        /// Get the disease counter.
+        unsigned int GetDiseaseCounter() const { return m_disease_counter; }
+
+        ///
+        unsigned int GetEndInfectiousness() const { return m_end_infectiousness; }
+
+        ///
+        unsigned int GetEndSymptomatic() const { return m_end_symptomatic; }
+
+        ///
 	char GetGender() const { return m_gender; }
+
+        /// Get the home neighborhood id.
+        unsigned int GetHomeDistrictId() const { return m_home_district; }
 
 	/// Get the household id.
 	unsigned int GetHouseholdId() const { return m_household; }
 
-	/// Get the home neighborhood id.
-	unsigned int GetHomeDistrictId() const { return m_home_district; }
+        ///
+        size_t GetHouseholdSize() const { return m_household_size; }
 
-	/// Get the day cluster id.
-	unsigned int GetDayClusterId() const { return m_day_cluster; }
+        ///
+        unsigned int GetStartInfectiousness() const { return m_start_infectiousness; }
 
-	/// Get the day neighborhood id.
-	unsigned int GetDayDistrictId() const { return m_day_district; }
+        ///
+        unsigned int GetStartSymptomatic() const { return m_start_symptomatic; }
 
-	/// Is this person susceptible?
-	bool IsSusceptible() const { return m_susceptible; }
+        /// Increment the persons disease counter.
+        void IncrementDiseaseCounter() { m_disease_counter++; }
+
+        /// Is this person immune?
+        bool IsImmune() const { return m_immune; }
+
+        /// Check if a person is present today in a given cluster
+        bool IsInCluster(ClusterType c) const;
 
 	/// Is this person infected?
 	bool IsInfected() const { return m_infected; }
@@ -84,54 +109,51 @@ public:
 	/// Is this person infectious?
 	bool IsInfectious() const { return m_infectious; }
 
+        /// Does this person participates in the social contact study?
+        bool IsParticipatingInSurvey() const { return m_is_participant; }
+
+        /// Is this person recovered?
+        bool IsRecovered() const { return m_recovered; }
+
+        /// Is this person susceptible?
+        bool IsSusceptible() const { return m_susceptible; }
+
 	/// Is this person symptomatic?
 	bool IsSymptomatic() const { return m_symptomatic; }
 
-	/// Is this person recovered?
-	bool IsRecovered() const { return m_recovered; }
+        /// Log a contact of this person has with another person.
+        void LogContact(std::shared_ptr<spdlog::logger> logger,
+                        const Person* p2, ClusterType cluster_type,
+                        std::shared_ptr<const WorldEnvironment> world_environ);
 
-	/// Is this person immune?
-	bool IsImmune() const { return m_immune; }
+        ///
+        void LogTransmission(std::shared_ptr<spdlog::logger> logger,
+                        const Person* p2, ClusterType cluster_type,
+                        std::shared_ptr<const WorldEnvironment> world_environ);
 
-	/// Get the disease counter.
-	unsigned int GetDiseaseCounter() const { return m_disease_counter; }
-
-	/// Increment the persons disease counter.
-	void IncrementDiseaseCounter() { m_disease_counter++; }
+        /// Participate in social contact study and log person details
+        void ParticipateInSurvey(std::shared_ptr<spdlog::logger> logger)
+        {
+                m_is_participant = true;
+                logger->info("[PART] {} {} {}", m_id, m_age, m_gender);
+        }
 
 	/// Reset the persons disease counter.
 	void ResetDiseaseCounter() { m_disease_counter = 0U; }
 
 	///
-	unsigned int GetStartInfectiousness() const { return m_start_infectiousness; }
-
-	///
-	unsigned int GetEndInfectiousness() const { return m_end_infectiousness; }
-
-	///
-	unsigned int GetStartSymptomatic() const { return m_start_symptomatic; }
-
-	///
-	unsigned int GetEndSymptomatic() const { return m_end_symptomatic; }
-
-	///
-	size_t GetHouseholdSize() const { return m_household_size; }
-
-	///
 	void SetHouseholdSize(size_t hh_size) { m_household_size = hh_size; }
 
-	/// Check if a person is present today in a given cluster
-	bool IsInCluster(ClusterType c) const;
-
-	/// Log a contact of this person has with another person.
-	void LogContact(std::shared_ptr<spdlog::logger> logger,
-	                const Person* p2, ClusterType cluster_type,
-	                std::shared_ptr<const WorldEnvironment> world_environ);
-
-	///
-	void LogTransmission(std::shared_ptr<spdlog::logger> logger,
-	                const Person* p2, ClusterType cluster_type,
-	                std::shared_ptr<const WorldEnvironment> world_environ);
+        /// Set this persons immune status to TRUE.
+        void SetImmune()
+        {
+                m_immune                = true;
+                m_susceptible           = false;
+                m_start_infectiousness  = 0;
+                m_start_symptomatic     = 0;
+                m_end_infectiousness    = 0;
+                m_end_symptomatic       = 0;
+        }
 
 	/// Set this person as index case.
 	void SetIndexCase()
@@ -158,32 +180,8 @@ public:
 		m_recovered   = true;
 	}
 
-	/// Set this persons immune status to TRUE.
-	void SetImmune()
-	{
-		m_immune                = true;
-		m_susceptible           = false;
-		m_start_infectiousness  = 0;
-		m_start_symptomatic     = 0;
-		m_end_infectiousness    = 0;
-		m_end_symptomatic       = 0;
-	}
-
 	/// Update the health status and presence in clusters.
 	void Update(std::shared_ptr<const WorldEnvironment> world_environ);
-
-	/// Participate in social contact study and log person details
-	void ParticipateInSurvey(std::shared_ptr<spdlog::logger> logger)
-	{
-		m_is_participant = true;
-		logger->info("[PART] {} {} {}", m_id, m_age, m_gender);
-	}
-
-	/// Does this person participates in the social contact study?
-	bool IsParticipatingInSurvey() const
-	{
-		return m_is_participant;
-	}
 
 private:
 	unsigned int    m_id;		       		 ///< The id.

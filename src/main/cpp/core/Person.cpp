@@ -21,7 +21,6 @@
 #include "Person.h"
 
 #include "ClusterType.h"
-
 #include "sim/WorldEnvironment.h"
 #include "util/TrackIndexCase.h"
 #include "spdlog/spdlog.h"
