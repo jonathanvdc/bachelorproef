@@ -62,15 +62,22 @@ public:
 	///
 	void SetClusterType(std::string cluster_type) { m_cluster_type = ToClusterType(cluster_type); }
 
-	/// Update the social contacts between the infectious and susceptible members with sorting on health status.
-	template<LogMode log_level>
-	void Update(std::shared_ptr<ContactHandler> contact_handler, std::shared_ptr<const WorldEnvironment> sim_state);
+	///
+	void Update(std::shared_ptr<ContactHandler> contact_handler,
+	        std::shared_ptr<const WorldEnvironment> sim_state,
+	        LogMode log_mode, bool index_case = false);
 
 private:
-
 	/// Sort members of cluster according to health status
 	/// (order: exposed/infected/recovered, susceptible, immune)
 	std::tuple<bool, size_t> SortMembers();
+
+        /// Update the social contacts between the infectious and susceptible members with sorting on health status.
+        //template<LogMode log_level, typename R0_Policy>
+        //void UpdateContacts(std::shared_ptr<ContactHandler> contact_handler, std::shared_ptr<const WorldEnvironment> sim_state);
+
+        template<LogMode log_level, bool track_index_case>
+        friend class Infector;
 
 	/// Check which members are present in the cluster on the current day
 	void UpdateMemberPresence();

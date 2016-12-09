@@ -267,12 +267,12 @@ void Simulator::InitializeClusters()
 	}
 }
 
-void Simulator::RunTimeStep()
+void Simulator::RunTimeStep(bool track_index_case)
 {
-		UpdateContacts(m_households);
-		UpdateContacts(m_day_clusters);
-		UpdateContacts(m_home_districts);
-		UpdateContacts(m_day_districts);
+		UpdateCluster(m_households,      track_index_case);
+		UpdateCluster(m_day_clusters,    track_index_case);
+		UpdateCluster(m_home_districts,  track_index_case);
+		UpdateCluster(m_day_districts,   track_index_case);
 		for (auto& p : *m_population) {
 			p.Update(m_state);
 		}
@@ -290,28 +290,14 @@ double Simulator::GetAverageClusterSize(const vector<Cluster>& clusters)
 	return total_size / (num_clusters - 1); // '-1' since we're counting from 1 not 0
 }
 
-void Simulator::UpdateContacts(vector<Cluster>& clusters)
+void Simulator::UpdateCluster(vector<Cluster>& clusters, bool track_index_case)
 {
 	#pragma omp parallel
 	{
-		unsigned int thread_i = 0U;
-		#ifdef _OPENMP
-		thread_i = omp_get_thread_num();
-		#endif
+	        const unsigned int thread_i = omp_get_thread_num();
 		#pragma omp for schedule(runtime)
 		for (size_t cluster_i = 0; cluster_i < clusters.size(); cluster_i++) {
-		        switch (m_log_level) {
-                                case LogMode::Contacts:
-                                        clusters[cluster_i].Update<LogMode::Contacts>(m_contact_handler[thread_i], m_state);
-                                        break;
-                                case LogMode::Transmissions:
-                                        clusters[cluster_i].Update<LogMode::Transmissions>(m_contact_handler[thread_i], m_state);
-                                        break;
-                                case LogMode::None:
-                                        clusters[cluster_i].Update<LogMode::None>(m_contact_handler[thread_i], m_state);
-                                        break;
-                                default: throw runtime_error(std::string(__func__) + "Logging screwed up!");
-		        }
+		        clusters[cluster_i].Update(m_contact_handler[thread_i], m_state, m_log_level, track_index_case);
 		}
 	}
 }

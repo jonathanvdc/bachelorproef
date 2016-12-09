@@ -52,8 +52,8 @@ public:
 	/// Get the population.
 	const std::shared_ptr<const Population> GetPopulation() const;
 
-	/// Run one time step.
-	void RunTimeStep();
+	/// Run one time step, computing full simulation (default) or only index case.
+	void RunTimeStep(bool track_index_case = false);
 
 private:
 
@@ -70,7 +70,7 @@ private:
 	double GetAverageClusterSize(const std::vector<Cluster>& clusters);
 
 	/// Update the contacts in the given clusters.
-	void UpdateContacts(std::vector<Cluster>& clusters);
+	void UpdateCluster(std::vector<Cluster>& clusters, bool index_case = false);
 
 private:
 	unsigned int                              m_num_threads;          ///< The number of (OpenMP) threads.

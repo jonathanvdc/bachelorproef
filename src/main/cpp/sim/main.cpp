@@ -33,6 +33,7 @@
 #include "tclap/CmdLine.h"
 
 #include <cmath>
+#include <ios>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -82,12 +83,13 @@ int main(int argc, char** argv)
 		// Parse command line.
 		// -----------------------------------------------------------------------------------------
 		CmdLine cmd("indismo", ' ', "3.0", false);
+		SwitchArg         index_case_Arg("r", "r0", "R0 only", cmd, false);
 		ValueArg<string>  config_file_Arg("c", "config_file", "Config File", false,
 		                                "run_config_default.xml", "CONFIGURATION FILE", cmd);
 		cmd.parse(argc, argv);
 
 		// -----------------------------------------------------------------------------------------
-		// Parse configuration file.
+		// Parse configuration.
 		// -----------------------------------------------------------------------------------------
 		ptree pt_config;
 		{
@@ -98,8 +100,10 @@ int main(int argc, char** argv)
                                         + ">Config file " + file_path.string() + " not present. Aborting.");
                         }
                         read_xml(file_path.string(), pt_config);
-                        cout << "Configuration file:  " << file_path << endl;
+                        cout << "Configuration file:  " << file_path.string() << endl;
 		}
+		const bool track_index_case {index_case_Arg.getValue()};
+		cout << "Setting for track_index_case setting:  " << boolalpha << track_index_case << endl;
 
 		// -----------------------------------------------------------------------------------------
 		// Set output path prefix.
@@ -140,7 +144,7 @@ int main(int argc, char** argv)
 		vector<unsigned int> cases(num_days);
 		for (unsigned int i = 0; i < num_days; i++) {
 			run_clock.Start();
-			sim.RunTimeStep();
+			sim.RunTimeStep(track_index_case);
 			run_clock.Stop();
 			cases[i] = sim.GetInfectedCount();
 		}

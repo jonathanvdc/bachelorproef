@@ -20,6 +20,7 @@
 set(LIB_SRC
     core/Cluster.cpp
     core/ClusterType.cpp
+    core/Infector.cpp
     core/LogMode.cpp
     core/Person.cpp
     core/PopulationBuilder.cpp
@@ -38,22 +39,11 @@ set(MAIN_SRC
 #============================================================================
 # Build & install the (OpenMP enabled if OpenMP available) executable.
 #============================================================================
-add_library(indismo_lib  STATIC  ${LIB_SRC})
+add_library(libstride  OBJECT  ${LIB_SRC})
 #
-add_executable(indismo  ${MAIN_SRC})
-target_link_libraries(indismo   indismo_lib ${LIBS}) 
-install(TARGETS indismo  DESTINATION   ${BIN_INSTALL_LOCATION})
-
-#============================================================================
-# Build & install the (R0) executable.
-#============================================================================
-add_library(indismo_lib_r0  STATIC  ${LIB_SRC})
-set_target_properties(indismo_lib_r0 PROPERTIES COMPILE_DEFINITIONS TRACKINDEXCASE)
-#
-add_executable(indismo_r0  ${MAIN_SRC})
-set_target_properties(indismo_r0 PROPERTIES COMPILE_DEFINITIONS TRACKINDEXCASE)
-target_link_libraries( indismo_r0   indismo_lib_r0 ${LIBS}) 
-install(TARGETS indismo_r0  DESTINATION   ${BIN_INSTALL_LOCATION})
+add_executable(stride  ${MAIN_SRC} $<TARGET_OBJECTS:libstride>)
+target_link_libraries(stride   ${LIBS}) 
+install(TARGETS stride  DESTINATION   ${BIN_INSTALL_LOCATION})
 
 #============================================================================
 # Clean up.

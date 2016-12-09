@@ -1,6 +1,5 @@
 #############################################################################
-#  This file is part of the indismo software. 
-#  It is free software: you can redistribute it and/or modify
+#  This is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by 
 #  the Free Software Foundation, either version 3 of the License, or any 
 #  later version.
@@ -12,11 +11,7 @@
 #  along with the software. If not, see <http://www.gnu.org/licenses/>.
 #  see http://www.gnu.org/licenses/.
 #
-#  Reference: Willem L, Stijven S, Tijskens E, Beutels P, Hens N and 
-#  Broeckhove J. (2015) Optimizing agent-based transmission models for  
-#  infectious diseases, BMC Bioinformatics.
-#
-#  Copyright 2015, Willem L, Stijven S & Broeckhove J
+#  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
 #############################################################################
 
 
@@ -29,8 +24,8 @@ set( SRC
 		BatchDemos.cpp
 )
 
-add_executable(${EXEC}   ${SRC})
-target_link_libraries( ${EXEC}   indismo_lib ${LIBS} gtest pthread)  
+add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride>)
+target_link_libraries( ${EXEC}    ${LIBS} gtest pthread)  
 install(TARGETS ${EXEC}  DESTINATION   ${BIN_INSTALL_LOCATION})
 
 #============================================================================
