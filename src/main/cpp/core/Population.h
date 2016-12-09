@@ -22,6 +22,7 @@
 
 #include "core/Person.h"
 
+#include "spdlog/spdlog.h"
 #include <numeric>
 #include <vector>
 
@@ -62,7 +63,7 @@ public:
         }
 
 	/// Get the Population size.
-	size_t GetSize() const
+	std::size_t GetSize() const
 	{
 		return this->size();
 	}

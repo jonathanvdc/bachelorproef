@@ -22,10 +22,8 @@
 
 #include "ClusterType.h"
 #include "sim/WorldEnvironment.h"
-#include "util/TrackIndexCase.h"
-#include "spdlog/spdlog.h"
 
-#include <cstddef>
+#include <memory>
 
 namespace indismo {
 
@@ -46,28 +44,6 @@ bool Person::IsInCluster(ClusterType c) const
                 default:
                         return false;
         }
-}
-
-void Person::LogContact(shared_ptr<spdlog::logger> logger,
-                const Person* p2, ClusterType cluster_type,
-                shared_ptr<const WorldEnvironment> world_environ)
-{
-        unsigned int home   = (cluster_type == ClusterType::Household);
-        unsigned int work   = (cluster_type == ClusterType::Work);
-        unsigned int school = (cluster_type == ClusterType::School);
-        unsigned int other  = (cluster_type == ClusterType::HomeDistrict || cluster_type == ClusterType::DayDistrict);
-
-        logger->info("[CONT] {} {} {} {} {} {} {} {}",
-                m_id, m_age, p2->GetAge(), home, work, school, other, world_environ->GetSimulationDay());
-
-}
-
-void Person::LogTransmission(shared_ptr<spdlog::logger> logger,
-                const Person* p2, ClusterType cluster_type,
-                shared_ptr<const WorldEnvironment> world_environ)
-{
-        logger->info("[TRAN] {} {} {} {}",
-                m_id, p2->GetId(), ToString(cluster_type), world_environ->GetSimulationDay());
 }
 
 void Person::Update(shared_ptr<const WorldEnvironment> world_environ)

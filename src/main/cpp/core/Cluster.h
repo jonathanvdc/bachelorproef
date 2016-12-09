@@ -72,10 +72,6 @@ private:
 	/// (order: exposed/infected/recovered, susceptible, immune)
 	std::tuple<bool, size_t> SortMembers();
 
-        /// Update the social contacts between the infectious and susceptible members with sorting on health status.
-        //template<LogMode log_level, typename R0_Policy>
-        //void UpdateContacts(std::shared_ptr<ContactHandler> contact_handler, std::shared_ptr<const WorldEnvironment> sim_state);
-
         template<LogMode log_level, bool track_index_case>
         friend class Infector;
 
@@ -86,7 +82,6 @@ private:
 	std::size_t                               m_cluster_id;     ///< The ID of the Cluster (for logging purposes).
 	ClusterType                               m_cluster_type;   ///< The type of the Cluster (for logging purposes).
 	std::size_t                               m_index_immune;   ///< Index of the first immune member in the Cluster.
-	std::shared_ptr<spdlog::logger>           m_logger;         ///< Pointer to the logger used for recording contacts.
 	std::vector<std::pair<Person*, bool>>     m_members;        ///< Container with pointers to the members of the Cluster.
 };
 

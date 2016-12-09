@@ -59,8 +59,8 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	// Get the disease configuration
 	ptree pt_disease;
 	{
-	        const auto file_name = pt_config.get<string>("run.disease_config_file");
-	        const auto file_path = InstallDirs::GetConfigDir() /= file_name;
+	        const auto file_name { pt_config.get<string>("run.disease_config_file") };
+	        const auto file_path { InstallDirs::GetConfigDir() /= file_name };
                 if ( !is_regular_file(file_path) ) {
                         throw runtime_error(std::string(__func__)
                                 + ">Disease file " + file_path.string() + " not present. Aborting.");
@@ -93,8 +93,8 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	// Get the contact configuration to initialize contact matrices for each cluster type
 	ptree pt_contacts;
 	{
-	        const auto file_name = pt_config.get("run.age_contact_matrix_file", "contact_matrix.xml");
-                const auto file_path  = InstallDirs::GetConfigDir() /= file_name;
+	        const auto file_name { pt_config.get("run.age_contact_matrix_file", "contact_matrix.xml") };
+                const auto file_path { InstallDirs::GetConfigDir() /= file_name };
                 if ( !is_regular_file(file_path) ) {
                         throw runtime_error(std::string(__func__)
                                 + "> Contact file " + file_path.string() + " not present. Aborting.");
@@ -141,9 +141,49 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	}
 }
 
+double Simulator::GetAverageClusterSize(const vector<Cluster>& clusters)
+{
+        double total_size = 0;
+        double num_clusters = clusters.size();
+        for (size_t i = 1; i < num_clusters; i++) {
+                total_size += clusters[i].GetSize();
+        }
+
+        return total_size / (num_clusters - 1); // '-1' since we're counting from 1 not 0
+}
+
+vector<double> Simulator::GetContactRates(const vector<double>& mean_nums, unsigned int avg_cluster_size)
+{
+        vector<double> rates;
+        for(double num : mean_nums) {
+                rates.emplace_back(num / avg_cluster_size);
+        }
+        return rates;
+}
+
 unsigned int Simulator::GetInfectedCount() const
 {
 	return m_population->GetInfectedCount();
+}
+
+vector<double> Simulator::GetMeanNumbersOfContacts(string cluster_type,  const boost::property_tree::ptree& pt_contacts)
+{
+        string key = "matrices." + cluster_type;
+        vector<double> meanNums;
+        for(auto& participant: pt_contacts.get_child(key)) {
+                double total_contacts = 0;
+                for (auto& contact: participant.second.get_child("contacts")) {
+                        total_contacts += contact.second.get<double>("rate");
+                }
+
+                meanNums.push_back(total_contacts);
+        }
+        return meanNums;
+}
+
+const shared_ptr<const Population> Simulator::GetPopulation() const
+{
+        return m_population;
 }
 
 unsigned int Simulator::GetPopulationSize() const
@@ -151,34 +191,6 @@ unsigned int Simulator::GetPopulationSize() const
 	return m_population->GetSize();
 }
 
-const shared_ptr<const Population> Simulator::GetPopulation() const
-{
-	return m_population;
-}
-
-vector<double> Simulator::GetContactRates(const vector<double>& mean_nums, unsigned int avg_cluster_size)
-{
-	vector<double> rates;
-	for(double num : mean_nums) {
-		rates.emplace_back(num / avg_cluster_size);
-	}
-	return rates;
-}
-
-vector<double> Simulator::GetMeanNumbersOfContacts(string cluster_type,  const boost::property_tree::ptree& pt_contacts)
-{
-	string key = "matrices." + cluster_type;
-	vector<double> meanNums;
-	for(auto& participant: pt_contacts.get_child(key)) {
-		double total_contacts = 0;
-		for (auto& contact: participant.second.get_child("contacts")) {
-			total_contacts += contact.second.get<double>("rate");
-		}
-
-		meanNums.push_back(total_contacts);
-	}
-	return meanNums;
-}
 
 void Simulator::InitializeClusters()
 {
@@ -214,7 +226,7 @@ void Simulator::InitializeClusters()
 	unsigned int cluster_id = 1;
 
 	for (size_t i = 1; i <= num_households; i++) {
-		m_households.push_back(Cluster(cluster_id, "household"));
+		m_households.emplace_back(Cluster(cluster_id, "household"));
 		cluster_id++;
 	}
 
@@ -222,17 +234,17 @@ void Simulator::InitializeClusters()
 		// Day clusters are initialized as school clusters.
 		// However, when a person older than 24 is added to such a cluster,
 		// the cluster type will be changed to "work".
-		m_day_clusters.push_back(Cluster(cluster_id, "school"));
+		m_day_clusters.emplace_back(Cluster(cluster_id, "school"));
 		cluster_id++;
 	}
 
 	for (size_t i = 1; i <= num_home_districts; i++) {
-		m_home_districts.push_back(Cluster(cluster_id, "home_district"));
+		m_home_districts.emplace_back(Cluster(cluster_id, "home_district"));
 		cluster_id++;
 	}
 
 	for (size_t i = 1; i <= num_day_districts; i++) {
-		m_day_districts.push_back(Cluster(cluster_id, "day_district"));
+		m_day_districts.emplace_back(Cluster(cluster_id, "day_district"));
 		cluster_id++;
 	}
 
@@ -244,8 +256,7 @@ void Simulator::InitializeClusters()
 			m_day_clusters[population[i].GetDayClusterId()].AddPerson(&population[i]);
 			if (m_day_clusters[population[i].GetDayClusterId()].GetClusterType() == "school") {
 				// Check if new person is under 24, otherwise cluster is a workplace
-				size_t age = population[i].GetAge();
-				if (age > 24U) {
+				if (population[i].GetAge() > 24U) {
 					m_day_clusters[population[i].GetDayClusterId()].SetClusterType("work");
 				}
 			}
@@ -277,17 +288,6 @@ void Simulator::RunTimeStep(bool track_index_case)
 			p.Update(m_state);
 		}
 		m_state->AdvanceDay();
-}
-
-double Simulator::GetAverageClusterSize(const vector<Cluster>& clusters)
-{
-	double total_size = 0;
-	double num_clusters = clusters.size();
-	for (size_t i = 1; i < num_clusters; i++) {
-		total_size += clusters[i].GetSize();
-	}
-
-	return total_size / (num_clusters - 1); // '-1' since we're counting from 1 not 0
 }
 
 void Simulator::UpdateCluster(vector<Cluster>& clusters, bool track_index_case)

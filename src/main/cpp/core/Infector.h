@@ -20,23 +20,14 @@
  * Header for the core Cluster class.
  */
 
-#include "ContactHandler.h"
-#include "CLuster.h"
-#include "ClusterType.h"
-#include "Person.h"
-#include "sim/WorldEnvironment.h"
 #include "LogMode.h"
-
-#include "spdlog/spdlog.h"
-#include <cstddef>
-#include <iostream>
 #include <memory>
-#include <stdexcept>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace indismo {
+
+class Cluster;
+class ContactHandler;
+class WorldEnvironment;
 
 /**
  * Represents a location for social contacts, an group of people.
@@ -46,7 +37,7 @@ class Infector
 {
 public:
 	///
-	void operator()(Cluster& cluster,
+	static void Execute(Cluster& cluster,
 	        std::shared_ptr<ContactHandler> contact_handler,
 	        std::shared_ptr<const WorldEnvironment> sim_state);
 };

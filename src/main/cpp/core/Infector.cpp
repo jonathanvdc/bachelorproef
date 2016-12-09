@@ -35,25 +35,71 @@ namespace indismo {
 using namespace std;
 
 //--------------------------------------------------------------------------
-// Primary R0 policy: do nothing i.e. track all cases.
+// Primary R0_POLICY: do nothing i.e. track all cases.
 //--------------------------------------------------------------------------
 template<bool track_index_case = false>
 class R0_POLICY
 {
 public:
-        static void Execute(indismo::Person* p) {}
+        static void Execute(Person* p) {}
 };
 
 //--------------------------------------------------------------------------
-// Specialised R0 policy: track only the index case.
+// Specialized R0_POLICY: track only the index case.
 //--------------------------------------------------------------------------
 template<>
 class R0_POLICY<true>
 {
 public:
-        static void Execute(indismo::Person* p) { p->StopInfection(); }
+        static void Execute(Person* p) { p->StopInfection(); }
 };
 
+//--------------------------------------------------------------------------
+// Primary LOG_POLICY policy, implements LogMode::None.
+//--------------------------------------------------------------------------
+template<LogMode log_level = LogMode::None>
+class LOG_POLICY
+{
+public:
+        static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
+                ClusterType cluster_type, shared_ptr<const WorldEnvironment> environ)
+        {}
+};
+
+//--------------------------------------------------------------------------
+// Specialized LOG_POLICY policy LogMode::Transmissions.
+//--------------------------------------------------------------------------
+template<>
+class LOG_POLICY<LogMode::Transmissions>
+{
+public:
+        static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
+                ClusterType cluster_type, shared_ptr<const WorldEnvironment> environ)
+        {
+                logger->info("[TRAN] {} {} {} {}",
+                       p1->GetId(), p2->GetId(), ToString(cluster_type), environ->GetSimulationDay());
+        }
+};
+
+//--------------------------------------------------------------------------
+// Specialized LOG_POLICY policy LogMode::Contacts.
+//--------------------------------------------------------------------------
+template<>
+class LOG_POLICY<LogMode::Contacts>
+{
+public:
+        static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
+                ClusterType cluster_type, shared_ptr<const WorldEnvironment> environ)
+        {
+                unsigned int home   = (cluster_type == ClusterType::Household);
+                unsigned int work   = (cluster_type == ClusterType::Work);
+                unsigned int school = (cluster_type == ClusterType::School);
+                unsigned int other  = (cluster_type == ClusterType::HomeDistrict || cluster_type == ClusterType::DayDistrict);
+
+                logger->info("[CONT] {} {} {} {} {} {} {} {}",
+                        p1->GetId(), p1->GetAge(), p2->GetAge(), home, work, school, other, environ->GetSimulationDay());
+        }
+};
 
 //--------------------------------------------------------------------------
 // Declaration of partial specialization for LogMode::Contacts.
@@ -63,75 +109,88 @@ class Infector<LogMode::Contacts, track_index_case>
 {
 public:
         ///
-        void operator()(Cluster& cluster,
+        static void Execute(Cluster& cluster,
                 std::shared_ptr<ContactHandler> contact_handler,
                 std::shared_ptr<const WorldEnvironment> sim_state);
 };
 
 //--------------------------------------------------------------------------
-// Declaration of partial specialization for LogMode::Transmissions.
-//--------------------------------------------------------------------------
-template<bool track_index_case>
-class Infector<LogMode::Transmissions, track_index_case>
-{
-public:
-        ///
-        void operator()(Cluster& cluster,
-                std::shared_ptr<ContactHandler> contact_handler,
-                std::shared_ptr<const WorldEnvironment> sim_state);
-};
-
-//--------------------------------------------------------------------------
-// Declaration of partial specialization for LogMode::None.
-//--------------------------------------------------------------------------
-template<bool track_index_case>
-class Infector<LogMode::None, track_index_case>
-{
-public:
-        ///
-        void operator()(Cluster& cluster,
-                std::shared_ptr<ContactHandler> contact_handler,
-                std::shared_ptr<const WorldEnvironment> sim_state);
-};
-
-
-
-
-
-
-//--------------------------------------------------------------------------
-// Definition for primary template (empty).
+// Definition for primary template covers the situation for
+// LogMode::None & LogMode::Transmissions, both with
+// track_index_case false and true..
 //--------------------------------------------------------------------------
 template<LogMode log_level, bool track_index_case>
-void Infector<log_level, track_index_case>::operator()(Cluster& cluster,
+void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
                                 shared_ptr<ContactHandler> contact_handler,
                                 shared_ptr<const WorldEnvironment> sim_state)
 {
+        // check if the cluster has infected members and sort
+        bool infectious_cases;
+        size_t num_cases;
+        tie(infectious_cases, num_cases) = cluster.SortMembers();
+
+        if (infectious_cases) {
+                cluster.UpdateMemberPresence();
+
+                // set up some stuff
+                auto logger            = spdlog::get("contact_logger");
+                const auto c_type      = cluster.m_cluster_type;
+                const auto c_immune    = cluster.m_index_immune;
+                const auto& c_members  = cluster.m_members;
+                const auto c_size      = cluster.GetSize();
+
+                // match infectious in first part with susceptible in second part, skip last part (immune)
+                for (size_t i_infected = 0; i_infected < num_cases; i_infected++) {
+                        // check if member is present today
+                        if (c_members[i_infected].second) {
+                                const auto p1 = c_members[i_infected].first;
+                                if (p1->IsInfectious()) {
+                                        const auto age1 = p1->GetAge();
+                                        for (size_t i_contact = num_cases; i_contact < c_immune; i_contact++) {
+                                                // check if member is present today
+                                                if (c_members[i_contact].second) {
+                                                        auto p2 = c_members[i_contact].first;
+                                                        if ((*contact_handler)(age1, ToString(c_type), c_size)) {
+                                                                LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, sim_state);
+                                                                p2->StartInfection();
+                                                                R0_POLICY<track_index_case>::Execute(p2);
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
 }
 
 //--------------------------------------------------------------------------
 // Definition of partial specialization for LogMode::Contacts.
 //--------------------------------------------------------------------------
 template<bool track_index_case>
-void Infector<LogMode::Contacts, track_index_case>::operator()(Cluster& cluster,
+void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster,
                                 shared_ptr<ContactHandler> contact_handler,
                                 shared_ptr<const WorldEnvironment> sim_state)
 {
         cluster.UpdateMemberPresence();
-        size_t cluster_size = cluster.GetSize();
+
+        // set up some stuff
+        auto logger            = spdlog::get("contact_logger");
+        const auto c_type      = cluster.m_cluster_type;
+        const auto& c_members  = cluster.m_members;
+        const auto c_size      = cluster.GetSize();
 
         // check all contacts
         for (size_t i_person1 = 0; i_person1 < cluster.m_members.size(); i_person1++) {
                 // check if member participates in the social contact survey && member is present today
-                if (cluster.m_members[i_person1].second && cluster.m_members[i_person1].first->IsParticipatingInSurvey()) {
-                        auto p1 = cluster.m_members[i_person1].first;
+                if (c_members[i_person1].second && c_members[i_person1].first->IsParticipatingInSurvey()) {
+                        auto p1 = c_members[i_person1].first;
                         const auto age1 = p1->GetAge();
-                        for (size_t i_person2 = 0; i_person2 < cluster.m_members.size(); i_person2++) {
+                        for (size_t i_person2 = 0; i_person2 < c_members.size(); i_person2++) {
                                 // check if member is present today
-                                if ((i_person1 != i_person2) && cluster.m_members[i_person2].second) {
-                                        auto p2 = cluster.m_members[i_person2].first;
+                                if ((i_person1 != i_person2) && c_members[i_person2].second) {
+                                        auto p2 = c_members[i_person2].first;
                                         // check for contact
-                                        if (contact_handler->contact(age1, ToString(cluster.m_cluster_type), cluster_size)) {
+                                        if (contact_handler->contact(age1, ToString(c_type), c_size)) {
                                                 // TODO ContactHandler doesn't have a separate transmission function anymore to
                                                 // check for transmission when contact has already been checked.
                                                 // check for transmission
@@ -150,7 +209,7 @@ void Infector<LogMode::Contacts, track_index_case>::operator()(Cluster& cluster,
                                                         }
                                                         //TODO log transmission?
                                                 }*/
-                                                p1->LogContact(cluster.m_logger, p2, cluster.m_cluster_type, sim_state);
+                                                LOG_POLICY<LogMode::Contacts>::Execute(logger, p1, p2, c_type, sim_state);
 
                                         }
                                 }
@@ -158,88 +217,6 @@ void Infector<LogMode::Contacts, track_index_case>::operator()(Cluster& cluster,
                 }
         }
 }
-
-//--------------------------------------------------------------------------
-// Definition of partial specialization for LogMode::Transmissions.
-//--------------------------------------------------------------------------
-template<bool track_index_case>
-void Infector<LogMode::Transmissions, track_index_case>::operator()(Cluster& cluster,
-                                        shared_ptr<ContactHandler> contact_handler,
-                                        shared_ptr<const WorldEnvironment> sim_state)
-{
-        // check if the cluster has infected members and sort
-        bool infectious_cases;
-        size_t num_cases;
-        tie(infectious_cases, num_cases) = cluster.SortMembers();
-
-        if (infectious_cases) {
-                cluster.UpdateMemberPresence();
-                size_t cluster_size = cluster.GetSize();
-
-                // match infectious in first part with susceptible in second part, skip last part (immune)
-                for (size_t i_infected = 0; i_infected < num_cases; i_infected++) {
-                        // check if member is present today
-                        if (cluster.m_members[i_infected].second) {
-                                if (cluster.m_members[i_infected].first->IsInfectious()) {
-                                        const auto age1 = cluster.m_members[i_infected].first->GetAge();
-                                        for (size_t i_contact = num_cases; i_contact < cluster.m_index_immune; i_contact++) {
-                                                // check if member is present today
-                                                if (cluster.m_members[i_contact].second) {
-                                                        auto p2 = cluster.m_members[i_contact].first;
-                                                        if ((*contact_handler)(age1, ToString(cluster.m_cluster_type), cluster_size)) {
-                                                                // log transmission
-                                                                cluster.m_members[i_infected].first->LogTransmission(
-                                                                        cluster.m_logger, p2, cluster.m_cluster_type, sim_state);
-                                                                p2->StartInfection();
-                                                                R0_POLICY<track_index_case>::Execute(p2);
-                                                        }
-                                                }
-                                        }
-                                }
-                        }
-                }
-        }
-}
-
-//--------------------------------------------------------------------------
-// Definition of partial specialization for LogMode::None.
-//--------------------------------------------------------------------------
-template<bool track_index_case>
-void Infector<LogMode::None, track_index_case>::operator()(Cluster& cluster,
-                                shared_ptr<ContactHandler> contact_handler,
-                                shared_ptr<const WorldEnvironment> sim_state)
-{
-        // check if the cluster has infected members and sort
-        bool infectious_cases;
-        size_t num_cases;
-        tie(infectious_cases, num_cases) = cluster.SortMembers();
-
-        if (infectious_cases) {
-                cluster.UpdateMemberPresence();
-                size_t cluster_size = cluster.GetSize();
-
-                // match infectious in first part with susceptible in second part, skip last part (immune)
-                for (size_t i_infected = 0; i_infected < num_cases; i_infected++) {
-                        // check if member is present today
-                        if (cluster.m_members[i_infected].second) {
-                                if (cluster.m_members[i_infected].first->IsInfectious()) {
-                                        const auto age1 = cluster.m_members[i_infected].first->GetAge();
-                                        for (size_t i_contact = num_cases; i_contact < cluster.m_index_immune; i_contact++) {
-                                                // check if member is present today
-                                                if (cluster.m_members[i_contact].second) {
-                                                        auto p2 = cluster.m_members[i_contact].first;
-                                                        if ((*contact_handler)(age1, ToString(cluster.m_cluster_type), cluster_size)) {
-                                                                p2->StartInfection();
-                                                                R0_POLICY<track_index_case>::Execute(p2);
-                                                        }
-                                                }
-                                        }
-                                }
-                        }
-                }
-        }
-}
-
 
 //--------------------------------------------------------------------------
 // All explicit instantiations.

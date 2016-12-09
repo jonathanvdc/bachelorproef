@@ -46,16 +46,18 @@ public:
 	/// Get the cumulative number of cases.
 	unsigned int GetInfectedCount() const;
 
+        /// Get the population.
+        const std::shared_ptr<const Population> GetPopulation() const;
+
 	/// Get the Population size.
 	unsigned int GetPopulationSize() const;
-
-	/// Get the population.
-	const std::shared_ptr<const Population> GetPopulation() const;
 
 	/// Run one time step, computing full simulation (default) or only index case.
 	void RunTimeStep(bool track_index_case = false);
 
 private:
+        /// Get average size of given clusters
+        double GetAverageClusterSize(const std::vector<Cluster>& clusters);
 
 	/// Get age-based contact rates for a given cluster type
 	std::vector<double> GetContactRates(const std::vector<double>& mean_nums, unsigned int avg_cluster_size);
@@ -66,19 +68,16 @@ private:
 	/// Initialize the clusters.
 	void InitializeClusters();
 
-	/// Get average size of given clusters
-	double GetAverageClusterSize(const std::vector<Cluster>& clusters);
-
 	/// Update the contacts in the given clusters.
 	void UpdateCluster(std::vector<Cluster>& clusters, bool index_case = false);
 
 private:
 	unsigned int                              m_num_threads;          ///< The number of (OpenMP) threads.
-	std::shared_ptr<WorldEnvironment>         m_state;                ///< The current state of the simulated world.
-
 	LogMode                                   m_log_level;            ///< Specifies logging mode.
+        std::shared_ptr<Population>               m_population;           ///< Pointer to the Population.
+        std::shared_ptr<WorldEnvironment>         m_state;                ///< The current state of the simulated world.
 
-	std::shared_ptr<Population>               m_population;           ///< Pointer to the Population.
+private:
 	std::vector<Cluster>                      m_households;           ///< Container with households Clusters.
 	std::vector<Cluster>                      m_day_clusters;         ///< Container with day Clusters.
 	std::vector<Cluster>                      m_home_districts;       ///< Container with home district Clusters.

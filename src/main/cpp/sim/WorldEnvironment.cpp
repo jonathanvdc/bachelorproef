@@ -29,17 +29,16 @@ namespace indismo {
 using namespace std;
 using namespace boost::filesystem;
 
-WorldEnvironment::WorldEnvironment(const boost::property_tree::ptree& pt_config) : m_day(0)
+WorldEnvironment::WorldEnvironment(const boost::property_tree::ptree& pt_config)
+        : m_day(0)
 {
 	// Set start date
-	const string start_date = pt_config.get<string>("run.start_date", "2016-01-01");
+	const string start_date { pt_config.get<string>("run.start_date", "2016-01-01") };
 	m_date = boost::gregorian::from_simple_string(start_date);
 
 	// Set holidays & school holidays
 	InitializeHolidays(pt_config);
 }
-
-WorldEnvironment::~WorldEnvironment() {}
 
 void WorldEnvironment::AdvanceDay()
 {
@@ -53,10 +52,10 @@ void WorldEnvironment::InitializeHolidays(const boost::property_tree::ptree& pt_
 	// Load json file
 	boost::property_tree::ptree pt_holidays;
 	{
-	        const auto file_name = pt_config.get<string>("run.holidays_file", "holidays_flanders_2016.json") ;
-	        const auto file_path = InstallDirs::GetConfigDir() /= file_name;
+	        const auto file_name { pt_config.get<string>("run.holidays_file", "holidays_flanders_2016.json") };
+	        const auto file_path { InstallDirs::GetConfigDir() /= file_name };
 	        if ( !is_regular_file(file_path) ) {
-	                throw runtime_error(std::string(__func__)
+	                throw runtime_error(string(__func__)
                                 + "Holidays file " + file_path.string() + " not present. Aborting.");
 	        }
 	        read_json(file_path.string(), pt_holidays);
@@ -64,23 +63,21 @@ void WorldEnvironment::InitializeHolidays(const boost::property_tree::ptree& pt_
 
 	// Read in holidays
 	for (int i = 1; i < 13; i++) {
-		const string month = std::to_string(i);
-		const string year = pt_holidays.get<std::string>("year", "2016");
+		const string month { to_string(i) };
+		const string year  { pt_holidays.get<string>("year", "2016") };
 
 		// read in general holidays
-		const string general_key = "general." + month;
+		const string general_key { "general." + month };
 		for (auto& date: pt_holidays.get_child(general_key)) {
-			std::string day = date.second.get_value<std::string>();
-			std::string date_string = year + "-" + month + "-" + day;
+			const string date_string { year + "-" + month + "-" + date.second.get_value<string>() };
 			boost::gregorian::date new_holiday = boost::gregorian::from_simple_string(date_string);
 			m_holidays.push_back(new_holiday);
 		}
 
 		// read in school holidays
-		const string school_key = "school." + month;
+		const string school_key { "school." + month };
 		for (auto& date: pt_holidays.get_child(school_key)) {
-			std::string day = date.second.get_value<std::string>();
-			std::string date_string = year + "-" + month + "-" + day;
+			const string date_string { year + "-" + month + "-" + date.second.get_value<string>() };
 			boost::gregorian::date new_holiday = boost::gregorian::from_simple_string(date_string);
 			m_school_holidays.push_back(new_holiday);
 		}

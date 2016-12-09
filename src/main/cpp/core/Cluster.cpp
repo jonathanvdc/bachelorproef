@@ -23,7 +23,6 @@
 #include "LogMode.h"
 #include "Person.h"
 #include "sim/WorldEnvironment.h"
-#include "util/TrackIndexCase.h"
 
 #include "spdlog/spdlog.h"
 #include <cstddef>
@@ -42,7 +41,6 @@ Cluster::Cluster(std::size_t cluster_id, std::string cluster_type)
         m_cluster_type = IsClusterType(cluster_type) ?
                 ToClusterType(cluster_type)
                 : throw std::runtime_error(std::string(__func__) + "> Problem with cluster_type" + cluster_type);
-        m_logger = spdlog::get("contact_logger");
 }
 
 tuple<bool, size_t> Cluster::SortMembers()
@@ -87,23 +85,23 @@ void Cluster::Update(shared_ptr<ContactHandler> contact_handler, shared_ptr<cons
         switch (log_mode) {
                 case LogMode::Contacts:
                         if (index_case) {
-                                Infector<LogMode::Contacts, true>()(*this, contact_handler, sim_state);
+                                Infector<LogMode::Contacts, true>::Execute(*this, contact_handler, sim_state);
                         } else {
-                                Infector<LogMode::Contacts, false>()(*this, contact_handler, sim_state);
+                                Infector<LogMode::Contacts, false>::Execute(*this, contact_handler, sim_state);
                         }
                         break;
                 case LogMode::Transmissions:
                         if (index_case ) {
-                                Infector<LogMode::Transmissions, true>()(*this, contact_handler, sim_state);
+                                Infector<LogMode::Transmissions, true>::Execute(*this, contact_handler, sim_state);
                         } else {
-                                Infector<LogMode::Transmissions, false>()(*this, contact_handler, sim_state);
+                                Infector<LogMode::Transmissions, false>::Execute(*this, contact_handler, sim_state);
                         }
                         break;
                 case LogMode::None:
                         if (index_case) {
-                                Infector<LogMode::None, true>()(*this, contact_handler, sim_state);
+                                Infector<LogMode::None, true>::Execute(*this, contact_handler, sim_state);
                         } else {
-                                Infector<LogMode::None, false>()(*this, contact_handler, sim_state);
+                                Infector<LogMode::None, false>::Execute(*this, contact_handler, sim_state);
                         }
                         break;
                 default: throw runtime_error(std::string(__func__) + "Logging screwed up!");

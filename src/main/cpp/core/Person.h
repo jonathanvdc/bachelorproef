@@ -22,8 +22,8 @@
 
 #include "ClusterType.h"
 #include "sim/WorldEnvironment.h"
-#include "spdlog/spdlog.h"
 
+#include "spdlog/spdlog.h"
 #include <cstddef>
 
 namespace indismo {
@@ -55,9 +55,6 @@ public:
 	/// Is this person not equal to the given person?
 	bool operator!=(const Person& p) const { return p.m_id != m_id; }
 
-	/// Get the id.
-	unsigned int GetId() const { return m_id; }
-
 	/// Get the age.
 	double GetAge() const { return m_age; }
 
@@ -87,6 +84,9 @@ public:
 
         ///
         size_t GetHouseholdSize() const { return m_household_size; }
+
+        /// Get the id.
+        unsigned int GetId() const { return m_id; }
 
         ///
         unsigned int GetStartInfectiousness() const { return m_start_infectiousness; }
@@ -120,16 +120,6 @@ public:
 
 	/// Is this person symptomatic?
 	bool IsSymptomatic() const { return m_symptomatic; }
-
-        /// Log a contact of this person has with another person.
-        void LogContact(std::shared_ptr<spdlog::logger> logger,
-                        const Person* p2, ClusterType cluster_type,
-                        std::shared_ptr<const WorldEnvironment> world_environ);
-
-        ///
-        void LogTransmission(std::shared_ptr<spdlog::logger> logger,
-                        const Person* p2, ClusterType cluster_type,
-                        std::shared_ptr<const WorldEnvironment> world_environ);
 
         /// Participate in social contact study and log person details
         void ParticipateInSurvey(std::shared_ptr<spdlog::logger> logger)
