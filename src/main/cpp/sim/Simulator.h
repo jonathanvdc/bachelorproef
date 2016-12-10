@@ -20,11 +20,10 @@
  * Header for the Simulator class.
  */
 
-#include "WorldEnvironment.h"
 #include "core/ContactHandler.h"
 #include "core/Cluster.h"
+#include "core/ClusterType.h"
 #include "core/LogMode.h"
-#include "core/Population.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <type_traits>
@@ -33,6 +32,9 @@
 #include <vector>
 
 namespace stride {
+
+class Population;
+class WorldEnvironment;
 
 /**
  * Main class that contains and direct the virtual world.
@@ -57,7 +59,7 @@ private:
 	std::vector<double> GetContactRates(const std::vector<double>& mean_nums, unsigned int avg_cluster_size);
 
 	/// Get mean number of contacts a day per age for given cluster type
-	std::vector<double> GetMeanNumbersOfContacts(std::string cluster_type, const boost::property_tree::ptree& pt_contacts);
+	std::vector<double> GetMeanNumbersOfContacts(ClusterType c_type, const boost::property_tree::ptree& pt_contacts);
 
 	/// Initialize the clusters.
 	void InitializeClusters();

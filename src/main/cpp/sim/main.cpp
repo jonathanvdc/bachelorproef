@@ -29,6 +29,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/filesystem.hpp>
+#include <omp.h>
 #include "spdlog/spdlog.h"
 #include "tclap/CmdLine.h"
 
@@ -39,7 +40,6 @@
 #include <string>
 #include <stdexcept>
 #include <unistd.h>
-#include <omp.h>
 
 using namespace TCLAP;
 using namespace stride;

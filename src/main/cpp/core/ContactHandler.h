@@ -20,11 +20,10 @@
  * Header for the ContactHandler class.
  */
 
+#include "core/ClusterType.h"
 #include "util/Random.h"
 
-#include <boost/property_tree/xml_parser.hpp>
 #include <map>
-#include <string>
 #include <vector>
 
 namespace stride {
@@ -37,34 +36,34 @@ class ContactHandler
 public:
 	/// Constructor sets the transmission rate and random number generator.
 	ContactHandler(double transmission_rate, unsigned int seed, unsigned int stream_count, unsigned int id)
-			: m_transmission_rate_adult(transmission_rate), m_rng(seed)
+			: m_rng(seed), m_transmission_rate_adult(transmission_rate)
 	{
 		m_rng.Split(stream_count, id);
 	}
 
-	void AddMeanNumsContacts(std::string cluster_type, std::vector<double> mean_nums)
+	void AddMeanNumsContacts(ClusterType cluster_type, const std::vector<double>& mean_nums)
 	{
 		m_age_contact_mean_num[cluster_type] = mean_nums;
 	}
 
-	void AddContactRates(std::string cluster_type, std::vector<double> rates)
+	void AddContactRates(ClusterType cluster_type, const std::vector<double>& rates)
 	{
 		m_age_contact_rates[cluster_type] = rates;
 	}
 
 	/// Handle one contact between persons of the given age. Performs a Bernoulli process with a random
 	/// number. The given ages determine the transmission rate (=probability for "success").
-	bool operator()(unsigned int age, const std::string& cluster_type, size_t cluster_size)
+	bool operator()(unsigned int age, ClusterType cluster_type, size_t cluster_size)
 	{
 	        // Top off age at 80.
 	        age = (age <= 80U) ? age : 80U;
 
 		//double rate = m_age_contact_rates[cluster_type][age] * m_transmission_rate_adult;
 		double rate = m_age_contact_mean_num[cluster_type][age]/cluster_size;
-		if (cluster_type == "household") {
+		if (cluster_type == ClusterType::Household) {
 			rate = 1;
 		}
-		if (cluster_type == "work") {
+		if (cluster_type == ClusterType::Work) {
 			rate = rate * 1.7;
 		}
 		rate *= m_transmission_rate_adult;
@@ -73,27 +72,27 @@ public:
 
 	/// Check if two individuals make contact.
 	/// TODO Check how to maintain correct distribution of probability when splitting contact and transmission rates.
-	bool Contact(unsigned int age, const std::string& cluster_type, size_t cluster_size)
+	bool Contact(unsigned int age, ClusterType cluster_type, size_t cluster_size)
 	{
                 // Top off age at 80.
                 age = (age <= 80U) ? age : 80U;
 
 		double rate = m_age_contact_mean_num[cluster_type][age] / cluster_size;
-		if (cluster_type == "household") {
+		if (cluster_type == ClusterType::Household) {
 			rate = 1;
 		}
-		if (cluster_type == "work") {
+		if (cluster_type == ClusterType::Work) {
 			rate = rate * 1.7;
 		}
 		return m_rng.NextDouble() < rate;
 	}
 
-
 private:
-	std::map<std::string, std::vector<double>>      m_age_contact_rates;          ///< Cluster types and contact rates per age
-	std::map<std::string, std::vector<double>>      m_age_contact_mean_num;       ///< Cluster types and mean number of contacts per age
-	double                                          m_transmission_rate_adult;    ///< Transmission rate between adults.
+	std::map<ClusterType, std::vector<double>>      m_age_contact_rates;          ///< Cluster types and contact rates per age
+	std::map<ClusterType, std::vector<double>>      m_age_contact_mean_num;       ///< Cluster types and mean number of contacts per age
+
 	util::Random                                    m_rng;                        ///< Random number engine.
+        double                                          m_transmission_rate_adult;    ///< Transmission rate between adults.
 };
 
 } // end_of_namespace

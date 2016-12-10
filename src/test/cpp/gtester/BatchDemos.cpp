@@ -18,16 +18,18 @@
  * Implementation of scenario test running demo cases in batch mode.
  */
 
+#include "core/Population.h"
+#include "sim/Simulator.h"
+
+#include <gtest/gtest.h>
+#include <boost/property_tree/ptree.hpp>
+#include <omp.h>
+
 #include <cmath>
 #include <iostream>
 #include <fstream>
 #include <map>
-#include <omp.h>
 #include <string>
-#include <gtest/gtest.h>
-#include <boost/property_tree/ptree.hpp>
-
-#include "sim/Simulator.h"
 
 using namespace std;
 using namespace stride;

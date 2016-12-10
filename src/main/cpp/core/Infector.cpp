@@ -150,7 +150,7 @@ void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
                                                 // check if member is present today
                                                 if (c_members[i_contact].second) {
                                                         auto p2 = c_members[i_contact].first;
-                                                        if ((*contact_handler)(age1, ToString(c_type), c_size)) {
+                                                        if ((*contact_handler)(age1, c_type, c_size)) {
                                                                 LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, sim_state);
                                                                 p2->StartInfection();
                                                                 R0_POLICY<track_index_case>::Execute(p2);
@@ -190,7 +190,7 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster,
                                 if ((i_person1 != i_person2) && c_members[i_person2].second) {
                                         auto p2 = c_members[i_person2].first;
                                         // check for contact
-                                        if (contact_handler->Contact(age1, ToString(c_type), c_size)) {
+                                        if (contact_handler->Contact(age1, c_type, c_size)) {
                                                 // TODO ContactHandler doesn't have a separate transmission function anymore to
                                                 // check for transmission when contact has already been checked.
                                                 // check for transmission

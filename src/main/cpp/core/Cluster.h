@@ -26,12 +26,7 @@
 #include "sim/WorldEnvironment.h"
 #include "LogMode.h"
 
-#include "spdlog/spdlog.h"
 #include <cstddef>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -44,7 +39,7 @@ class Cluster
 {
 public:
 	/// Constructor
-	Cluster(std::size_t cluster_id, std::string cluster_type);
+	Cluster(std::size_t cluster_id, ClusterType cluster_type);
 
 	/// Add the given Person to the Cluster.
 	void AddPerson(Person* p)
@@ -57,10 +52,10 @@ public:
 	size_t GetSize() const { return m_members.size(); }
 
 	///
-	std::string GetClusterType() const { return ToString(m_cluster_type); }
+	ClusterType GetClusterType() const { return m_cluster_type; }
 
 	///
-	void SetClusterType(std::string cluster_type) { m_cluster_type = ToClusterType(cluster_type); }
+	void SetClusterType(ClusterType cluster_type) { m_cluster_type = cluster_type; }
 
 	///
 	void Update(std::shared_ptr<ContactHandler> contact_handler,
