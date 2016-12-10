@@ -39,13 +39,11 @@
 #  include <limits.h>
 #endif
 
-
-
 using namespace std;
 using namespace boost::filesystem;
-using namespace indismo::util;
+using namespace stride::util;
 
-namespace indismo {
+namespace stride {
 
 path     InstallDirs::g_bin_dir;
 path     InstallDirs::g_config_dir;

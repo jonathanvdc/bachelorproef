@@ -26,7 +26,7 @@
 #include "spdlog/spdlog.h"
 #include <cstddef>
 
-namespace indismo {
+namespace stride {
 
 /**
  * Store and handle person data.

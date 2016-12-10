@@ -28,7 +28,7 @@
 #include <memory>
 #include <vector>
 
-namespace indismo {
+namespace stride {
 
 /**
  * Class that keeps track of the 'state' of simulated world.

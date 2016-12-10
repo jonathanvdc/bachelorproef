@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace indismo {
+namespace stride {
 
 /**
  * Main class that contains and direct the virtual world.

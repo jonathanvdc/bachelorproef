@@ -29,7 +29,7 @@ using boost::to_upper;
 
 namespace {
 
-using indismo::LogMode;
+using stride::LogMode;
 
 map<LogMode, string> g_cluster_type_name {
                 make_pair(LogMode::None,             "None"),
@@ -47,7 +47,7 @@ map<string, LogMode> g_name_cluster_type {
 
 }
 
-namespace indismo {
+namespace stride {
 
 string ToString(LogMode l)
 {

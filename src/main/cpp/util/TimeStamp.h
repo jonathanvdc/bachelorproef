@@ -27,7 +27,7 @@
 #include <ctime>
 #include <chrono>
 
-namespace indismo {
+namespace stride {
 namespace util {
 
 /**

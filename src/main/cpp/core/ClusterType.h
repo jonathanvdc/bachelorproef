@@ -22,7 +22,7 @@
 
 #include <string>
 
-namespace indismo {
+namespace stride {
 
 /// Enumerates the cluster types.
 enum class ClusterType

@@ -26,7 +26,7 @@
 #include <iomanip>
 #include <cmath>
 
-namespace indismo {
+namespace stride {
 namespace util{
 
 /**

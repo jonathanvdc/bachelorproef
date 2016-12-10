@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-namespace indismo {
+namespace stride {
 
 using namespace std;
 

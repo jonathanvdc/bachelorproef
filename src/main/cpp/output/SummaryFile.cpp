@@ -26,7 +26,7 @@
 #include <omp.h>
 
 
-namespace indismo {
+namespace stride {
 namespace output {
 
 using namespace std;

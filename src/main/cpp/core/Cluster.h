@@ -35,7 +35,7 @@
 #include <utility>
 #include <vector>
 
-namespace indismo {
+namespace stride {
 
 /**
  * Represents a location for social contacts, an group of people.

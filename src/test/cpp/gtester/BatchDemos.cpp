@@ -30,7 +30,7 @@
 #include "sim/Simulator.h"
 
 using namespace std;
-using namespace indismo;
+using namespace stride;
 using namespace ::testing;
 
 namespace Tests {

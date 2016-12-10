@@ -30,7 +30,7 @@ using boost::to_upper;
 
 namespace {
 
-using indismo::ClusterType;
+using stride::ClusterType;
 
 map<ClusterType, string> g_cluster_type_name {
                 make_pair(ClusterType::Household,      "household"),
@@ -52,7 +52,7 @@ map<string, ClusterType> g_name_cluster_type {
 
 }
 
-namespace indismo {
+namespace stride {
 
 string ToString(ClusterType c)
 {

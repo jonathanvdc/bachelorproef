@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace indismo {
+namespace stride {
 namespace output {
 
 /**

@@ -22,7 +22,7 @@
 
 #include <boost/filesystem.hpp>
 
-namespace indismo {
+namespace stride {
 
 /**
  * Install directories.

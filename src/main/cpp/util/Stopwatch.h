@@ -24,7 +24,7 @@
 #include <string>
 #include "TimeToString.h"
 
-namespace indismo {
+namespace stride {
 namespace util {
 
 /**

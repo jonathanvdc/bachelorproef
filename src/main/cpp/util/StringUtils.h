@@ -20,13 +20,13 @@
  * Conversion from or to string.
  */
 
-#include <string>
-#include <cctype>
 #include <algorithm>
-#include <sstream>
+#include <cctype>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
-namespace indismo {
+namespace stride {
 namespace util {
 
 /**

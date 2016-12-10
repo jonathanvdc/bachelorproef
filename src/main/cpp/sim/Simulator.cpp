@@ -31,7 +31,7 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace indismo {
+namespace stride {
 
 using namespace std;
 using namespace boost::filesystem;

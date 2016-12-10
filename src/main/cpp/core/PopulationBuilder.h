@@ -23,12 +23,12 @@
 #include "core/Population.h"
 #include "util/Random.h"
 
-#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace indismo {
+namespace stride {
 
 /**
  * Initializes Population objects.
@@ -52,7 +52,7 @@ private:
 	/**
 	 *
 	 */
-	static std::vector<double> GetDistribution(const boost::property_tree::ptree& pt_root, std::string xml_tag);
+	static std::vector<double> GetDistribution(const boost::property_tree::ptree& pt_root, const std::string& xml_tag);
 
 	/**
 	 *

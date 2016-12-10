@@ -26,7 +26,7 @@
 #include <numeric>
 #include <vector>
 
-namespace indismo {
+namespace stride {
 
 /**
  * Container with Person objects.

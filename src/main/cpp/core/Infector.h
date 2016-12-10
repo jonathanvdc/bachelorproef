@@ -23,7 +23,7 @@
 #include "LogMode.h"
 #include <memory>
 
-namespace indismo {
+namespace stride {
 
 class Cluster;
 class ContactHandler;

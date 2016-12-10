@@ -24,7 +24,7 @@
 #include <trng/uniform01_dist.hpp>
 #include <trng/uniform_int_dist.hpp>
 
-namespace indismo {
+namespace stride {
 namespace util {
 
 /**

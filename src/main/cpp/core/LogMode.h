@@ -22,7 +22,7 @@
 
 #include <string>
 
-namespace indismo {
+namespace stride {
 
 /**
 * Enum specifiying the level of logging required:

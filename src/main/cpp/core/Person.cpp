@@ -25,7 +25,7 @@
 
 #include <memory>
 
-namespace indismo {
+namespace stride {
 
 using namespace std;
 

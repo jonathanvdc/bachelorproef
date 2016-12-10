@@ -23,13 +23,11 @@
 #include "util/Random.h"
 
 #include <boost/property_tree/xml_parser.hpp>
-
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
-namespace indismo {
+namespace stride {
 
 /**
  * Processes the contacts between persons and determines whether transmission occurs.

@@ -24,7 +24,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-namespace indismo {
+namespace stride {
 
 using namespace std;
 using namespace boost::filesystem;

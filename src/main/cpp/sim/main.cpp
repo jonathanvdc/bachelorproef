@@ -41,14 +41,14 @@
 #include <unistd.h>
 #include <omp.h>
 
-using namespace std;
-using namespace std::chrono;
 using namespace TCLAP;
-using namespace indismo;
+using namespace stride;
 using namespace output;
 using namespace util;
 using namespace boost::filesystem;
 using namespace boost::property_tree;
+using namespace std;
+using namespace std::chrono;
 
 /// Main program of the indismo2 simulator.
 int main(int argc, char** argv)

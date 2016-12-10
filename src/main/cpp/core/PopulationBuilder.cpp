@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 
-namespace indismo {
+namespace stride {
 
 using namespace std;
 using namespace boost::filesystem;
@@ -185,7 +185,7 @@ bool PopulationBuilder::Build(shared_ptr<Population> population,
 }
 
 
-vector<double> PopulationBuilder::GetDistribution(const boost::property_tree::ptree& pt_root, string xml_tag)
+vector<double> PopulationBuilder::GetDistribution(const boost::property_tree::ptree& pt_root, const string& xml_tag)
 {
         vector<double> values;
         boost::property_tree::ptree subtree = pt_root.get_child(xml_tag);

@@ -26,7 +26,7 @@
 #include <fstream>
 #include <string>
 
-namespace indismo {
+namespace stride {
 namespace output {
 
 /**
