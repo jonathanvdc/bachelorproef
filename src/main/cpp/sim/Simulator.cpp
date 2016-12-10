@@ -38,7 +38,7 @@ using namespace boost::filesystem;
 using namespace boost::property_tree;
 
 Simulator::Simulator(const boost::property_tree::ptree& pt_config)
-	: m_num_threads(1U), m_population(make_shared<Population>())
+	: m_config_pt(pt_config), m_num_threads(1U), m_population(make_shared<Population>())
 {
 	#pragma omp parallel
 	{
@@ -68,87 +68,31 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	        read_xml(file_path.string(), pt_disease);
 	}
 
-        // R0 and transmission rate
-        // use linear model fitted to simulation data: Expected(R0) = (b0+b1*transm_rate)
-	const double r0	  = pt_config.get<double>("run.r0");
-	const double b0   = pt_disease.get<double>("disease.transmission.b0");
-	const double b1   = pt_disease.get<double>("disease.transmission.b1");
-	const double transmission_rate = (r0-b0)/b1;
-
-	for (size_t i = 0; i < m_num_threads; i++) {
-		m_contact_handler.push_back(make_shared<ContactHandler>(transmission_rate,
-				pt_config.get<double>("run.rng_seed"), m_num_threads, i));
-	}
-
-	// Build populaion and initialize clusters.
+	// Build population and initialize clusters.
 	PopulationBuilder::Build(m_population, pt_config, pt_disease);
 	InitializeClusters();
 
-	// Calculate average cluster sizes
-	double avg_household_size     = GetAverageClusterSize(m_households);
-	double avg_home_district_size = GetAverageClusterSize(m_home_districts);
-	double avg_day_cluster_size   = GetAverageClusterSize(m_day_clusters);
-	double avg_day_district_size  = GetAverageClusterSize(m_day_districts);
-
-	// Get the contact configuration to initialize contact matrices for each cluster type
-	ptree pt_contacts;
-	{
-	        const auto file_name { pt_config.get("run.age_contact_matrix_file", "contact_matrix.xml") };
-                const auto file_path { InstallDirs::GetConfigDir() /= file_name };
-                if ( !is_regular_file(file_path) ) {
-                        throw runtime_error(std::string(__func__)
-                                + "> Contact file " + file_path.string() + " not present. Aborting.");
-                }
-                read_xml(file_path.string(), pt_contacts);
-	}
-
-	// Household contact matrices
-	vector<double> household_contact_nums = GetMeanNumbersOfContacts("household", pt_contacts);
-	vector<double> household_contact_rates = GetContactRates(household_contact_nums, avg_household_size);
-
-	// Home district contact matrices
-	vector<double> home_district_contact_nums = GetMeanNumbersOfContacts("home_district", pt_contacts);
-	vector<double> home_district_contact_rates = GetContactRates(home_district_contact_nums, avg_home_district_size);
-
-	// Work contact matrices
-	vector<double> work_contact_nums = GetMeanNumbersOfContacts("work", pt_contacts);
-	vector<double> work_contact_rates = GetContactRates(work_contact_nums, avg_day_cluster_size);
-
-	// School contact matrices
-	vector<double> school_contact_nums = GetMeanNumbersOfContacts("school", pt_contacts);
-	vector<double> school_contact_rates = GetContactRates(school_contact_nums, avg_day_cluster_size);
-
-	// Day district contact matrices
-	vector<double> day_district_contact_nums = GetMeanNumbersOfContacts("day_district", pt_contacts);
-	vector<double> day_district_contact_rates = GetContactRates(day_district_contact_nums, avg_day_district_size);
-
-	for (auto contact_handler : m_contact_handler) {
-		contact_handler->addMeanNumsContacts("household", household_contact_nums);
-		contact_handler->addContactRates("household", household_contact_rates);
-
-		contact_handler->addMeanNumsContacts("home_district", home_district_contact_nums);
-		contact_handler->addContactRates("home_district", home_district_contact_rates);
-
-		// TODO calculate separate average sizes for work and school clusters
-		contact_handler->addMeanNumsContacts("work", work_contact_nums);
-		contact_handler->addContactRates("work", work_contact_rates);
-
-		contact_handler->addMeanNumsContacts("school", school_contact_nums);
-		contact_handler->addContactRates("school", school_contact_rates);
-
-		contact_handler->addMeanNumsContacts("day_district", day_district_contact_nums);
-		contact_handler->addContactRates("day_district", day_district_contact_rates);
-	}
+	// Build contact handlers.
+        // R0 and transmission rate;use linear model fitted to simulation data: Expected(R0) = (b0+b1*transm_rate)
+        const double r0   = pt_config.get<double>("run.r0");
+        const double b0   = pt_disease.get<double>("disease.transmission.b0");
+        const double b1   = pt_disease.get<double>("disease.transmission.b1");
+        const double transmission_rate = (r0-b0)/b1;
+        for (size_t i = 0; i < m_num_threads; i++) {
+                m_contact_handler.emplace_back(make_shared<ContactHandler>(transmission_rate,
+                                pt_config.get<double>("run.rng_seed"), m_num_threads, i));
+        }
+	InitializeContactHandlers();
 }
+
 
 double Simulator::GetAverageClusterSize(const vector<Cluster>& clusters)
 {
         double total_size = 0;
-        double num_clusters = clusters.size();
+        const double num_clusters = clusters.size();
         for (size_t i = 1; i < num_clusters; i++) {
                 total_size += clusters[i].GetSize();
         }
-
         return total_size / (num_clusters - 1); // '-1' since we're counting from 1 not 0
 }
 
@@ -161,21 +105,15 @@ vector<double> Simulator::GetContactRates(const vector<double>& mean_nums, unsig
         return rates;
 }
 
-unsigned int Simulator::GetInfectedCount() const
-{
-	return m_population->GetInfectedCount();
-}
-
 vector<double> Simulator::GetMeanNumbersOfContacts(string cluster_type,  const boost::property_tree::ptree& pt_contacts)
 {
-        string key = "matrices." + cluster_type;
+        const string key = "matrices." + cluster_type;
         vector<double> meanNums;
-        for(auto& participant: pt_contacts.get_child(key)) {
+        for(const auto& participant: pt_contacts.get_child(key)) {
                 double total_contacts = 0;
-                for (auto& contact: participant.second.get_child("contacts")) {
+                for (const auto& contact: participant.second.get_child("contacts")) {
                         total_contacts += contact.second.get<double>("rate");
                 }
-
                 meanNums.push_back(total_contacts);
         }
         return meanNums;
@@ -186,12 +124,6 @@ const shared_ptr<const Population> Simulator::GetPopulation() const
         return m_population;
 }
 
-unsigned int Simulator::GetPopulationSize() const
-{
-	return m_population->GetSize();
-}
-
-
 void Simulator::InitializeClusters()
 {
 	// get number of clusters and districts
@@ -201,7 +133,7 @@ void Simulator::InitializeClusters()
 	unsigned int num_day_districts      = 0U;
 	Population& population              = *m_population;
 
-	for (auto p : population) {
+	for (const auto& p : population) {
 		if (num_households < p.GetHouseholdId()) {
 			num_households = p.GetHouseholdId();
 		}
@@ -229,7 +161,6 @@ void Simulator::InitializeClusters()
 		m_households.emplace_back(Cluster(cluster_id, "household"));
 		cluster_id++;
 	}
-
 	for (size_t i = 1; i <= num_day_clusters; i++) {
 		// Day clusters are initialized as school clusters.
 		// However, when a person older than 24 is added to such a cluster,
@@ -237,17 +168,14 @@ void Simulator::InitializeClusters()
 		m_day_clusters.emplace_back(Cluster(cluster_id, "school"));
 		cluster_id++;
 	}
-
 	for (size_t i = 1; i <= num_home_districts; i++) {
 		m_home_districts.emplace_back(Cluster(cluster_id, "home_district"));
 		cluster_id++;
 	}
-
 	for (size_t i = 1; i <= num_day_districts; i++) {
 		m_day_districts.emplace_back(Cluster(cluster_id, "day_district"));
 		cluster_id++;
 	}
-
 	for (size_t i = 0U; i < population.size(); i++) {
 		if (population[i].GetHouseholdId() > 0) {
 			m_households[population[i].GetHouseholdId()].AddPerson(&population[i]);
@@ -268,7 +196,6 @@ void Simulator::InitializeClusters()
 			m_day_districts[population[i].GetDayDistrictId()].AddPerson(&population[i]);
 		}
 	}
-
 	// Set household sizes for persons
 	for (size_t i = 0U; i < population.size(); i++) {
 		if (population[i].GetHouseholdId() > 0) {
@@ -276,6 +203,65 @@ void Simulator::InitializeClusters()
 			population[i].SetHouseholdSize(hh_size);
 		}
 	}
+}
+
+void Simulator::InitializeContactHandlers()
+{
+        // Get the contact configuration to initialize contact matrices for each cluster type
+        ptree pt_contacts;
+        {
+                const auto file_name { m_config_pt.get("run.age_contact_matrix_file", "contact_matrix.xml") };
+                const auto file_path { InstallDirs::GetConfigDir() /= file_name };
+                if ( !is_regular_file(file_path) ) {
+                        throw runtime_error(std::string(__func__)
+                                + "> Contact file " + file_path.string() + " not present. Aborting.");
+                }
+                read_xml(file_path.string(), pt_contacts);
+        }
+
+        // Calculate average cluster sizes
+        const double avg_household_size     = GetAverageClusterSize(m_households);
+        const double avg_home_district_size = GetAverageClusterSize(m_home_districts);
+        const double avg_day_cluster_size   = GetAverageClusterSize(m_day_clusters);
+        const double avg_day_district_size  = GetAverageClusterSize(m_day_districts);
+
+        // Household contact matrices
+        const vector<double> household_contact_nums = GetMeanNumbersOfContacts("household", pt_contacts);
+        const vector<double> household_contact_rates = GetContactRates(household_contact_nums, avg_household_size);
+
+        // Home district contact matrices
+        const vector<double> home_district_contact_nums = GetMeanNumbersOfContacts("home_district", pt_contacts);
+        const vector<double> home_district_contact_rates = GetContactRates(home_district_contact_nums, avg_home_district_size);
+
+        // Work contact matrices
+        const vector<double> work_contact_nums = GetMeanNumbersOfContacts("work", pt_contacts);
+        const vector<double> work_contact_rates = GetContactRates(work_contact_nums, avg_day_cluster_size);
+
+        // School contact matrices
+        const vector<double> school_contact_nums = GetMeanNumbersOfContacts("school", pt_contacts);
+        const vector<double> school_contact_rates = GetContactRates(school_contact_nums, avg_day_cluster_size);
+
+        // Day district contact matrices
+        const vector<double> day_district_contact_nums = GetMeanNumbersOfContacts("day_district", pt_contacts);
+        const vector<double> day_district_contact_rates = GetContactRates(day_district_contact_nums, avg_day_district_size);
+
+        for (auto contact_handler : m_contact_handler) {
+                contact_handler->AddMeanNumsContacts("household", household_contact_nums);
+                contact_handler->AddContactRates("household", household_contact_rates);
+
+                contact_handler->AddMeanNumsContacts("home_district", home_district_contact_nums);
+                contact_handler->AddContactRates("home_district", home_district_contact_rates);
+
+                // TODO calculate separate average sizes for work and school clusters
+                contact_handler->AddMeanNumsContacts("work", work_contact_nums);
+                contact_handler->AddContactRates("work", work_contact_rates);
+
+                contact_handler->AddMeanNumsContacts("school", school_contact_nums);
+                contact_handler->AddContactRates("school", school_contact_rates);
+
+                contact_handler->AddMeanNumsContacts("day_district", day_district_contact_nums);
+                contact_handler->AddContactRates("day_district", day_district_contact_rates);
+        }
 }
 
 void Simulator::RunTimeStep(bool track_index_case)

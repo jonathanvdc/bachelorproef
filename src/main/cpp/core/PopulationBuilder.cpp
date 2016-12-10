@@ -114,7 +114,7 @@ bool PopulationBuilder::Build(shared_ptr<Population> population,
         //------------------------------------------------
         // Set participants in social contact survey. (OPTION)
         //------------------------------------------------
-        string log_level = pt_config.get<string>("run.log_level", "None");
+        const string log_level = pt_config.get<string>("run.log_level", "None");
         if ((log_level == "Contacts") & status) {
                 unsigned int pop_size = population->GetSize();
                 unsigned int num_participants = pt_config.get<double>("run.num_participants_survey");

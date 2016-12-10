@@ -150,7 +150,7 @@ TEST_P( BatchDemos, RunOnce )
 	}
 
 	// Round up
-	const unsigned int num_cases = sim.GetInfectedCount();
+	const unsigned int num_cases = sim.GetPopulation()->GetInfectedCount();
 	ASSERT_EQ(num_cases, g_results.at(test_tag)) << "!! CHANGED !!";
 	cerr << "  finished:    " << test_tag << endl;
 }
@@ -213,7 +213,7 @@ TEST_P( BatchDemos, RunOnce_omp )
 	}
 
 	// Round up
-	const unsigned int num_cases = sim.GetInfectedCount();
+	const unsigned int num_cases = sim.GetPopulation()->GetInfectedCount();
 	ASSERT_EQ(num_cases, g_results_omp.at(test_tag)) << "!! CHANGED !!";
 	cerr << "  finished:    " << test_tag << endl;
 }

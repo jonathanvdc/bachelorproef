@@ -190,7 +190,7 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster,
                                 if ((i_person1 != i_person2) && c_members[i_person2].second) {
                                         auto p2 = c_members[i_person2].first;
                                         // check for contact
-                                        if (contact_handler->contact(age1, ToString(c_type), c_size)) {
+                                        if (contact_handler->Contact(age1, ToString(c_type), c_size)) {
                                                 // TODO ContactHandler doesn't have a separate transmission function anymore to
                                                 // check for transmission when contact has already been checked.
                                                 // check for transmission

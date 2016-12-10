@@ -52,7 +52,7 @@ public:
 	{
 		const auto counter  = [](unsigned int total, const Person& p) {
 						return total + (p.IsInfected() || p.IsRecovered());
-					};
+		                        };
 		return std::accumulate(this->begin(), this->end(), 0U, counter);
 	}
 

@@ -43,14 +43,8 @@ public:
 	/// Constructor: Initialize the Simulator.
 	Simulator(const boost::property_tree::ptree& pt_config);
 
-	/// Get the cumulative number of cases.
-	unsigned int GetInfectedCount() const;
-
         /// Get the population.
         const std::shared_ptr<const Population> GetPopulation() const;
-
-	/// Get the Population size.
-	unsigned int GetPopulationSize() const;
 
 	/// Run one time step, computing full simulation (default) or only index case.
 	void RunTimeStep(bool track_index_case = false);
@@ -68,8 +62,14 @@ private:
 	/// Initialize the clusters.
 	void InitializeClusters();
 
+        /// Initialize the contact handlers.
+        void InitializeContactHandlers();
+
 	/// Update the contacts in the given clusters.
 	void UpdateCluster(std::vector<Cluster>& clusters, bool index_case = false);
+
+private:
+	boost::property_tree::ptree               m_config_pt;            ///< Configuration property tree.
 
 private:
 	unsigned int                              m_num_threads;          ///< The number of (OpenMP) threads.

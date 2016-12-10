@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 			run_clock.Start();
 			sim.RunTimeStep(track_index_case);
 			run_clock.Stop();
-			cases[i] = sim.GetInfectedCount();
+			cases[i] = sim.GetPopulation()->GetInfectedCount();
 		}
 
 		// -----------------------------------------------------------------------------------------
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 		// Summary
 		SummaryFile  summary_file(output_prefix);
 		summary_file.Print(pt_config,
-			sim.GetPopulationSize(), sim.GetInfectedCount(),
+			sim.GetPopulation()->GetSize(), sim.GetPopulation()->GetInfectedCount(),
 			duration_cast<milliseconds>(run_clock.Get()).count(),
 			duration_cast<milliseconds>(total_clock.Get()).count());
 

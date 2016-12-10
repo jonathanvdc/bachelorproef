@@ -44,19 +44,19 @@ public:
 		m_rng.Split(stream_count, id);
 	}
 
-	void addMeanNumsContacts(std::string cluster_type, std::vector<double> mean_nums)
+	void AddMeanNumsContacts(std::string cluster_type, std::vector<double> mean_nums)
 	{
 		m_age_contact_mean_num[cluster_type] = mean_nums;
 	}
 
-	void addContactRates(std::string cluster_type, std::vector<double> rates)
+	void AddContactRates(std::string cluster_type, std::vector<double> rates)
 	{
 		m_age_contact_rates[cluster_type] = rates;
 	}
 
 	/// Handle one contact between persons of the given age. Performs a Bernoulli process with a random
 	/// number. The given ages determine the transmission rate (=probability for "success").
-	bool operator()(unsigned int age, std::string cluster_type, size_t cluster_size)
+	bool operator()(unsigned int age, const std::string& cluster_type, size_t cluster_size)
 	{
 	        // Top off age at 80.
 	        age = (age <= 80U) ? age : 80U;
@@ -75,7 +75,7 @@ public:
 
 	/// Check if two individuals make contact.
 	/// TODO Check how to maintain correct distribution of probability when splitting contact and transmission rates.
-	bool contact(unsigned int age, const std::string& cluster_type, size_t cluster_size)
+	bool Contact(unsigned int age, const std::string& cluster_type, size_t cluster_size)
 	{
                 // Top off age at 80.
                 age = (age <= 80U) ? age : 80U;
