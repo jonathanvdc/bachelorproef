@@ -34,7 +34,7 @@ class CasesFile
 {
 public:
 	/// Constructor: initialize.
-	CasesFile(const std::string& file = "indismo_cases");
+	CasesFile(const std::string& file = "stride_cases");
 
 	/// Destructor: close the file stream.
 	~CasesFile();
@@ -44,7 +44,7 @@ public:
 
 private:
 	/// Generate file name and open the file stream.
-	void Initialize(const std::string& file = "indismo_cases");
+	void Initialize(const std::string& file = "stride_cases");
 
 private:
 	std::ofstream 	m_fstream;  ///< The file stream.

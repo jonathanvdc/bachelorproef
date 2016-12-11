@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-Python code using matplotlib to plot timing results of simulations of indismo.
+Python code using matplotlib to plot timing results of simulator runs.
 
 Author: Elise Kuylen (2015)
 """

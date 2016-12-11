@@ -37,7 +37,7 @@ class PersonFile
 {
 public:
 	/// Constructor: initialize.
-	PersonFile(const std::string& file = "indismo_person");
+	PersonFile(const std::string& file = "stride_person");
 
 	/// Destructor: close the file stream.
 	~PersonFile();
@@ -47,7 +47,7 @@ public:
 
 private:
 	/// Generate file name and open the file stream.
-	void Initialize(const std::string& file = "indismo_person");
+	void Initialize(const std::string& file = "stride_person");
 
 private:
 	std::ofstream 	m_fstream;  ///< The file stream.

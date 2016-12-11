@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-Python code to test performance of different implementations of the indismo simulator.
+Python code to test performance of different implementations of the simulator.
 """
 
 import sys
@@ -14,7 +14,7 @@ import datetime
 import shutil
 import xml.etree.cElementTree as ET
 
-# Function that runs the indismo simulator.
+# Function that runs the simulator.
 def runIndismo(path, num_days, rng_seed, seeding_rate, r0, population_file, immunity_rate, output_prefix, disease_config_file, generate_person_file, environment={}):
     
     # Write configuration file
@@ -93,7 +93,7 @@ def runExperiments(config_file):
     new_config_file.write(open(config_file,'r').read())
     new_config_file.close()
     
-    # Create a copy of the environment variables to modify and pass to indismo
+    # Create a copy of the environment variables to modify and pass to simulator
     env = os.environ.copy()
 
     is_first=True # needed to have only one header in the aggregated output
@@ -111,7 +111,7 @@ def runExperiments(config_file):
         env['OMP_SCHEDULE']=str(config['omp_schedule'])
         
         # Run the simulator     ('experiment[0]' has been used for the OMP_NUM_THREADS)
-        runIndismo(config['indismo_path'], config['days'], experiment[1], experiment[2], experiment[3], experiment[4], experiment[5], output_prefix, config['disease_config_file'],config['generate_person_file'], env)
+        runIndismo(config['stride_path'], config['days'], experiment[1], experiment[2], experiment[3], experiment[4], experiment[5], output_prefix, config['disease_config_file'],config['generate_person_file'], env)
         
         
         # Append the aggregated outputs

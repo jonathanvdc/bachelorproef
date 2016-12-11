@@ -1,5 +1,5 @@
 #############################################################################
-#  This file is part of the indismo software. 
+#  This file is part of the Stride software. 
 #  It is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by 
 #  the Free Software Foundation, either version 3 of the License, or any 
@@ -12,7 +12,7 @@
 #  along with the software. If not, see <http://www.gnu.org/licenses/>.
 #  see http://www.gnu.org/licenses/.
 #
-#  Copyright 2014, L.Willem, S.Stijven, P.Beutels, N.Hens & J.Broeckhove, UA.
+#  Copyright 2016, Willem L, Kuylen E & Broeckhove J
 #############################################################################
 #
 #  Build trng.

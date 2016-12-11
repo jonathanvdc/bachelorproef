@@ -36,7 +36,7 @@ class SummaryFile
 {
 public:
 	/// Constructor: initialize.
-	SummaryFile(const std::string& file = "indismo_summary");
+	SummaryFile(const std::string& file = "stride_summary");
 
 	/// Destructor: close the file stream.
 	~SummaryFile();
@@ -48,7 +48,7 @@ public:
 
 private:
 	/// Generate file name and open the file stream.
-	void Initialize(const std::string& file = "indismo_summary");
+	void Initialize(const std::string& file = "stride_summary");
 
 private:
 	std::ofstream 	m_fstream;     ///< The file stream.

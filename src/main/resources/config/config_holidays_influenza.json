@@ -1,5 +1,5 @@
 {
-	"indismo_path":"bin/indismo_omp",
+	"stride_path":"bin/stride",
 	"threads":[8],
 	"omp_schedule":"DYNAMIC,1",
 	"rng_seed":[1],

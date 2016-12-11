@@ -13,7 +13,7 @@ import csv
 import xml.etree.cElementTree as ET
 
 
-# Function that runs the indismo simulator.
+# Function that runs the simulator.
 def runIndismo(path, num_days, rng_seed, seeding_rate, r0, population_file, immunity_rate, output_prefix, disease_config_file, generate_person_file, num_participants_survey, environment={}):
     
     # Write configuration file
@@ -130,7 +130,7 @@ def prepare_csv(log_file_path, participants_file='participants.csv', contacts_fi
 def main(argv):
     
     # Arguments parser
-    parser = argparse.ArgumentParser(description='Script to execute multiple runs of the indismo simulator.')
+    parser = argparse.ArgumentParser(description='Script to execute multiple runs of the simulator.')
     parser.add_argument('--config', help='A config file describing the experiments to run.', default='./config/config_default.json', type=str)
     
     args = vars(parser.parse_args())
@@ -165,7 +165,7 @@ def main(argv):
     config_file.close()
     
     
-    # Create a copy of the environment variables to modify and pass to indismo
+    # Create a copy of the environment variables to modify and pass to simulator
     env = os.environ.copy()
     
     is_first=True # needed to have only one header in the aggregated output
@@ -185,7 +185,7 @@ def main(argv):
         env['OMP_SCHEDULE']=str(config['omp_schedule'])
         
         # Run the simulator     ('experiment[0]' has been used for the OMP_NUM_THREADS)
-        runIndismo(config['indismo_path'], config['num_days'], experiment[1], experiment[2], experiment[3], experiment[4], experiment[5], output_prefix, config['disease_config_file'],config['generate_person_file'],config['num_participants_survey'], env)
+        runIndismo(config['stride_path'], config['num_days'], experiment[1], experiment[2], experiment[3], experiment[4], experiment[5], output_prefix, config['disease_config_file'],config['generate_person_file'],config['num_participants_survey'], env)
         
         
         # Append the aggregated outputs

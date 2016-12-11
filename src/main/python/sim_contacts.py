@@ -19,14 +19,14 @@ def main(argv):
     # run simulator
     print("Running the simulator ...")
     config_file = "config/run_config_all_contacts.xml"
-    os.system("bin/indismo -c "+config_file)
+    os.system("bin/stride -c "+config_file)
 
     # prepare csv files
     print("Preparing csv files ...")
     prepare_csv("logfile.txt", "./output/Participants.csv", "./output/Contacts.csv")
 
     # TODO run R script
-    #os.system("Rscript lib/indismo_contact_matrices.R")
+    #os.system("Rscript lib/stride_contact_matrices.R")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
