@@ -72,6 +72,6 @@ void SummaryFile::Print(const boost::property_tree::ptree& pt_config, unsigned i
 		<< static_cast<double>(num_cases) / population_size << endl;
 }
 
-} // end namespace output
-} // end namespace indismo
+} // end namespace
+} // end namespace
 

@@ -12,10 +12,6 @@
 #  along with the software. If not, see <http://www.gnu.org/licenses/>.
 #  see http://www.gnu.org/licenses/.
 #
-#  Reference: Willem L, Stijven S, Tijskens E, Beutels P, Hens N and 
-#  Broeckhove J. (2015) Optimizing agent-based transmission models for  
-#  infectious diseases, BMC Bioinformatics.
-#
 #  Copyright 2016, Willem L, Kuylen E & Broeckhove J
 #############################################################################
 #

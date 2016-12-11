@@ -87,7 +87,7 @@ operator<<(std::ostream& os, TimeStamp t) {
 	return (os << t.ToString());
 }
 
-} // end namespace output
-} // end namespace indismo
+} // end namespace
+} // end namespace
 
 #endif  // include guard

@@ -70,7 +70,7 @@ private:
 	trng::uniform01_dist<double>	m_uniform_dist;   ///< The random distribution.
 };
 
-} // end namespace output
-} // end namespace indismo
+} // end namespace
+} // end namespace
 
 #endif // include guard

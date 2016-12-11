@@ -122,7 +122,7 @@ public:
 	}
 };
 
-} // end namespace output
-} // end namespace indismo
+} // end namespace
+} // end namespace
 
 #endif // end-of-include-guard

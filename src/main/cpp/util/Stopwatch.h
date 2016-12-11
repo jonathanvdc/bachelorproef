@@ -132,7 +132,7 @@ operator<<(std::ostream& oss, Stopwatch<T> const& stopwatch) {
 	return (oss << stopwatch.ToString());
 }
 
-} // end namespace output
-} // end namespace indismo
+} // end namespace
+} // end namespace
 
 #endif  // end of include guard

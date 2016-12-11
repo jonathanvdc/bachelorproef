@@ -50,7 +50,7 @@ using namespace boost::property_tree;
 using namespace std;
 using namespace std::chrono;
 
-/// Main program of the indismo2 simulator.
+/// Main program of the stride simulator.
 int main(int argc, char** argv)
 {
 	int exit_status = EXIT_SUCCESS;
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 		// -----------------------------------------------------------------------------------------
 		// Parse command line.
 		// -----------------------------------------------------------------------------------------
-		CmdLine cmd("indismo", ' ', "3.0", false);
+		CmdLine cmd("stride", ' ', "1.0", false);
 		SwitchArg         index_case_Arg("r", "r0", "R0 only", cmd, false);
 		ValueArg<string>  config_file_Arg("c", "config_file", "Config File", false,
 		                                "run_config_default.xml", "CONFIGURATION FILE", cmd);
