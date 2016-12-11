@@ -43,8 +43,8 @@ public:
 		unsigned int end_symptomatic)
 	{
 		emplace_back(Person(id, age, household_id, home_district_id,
-		                        day_cluster_id, day_district_id,start_infectiousness,
-		                        start_symptomatic,end_infectiousness,end_symptomatic));
+		                        day_cluster_id, day_district_id, start_infectiousness,
+		                        start_symptomatic, end_infectiousness, end_symptomatic));
 	}
 
 	/// Get the cumulative number of cases.
@@ -56,35 +56,20 @@ public:
 		return std::accumulate(this->begin(), this->end(), 0U, counter);
 	}
 
+        ///
+        Person& GetPerson(unsigned int index) { return (*this)[index]; }
+
 	///
-        const Person& GetPerson(const unsigned int index) const
-        {
-                return (*this)[index];
-        }
+        const Person& GetPerson(unsigned int index) const { return (*this)[index]; }
 
 	/// Get the Population size.
-	std::size_t GetSize() const
-	{
-		return this->size();
-	}
+	std::size_t GetSize() const { return this->size(); }
 
 	/// Start an infection of the Person with given index in the container.
-	void SetIndexCase(const unsigned int index)
-	{
-		(*this)[index].SetIndexCase();
-	}
+	void SetIndexCase(unsigned int index) { (*this)[index].SetIndexCase(); }
 
 	/// Start an infection of the Person with given index in the container.
-	void SetImmune(const unsigned int index)
-	{
-		(*this)[index].SetImmune();
-	}
-
-	/// Subscribe the given Person to the social contact survey.
-	void SetParticipant(const unsigned int index, std::shared_ptr<spdlog::logger> logger)
-	{
-		(*this)[index].ParticipateInSurvey(logger);
-	}
+	void SetImmune(unsigned int index) { (*this)[index].SetImmune(); }
 };
 
 } // end_of_namespace

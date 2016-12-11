@@ -20,12 +20,10 @@
 
 #include "CasesFile.h"
 
-#include <ctime>
 #include <iostream>
-#include <math.h>
-#include <sstream>
+#include <fstream>
+#include <string>
 #include <vector>
-
 
 namespace stride {
 namespace output {

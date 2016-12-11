@@ -20,10 +20,10 @@
 
 #include "SummaryFile.h"
 
-#include <ctime>
-#include <iostream>
-#include <sstream>
+#include <boost/property_tree/ptree.hpp>
 #include <omp.h>
+#include <iostream>
+#include <fstream>
 
 
 namespace stride {
@@ -47,7 +47,11 @@ SummaryFile::~SummaryFile()
 	m_fstream.close();
 }
 
-void SummaryFile::Print(const boost::property_tree::ptree& pt_config, unsigned int population_size, unsigned int num_cases, unsigned int run_time,
+void SummaryFile::Print(
+        const boost::property_tree::ptree& pt_config,
+        unsigned int population_size,
+        unsigned int num_cases,
+        unsigned int run_time,
         unsigned int total_time)
 {
 	unsigned int num_threads = 0;

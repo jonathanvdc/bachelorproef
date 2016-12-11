@@ -23,7 +23,6 @@
 #include "ClusterType.h"
 #include "sim/WorldEnvironment.h"
 
-#include "spdlog/spdlog.h"
 #include <cstddef>
 
 namespace stride {
@@ -122,11 +121,7 @@ public:
 	bool IsSymptomatic() const { return m_symptomatic; }
 
         /// Participate in social contact study and log person details
-        void ParticipateInSurvey(std::shared_ptr<spdlog::logger> logger)
-        {
-                m_is_participant = true;
-                logger->info("[PART] {} {} {}", m_id, m_age, m_gender);
-        }
+        void ParticipateInSurvey() { m_is_participant = true; }
 
 	/// Reset the persons disease counter.
 	void ResetDiseaseCounter() { m_disease_counter = 0U; }

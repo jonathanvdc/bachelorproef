@@ -124,13 +124,14 @@ bool PopulationBuilder::Build(shared_ptr<Population> population,
                 unsigned int num_samples = 0;
                 shared_ptr<spdlog::logger> logger = spdlog::get("contact_logger");
                 while(num_samples < num_participants){
-                        unsigned int participant_id = rng_survey(pop_size);
-                        if(population->GetPerson(participant_id).IsParticipatingInSurvey()==false){
-                                population->SetParticipant(participant_id,logger);
+                        const unsigned int participant_id = rng_survey(pop_size);
+                        Person& p = population->GetPerson(participant_id);
+                        if ( !p.IsParticipatingInSurvey() ) {
+                                p.ParticipateInSurvey();
+                                logger->info("[PART] {} {} {}", p.GetId(), p.GetAge(), p.GetGender());
                                 num_samples++;
                         }
                 }
-
         }
 
         //------------------------------------------------
