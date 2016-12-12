@@ -43,8 +43,7 @@ PersonFile::~PersonFile()
 
 void PersonFile::Initialize(const std::string& file)
 {
-	const string file_name = file + "_person.csv";
-	m_fstream.open(file_name.c_str());
+	m_fstream.open((file + "_person.csv").c_str());
 
 	// add header
 	m_fstream << "id;is_recovered;is_immune;start_infectiousness;"

@@ -179,31 +179,31 @@ void Simulator::InitializeClusters()
 		m_day_districts.emplace_back(Cluster(cluster_id, ClusterType::DayDistrict));
 		cluster_id++;
 	}
-	for (size_t i = 0U; i < population.size(); i++) {
-		if (population[i].GetHouseholdId() > 0) {
-			m_households[population[i].GetHouseholdId()].AddPerson(&population[i]);
+	for (auto p: population) {
+		if (p.GetHouseholdId() > 0) {
+			m_households[p.GetHouseholdId()].AddPerson(&p);
 		}
-		if (population[i].GetDayClusterId() > 0) {
-			m_day_clusters[population[i].GetDayClusterId()].AddPerson(&population[i]);
-			if (m_day_clusters[population[i].GetDayClusterId()].GetClusterType() == ClusterType::School) {
+		if (p.GetDayClusterId() > 0) {
+			m_day_clusters[p.GetDayClusterId()].AddPerson(&p);
+			if (m_day_clusters[p.GetDayClusterId()].GetClusterType() == ClusterType::School) {
 				// Check if new person is under 24, otherwise cluster is a workplace
-				if (population[i].GetAge() > 24U) {
-					m_day_clusters[population[i].GetDayClusterId()].SetClusterType(ClusterType::Work);
+				if (p.GetAge() > 24U) {
+					m_day_clusters[p.GetDayClusterId()].SetClusterType(ClusterType::Work);
 				}
 			}
 		}
-		if (population[i].GetHomeDistrictId() > 0) {
-			m_home_districts[population[i].GetHomeDistrictId()].AddPerson(&population[i]);
+		if (p.GetHomeDistrictId() > 0) {
+			m_home_districts[p.GetHomeDistrictId()].AddPerson(&p);
 		}
-		if (population[i].GetDayDistrictId() > 0) {
-			m_day_districts[population[i].GetDayDistrictId()].AddPerson(&population[i]);
+		if (p.GetDayDistrictId() > 0) {
+			m_day_districts[p.GetDayDistrictId()].AddPerson(&p);
 		}
 	}
 	// Set household sizes for persons
-	for (size_t i = 0U; i < population.size(); i++) {
-		if (population[i].GetHouseholdId() > 0) {
-			size_t hh_size = m_households[population[i].GetHouseholdId()].GetSize();
-			population[i].SetHouseholdSize(hh_size);
+	for (auto& p: population) {
+		if (p.GetHouseholdId() > 0) {
+			size_t hh_size = m_households[p.GetHouseholdId()].GetSize();
+			p.SetHouseholdSize(hh_size);
 		}
 	}
 }

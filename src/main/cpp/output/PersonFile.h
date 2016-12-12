@@ -47,7 +47,7 @@ public:
 
 private:
 	/// Generate file name and open the file stream.
-	void Initialize(const std::string& file = "stride_person");
+	void Initialize(const std::string& file);
 
 private:
 	std::ofstream 	m_fstream;  ///< The file stream.

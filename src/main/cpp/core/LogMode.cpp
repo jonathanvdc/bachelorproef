@@ -42,7 +42,7 @@ map<string, LogMode> g_name_log_mode {
                 make_pair("NONE",            LogMode::None),
                 make_pair("TRANSMISSIONS",   LogMode::Transmissions),
                 make_pair("CONTACTS",        LogMode::Contacts),
-                make_pair("NULL",        LogMode::Null)
+                make_pair("NULL",            LogMode::Null)
 };
 
 }

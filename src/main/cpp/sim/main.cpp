@@ -39,7 +39,6 @@
 #include <limits>
 #include <string>
 #include <stdexcept>
-#include <unistd.h>
 
 using namespace TCLAP;
 using namespace stride;

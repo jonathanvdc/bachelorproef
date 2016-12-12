@@ -19,6 +19,7 @@
  */
 
 #include "Cluster.h"
+
 #include "Infector.h"
 #include "LogMode.h"
 #include "Person.h"
@@ -26,7 +27,6 @@
 
 #include "spdlog/spdlog.h"
 #include <cstddef>
-#include <iostream>
 #include <memory>
 #include <utility>
 #include <vector>

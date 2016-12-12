@@ -22,7 +22,6 @@
 
 #include "core/Person.h"
 
-#include "spdlog/spdlog.h"
 #include <numeric>
 #include <vector>
 
@@ -35,16 +34,12 @@ class Population : public std::vector<Person>
 {
 public:
 	/// Add a Person with given data to the Population.
-	void AddPerson(
-		unsigned int id, double age, unsigned int household_id,
-		unsigned int home_district_id, unsigned int day_cluster_id,
-		unsigned int day_district_id, unsigned int start_infectiousness,
-		unsigned int start_symptomatic, unsigned int end_infectiousness,
-		unsigned int end_symptomatic)
+	void AddPerson(unsigned int id, double age, unsigned int household_id, unsigned int home_district_id,
+	        unsigned int day_cluster_id, unsigned int day_district_id, unsigned int start_infectiousness,
+		unsigned int start_symptomatic, unsigned int end_infectiousness, unsigned int end_symptomatic)
 	{
-		emplace_back(Person(id, age, household_id, home_district_id,
-		                        day_cluster_id, day_district_id, start_infectiousness,
-		                        start_symptomatic, end_infectiousness, end_symptomatic));
+		emplace_back(Person(id, age, household_id, home_district_id, day_cluster_id, day_district_id,
+		        start_infectiousness, start_symptomatic, end_infectiousness, end_symptomatic));
 	}
 
 	/// Get the cumulative number of cases.

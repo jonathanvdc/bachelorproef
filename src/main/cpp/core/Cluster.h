@@ -44,7 +44,7 @@ public:
 	/// Add the given Person to the Cluster.
 	void AddPerson(Person* p)
 	{
-		m_members.push_back(std::make_pair(p, true));
+		m_members.emplace_back(std::make_pair(p, true));
 		m_index_immune++;
 	}
 
