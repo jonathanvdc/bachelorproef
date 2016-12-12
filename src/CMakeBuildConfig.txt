@@ -41,11 +41,11 @@ option( STRIDE_FORCE_NO_HDF5
 #============================================================================
 # INSTALL LOCATION for bin, doc etc.
 #============================================================================
-set( BIN_INSTALL_LOCATION	 	bin    )
-set( LIB_INSTALL_LOCATION 		lib    )
-set( DATA_INSTALL_LOCATION		data   )
-set( CONFIG_INSTALL_LOCATION 	config )
-set( DOC_INSTALL_LOCATION		doc    )
-set( TESTS_INSTALL_LOCATION		tests  )
+set( BIN_INSTALL_LOCATION	     bin    )
+set( LIB_INSTALL_LOCATION     lib    )
+set( DATA_INSTALL_LOCATION    data   )
+set( CONFIG_INSTALL_LOCATION  config )
+set( DOC_INSTALL_LOCATION	     doc    )
+set( TESTS_INSTALL_LOCATION   tests  )
 
 #############################################################################

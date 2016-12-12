@@ -42,9 +42,12 @@ More details on building the software can be found in ``INSTALL.txt'' in the sou
 \section{Documentation}
 \label{section:documentation}
 
-The Application Programmer Interface (API) documentation is generated automatically using Doxygen from documentation instructions embedded in the code (see \url{www.doxygen.org}). 
-The developer documentation is written in Doxygen syntax and can be generated in HTML format. Figure \ref{fig:doxygenapi} presents the home page of the API documentation.
-The user manual distributed with the source code is written in \LaTeX (see \url{www.latex-project.org}).
+The Application Programmer Interface (API) documentation is generated automatically 
+using the Doxygen tool ((see \url{www.doxygen.org}) from documentation instructions 
+embedded in the code . Figure \ref{fig:doxygenapi} presents the home page of the API 
+documentation.
+
+The user manual distributed with the source code has been written in \LaTeX (see \url{www.latex-project.org}).
 
 \begin{figure}[h]
 	\begin{center}
@@ -60,21 +63,21 @@ The user manual distributed with the source code is written in \LaTeX (see \url{
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Directory layout}
 
-The project directory structure is designed following maven conventions.
-Everything used to build the software is stored in directory \texttt{./src}:
+The project directory structure is very systematic.
+Everything used to build the software is stored in the directory \texttt{./src}:
 \begin{compactitem}
     \item \texttt{src/main}: Code related files (sources, third party libraries and headers, ...)
       	\begin{itemize}
-        		\item \texttt{src/main/"language"}: source code, per coding language 
-        		\item \texttt{src/main/resources}: third party resources
+        		\item \texttt{src/main/<language>}: source code, per coding language: cpp (for C++), python, R,   
+        		\item \texttt{src/main/resources}: third party resources included in the project: 
         \end{itemize}
     \item \texttt{src/doc}: documentation files (API, manual, ...)
       	\begin{itemize}
-        		\item \texttt{src/doc/"tool"}: files per document processing tools
+        		\item \texttt{src/doc/doxygen\_ref\_man}: files needed to generate the reference documentation with Doxygen
+        		\item \texttt{src/doc/latex\_man}: files needed to generate the user manual with Latex
         \end{itemize}
     \item \texttt{src/test}: test related files (scripts, regression files, ...)
 \end{compactitem}
-Every artefact during the build procedure is generated in directory \texttt{./target} and is completely removed when the project is cleaned.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % File formats
@@ -82,7 +85,7 @@ Every artefact during the build procedure is generated in directory \texttt{./ta
 \section{File formats}
 \label{section:FileFormats}
 
-The indismo software supports two file formats: 
+The stride software supports two file formats: 
 \begin{description}
 	\item [CSV] \ \\
 	Comma separated values, used for population input data and the simulator output.
@@ -98,8 +101,6 @@ The indismo software supports two file formats:
 Unit tests and install checks are added to indismo based on Google's ``gtest" framework and CMake's ``ctest" tool. 
 In addition, the code base contains assertions to verify the simulator logic. 
 They are activated when the application is built in debug mode and can be used to catch errors at run time. 
-
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
