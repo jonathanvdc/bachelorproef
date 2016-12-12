@@ -21,13 +21,13 @@
  \file
  \brief Documentation on namespace.
  
- \namespace indismo
+ \namespace stride
  		\brief Main namespace for the project.
- \namespace indismo::core
+ \namespace stride::core
  		\brief Encapsulation of the simulator core.
- \namespace indismo::output
+ \namespace stride::output
  		\brief Utilities for the output files.
- \namespace indismo::util
- 		\brief Utilities for the indismo project.	
+ \namespace stride::util
+ 		\brief Utilities for the project.	
 			 	 	 	 	 	 	 	 	 	 	 	 
  */

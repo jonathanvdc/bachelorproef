@@ -1,5 +1,5 @@
 #############################################################################
-#  This file is part of the indismo software. 
+#  This file is part of the Stride software. 
 #  It is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by 
 #  the Free Software Foundation, either version 3 of the License, or any 
@@ -12,11 +12,7 @@
 #  along with the software. If not, see <http://www.gnu.org/licenses/>.
 #  see http://www.gnu.org/licenses/.
 #
-#  Reference: Willem L, Stijven S, Tijskens E, Beutels P, Hens N and 
-#  Broeckhove J. (2015) Optimizing agent-based transmission models for  
-#  infectious diseases, BMC Bioinformatics.
-#
-#  Copyright 2015, Willem L, Stijven S & Broeckhove J
+#  Copyright 2016, Willem L, Kuylen E & Broeckhove J
 #############################################################################
 #
 # Doxyfile 1.8.5
@@ -56,13 +52,13 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "Indismo 3 Reference Manual"
+PROJECT_NAME           = "Stride Reference Manual"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         =
+PROJECT_NUMBER         = 1.0
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a

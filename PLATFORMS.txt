@@ -19,3 +19,14 @@ We target three platforms Linux/Unix and Mac OSX each with
 the GNU gcc g++ or clang compiler.
 
 #############################################################################
+#   Tested on the following platforms:
+#############################################################################
+ OS                |  Arch     |  Compiler                      |
+ ----------------------------------------------------------------
+ Ubuntu 14.04      |  64bit    |  Ubuntu GCC 5.1.0              |   
+ Mac OS X 10.11.6  |  64bit    |  Apple LLVM 8.0.0              | 
+ Mac OS X 10.11.6  |  64bit    |  MacPorts GCC 5.3.0            | 
+ Mac OS X 10.11.6  |  64bit    |  MacPorts GCC 6.1.0            |  
+ Mac OS X 10.11.6  |  64bit    |  MacPorts clang 3.9.0          | 
+
+#############################################################################
