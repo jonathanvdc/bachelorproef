@@ -69,11 +69,11 @@ endif
 ifneq ($(STRIDE_INCLUDE_DOC),)
 	CMAKE_ARGS += -DSTRIDE_INCLUDE_DOC:BOOL=$(STRIDE_INCLUDE_DOC)
 endif
-ifneq ($(STRIDE_VERBOSE_TESTING),)
-	CMAKE_ARGS += -DSTRIDE_VERBOSE_TESTING:BOOL=$(STRIDE_VERBOSE_TESTING)
-endif
 ifneq ($(STRIDE_FORCE_NO_OPENMP),)
 	CMAKE_ARGS += -DSTRIDE_FORCE_NO_OPENMP:BOOL=${STRIDE_FORCE_NO_OPENMP}
+endif
+ifneq ($(STRIDE_VERBOSE_TESTING),)
+	CMAKE_ARGS += -DSTRIDE_VERBOSE_TESTING:BOOL=$(STRIDE_VERBOSE_TESTING)
 endif
 ifeq ($(BUILD_DIR),)
 	BUILD_DIR = ./build
@@ -93,8 +93,8 @@ help:
 	@ $(CMAKE) -E echo " Current macro values are (cmake will use an appropriate"
 	@ $(CMAKE) -E echo " default for any macro that has not been set):"
 	@ $(CMAKE) -E echo "   STRIDE_INCLUDE_DOC         : " $(STRIDE_INCLUDE_DOC)
-	@ $(CMAKE) -E echo "   STRIDE_VERBOSE_TESTING     : " $(STRIDE_VERBOSE_TESTING)
 	@ $(CMAKE) -E echo "   STRIDE_FORCE_NO_OPENMP     : " $(STRIDE_FORCE_NO_OPENMP)
+	@ $(CMAKE) -E echo "   STRIDE_VERBOSE_TESTING     : " $(STRIDE_VERBOSE_TESTING)
 	@ $(CMAKE) -E echo "   BUILD_DIR                  : " $(BUILD_DIR)
 	@ $(CMAKE) -E echo " "
 	@ $(CMAKE) -E echo "   CMAKE_GENERATOR            : " $(CMAKE_GENERATOR)

@@ -30,27 +30,7 @@ Everything used to generate project artifacts is placed in directory "src":
     - test related files (description, scripts, regression files, ...)
       in directory "src/test"
 Every artifact is generated in directory "build" or its sub directories 
-(those names depend on the build procedures)
-
-=============================================================================
-    For Eclipse users:
-=============================================================================
-To install the project, you first clone the repository to 
-a directory in your Eclipse workspace: e.g.
-        hg clone https://bitbucket.org/lwillem/indismo3 
-Alternatively you download a zip file with all project artifacts from 
-the bitbucket web site and de-compress the zip file. 
-
-Then, open Eclipse and select "New" from the "File" pull-down menu and s
-elect "Makefile project with existing code" and follow instructions.
-    
-The project includes the conventional make targets to build, install, test
-and clean the project. There is one additional target "configure" to set up
-the CMake structure that will actually do all the work. Make is used as a
-front to CMake. 
-
-In Eclipse open a "Make Target" view and add the targets manually. The
-targets are named "configure", "all", "install", "test" and "clean".
+(those names depend on the build procedures).
 
 =============================================================================
     Macros:
@@ -67,9 +47,8 @@ example MakeLocalConfig file can be found in src/main/resources/make.
 If you work with cmake directly and do not want the default macro values,
 you need to define them on the cmake command line.
       
-Current macro and their values can be found reading this file, reading the
-file DEPENDENCIES.txt explaining about the third party software that we use
-and by looking at CMakeBuildConfig.txt in the src directory. 
+Current macro and their values can be found reading this file, or using the
+make command without arguments in the top level project directory
 
 =============================================================================
     Build and install project artifacts (application, tests, documentation):
@@ -102,9 +81,9 @@ The targets are listed below.
 The _main and _test targets are there for development work with recurring
 compile-install-test cycles.
 
-Note that all implies that _main and _test artifacts are built or installed,
-but not the site artifacts. For those you need to explicitly set the macro
-INDISMO_INCLUDE_DOC=ON in the make  or cmake invocation or in your
+Note that all implies that main and test artifacts are built or installed,
+but not the doc artifacts. For those you need to explicitly set the macro
+STRIDE_INCLUDE_DOC=ON in the make or cmake invocation or in your
 MakeLocalConfig file.
              
 =============================================================================
@@ -115,6 +94,11 @@ invocations. The targets have the effect described above:
     "make all"            build all artifacts after configuring for cmake
     "make install"        installs all the artifacts
     "make test"           runs tests (and that needs to come after install)
+If you just want to configure the build tree without actually building
+anything and get a report of al macro settings the use:
+    "make configure"      constructs build directory and lsists macro settings.
+The other targets execute this step implicitly if you have not already done 
+so previously.
 
 =============================================================================
     Build and install directly with cmake:
