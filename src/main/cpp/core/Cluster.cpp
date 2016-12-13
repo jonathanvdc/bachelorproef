@@ -48,12 +48,11 @@ tuple<bool, size_t> Cluster::SortMembers()
         for (size_t i_member = 0; i_member < m_index_immune; i_member++) {
                 // if immune, move to back
                 if (m_members[i_member].first->IsImmune()) {
-
                         bool swapped = false;
                         size_t new_place = m_index_immune - 1;
                         m_index_immune--;
                         while(! swapped && new_place > i_member) {
-                                if(m_members[new_place].first->IsImmune()) {
+                                if (m_members[new_place].first->IsImmune()) {
                                         m_index_immune--;
                                         new_place--;
                                 } else {

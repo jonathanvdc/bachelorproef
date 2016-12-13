@@ -269,14 +269,16 @@ void Simulator::InitializeContactHandlers()
 
 void Simulator::RunTimeStep(bool track_index_case)
 {
-		UpdateCluster(m_households,      track_index_case);
-		UpdateCluster(m_day_clusters,    track_index_case);
-		UpdateCluster(m_home_districts,  track_index_case);
-		UpdateCluster(m_day_districts,   track_index_case);
-		for (auto& p : *m_population) {
-			p.Update(m_state);
-		}
-		m_state->AdvanceDay();
+        for (auto& p : *m_population) {
+                p.Update(m_state);
+        }
+
+	UpdateCluster(m_households, track_index_case);
+        UpdateCluster(m_day_clusters, track_index_case);
+        UpdateCluster(m_home_districts, track_index_case);
+        UpdateCluster(m_day_districts, track_index_case);
+
+        m_state->AdvanceDay();
 }
 
 void Simulator::UpdateCluster(vector<Cluster>& clusters, bool track_index_case)

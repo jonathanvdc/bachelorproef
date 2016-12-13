@@ -15,7 +15,7 @@
 #  Copyright 2016, Willem L, Kuylen E & Broeckhove J
 #############################################################################
 #
-# RESULTS AND TIMINGS FROM INDISMO SIMULATIONS
+# RESULTS AND TIMINGS FROM STRIDE SIMULATIONS
 #
 #############################################################################
 

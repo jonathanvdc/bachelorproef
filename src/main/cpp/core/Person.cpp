@@ -73,15 +73,23 @@ void Person::Update(shared_ptr<const WorldEnvironment> world_environ)
         // update presence in clusters
         if (m_age > 18) { // adult
                 if (world_environ->IsHoliday() || world_environ->IsWeekend()) {
-                        m_in_day_cluster = false;
+                        m_in_day_cluster   = false;
+                        m_in_day_district  = false;
+                        m_in_home_district = true;
                 } else {
-                        m_in_day_cluster = true;
+                        m_in_day_cluster   = true;
+                        m_in_day_district  = true;
+                        m_in_home_district = false;
                 }
         } else { // kid, so look at school holidays too
                 if (world_environ->IsHoliday() || world_environ->IsSchoolHoliday() || world_environ->IsWeekend()) {
-                        m_in_day_cluster = false;
+                        m_in_day_cluster   = false;
+                        m_in_day_district  = false;
+                        m_in_home_district = true;
                 } else {
-                        m_in_day_cluster = true;
+                        m_in_day_cluster   = true;
+                        m_in_day_district  = true;
+                        m_in_home_district = false;
                 }
         }
 }
