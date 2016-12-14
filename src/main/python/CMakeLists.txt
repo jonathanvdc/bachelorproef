@@ -21,13 +21,8 @@
 
 INSTALL( FILES 
         create_contactmatrix.py 
-        datastruct_perf.py 
+        log2csv.py 
         plot_maps.py 
-        plot_times.py 
-        plot_times_multR0.py 
-        plots_holidays.py 
-        prepare_csv.py 
-        sim_contacts.py 
         sim_wrapper.py 
         slider_maps.py 
 	DESTINATION ${BIN_INSTALL_LOCATION}  
