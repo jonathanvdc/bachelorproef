@@ -185,12 +185,6 @@ void Simulator::InitializeClusters()
 		}
 		if (p.GetDayClusterId() > 0) {
 			m_day_clusters[p.GetDayClusterId()].AddPerson(&p);
-			if (m_day_clusters[p.GetDayClusterId()].GetClusterType() == ClusterType::School) {
-				// Check if new person is under 24, otherwise cluster is a workplace
-				if (p.GetAge() > 24U) {
-					m_day_clusters[p.GetDayClusterId()].SetClusterType(ClusterType::Work);
-				}
-			}
 		}
 		if (p.GetHomeDistrictId() > 0) {
 			m_home_districts[p.GetHomeDistrictId()].AddPerson(&p);

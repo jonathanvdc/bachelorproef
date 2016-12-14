@@ -28,7 +28,6 @@
 #include "spdlog/spdlog.h"
 #include <cstddef>
 #include <memory>
-#include <utility>
 #include <vector>
 
 namespace stride {
@@ -38,6 +37,17 @@ using namespace std;
 Cluster::Cluster(std::size_t cluster_id, ClusterType cluster_type)
         : m_cluster_id(cluster_id), m_cluster_type(cluster_type), m_index_immune(0)
 {
+}
+
+/// Add the given Person to the Cluster.
+void Cluster::AddPerson(Person* p)
+{
+        m_members.emplace_back(std::make_pair(p, true));
+        m_index_immune++;
+
+        if ((m_cluster_type == ClusterType::School) && (p->GetAge() > 24U)) {
+                m_cluster_type = ClusterType::Work;
+        }
 }
 
 tuple<bool, size_t> Cluster::SortMembers()

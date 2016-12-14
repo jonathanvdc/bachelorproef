@@ -19,6 +19,7 @@
  */
 
 #include "Cluster.h"
+#include "ContactHandler.h"
 #include "Infector.h"
 #include "LogMode.h"
 #include "Person.h"

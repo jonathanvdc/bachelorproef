@@ -20,17 +20,18 @@
  * Header for the core Cluster class.
  */
 
-#include "ContactHandler.h"
 #include "ClusterType.h"
-#include "Person.h"
-#include "sim/WorldEnvironment.h"
 #include "LogMode.h"
 
 #include <cstddef>
-#include <utility>
 #include <vector>
 
 namespace stride {
+
+class ContactHandler;
+class Person;
+class WorldEnvironment;
+
 
 /**
  * Represents a location for social contacts, an group of people.
@@ -42,36 +43,28 @@ public:
 	Cluster(std::size_t cluster_id, ClusterType cluster_type);
 
 	/// Add the given Person to the Cluster.
-	void AddPerson(Person* p)
-	{
-		m_members.emplace_back(std::make_pair(p, true));
-		m_index_immune++;
-	}
+	void AddPerson(Person* p);
 
-	///
+	/// Return number of persons in this cluster.
 	size_t GetSize() const { return m_members.size(); }
 
-	///
+	/// Return the type of this cluster.
 	ClusterType GetClusterType() const { return m_cluster_type; }
 
-	///
-	void SetClusterType(ClusterType cluster_type) { m_cluster_type = cluster_type; }
-
-	///
+	/// Update the cluster state.
 	void Update(std::shared_ptr<ContactHandler> contact_handler,
-	        std::shared_ptr<const WorldEnvironment> sim_state,
-	        LogMode log_mode, bool index_case = false);
+	        std::shared_ptr<const WorldEnvironment> sim_state, LogMode log_mode, bool index_case = false);
 
 private:
 	/// Sort members of cluster according to health status
-	/// (order: exposed/infected/recovered, susceptible, immune)
+	/// (order: exposed/infected/recovered, susceptible, immune).
 	std::tuple<bool, size_t> SortMembers();
 
-	///
+	/// Infector calculates contacts and transmissions.
         template<LogMode log_level, bool track_index_case>
         friend class Infector;
 
-	/// Check which members are present in the cluster on the current day
+	/// Calculate which members are present in the cluster on the current day.
 	void UpdateMemberPresence();
 
 private:
