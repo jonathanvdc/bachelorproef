@@ -33,7 +33,6 @@ namespace stride {
 class Population : public std::vector<Person>
 {
 public:
-
 	/// Get the cumulative number of cases.
 	unsigned int GetInfectedCount() const
 	{
