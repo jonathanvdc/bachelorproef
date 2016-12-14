@@ -158,7 +158,7 @@ int main(int argc, char** argv)
 		// Summary
 		SummaryFile  summary_file(output_prefix);
 		summary_file.Print(pt_config,
-			sim.GetPopulation()->GetSize(), sim.GetPopulation()->GetInfectedCount(),
+			sim.GetPopulation()->size(), sim.GetPopulation()->GetInfectedCount(),
 			duration_cast<milliseconds>(run_clock.Get()).count(),
 			duration_cast<milliseconds>(total_clock.Get()).count());
 

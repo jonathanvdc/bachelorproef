@@ -42,23 +42,18 @@ using namespace std;
 using namespace boost::filesystem;
 using namespace boost::property_tree;
 
-bool PopulationBuilder::Build(shared_ptr<Population> population,
+bool PopulationBuilder::Build(shared_ptr<Population> pop,
                         const boost::property_tree::ptree& pt_config,
                         const boost::property_tree::ptree& pt_disease)
 {
         //------------------------------------------------
         // setup.
         //------------------------------------------------
-        const string population_file      = pt_config.get<string>("run.population_file");
+        Population& population            = *pop;
         const double seeding_rate         = pt_config.get<double>("run.seeding_rate");
         const double immunity_rate        = pt_config.get<double>("run.immunity_rate");
         const unsigned int rng_seed       = pt_config.get<double>("run.rng_seed");
         const string disease_config_file  = pt_config.get<string>("run.disease_config_file");
-
-        vector<double> start_infectiousness = GetDistribution(pt_disease,"disease.start_infectiousness");
-        vector<double> start_symptomatic    = GetDistribution(pt_disease,"disease.start_symptomatic");
-        vector<double> time_infectious      = GetDistribution(pt_disease,"disease.time_infectious");
-        vector<double> time_symptomatic     = GetDistribution(pt_disease,"disease.time_symptomatic");
 
         //------------------------------------------------
         // Check input.
@@ -70,111 +65,104 @@ bool PopulationBuilder::Build(shared_ptr<Population> population,
         //------------------------------------------------
         if (status) {
                 status = false;
-                const auto file_name = population_file;
+                const auto file_name = pt_config.get<string>("run.population_file");;
                 const auto file_path = InstallDirs::GetDataDir() /= file_name;
                 if ( !is_regular_file(file_path) ) {
                         throw runtime_error(string(__func__)
                                 + "> Population file " + file_path.string() + " not present. Aborting.");
                 }
 
-                ifstream popFile;
-                popFile.open(file_path.string());
-
-                if (popFile.is_open()) {;
-                        util::Random rng_disease(rng_seed); // random numbers for disease characteristics
-                        string line;
-                        getline(popFile, line); // step over file header
-                        unsigned int person_index = 0U;
-                        while (getline(popFile, line)) {
-                                //make use of stochastic disease characteristics
-                                const auto person_start_infectiousness = SampleFromDistribution(rng_disease, start_infectiousness);
-                                const auto person_start_symptomatic    = SampleFromDistribution(rng_disease, start_symptomatic);
-                                const auto person_time_infectious      = SampleFromDistribution(rng_disease, time_infectious);
-                                const auto person_time_symptomatic     = SampleFromDistribution(rng_disease, time_symptomatic);
-
-                                const auto values = util::StringUtils::Tokenize(line, ";");
-                                population->AddPerson(person_index,
-                                                util::StringUtils::FromString<unsigned int>(values[0]),
-                                                util::StringUtils::FromString<unsigned int>(values[1]),
-                                                util::StringUtils::FromString<unsigned int>(values[3]),
-                                                util::StringUtils::FromString<unsigned int>(values[2]),
-                                                util::StringUtils::FromString<unsigned int>(values[4]),
-                                                person_start_infectiousness, person_start_symptomatic,
-                                                person_time_infectious, person_time_symptomatic);
-                                ++person_index;
-                        }
-                        popFile.close();
-                        status = true;
-                } else {
-                        status = false;
-                        cerr << "PROBLEM WITH POPULATION FILE: " << population_file << endl;
+                ifstream pop_file;
+                pop_file.open(file_path.string());
+                if ( !pop_file.is_open()) {
+                        throw runtime_error(string(__func__)
+                                + "> Error opening population file " + file_path.string() + ". Aborting.");
                 }
+
+                const vector<double> start_infectiousness = GetDistribution(pt_disease,"disease.start_infectiousness");
+                const vector<double> start_symptomatic    = GetDistribution(pt_disease,"disease.start_symptomatic");
+                const vector<double> time_infectious      = GetDistribution(pt_disease,"disease.time_infectious");
+                const vector<double> time_symptomatic     = GetDistribution(pt_disease,"disease.time_symptomatic");
+                util::Random rng_disease(rng_seed); // random numbers for disease characteristics
+
+                string line;
+                getline(pop_file, line); // step over file header
+                unsigned int person_id = 0U;
+                while (getline(pop_file, line)) {
+                        //make use of stochastic disease characteristics
+                        const auto person_start_infectiousness = SampleFromDistribution(rng_disease, start_infectiousness);
+                        const auto person_start_symptomatic    = SampleFromDistribution(rng_disease, start_symptomatic);
+                        const auto person_time_infectious      = SampleFromDistribution(rng_disease, time_infectious);
+                        const auto person_time_symptomatic     = SampleFromDistribution(rng_disease, time_symptomatic);
+
+                        const auto values = util::StringUtils::Tokenize(line, ";");
+                        population.emplace_back(Person(person_id,
+                                util::StringUtils::FromString<unsigned int>(values[0]),
+                                util::StringUtils::FromString<unsigned int>(values[1]),
+                                util::StringUtils::FromString<unsigned int>(values[3]),
+                                util::StringUtils::FromString<unsigned int>(values[2]),
+                                util::StringUtils::FromString<unsigned int>(values[4]),
+                                person_start_infectiousness, person_start_symptomatic,
+                                person_time_infectious, person_time_symptomatic));
+                        ++person_id;
+                }
+                pop_file.close();
+                status = true;
         }
 
         //------------------------------------------------
-        // Set participants in social contact survey. (OPTION)
-        //------------------------------------------------
-        const string log_level = pt_config.get<string>("run.log_level", "None");
-        if ((log_level == "Contacts") & status) {
-                unsigned int pop_size = population->GetSize();
-                unsigned int num_participants = pt_config.get<double>("run.num_participants_survey");
-                util::Random rng_survey(rng_seed);
-
-                // use a while-loop to obtain 'num_participant' unique participants (default sampling is with replacement)
-                unsigned int num_samples = 0;
-                shared_ptr<spdlog::logger> logger = spdlog::get("contact_logger");
-                while(num_samples < num_participants){
-                        const unsigned int participant_id = rng_survey(pop_size);
-                        Person& p = population->GetPerson(participant_id);
-                        if ( !p.IsParticipatingInSurvey() ) {
-                                p.ParticipateInSurvey();
-                                logger->info("[PART] {} {} {}", p.GetId(), p.GetAge(), p.GetGender());
-                                num_samples++;
-                        }
-                }
-        }
-
-        //------------------------------------------------
-        // Set population immunity.
+        // Customize the population.
         //------------------------------------------------
         if (status) {
-                unsigned int population_size = population->GetSize();
-                unsigned int num_immune = floor(static_cast<double> (population_size) * immunity_rate);
-                unsigned int max_population_index = population_size - 1;
-                unsigned int population_index = 0;
-                util::Random rng(rng_seed+1);
+
+                //------------------------------------------------
+                // Set up.
+                //------------------------------------------------
+                util::Random rng(rng_seed);
+                const unsigned int max_population_index = population.size() - 1;
+
+                //------------------------------------------------
+                // Set participants in social contact survey.
+                //------------------------------------------------
+                const string log_level = pt_config.get<string>("run.log_level", "None");
+                if ( log_level == "Contacts" ) {
+                        const unsigned int num_participants = pt_config.get<double>("run.num_participants_survey");
+
+                        // use a while-loop to obtain 'num_participant' unique participants (default sampling is with replacement)
+                        // A for loop will not do because we might draw the same person twice.
+                        unsigned int num_samples = 0;
+                        const shared_ptr<spdlog::logger> logger = spdlog::get("contact_logger");
+                        while(num_samples < num_participants){
+                                Person& p = population[rng(max_population_index)];
+                                if ( !p.IsParticipatingInSurvey() ) {
+                                        p.ParticipateInSurvey();
+                                        logger->info("[PART] {} {} {}", p.GetId(), p.GetAge(), p.GetGender());
+                                        num_samples++;
+                                }
+                        }
+                }
+
+                //------------------------------------------------
+                // Set population immunity.
+                //------------------------------------------------
+                unsigned int num_immune = floor(static_cast<double> (population.size()) * immunity_rate);
                 while (num_immune > 0) {
-                        population_index = rng(max_population_index);
-                        if ((*population).GetPerson(population_index).IsSusceptible()) {
-                                (*population).SetImmune(population_index);
+                        Person& p = population[rng(max_population_index)];
+                        if (p.IsSusceptible()) {
+                                p.SetImmune();
                                 num_immune--;
                         }
                 }
-        }
 
-        //------------------------------------------------
-        // Seed infected persons.
-        //------------------------------------------------
-        if (status) {
-                unsigned int population_size = population->GetSize();
-                unsigned int num_infected = floor(static_cast<double> (population_size) * seeding_rate);
-                unsigned int max_population_index = population_size - 1;
-                unsigned int population_index = 0;
-                util::Random rng(rng_seed);
-
-//			// TEMPORARY FEATURE: sample in a certain district
-//			unsigned int seed_district = 95; // 95: Antwerp and 137: Hasselt
-//			cout << "infectious seeding district: " << seed_district << endl;
+                //------------------------------------------------
+                // Seed infected persons.
+                //------------------------------------------------
+                unsigned int num_infected = floor(static_cast<double> (population.size()) * seeding_rate);
                 while (num_infected > 0) {
-                        //for (unsigned int i = 0; i < num_infected; ++i) {
-                        population_index = rng(max_population_index);
-                        if ((*population).GetPerson(population_index).IsSusceptible()) {
-//					// TEMPORARY FEATURE: sample in a certain district
-//					if(((*population).GetPerson(population_index).GetHomeDistrictId()== seed_district || (*population).GetPerson(population_index).GetDayDistrictId() == seed_district) &&
-//					   ((*population).GetPerson(population_index).GetAge()>20 && ((*population).GetPerson(population_index).GetAge()<40))){
-                                        (*population).SetIndexCase(population_index);
-                                        num_infected--;
-//					}
+                        Person& p = population[rng(max_population_index)];
+                        if (p.IsSusceptible()) {
+                                p.SetIndexCase();
+                                num_infected--;
                         }
                 }
         }

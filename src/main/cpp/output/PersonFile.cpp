@@ -52,16 +52,11 @@ void PersonFile::Initialize(const std::string& file)
 
 void PersonFile::Print(const std::shared_ptr<const Population> population)
 {
-	for(unsigned int i = 0; i < population->GetSize(); i++) {
-		if(!population->GetPerson(i).IsSusceptible()) {
-			m_fstream << population->GetPerson(i).GetId() << ";" ;
-			m_fstream << population->GetPerson(i).IsRecovered() << ";" ;
-			m_fstream << population->GetPerson(i).IsImmune() << ";" ;
-			m_fstream << population->GetPerson(i).GetStartInfectiousness() << ";" ;
-			m_fstream << population->GetPerson(i).GetEndInfectiousness() << ";" ;
-			m_fstream << population->GetPerson(i).GetStartSymptomatic() << ";" ;
-			m_fstream << population->GetPerson(i).GetEndSymptomatic() ;
-			m_fstream << endl;
+	for(const auto& p : *population) {
+		if(!p.IsSusceptible()) {
+			m_fstream << p.GetId() << ";"  << p.IsRecovered() << ";" << p.IsImmune() << ";"
+			        << p.GetStartInfectiousness() << ";" << p.GetEndInfectiousness() << ";"
+			        << p.GetStartSymptomatic() << ";" << p.GetEndSymptomatic()  << endl;
 		}
 	}
 }

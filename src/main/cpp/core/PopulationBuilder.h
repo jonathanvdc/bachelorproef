@@ -37,15 +37,12 @@ class PopulationBuilder
 {
 public:
 	/**
-	 * Constructor that initializes a Population:
-	 * - Add persons
-	 * - Set population immunity
-	 * - Set the first infected cases
+	 * Initializes a Population: add persons, set immunity, seed infection.
 	 *
-	 * @param population		    Pointer to the initialized population.
-	 * @param pt_config				The property_tree with configuration settings.
+	 * @param pop             Pointer to the initialized population.
+	 * @param pt_config       The property_tree with configuration settings.
 	 */
-	static bool Build(std::shared_ptr<Population> population,
+	static bool Build(std::shared_ptr<Population> pop ,
 	        const boost::property_tree::ptree& pt_config, const boost::property_tree::ptree& pt_disease);
 
 private:
