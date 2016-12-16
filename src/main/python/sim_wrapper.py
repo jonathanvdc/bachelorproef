@@ -1,4 +1,20 @@
 #!/usr/bin/python
+#############################################################################
+#  This file is part of the Stride software. 
+#  It is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by 
+#  the Free Software Foundation, either version 3 of the License, or any 
+#  later version.
+#  The software is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License,
+#  along with the software. If not, see <http://www.gnu.org/licenses/>.
+#  see http://www.gnu.org/licenses/.
+#
+#  Copyright 2016, Willem L, Kuylen E & Broeckhove J
+#############################################################################
 
 import sys
 import os
@@ -12,9 +28,10 @@ import csv
 
 import xml.etree.cElementTree as ET
 
-
+# --------------------------------
 # Function that runs the simulator.
-def runIndismo(path, num_days, rng_seed, seeding_rate, r0, population_file, immunity_rate, output_prefix, disease_config_file, generate_person_file, num_participants_survey, environment={}):
+# --------------------------------
+def runSimulator(path, num_days, rng_seed, seeding_rate, r0, population_file, immunity_rate, output_prefix, disease_config_file, generate_person_file, num_participants_survey, environment={}):
     
     # Write configuration file
     root = ET.Element("run")
@@ -36,33 +53,34 @@ def runIndismo(path, num_days, rng_seed, seeding_rate, r0, population_file, immu
     # Execute the call
     return subprocess.call([path, '--config_file', str(output_prefix)+ ".xml"], env=environment)
 
-
+# -----------------------------------------------------
 # Function that uses an R script to process the results
+# -----------------------------------------------------
 def processOutput(output_dir,file_tag):
     
     work_dir = os.getcwd()
-    r_file=open(os.path.join(output_dir,'plot_timings.R'),'w')
-    r_file.write('# R file to plot the output'+ '\n')
-    r_file.write('\n' + '## SET R WORK DIR'+ '\n')
-    r_file.write('setwd("' + os.path.join(work_dir,output_dir) + '")'+ '\n')
-    r_file.write('\n' + '## LOAD HELP FUNCTIONS'+ '\n')
-    r_file.write('source("' + work_dir + '/lib/plot_results_lib.R")'+ '\n')
-    r_file.write('\n' + '## GET DATA'+ '\n')
+    r_file = open(os.path.join(output_dir,'plot_timings.R'), 'w')
+    r_file.write('# R file to plot the output' + '\n')
+    r_file.write('\n' + '## SET R WORK DIR' + '\n')
+    r_file.write('setwd("' + os.path.join(work_dir,output_dir) + '")' + '\n')
+    r_file.write('\n' + '## LOAD HELP FUNCTIONS' + '\n')
+    r_file.write('source("' + work_dir + '/lib/plot_results_lib.R")' + '\n')
+    r_file.write('\n' + '## GET DATA' + '\n')
     r_file.write('data_tag <- "' + file_tag + '"' + '\n')
-    r_file.write('\n## PLOT ALL RESULTS'+ '\n')
-    r_file.write('plot_all_results(data_tag)'+ '\n')
+    r_file.write('\n## PLOT ALL RESULTS' + '\n')
+    r_file.write('plot_all_results(data_tag)' + '\n')
     r_file.close()
     cmd_r = 'Rscript ' + output_dir + '/plot_timings.R'
     # RUN Rscript
     os.system(cmd_r)
 
     work_dir = os.getcwd()
-    r_file=open(os.path.join(output_dir,'score_contacts.R'),'w')
-    r_file.write('# R file to score the contacts'+ '\n')
-    r_file.write('\n' + '## SET R WORK DIR'+ '\n')
-    r_file.write('setwd("' + os.path.join(work_dir,output_dir) + '")'+ '\n')
-    r_file.write('\n' + '## LOAD HELP FUNCTIONS'+ '\n')
-    r_file.write('source("' + work_dir + '/lib/score_cnt_data_lib.R")'+ '\n')
+    r_file = open(os.path.join(output_dir,'score_contacts.R'), 'w')
+    r_file.write('# R file to score the contacts' + '\n')
+    r_file.write('\n' + '## SET R WORK DIR' + '\n')
+    r_file.write('setwd("' + os.path.join(work_dir,output_dir) + '")' + '\n')
+    r_file.write('\n' + '## LOAD HELP FUNCTIONS' + '\n')
+    r_file.write('source("' + work_dir + '/lib/score_cnt_data_lib.R")' + '\n')
     r_file.close()
     cmd_r = 'Rscript ' + output_dir + '/score_contacts.R'
     # RUN Rscript
@@ -80,22 +98,21 @@ import sys
 import csv
 import random
 
-def prepare_csv(log_file_path, participants_file='participants.csv', contacts_file='contacts.csv', transmission_file='transmission.csv'):
-    with open(log_file_path+'_'+participants_file, 'w') as p, open(log_file_path+'_'+contacts_file, 'w') as c, open(log_file_path+'_'+transmission_file, 'w') as t:
-        p_fieldnames = ['local_id', 'part_age', 'part_gender']
-        p_writer = csv.DictWriter(p, fieldnames=p_fieldnames)
+def prepare_csv(log_file_path, participants_file = 'participants.csv', contacts_file = 'contacts.csv', transmission_file = 'transmission.csv'):
+    with open(log_file_path + '_' + participants_file, 'w') as p, open(log_file_path + '_' + contacts_file, 'w') as c, open(log_file_path + '_' + transmission_file, 'w') as t:
+        p_fieldnames  = ['local_id', 'part_age', 'part_gender']
+        p_writer      = csv.DictWriter(p, fieldnames=p_fieldnames)
         p_writer.writeheader()
         
-        c_fieldnames = ['local_id', 'part_age', 'cnt_age',
-                        'cnt_home', 'cnt_work', 'cnt_school', 'cnt_other', 'sim_day']
-        c_writer = csv.DictWriter(c, fieldnames=c_fieldnames)
+        c_fieldnames  = ['local_id', 'part_age', 'cnt_age', 'cnt_home', 'cnt_work', 'cnt_school', 'cnt_other', 'sim_day']
+        c_writer      = csv.DictWriter(c, fieldnames=c_fieldnames)
         c_writer.writeheader()
         
-        t_fieldnames = ['local_id', 'new_infected_id', 'cnt_location','sim_day']
-        t_writer = csv.DictWriter(t, fieldnames=t_fieldnames)
+        t_fieldnames  = ['local_id', 'new_infected_id', 'cnt_location','sim_day']
+        t_writer      = csv.DictWriter(t, fieldnames=t_fieldnames)
         t_writer.writeheader()
             
-        with open (log_file_path+'_logfile.txt', 'r') as f:
+        with open (log_file_path + '_logfile.txt', 'r') as f:
             for line in f:
                 ## remove logging info
                 # line = line[50:]
@@ -131,73 +148,70 @@ def main(argv):
     
     # Arguments parser
     parser = argparse.ArgumentParser(description='Script to execute multiple runs of the simulator.')
-    parser.add_argument('--config', help='A config file describing the experiments to run.', default='./config/config_default.json', type=str)
+    parser.add_argument('--config', help = 'A config file describing the experiments to run.', default = './config/config_default.json', type=str)
     
     args = vars(parser.parse_args())
     
     # Load the json file
-    config=json.load(open(args['config'], 'r'))
+    config = json.load(open(args['config'], 'r'))
     
     # Load the experiment configurations from the json
-    experiments=[config['threads'], config['rng_seed'], config['seeding_rate'], config['r0'], config['population_file'],config['immunity_rate']]
+    experiments = [config['threads'], config['rng_seed'], config['seeding_rate'], config['r0'], config['population_file'],config['immunity_rate']]
     
-    # Check the config'output'... if not empty, use separator in names
+    # Check the config 'output'... if not empty, use separator in names
     name_sep = ''
-    if len(config['output_tag'])>0:
+    if len(config['output_tag']) > 0:
         name_sep='_'
     
-    # Create (summary) output dir with dir for experiment output
-    time_stamp=datetime.datetime.now().strftime("%m%d%H%M%S") # add '%Y to add year and '%f' for milisec
-    file_tag = time_stamp+name_sep+config['output_tag']
+    # Create (summary) output dir with subdir for experiment output
+    time_stamp  = datetime.datetime.now().strftime("%m%d%H%M%S") # add '%Y to add year and '%f' for milisec
+    file_tag    = time_stamp + name_sep + config['output_tag']
 
-    output_dir=os.path.join('output',time_stamp+name_sep+config['output_tag'])
-    experiments_dirs=os.path.join(output_dir,'experiments')
+    output_dir        = os.path.join('output', time_stamp + name_sep + config['output_tag'])
+    experiments_dirs  = os.path.join(output_dir, 'experiments')
     if not os.path.isdir(experiments_dirs):
         os.makedirs(experiments_dirs)
     
     # Open the aggregated output files
-    output_file=open(os.path.join(output_dir,file_tag+'_output.csv'),'w')
-    log_file=open(os.path.join(output_dir,file_tag+'_log.csv'),'w')
+    output_file  = open(os.path.join(output_dir, file_tag + '_output.csv'), 'w')
+    log_file     = open(os.path.join(output_dir, file_tag + '_log.csv'), 'w')
 
     # Copy the json configuration file
-    config_file=open(os.path.join(experiments_dirs,'exp_config.json'),'w')
-    config_file.write(open(args['config'],'r').read())
+    config_file  = open(os.path.join(experiments_dirs, 'exp_config.json'), 'w')
+    config_file.write(open(args['config'], 'r').read())
     config_file.close()
-    
     
     # Create a copy of the environment variables to modify and pass to simulator
     env = os.environ.copy()
     
     is_first=True # needed to have only one header in the aggregated output
-    
-    
+      
     # RUN ALL EXPERIMENTS
-    # note: 'intertools.product' makes all combinations within 'experiments'
-    # note: (a,b) is a tupule... enumerate(vect) gives ((1, vect_n1) (2,vect_n2) ...)
+    # note: 'itertools.product' makes all combinations within 'experiments'
+    # note: (a,b) is a tuple... enumerate(vect) gives ((1, vect_n1) (2,vect_n2) ...)
+    
     for (index, experiment) in enumerate(itertools.product(*experiments)):
      
         # Create a output_prefix for the experiment output
-        output_prefix=os.path.join(experiments_dirs,'exp'+str(index))
-        
-        
+        output_prefix = os.path.join(experiments_dirs, 'exp' + str(index))
+               
         # Set the OpenMP environment
-        env['OMP_NUM_THREADS']=str(experiment[0])
-        env['OMP_SCHEDULE']=str(config['omp_schedule'])
+        env['OMP_NUM_THREADS']  = str(experiment[0])
+        env['OMP_SCHEDULE']     = str(config['omp_schedule'])
         
         # Run the simulator     ('experiment[0]' has been used for the OMP_NUM_THREADS)
-        runIndismo(config['stride_path'], config['num_days'], experiment[1], experiment[2], experiment[3], experiment[4], experiment[5], output_prefix, config['disease_config_file'],config['generate_person_file'],config['num_participants_survey'], env)
-        
-        
+        runSimulator(config['stride_path'], config['num_days'], experiment[1], experiment[2], experiment[3], experiment[4], experiment[5], output_prefix, config['disease_config_file'],config['generate_person_file'],config['num_participants_survey'], env)
+               
         # Append the aggregated outputs
         if is_first:
             output_file.write(open(output_prefix+'_output.csv','r').read())
-            is_first=False
+            is_first = False
         else:
             lines = open(output_prefix+'_output.csv','r').readlines()
             for line in lines[1:]:
                 output_file.write(line)
         
-        log_file.write(open(output_prefix+'_log.csv','r').read())
+        log_file.write(open(output_prefix + '_log.csv', 'r').read())
         log_file.flush()
         output_file.flush()
 
@@ -209,7 +223,7 @@ def main(argv):
     log_file.close()
 
     ## process the output
-    processOutput(output_dir,file_tag)
+    processOutput(output_dir, file_tag)
 
 
 
