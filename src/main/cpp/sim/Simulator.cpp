@@ -88,26 +88,6 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	InitializeContactHandlers();
 }
 
-
-double Simulator::GetAverageClusterSize(const vector<Cluster>& clusters)
-{
-        double total_size = 0;
-        const double num_clusters = clusters.size();
-        for (size_t i = 1; i < num_clusters; i++) {
-                total_size += clusters[i].GetSize();
-        }
-        return total_size / (num_clusters - 1); // '-1' since we're counting from 1 not 0
-}
-
-vector<double> Simulator::GetContactRates(const vector<double>& mean_nums, unsigned int avg_cluster_size)
-{
-        vector<double> rates;
-        for(double num : mean_nums) {
-                rates.emplace_back(num / avg_cluster_size);
-        }
-        return rates;
-}
-
 vector<double> Simulator::GetMeanNumbersOfContacts(ClusterType c_type,  const boost::property_tree::ptree& pt_contacts)
 {
         const string key = "matrices." + ToString(c_type);
@@ -216,48 +196,29 @@ void Simulator::InitializeContactHandlers()
                 read_xml(file_path.string(), pt_contacts);
         }
 
-        // Calculate average cluster sizes
-        const double avg_household_size     = GetAverageClusterSize(m_households);
-        const double avg_home_district_size = GetAverageClusterSize(m_home_districts);
-        const double avg_day_cluster_size   = GetAverageClusterSize(m_day_clusters);
-        const double avg_day_district_size  = GetAverageClusterSize(m_day_districts);
-
         // Household contact matrices
         const vector<double> household_contact_nums = GetMeanNumbersOfContacts(ClusterType::Household, pt_contacts);
-        const vector<double> household_contact_rates = GetContactRates(household_contact_nums, avg_household_size);
-
         // Home district contact matrices
         const vector<double> home_district_contact_nums = GetMeanNumbersOfContacts(ClusterType::HomeDistrict, pt_contacts);
-        const vector<double> home_district_contact_rates = GetContactRates(home_district_contact_nums, avg_home_district_size);
-
         // Work contact matrices
         const vector<double> work_contact_nums = GetMeanNumbersOfContacts(ClusterType::Work, pt_contacts);
-        const vector<double> work_contact_rates = GetContactRates(work_contact_nums, avg_day_cluster_size);
 
         // School contact matrices
         const vector<double> school_contact_nums = GetMeanNumbersOfContacts(ClusterType::School, pt_contacts);
-        const vector<double> school_contact_rates = GetContactRates(school_contact_nums, avg_day_cluster_size);
 
         // Day district contact matrices
         const vector<double> day_district_contact_nums = GetMeanNumbersOfContacts(ClusterType::DayDistrict, pt_contacts);
-        const vector<double> day_district_contact_rates = GetContactRates(day_district_contact_nums, avg_day_district_size);
 
         for (auto contact_handler : m_contact_handler) {
                 contact_handler->AddMeanNumsContacts(ClusterType::Household, household_contact_nums);
-                contact_handler->AddContactRates(ClusterType::Household, household_contact_rates);
 
                 contact_handler->AddMeanNumsContacts(ClusterType::HomeDistrict, home_district_contact_nums);
-                contact_handler->AddContactRates(ClusterType::HomeDistrict, home_district_contact_rates);
 
-                // TODO calculate separate average sizes for work and school clusters
                 contact_handler->AddMeanNumsContacts(ClusterType::Work, work_contact_nums);
-                contact_handler->AddContactRates(ClusterType::Work, work_contact_rates);
 
                 contact_handler->AddMeanNumsContacts(ClusterType::School, school_contact_nums);
-                contact_handler->AddContactRates(ClusterType::School, school_contact_rates);
 
                 contact_handler->AddMeanNumsContacts(ClusterType::DayDistrict, day_district_contact_nums);
-                contact_handler->AddContactRates(ClusterType::DayDistrict, day_district_contact_rates);
         }
 }
 

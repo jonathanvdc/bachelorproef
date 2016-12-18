@@ -43,13 +43,7 @@ public:
 
 	void AddMeanNumsContacts(ClusterType cluster_type, const std::vector<double>& mean_nums)
 	{
-		// TODO remove this function? I don't think m_age_contact_mean_num is ever used...
 		m_age_contact_mean_num[cluster_type] = mean_nums;
-	}
-
-	void AddContactRates(ClusterType cluster_type, const std::vector<double>& rates)
-	{
-		m_age_contact_rates[cluster_type] = rates;
 	}
 
 	/// Handle one contact between persons of the given age. Performs a Bernoulli process with a random
@@ -91,7 +85,7 @@ public:
 	//TODO add function to get transmission chance separately
 
 private:
-	std::map<ClusterType, std::vector<double>>      m_age_contact_rates;          ///< Cluster types and contact rates per age
+	//std::map<ClusterType, std::vector<double>>      m_age_contact_rates;          ///< Cluster types and contact rates per age
 	std::map<ClusterType, std::vector<double>>      m_age_contact_mean_num;       ///< Cluster types and mean number of contacts per age
 
 	util::Random                                    m_rng;                        ///< Random number engine.
