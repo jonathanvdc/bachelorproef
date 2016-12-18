@@ -137,17 +137,17 @@ void Simulator::InitializeClusters()
 	Population& population              = *m_population;
 
 	for (const auto& p : population) {
-		if (num_households < p.GetHouseholdId()) {
-			num_households = p.GetHouseholdId();
+		if (num_households < p.GetClusterId(ClusterType::Household)) {
+			num_households = p.GetClusterId(ClusterType::Household);
 		}
-		if (num_day_clusters < p.GetDayClusterId()) {
-			num_day_clusters = p.GetDayClusterId();
+		if (num_day_clusters < p.GetClusterId(ClusterType::Work)) {
+			num_day_clusters = p.GetClusterId(ClusterType::Work);
 		}
-		if (num_home_districts < p.GetHomeDistrictId()) {
-			num_home_districts = p.GetHomeDistrictId();
+		if (num_home_districts < p.GetClusterId(ClusterType::HomeDistrict)) {
+			num_home_districts = p.GetClusterId(ClusterType::HomeDistrict);
 		}
-		if (num_day_districts < p.GetDayDistrictId()) {
-			num_day_districts = p.GetDayDistrictId();
+		if (num_day_districts < p.GetClusterId(ClusterType::DayDistrict)) {
+			num_day_districts = p.GetClusterId(ClusterType::DayDistrict);
 		}
 	}
 
@@ -180,23 +180,23 @@ void Simulator::InitializeClusters()
 		cluster_id++;
 	}
 	for (auto p: population) {
-		if (p.GetHouseholdId() > 0) {
-			m_households[p.GetHouseholdId()].AddPerson(&p);
+		if (p.GetClusterId(ClusterType::Household) > 0) {
+			m_households[p.GetClusterId(ClusterType::Household)].AddPerson(&p);
 		}
-		if (p.GetDayClusterId() > 0) {
-			m_day_clusters[p.GetDayClusterId()].AddPerson(&p);
+		if (p.GetClusterId(ClusterType::Work) > 0) {
+			m_day_clusters[p.GetClusterId(ClusterType::Work)].AddPerson(&p);
 		}
-		if (p.GetHomeDistrictId() > 0) {
-			m_home_districts[p.GetHomeDistrictId()].AddPerson(&p);
+		if (p.GetClusterId(ClusterType::HomeDistrict) > 0) {
+			m_home_districts[p.GetClusterId(ClusterType::HomeDistrict)].AddPerson(&p);
 		}
-		if (p.GetDayDistrictId() > 0) {
-			m_day_districts[p.GetDayDistrictId()].AddPerson(&p);
+		if (p.GetClusterId(ClusterType::DayDistrict) > 0) {
+			m_day_districts[p.GetClusterId(ClusterType::DayDistrict)].AddPerson(&p);
 		}
 	}
 	// Set household sizes for persons
 	for (auto& p: population) {
-		if (p.GetHouseholdId() > 0) {
-			size_t hh_size = m_households[p.GetHouseholdId()].GetSize();
+		if (p.GetClusterId(ClusterType::Household) > 0) {
+			size_t hh_size = m_households[p.GetClusterId(ClusterType::Household)].GetSize();
 			p.SetHouseholdSize(hh_size);
 		}
 	}

@@ -161,7 +161,7 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
                 while (num_infected > 0) {
                         Person& p = population[rng(max_population_index)];
                         if (p.IsSusceptible()) {
-                                p.SetIndexCase();
+                                p.StartInfection();
                                 num_infected--;
                         }
                 }

@@ -21,6 +21,7 @@
  */
 
 #include "ClusterType.h"
+#include "Disease.h"
 #include "sim/WorldEnvironment.h"
 
 #include <cstddef>
@@ -42,14 +43,8 @@ public:
 		  m_day_cluster(day_cluster_id), m_day_district(day_district_id),
 		  m_in_household(true), m_in_home_district(true),
 		  m_in_day_cluster(true), m_in_day_district(true),
-		  m_susceptible(true), m_infected(false), m_infectious(false),
-		  m_symptomatic(false), m_recovered(false), m_immune(false), m_disease_counter(0),
-		  m_start_infectiousness(start_infectiousness), m_start_symptomatic(start_symptomatic),
-		  m_is_participant(false)
-	{
-		m_end_infectiousness = start_infectiousness + time_infectious;
-		m_end_symptomatic = start_symptomatic + time_symptomatic;
-	}
+		  m_disease(start_infectiousness, start_symptomatic, time_infectious, time_symptomatic),
+		  m_is_participant(false) {}
 
 	/// Is this person not equal to the given person?
 	bool operator!=(const Person& p) const { return p.m_id != m_id; }
@@ -57,112 +52,102 @@ public:
 	/// Get the age.
 	double GetAge() const { return m_age; }
 
-        /// Get the day cluster id.
-        unsigned int GetDayClusterId() const { return m_day_cluster; }
+	/// Get cluster ID of cluster_type
+	unsigned int GetClusterId(ClusterType cluster_type) const {
+		switch (cluster_type) {
 
-        /// Get the day neighborhood id.
-        unsigned int GetDayDistrictId() const { return m_day_district; }
+		case ClusterType::Household:
+			return m_household;
+		case ClusterType::School: case ClusterType::Work:
+			return m_day_cluster;
+		case ClusterType::HomeDistrict:
+			return m_home_district;
+		case ClusterType::DayDistrict:
+			return m_day_district;
+		default:
+			return -1;
 
-        /// Get the disease counter.
-        unsigned int GetDiseaseCounter() const { return m_disease_counter; }
+		}
+	}
 
-        ///
-        unsigned int GetEndInfectiousness() const { return m_end_infectiousness; }
+    ///
+    unsigned int GetEndInfectiousness() const { return m_disease.GetEndInfectiousness(); }
 
-        ///
-        unsigned int GetEndSymptomatic() const { return m_end_symptomatic; }
+    ///
+    unsigned int GetEndSymptomatic() const { return m_disease.GetEndSymptomatic(); }
 
-        ///
+    ///
 	char GetGender() const { return m_gender; }
 
-        /// Get the home neighborhood id.
-        unsigned int GetHomeDistrictId() const { return m_home_district; }
+    ///
+	size_t GetHouseholdSize() const { return m_household_size; }
 
-	/// Get the household id.
-	unsigned int GetHouseholdId() const { return m_household; }
+    /// Get the id.
+    unsigned int GetId() const { return m_id; }
 
-        ///
-        size_t GetHouseholdSize() const { return m_household_size; }
+    ///
+   unsigned int GetStartInfectiousness() const { return m_disease.GetStartInfectiousness(); }
 
-        /// Get the id.
-        unsigned int GetId() const { return m_id; }
+    ///
+    unsigned int GetStartSymptomatic() const { return m_disease.GetStartSymptomatic(); }
 
-        ///
-        unsigned int GetStartInfectiousness() const { return m_start_infectiousness; }
+    /// Is this person immune?
+    bool IsImmune() const { return m_disease.GetDiseaseStatus() == DiseaseStatus::Immune; }
 
-        ///
-        unsigned int GetStartSymptomatic() const { return m_start_symptomatic; }
-
-        /// Increment the persons disease counter.
-        void IncrementDiseaseCounter() { m_disease_counter++; }
-
-        /// Is this person immune?
-        bool IsImmune() const { return m_immune; }
-
-        /// Check if a person is present today in a given cluster
-        bool IsInCluster(ClusterType c) const;
+    /// Check if a person is present today in a given cluster
+    bool IsInCluster(ClusterType c) const;
 
 	/// Is this person infected?
-	bool IsInfected() const { return m_infected; }
+	bool IsInfected() const {
+		return m_disease.GetDiseaseStatus() == DiseaseStatus::Exposed
+				|| m_disease.GetDiseaseStatus() == DiseaseStatus::Infectious
+				|| m_disease.GetDiseaseStatus() == DiseaseStatus::InfectiousAndSymptomatic
+				|| m_disease.GetDiseaseStatus() == DiseaseStatus::Symptomatic;
+	}
 
 	/// Is this person infectious?
-	bool IsInfectious() const { return m_infectious; }
+	bool IsInfectious() const {
+		return m_disease.GetDiseaseStatus() == DiseaseStatus::Infectious
+				|| m_disease.GetDiseaseStatus() == DiseaseStatus::InfectiousAndSymptomatic;
+	}
 
-        /// Does this person participates in the social contact study?
-        bool IsParticipatingInSurvey() const { return m_is_participant; }
+    /// Does this person participates in the social contact study?
+    bool IsParticipatingInSurvey() const { return m_is_participant; }
 
-        /// Is this person recovered?
-        bool IsRecovered() const { return m_recovered; }
+   /// Is this person recovered?
+    bool IsRecovered() const { return m_disease.GetDiseaseStatus() == DiseaseStatus::Recovered; }
 
-        /// Is this person susceptible?
-        bool IsSusceptible() const { return m_susceptible; }
+    /// Is this person susceptible?
+    bool IsSusceptible() const { return m_disease.GetDiseaseStatus() == DiseaseStatus::Susceptible; }
 
 	/// Is this person symptomatic?
-	bool IsSymptomatic() const { return m_symptomatic; }
+	bool IsSymptomatic() const {
+		return m_disease.GetDiseaseStatus() == DiseaseStatus::Symptomatic
+				|| m_disease.GetDiseaseStatus() == DiseaseStatus::InfectiousAndSymptomatic;
+	}
 
-        /// Participate in social contact study and log person details
-        void ParticipateInSurvey() { m_is_participant = true; }
-
-	/// Reset the persons disease counter.
-	void ResetDiseaseCounter() { m_disease_counter = 0U; }
+    /// Participate in social contact study and log person details
+    void ParticipateInSurvey() { m_is_participant = true; }
 
 	///
 	void SetHouseholdSize(size_t hh_size) { m_household_size = hh_size; }
 
-        /// Set this persons immune status to TRUE.
-        void SetImmune()
-        {
-                m_immune                = true;
-                m_susceptible           = false;
-                m_start_infectiousness  = 0;
-                m_start_symptomatic     = 0;
-                m_end_infectiousness    = 0;
-                m_end_symptomatic       = 0;
-        }
-
-	/// Set this person as index case.
-	void SetIndexCase()
-	{
-		m_susceptible 	= false;
-		m_infected 	= true;
-		ResetDiseaseCounter();
-	}
+    /// Set this persons immune status to TRUE.
+    void SetImmune()
+    {
+    	m_disease.SetImmune();
+    }
 
 	/// Start infection.
 	void StartInfection()
 	{
-		assert(IsSusceptible() && "StartInfection: IsSusceptible() fails.");
-		m_susceptible 	= false;
-		m_infected 	= true;
-		ResetDiseaseCounter();
+		m_disease.StartInfection();
 	}
 
 	/// Stop the infection.
 	void StopInfection()
 	{
-		assert(IsInfected() && "StopInfection: IsInfected() fails.");
-		m_infected    = false;
-		m_recovered   = true;
+		m_disease.StopInfection();
 	}
 
 	/// Update the health status and presence in clusters.
@@ -184,19 +169,7 @@ private:
 	bool            m_in_day_cluster;		 ///< Is person present in day_cluster today?
 	bool            m_in_day_district;		 ///< Is person present in day_district today?
 
-	bool            m_susceptible;	   		 ///< Is this person susceptible?
-	bool            m_infected;	       		 ///< Is this person infected?
-	bool            m_infectious;	  	 	 ///< Is this person infectious?
-	bool            m_symptomatic;                   ///< Is this person symptomatic
-	bool            m_recovered;                     ///< Is this person recovered?
-	bool            m_immune;                        ///< Is this person immune?
-
-	unsigned int    m_disease_counter; 		 ///< The disease counter.
-
-	unsigned int    m_start_infectiousness;          ///< Days after infection to become infectious.
-	unsigned int    m_start_symptomatic;             ///< Days after infection to become symptomatic.
-	unsigned int    m_end_infectiousness;            ///< Days after infection to end infectious state.
-	unsigned int    m_end_symptomatic;               ///< Days after infection to end symptomatic state.
+	Disease			m_disease;
 
 	bool            m_is_participant;		 ///< Is participating in the social contact study
 };
