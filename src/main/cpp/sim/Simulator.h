@@ -52,20 +52,14 @@ public:
 	void RunTimeStep(bool track_index_case = false);
 
 private:
-        /// Get average size of given clusters
-        double GetAverageClusterSize(const std::vector<Cluster>& clusters);
-
-	/// Get age-based contact rates for a given cluster type
-	std::vector<double> GetContactRates(const std::vector<double>& mean_nums, unsigned int avg_cluster_size);
-
 	/// Get mean number of contacts a day per age for given cluster type
 	std::vector<double> GetMeanNumbersOfContacts(ClusterType c_type, const boost::property_tree::ptree& pt_contacts);
 
 	/// Initialize the clusters.
 	void InitializeClusters();
 
-        /// Initialize the contact handlers.
-        void InitializeContactHandlers();
+    /// Initialize the contact handlers.
+    void InitializeContactHandlers();
 
 	/// Update the contacts in the given clusters.
 	void UpdateCluster(std::vector<Cluster>& clusters, bool index_case = false);

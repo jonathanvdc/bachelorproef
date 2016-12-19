@@ -46,11 +46,6 @@ public:
 		m_age_contact_mean_num[cluster_type] = mean_nums;
 	}
 
-	void AddContactRates(ClusterType cluster_type, const std::vector<double>& rates)
-	{
-		m_age_contact_rates[cluster_type] = rates;
-	}
-
 	/// Handle one contact between persons of the given age. Performs a Bernoulli process with a random
 	/// number. The given ages determine the transmission rate (=probability for "success").
 	bool operator()(unsigned int age, ClusterType cluster_type, size_t cluster_size)
@@ -87,8 +82,10 @@ public:
 		return m_rng.NextDouble() < rate;
 	}
 
+	//TODO add function to get transmission chance separately
+
 private:
-	std::map<ClusterType, std::vector<double>>      m_age_contact_rates;          ///< Cluster types and contact rates per age
+	//std::map<ClusterType, std::vector<double>>      m_age_contact_rates;          ///< Cluster types and contact rates per age
 	std::map<ClusterType, std::vector<double>>      m_age_contact_mean_num;       ///< Cluster types and mean number of contacts per age
 
 	util::Random                                    m_rng;                        ///< Random number engine.

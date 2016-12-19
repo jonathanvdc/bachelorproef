@@ -48,27 +48,8 @@ bool Person::IsInCluster(ClusterType c) const
 
 void Person::Update(shared_ptr<const WorldEnvironment> world_environ)
 {
-        if (IsInfected()) {
-                IncrementDiseaseCounter();
-                if (GetDiseaseCounter() == m_start_infectiousness) {
-                        m_infectious = true;
-                }
-                if (GetDiseaseCounter() == m_end_infectiousness) {
-                        m_infectious = false;
-                        if(!m_symptomatic){
-                                StopInfection();
-                        }
-                }
-                if (GetDiseaseCounter() == m_start_symptomatic) {
-                        m_symptomatic = true;
-                }
-                if (GetDiseaseCounter() == m_end_symptomatic) {
-                        m_symptomatic = false;
-                        if (!m_infectious){
-                                StopInfection();
-                        }
-                }
-        }
+
+		m_disease.Update();
 
         // update presence in clusters
         if (m_age > 18) { // adult
