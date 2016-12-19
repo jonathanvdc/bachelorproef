@@ -20,6 +20,7 @@
  * Header file for the core Population class
  */
 
+#include "core/Health.h"
 #include "core/Person.h"
 
 #include <numeric>
@@ -37,7 +38,8 @@ public:
 	unsigned int GetInfectedCount() const
 	{
 		const auto counter  = [](unsigned int total, const Person& p) {
-						return total + (p.IsInfected() || p.IsRecovered());
+		                                const auto& h = p.GetHealth();
+						return total + (h.IsInfected() || h.IsRecovered());
 		                        };
 		return std::accumulate(this->begin(), this->end(), 0U, counter);
 	}

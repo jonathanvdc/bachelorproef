@@ -20,13 +20,14 @@
  * Header file for the Person class.
  */
 
-#include "ClusterType.h"
-#include "Disease.h"
+#include "core/Health.h"
 #include "sim/WorldEnvironment.h"
 
 #include <cstddef>
 
 namespace stride {
+
+enum class ClusterType;
 
 /**
  * Store and handle person data.
@@ -43,7 +44,7 @@ public:
 		  m_day_cluster(day_cluster_id), m_day_district(day_district_id),
 		  m_in_household(true), m_in_home_district(true),
 		  m_in_day_cluster(true), m_in_day_district(true),
-		  m_disease(start_infectiousness, start_symptomatic, time_infectious, time_symptomatic),
+		  m_health(start_infectiousness, start_symptomatic, time_infectious, time_symptomatic),
 		  m_is_participant(false) {}
 
 	/// Is this person not equal to the given person?
@@ -53,102 +54,34 @@ public:
 	double GetAge() const { return m_age; }
 
 	/// Get cluster ID of cluster_type
-	unsigned int GetClusterId(ClusterType cluster_type) const {
-		switch (cluster_type) {
+	unsigned int GetClusterId(ClusterType cluster_type) const;
 
-		case ClusterType::Household:
-			return m_household;
-		case ClusterType::School: case ClusterType::Work:
-			return m_day_cluster;
-		case ClusterType::HomeDistrict:
-			return m_home_district;
-		case ClusterType::DayDistrict:
-			return m_day_district;
-		default:
-			return -1;
-
-		}
-	}
-
-    ///
-    unsigned int GetEndInfectiousness() const { return m_disease.GetEndInfectiousness(); }
-
-    ///
-    unsigned int GetEndSymptomatic() const { return m_disease.GetEndSymptomatic(); }
-
-    ///
+        ///
 	char GetGender() const { return m_gender; }
 
-    ///
+        ///
 	size_t GetHouseholdSize() const { return m_household_size; }
 
-    /// Get the id.
-    unsigned int GetId() const { return m_id; }
+	///
+	Health& GetHealth()  { return m_health; }
 
-    ///
-   unsigned int GetStartInfectiousness() const { return m_disease.GetStartInfectiousness(); }
+	///
+	const Health& GetHealth() const { return m_health; }
 
-    ///
-    unsigned int GetStartSymptomatic() const { return m_disease.GetStartSymptomatic(); }
+	/// Get the id.
+        unsigned int GetId() const { return m_id; }
 
-    /// Is this person immune?
-    bool IsImmune() const { return m_disease.GetDiseaseStatus() == DiseaseStatus::Immune; }
+        /// Check if a person is present today in a given cluster
+        bool IsInCluster(ClusterType c) const;
 
-    /// Check if a person is present today in a given cluster
-    bool IsInCluster(ClusterType c) const;
+	/// Does this person participates in the social contact study?
+	bool IsParticipatingInSurvey() const { return m_is_participant; }
 
-	/// Is this person infected?
-	bool IsInfected() const {
-		return m_disease.GetDiseaseStatus() == DiseaseStatus::Exposed
-				|| m_disease.GetDiseaseStatus() == DiseaseStatus::Infectious
-				|| m_disease.GetDiseaseStatus() == DiseaseStatus::InfectiousAndSymptomatic
-				|| m_disease.GetDiseaseStatus() == DiseaseStatus::Symptomatic;
-	}
-
-	/// Is this person infectious?
-	bool IsInfectious() const {
-		return m_disease.GetDiseaseStatus() == DiseaseStatus::Infectious
-				|| m_disease.GetDiseaseStatus() == DiseaseStatus::InfectiousAndSymptomatic;
-	}
-
-    /// Does this person participates in the social contact study?
-    bool IsParticipatingInSurvey() const { return m_is_participant; }
-
-   /// Is this person recovered?
-    bool IsRecovered() const { return m_disease.GetDiseaseStatus() == DiseaseStatus::Recovered; }
-
-    /// Is this person susceptible?
-    bool IsSusceptible() const { return m_disease.GetDiseaseStatus() == DiseaseStatus::Susceptible; }
-
-	/// Is this person symptomatic?
-	bool IsSymptomatic() const {
-		return m_disease.GetDiseaseStatus() == DiseaseStatus::Symptomatic
-				|| m_disease.GetDiseaseStatus() == DiseaseStatus::InfectiousAndSymptomatic;
-	}
-
-    /// Participate in social contact study and log person details
-    void ParticipateInSurvey() { m_is_participant = true; }
+	/// Participate in social contact study and log person details
+	void ParticipateInSurvey() { m_is_participant = true; }
 
 	///
 	void SetHouseholdSize(size_t hh_size) { m_household_size = hh_size; }
-
-    /// Set this persons immune status to TRUE.
-    void SetImmune()
-    {
-    	m_disease.SetImmune();
-    }
-
-	/// Start infection.
-	void StartInfection()
-	{
-		m_disease.StartInfection();
-	}
-
-	/// Stop the infection.
-	void StopInfection()
-	{
-		m_disease.StopInfection();
-	}
 
 	/// Update the health status and presence in clusters.
 	void Update(std::shared_ptr<const WorldEnvironment> world_environ);
@@ -169,7 +102,7 @@ private:
 	bool            m_in_day_cluster;		 ///< Is person present in day_cluster today?
 	bool            m_in_day_district;		 ///< Is person present in day_district today?
 
-	Disease			m_disease;
+	Health          m_health;                        ///< Health info for this person.
 
 	bool            m_is_participant;		 ///< Is participating in the social contact study
 };

@@ -20,6 +20,8 @@
 
 #include "PopulationBuilder.h"
 
+#include "core/Health.h"
+#include "core/Person.h"
 #include "core/Population.h"
 #include "util/InstallDirs.h"
 #include "util/Random.h"
@@ -148,8 +150,8 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
                 unsigned int num_immune = floor(static_cast<double> (population.size()) * immunity_rate);
                 while (num_immune > 0) {
                         Person& p = population[rng(max_population_index)];
-                        if (p.IsSusceptible()) {
-                                p.SetImmune();
+                        if (p.GetHealth().IsSusceptible()) {
+                                p.GetHealth().SetImmune();
                                 num_immune--;
                         }
                 }
@@ -160,8 +162,8 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
                 unsigned int num_infected = floor(static_cast<double> (population.size()) * seeding_rate);
                 while (num_infected > 0) {
                         Person& p = population[rng(max_population_index)];
-                        if (p.IsSusceptible()) {
-                                p.StartInfection();
+                        if (p.GetHealth().IsSusceptible()) {
+                                p.GetHealth().StartInfection();
                                 num_infected--;
                         }
                 }

@@ -20,8 +20,8 @@
  * Header for the core Cluster class.
  */
 
-#include "ClusterType.h"
-#include "LogMode.h"
+#include "core/ClusterType.h"
+#include "core/LogMode.h"
 
 #include <cstddef>
 #include <vector>
@@ -47,7 +47,7 @@ public:
 	void AddPerson(Person* p);
 
 	/// Return number of persons in this cluster.
-	size_t GetSize() const { return m_members.size(); }
+	std::size_t GetSize() const { return m_members.size(); }
 
 	/// Return the type of this cluster.
 	ClusterType GetClusterType() const { return m_cluster_type; }

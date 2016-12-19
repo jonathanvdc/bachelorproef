@@ -20,7 +20,7 @@
 
 #include "Person.h"
 
-#include "ClusterType.h"
+#include "core/ClusterType.h"
 #include "sim/WorldEnvironment.h"
 
 #include <memory>
@@ -28,6 +28,23 @@
 namespace stride {
 
 using namespace std;
+
+unsigned int Person::GetClusterId(ClusterType cluster_type) const
+{
+        switch (cluster_type) {
+                case ClusterType::Household:
+                        return m_household;
+                case ClusterType::School:
+                case ClusterType::Work:
+                        return m_day_cluster;
+                case ClusterType::HomeDistrict:
+                        return m_home_district;
+                case ClusterType::DayDistrict:
+                        return m_day_district;
+                default:
+                        return -1;
+        }
+}
 
 bool Person::IsInCluster(ClusterType c) const
 {
@@ -48,8 +65,7 @@ bool Person::IsInCluster(ClusterType c) const
 
 void Person::Update(shared_ptr<const WorldEnvironment> world_environ)
 {
-
-		m_disease.Update();
+        m_health.Update();
 
         // update presence in clusters
         if (m_age > 18) { // adult

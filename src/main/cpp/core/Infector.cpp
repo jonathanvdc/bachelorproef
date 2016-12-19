@@ -18,11 +18,12 @@
  * Implementation of Infector algorithms.
  */
 
-#include "Cluster.h"
-#include "ContactHandler.h"
-#include "Infector.h"
-#include "LogMode.h"
-#include "Person.h"
+#include "core/Cluster.h"
+#include "core/ContactHandler.h"
+#include "core/Health.h"
+#include "core/Infector.h"
+#include "core/LogMode.h"
+#include "core/Person.h"
 #include "sim/WorldEnvironment.h"
 
 #include "spdlog/spdlog.h"
@@ -52,7 +53,7 @@ template<>
 class R0_POLICY<true>
 {
 public:
-        static void Execute(Person* p) { p->StopInfection(); }
+        static void Execute(Person* p) { p->GetHealth().StopInfection(); }
 };
 
 //--------------------------------------------------------------------------
@@ -145,7 +146,7 @@ void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
                         // check if member is present today
                         if (c_members[i_infected].second) {
                                 const auto p1 = c_members[i_infected].first;
-                                if (p1->IsInfectious()) {
+                                if (p1->GetHealth().IsInfectious()) {
                                         const auto age1 = p1->GetAge();
                                         for (size_t i_contact = num_cases; i_contact < c_immune; i_contact++) {
                                                 // check if member is present today
@@ -153,7 +154,7 @@ void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
                                                         auto p2 = c_members[i_contact].first;
                                                         if ((*contact_handler)(age1, c_type, c_size)) {
                                                                 LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, sim_state);
-                                                                p2->StartInfection();
+                                                                p2->GetHealth().StartInfection();
                                                                 R0_POLICY<track_index_case>::Execute(p2);
                                                         }
                                                 }

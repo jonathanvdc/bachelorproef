@@ -21,7 +21,7 @@
 set(LIB_SRC
     core/Cluster.cpp
     core/ClusterType.cpp
-    core/Disease.cpp
+    core/Health.cpp
     core/Infector.cpp
     core/LogMode.cpp
     core/Person.cpp

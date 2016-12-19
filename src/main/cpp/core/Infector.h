@@ -20,7 +20,7 @@
  * Header for the core Cluster class.
  */
 
-#include "LogMode.h"
+#include "core/LogMode.h"
 #include <memory>
 
 namespace stride {

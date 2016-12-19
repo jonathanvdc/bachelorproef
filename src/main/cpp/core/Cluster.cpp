@@ -57,12 +57,12 @@ tuple<bool, size_t> Cluster::SortMembers()
 
         for (size_t i_member = 0; i_member < m_index_immune; i_member++) {
                 // if immune, move to back
-                if (m_members[i_member].first->IsImmune()) {
+                if (m_members[i_member].first->GetHealth().IsImmune()) {
                         bool swapped = false;
                         size_t new_place = m_index_immune - 1;
                         m_index_immune--;
                         while(! swapped && new_place > i_member) {
-                                if (m_members[new_place].first->IsImmune()) {
+                                if (m_members[new_place].first->GetHealth().IsImmune()) {
                                         m_index_immune--;
                                         new_place--;
                                 } else {
@@ -72,8 +72,8 @@ tuple<bool, size_t> Cluster::SortMembers()
                         }
                 }
                 // else, if not susceptible, move to front
-                else if (!m_members[i_member].first->IsSusceptible()) {
-                        if (!infectious_cases && m_members[i_member].first->IsInfectious()) {
+                else if (!m_members[i_member].first->GetHealth().IsSusceptible()) {
+                        if (!infectious_cases && m_members[i_member].first->GetHealth().IsInfectious()) {
                                 infectious_cases = true;
                         }
                         if (i_member > num_cases) {

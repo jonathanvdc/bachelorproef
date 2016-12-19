@@ -20,6 +20,8 @@
 
 #include "PersonFile.h"
 
+#include "core/Health.h"
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -53,10 +55,11 @@ void PersonFile::Initialize(const std::string& file)
 void PersonFile::Print(const std::shared_ptr<const Population> population)
 {
 	for(const auto& p : *population) {
-		if(!p.IsSusceptible()) {
-			m_fstream << p.GetId() << ";"  << p.IsRecovered() << ";" << p.IsImmune() << ";"
-			        << p.GetStartInfectiousness() << ";" << p.GetEndInfectiousness() << ";"
-			        << p.GetStartSymptomatic() << ";" << p.GetEndSymptomatic()  << endl;
+	        const auto& h = p.GetHealth();
+		if ( !h.IsSusceptible() ) {
+			m_fstream << p.GetId() << ";"  << h.IsRecovered() << ";" << h.IsImmune() << ";"
+			        << h.GetStartInfectiousness() << ";" << h.GetEndInfectiousness() << ";"
+			        << h.GetStartSymptomatic() << ";" << h.GetEndSymptomatic()  << endl;
 		}
 	}
 }
