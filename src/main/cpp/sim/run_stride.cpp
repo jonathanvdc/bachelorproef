@@ -24,6 +24,7 @@
 #include "output/PersonFile.h"
 #include "output/SummaryFile.h"
 #include "sim/Simulator.h"
+#include "util/ConfigInfo.h"
 #include "util/InstallDirs.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
@@ -31,9 +32,11 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/filesystem.hpp>
+#include <omp.h>
 #include <spdlog/spdlog.h>
 
 #include <cmath>
+#include <iomanip>
 #include <ios>
 #include <iostream>
 #include <limits>
@@ -80,17 +83,26 @@ void run_stride(bool track_index_case, const string& config_file_name)
         // Configuration.
         // -----------------------------------------------------------------------------------------
         ptree pt_config;
-        {
-                const auto file_path = InstallDirs::GetConfigDir() /= config_file_name;
-                if ( !is_regular_file(file_path) ) {
-                        throw runtime_error(string(__func__)
-                                + ">Config file " + file_path.string() + " not present. Aborting.");
-                }
-                read_xml(file_path.string(), pt_config);
-                cout << "Configuration file:  " << file_path.string() << endl;
+        const auto file_path = InstallDirs::GetConfigDir() /= config_file_name;
+        if ( !is_regular_file(file_path) ) {
+                throw runtime_error(string(__func__)
+                        + ">Config file " + file_path.string() + " not present. Aborting.");
         }
+        read_xml(file_path.string(), pt_config);
+
+        cout << "Configuration file:  " << file_path.string() << endl;
         cout << "Setting for track_index_case:  " << boolalpha << track_index_case << endl;
 
+        unsigned int num_threads;
+        #pragma omp parallel
+        {
+                num_threads = omp_get_num_threads();
+        }
+        if (ConfigInfo::HaveOpenMP()) {
+                cout << "Using OpenMP threads:  " << num_threads << endl;
+        } else {
+                cout << "NOt using OpenMP threads." << endl;
+        }
         // -----------------------------------------------------------------------------------------
         // Set output path prefix.
         // -----------------------------------------------------------------------------------------
@@ -98,7 +110,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
         if (output_prefix.length() == 0) {
                 output_prefix = TimeStamp().ToTag();
         }
-        cout << "Project output tag:  " << output_prefix << endl;
+        cout << "Project output tag:  " << output_prefix << endl << endl;
 
         // -----------------------------------------------------------------------------------------
         // Set additional run configurations.
@@ -122,17 +134,22 @@ void run_stride(bool track_index_case, const string& config_file_name)
         // -----------------------------------------------------------------------------------------
         // Create simulator
         Stopwatch<> total_clock("total_clock", true);
+        cout << "Building the simulator. "<< endl;
         Simulator sim(pt_config);
+        cout << "Done building the simulator. "<< endl <<endl;
 
         // Run
         Stopwatch<> run_clock("run_clock");
         const unsigned int num_days = pt_config.get<unsigned int>("run.num_days");
         vector<unsigned int> cases(num_days);
         for (unsigned int i = 0; i < num_days; i++) {
+                cout << "Simulating day: " << setw(5) << i;
                 run_clock.Start();
                 sim.RunTimeStep(track_index_case);
                 run_clock.Stop();
+                cout << "     Done, infected count: ";
                 cases[i] = sim.GetPopulation()->GetInfectedCount();
+                cout << setw(10) << cases[i] << endl;
         }
 
         // -----------------------------------------------------------------------------------------

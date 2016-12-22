@@ -30,7 +30,8 @@ class Health
 {
 public:
 	///
-	Health(unsigned int start_infectiousness, unsigned int start_symptomatic, unsigned int time_infectious, unsigned int time_symptomatic);
+	Health(unsigned int start_infectiousness, unsigned int start_symptomatic,
+	        unsigned int time_infectious, unsigned int time_symptomatic);
 
 	///
 	HealthStatus GetHealthStatus() const { return m_status; }

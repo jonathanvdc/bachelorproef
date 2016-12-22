@@ -23,6 +23,7 @@
 #include "core/ClusterType.h"
 #include "core/ContactProfile.h"
 #include "core/LogMode.h"
+#include "core/MasterProfile.h"
 #include "core/Population.h"
 #include "core/PopulationBuilder.h"
 #include "sim/Calendar.h"
@@ -60,18 +61,21 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	// Get the disease configuration
 	ptree pt_disease;
 	const auto file_name { pt_config.get<string>("run.disease_config_file") };
-	const auto file_path { InstallDirs::GetConfigDir() /= file_name };
+	const auto file_path { InstallDirs::GetDataDir() /= file_name };
 	if ( !is_regular_file(file_path) ) {
 	        throw runtime_error(std::string(__func__)  + "> No file " + file_path.string());
 	}
 	read_xml(file_path.string(), pt_disease);
 
 	// Build population and initialize clusters.
+	cerr << "Building the population. "<< endl;
 	PopulationBuilder::Build(m_population, pt_config, pt_disease);
+	cerr << "Initializing the clusters. "<< endl;
 	InitializeClusters();
 
 	// Build contact handlers.
         // R0 and transmission rate;use linear model fitted to simulation data: Expected(R0) = (b0+b1*transm_rate)
+	cerr << "Setting up contact handlers. "<< endl;
         const double r0   = pt_config.get<double>("run.r0");
         const double b0   = pt_disease.get<double>("disease.transmission.b0");
         const double b1   = pt_disease.get<double>("disease.transmission.b1");
@@ -80,7 +84,9 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
                 m_contact_handler.emplace_back(make_shared<ContactHandler>(transmission_rate,
                                 pt_config.get<double>("run.rng_seed"), m_num_threads, i));
         }
+        cerr << "Initializing contact handlers. "<< endl;
 	InitializeContactHandlers();
+	cerr << "Done initializing contact handlers. "<< endl;
 }
 
 const shared_ptr<const Population> Simulator::GetPopulation() const
@@ -163,25 +169,17 @@ void Simulator::InitializeContactHandlers()
         // Get the contact configuration to initialize contact matrices for each cluster type
         ptree pt;
         const auto file_name { m_config_pt.get("run.age_contact_matrix_file", "contact_matrix.xml") };
-        const auto file_path { InstallDirs::GetConfigDir() /= file_name };
+        const auto file_path { InstallDirs::GetDataDir() /= file_name };
         if ( !is_regular_file(file_path) ) {
                 throw runtime_error(string(__func__)  + "> No file " + file_path.string());
         }
         read_xml(file_path.string(), pt);
 
-        const ContactProfile hh_profile(ClusterType::Household, pt);
-        const ContactProfile sc_profile(ClusterType::School, pt);
-        const ContactProfile wo_profile(ClusterType::Work, pt);
-        const ContactProfile hd_profile(ClusterType::HomeDistrict, pt);
-        const ContactProfile dd_profile(ClusterType::DayDistrict, pt);
-
-        for (auto c : m_contact_handler) {
-                c->AddProfile(ClusterType::Household,     hh_profile);
-                c->AddProfile(ClusterType::School,        sc_profile);
-                c->AddProfile(ClusterType::Work,          wo_profile);
-                c->AddProfile(ClusterType::HomeDistrict,  hd_profile);
-                c->AddProfile(ClusterType::DayDistrict,   dd_profile);
-        }
+        MasterProfile::AddProfile(ClusterType::Household,     ContactProfile(ClusterType::Household, pt));
+        MasterProfile::AddProfile(ClusterType::School,        ContactProfile(ClusterType::School, pt));
+        MasterProfile::AddProfile(ClusterType::Work,          ContactProfile(ClusterType::Work, pt));
+        MasterProfile::AddProfile(ClusterType::HomeDistrict,  ContactProfile(ClusterType::HomeDistrict, pt));
+        MasterProfile::AddProfile(ClusterType::DayDistrict,   ContactProfile(ClusterType::DayDistrict, pt));
 }
 
 void Simulator::RunTimeStep(bool track_index_case)

@@ -23,6 +23,7 @@
 #include "core/Health.h"
 
 #include <cstddef>
+#include <iostream>
 #include <memory>
 
 namespace stride {

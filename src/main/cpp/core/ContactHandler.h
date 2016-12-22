@@ -22,12 +22,8 @@
 
 #include "core/Age.h"
 #include "core/ClusterType.h"
-#include "core/ContactProfile.h"
+#include "core/MasterProfile.h"
 #include "util/Random.h"
-
-#include <cstddef>
-#include <map>
-#include <vector>
 
 namespace stride {
 
@@ -42,11 +38,6 @@ public:
 			: m_rng(seed), m_transmission_rate_adult(transmission_rate)
 	{
 		m_rng.Split(stream_count, id);
-	}
-
-	void AddProfile(ClusterType cluster_type, const ContactProfile& mean_nums)
-	{
-		m_master_profile.at(ToSizeType(cluster_type)) = mean_nums;
 	}
 
 	/// Handle one contact between persons of the given age. Performs a Bernoulli process with a random
@@ -67,17 +58,13 @@ public:
         {
                 double rate = 1.0;
                 if (cluster_type != ClusterType::Household) {
-                        rate = m_master_profile[ToSizeType(cluster_type)][EffectiveAge(age)] / cluster_size;
+                        rate = MasterProfile::Get()[ToSizeType(cluster_type)][EffectiveAge(age)] / cluster_size;
                         rate = (cluster_type == ClusterType::Work) ? rate * 1.7 : rate;
                 }
                 return rate;
         }
 
 private:
-        using MasterContactProfile = std::array<ContactProfile, NumOfClusterTypes()>;
-
-private:
-        MasterContactProfile      m_master_profile;             ///< Cluster types and mean number of contacts per age
 	util::Random              m_rng;                        ///< Random number engine.
         double                    m_transmission_rate_adult;    ///< Transmission rate between adults.
 };

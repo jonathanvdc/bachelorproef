@@ -59,7 +59,6 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
         const string disease_config_file  = pt_config.get<string>("run.disease_config_file");
 
         Random rng(rng_seed);
-        const unsigned int max_population_index = population.size() - 1;
 
         //------------------------------------------------
         // Check input.
@@ -99,7 +98,6 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
                         const auto start_symptomatic    = Sample(rng, distrib_start_symptomatic);
                         const auto time_infectious      = Sample(rng, distrib_time_infectious);
                         const auto time_symptomatic     = Sample(rng, distrib_time_symptomatic);
-
                         const auto values = StringUtils::Tokenize(line, ";");
                         population.emplace_back(Person(person_id,
                                 StringUtils::FromString<unsigned int>(values[0]),
@@ -110,6 +108,7 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
                                 start_infectiousness, start_symptomatic, time_infectious, time_symptomatic));
                         ++person_id;
                 }
+
                 pop_file.close();
                 status = true;
         }
@@ -117,6 +116,7 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
         //------------------------------------------------
         // Customize the population.
         //------------------------------------------------
+        const unsigned int max_population_index = population.size() - 1;
         if (status) {
 
                 //------------------------------------------------
@@ -139,11 +139,11 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
                                 }
                         }
                 }
-
+                cerr << "Done with log level." << endl;
                 //------------------------------------------------
                 // Set population immunity.
                 //------------------------------------------------
-                unsigned int num_immune = floor(static_cast<double> (population.size()) * immunity_rate);
+                unsigned int num_immune = floor(static_cast<double>(population.size()) * immunity_rate);
                 while (num_immune > 0) {
                         Person& p = population[rng(max_population_index)];
                         if (p.GetHealth().IsSusceptible()) {
