@@ -21,6 +21,7 @@
 #include "Simulator.h"
 
 #include "core/ClusterType.h"
+#include "core/ContactProfile.h"
 #include "core/LogMode.h"
 #include "core/Population.h"
 #include "core/PopulationBuilder.h"
@@ -88,20 +89,6 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	InitializeContactHandlers();
 }
 
-AgeContactProfile Simulator::GetProfile(ClusterType c_type,  const boost::property_tree::ptree& pt_contacts)
-{
-        const string key = "matrices." + ToString(c_type);
-        AgeContactProfile mean_nums;
-        for(const auto& participant: pt_contacts.get_child(key)) {
-                double total_contacts = 0;
-                for (const auto& contact: participant.second.get_child("contacts")) {
-                        total_contacts += contact.second.get<double>("rate");
-                }
-                mean_nums.back() = total_contacts;
-        }
-        return mean_nums;
-}
-
 const shared_ptr<const Population> Simulator::GetPopulation() const
 {
         return m_population;
@@ -109,7 +96,7 @@ const shared_ptr<const Population> Simulator::GetPopulation() const
 
 void Simulator::InitializeClusters()
 {
-	// get number of clusters and districts
+	// Determine number of clusters and districts.
 	unsigned int num_households         = 0U;
 	unsigned int num_day_clusters       = 0U;
 	unsigned int num_home_districts     = 0U;
@@ -117,18 +104,10 @@ void Simulator::InitializeClusters()
 	Population& population              = *m_population;
 
 	for (const auto& p : population) {
-		if (num_households < p.GetClusterId(ClusterType::Household)) {
-			num_households = p.GetClusterId(ClusterType::Household);
-		}
-		if (num_day_clusters < p.GetClusterId(ClusterType::Work)) {
-			num_day_clusters = p.GetClusterId(ClusterType::Work);
-		}
-		if (num_home_districts < p.GetClusterId(ClusterType::HomeDistrict)) {
-			num_home_districts = p.GetClusterId(ClusterType::HomeDistrict);
-		}
-		if (num_day_districts < p.GetClusterId(ClusterType::DayDistrict)) {
-			num_day_districts = p.GetClusterId(ClusterType::DayDistrict);
-		}
+	        num_households      = std::max(num_households, p.GetClusterId(ClusterType::Household));
+	        num_day_clusters    = std::max(num_day_clusters, p.GetClusterId(ClusterType::Work));
+	        num_home_districts  = std::max(num_home_districts, p.GetClusterId(ClusterType::HomeDistrict));
+	        num_day_districts   = std::max(num_day_districts, p.GetClusterId(ClusterType::DayDistrict));
 	}
 
 	// add extra '0' nbh (=not present)
@@ -197,11 +176,11 @@ void Simulator::InitializeContactHandlers()
         }
 
         for (auto c : m_contact_handler) {
-                c->AddProfile(ClusterType::Household,     GetProfile(ClusterType::Household, pt));
-                c->AddProfile(ClusterType::HomeDistrict,  GetProfile(ClusterType::HomeDistrict, pt));
-                c->AddProfile(ClusterType::Work,          GetProfile(ClusterType::Work, pt));
-                c->AddProfile(ClusterType::School,        GetProfile(ClusterType::School, pt));
-                c->AddProfile(ClusterType::DayDistrict,   GetProfile(ClusterType::DayDistrict, pt));
+                c->AddProfile(ClusterType::Household,     ContactProfile(ClusterType::Household, pt));
+                c->AddProfile(ClusterType::HomeDistrict,  ContactProfile(ClusterType::HomeDistrict, pt));
+                c->AddProfile(ClusterType::Work,          ContactProfile(ClusterType::Work, pt));
+                c->AddProfile(ClusterType::School,        ContactProfile(ClusterType::School, pt));
+                c->AddProfile(ClusterType::DayDistrict,   ContactProfile(ClusterType::DayDistrict, pt));
         }
 }
 

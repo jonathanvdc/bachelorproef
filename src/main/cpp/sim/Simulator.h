@@ -20,14 +20,11 @@
  * Header for the Simulator class.
  */
 
-#include "core/Age.h"
 #include "core/ContactHandler.h"
 #include "core/Cluster.h"
-#include "core/ClusterType.h"
 #include "core/LogMode.h"
 
 #include <boost/property_tree/ptree.hpp>
-#include <type_traits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -53,14 +50,11 @@ public:
 	void RunTimeStep(bool track_index_case = false);
 
 private:
-	/// Get mean number of contacts a day per age for given cluster type
-	AgeContactProfile GetProfile(ClusterType c_type, const boost::property_tree::ptree& pt_contacts);
-
 	/// Initialize the clusters.
 	void InitializeClusters();
 
-    /// Initialize the contact handlers.
-    void InitializeContactHandlers();
+        /// Initialize the contact handlers.
+        void InitializeContactHandlers();
 
 	/// Update the contacts in the given clusters.
 	void UpdateCluster(std::vector<Cluster>& clusters, bool index_case = false);
@@ -75,7 +69,7 @@ private:
         std::shared_ptr<Calendar>                 m_state;                ///< Management of calendar..
 
 private:
-	std::vector<Cluster>                      m_households;           ///< Container with households Clusters.
+	std::vector<Cluster>                      m_households;           ///< Container with household Clusters.
 	std::vector<Cluster>                      m_day_clusters;         ///< Container with day Clusters.
 	std::vector<Cluster>                      m_home_districts;       ///< Container with home district Clusters.
 	std::vector<Cluster>                      m_day_districts;        ///< Container with day district Clusters.

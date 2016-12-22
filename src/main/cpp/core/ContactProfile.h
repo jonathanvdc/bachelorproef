@@ -1,5 +1,5 @@
-#ifndef AGE_H_INCLUDED
-#define AGE_H_INCLUDED
+#ifndef CONTACT_PROFILE_H_INCLUDED
+#define CONTACT_PROFILE_H_INCLUDED
 /*
  *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
@@ -17,18 +17,26 @@
 
 /**
  * @file
- * Helpers for age.
+ * Contact profile.
  */
 
+#include "Age.h"
+#include "ClusterType.h"
+
+#include <boost/property_tree/ptree.hpp>
 #include <array>
 
 namespace stride {
 
-/// Maximum age for Person's.
-inline constexpr unsigned int  MaximumAge() { return 80U; }
+class ContactProfile : public std::array<double, MaximumAge() + 1>
+{
+public:
+        /// Need to keep the default constructor available.
+        ContactProfile() {};
 
-/// Effective age (topping of at maximum).
-inline unsigned int EffectiveAge(unsigned int age) { return (age <= MaximumAge()) ? age : MaximumAge(); }
+        /// Explicitly initialize
+        ContactProfile(ClusterType c_type,  const boost::property_tree::ptree& pt_contacts);
+};
 
 } // namespace
 

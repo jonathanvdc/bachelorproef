@@ -22,6 +22,7 @@
 
 #include "core/Age.h"
 #include "core/ClusterType.h"
+#include "core/ContactProfile.h"
 #include "util/Random.h"
 
 #include <cstddef>
@@ -43,40 +44,40 @@ public:
 		m_rng.Split(stream_count, id);
 	}
 
-	void AddProfile(ClusterType cluster_type, const AgeContactProfile& mean_nums)
+	void AddProfile(ClusterType cluster_type, const ContactProfile& mean_nums)
 	{
-		m_age_contact_mean_num.at(ToSizeType(cluster_type)) = mean_nums;
+		m_master_profile.at(ToSizeType(cluster_type)) = mean_nums;
 	}
 
 	/// Handle one contact between persons of the given age. Performs a Bernoulli process with a random
 	/// number. The given ages determine the transmission rate (=probability for "success").
 	bool operator()(unsigned int age, ClusterType cluster_type, size_t cluster_size)
 	{
-		return m_rng.NextDouble() < m_transmission_rate_adult * ContactRate(age, cluster_type, cluster_size);
+		return m_rng.NextDouble() < m_transmission_rate_adult * GetContactRate(age, cluster_type, cluster_size);
 	}
 
 	/// Check if two individuals make contact.
-	bool Contact(unsigned int age, ClusterType cluster_type, size_t cluster_size)
+	bool HasContact(unsigned int age, ClusterType cluster_type, size_t cluster_size)
 	{
-		return m_rng.NextDouble() < ContactRate(age, cluster_type, cluster_size);
+		return m_rng.NextDouble() < GetContactRate(age, cluster_type, cluster_size);
 	}
 
         /// Check if two individuals make contact.
-        double ContactRate(unsigned int age, ClusterType cluster_type, size_t cluster_size)
+        double GetContactRate(unsigned int age, ClusterType cluster_type, size_t cluster_size)
         {
                 double rate = 1.0;
                 if (cluster_type != ClusterType::Household) {
-                        rate = m_age_contact_mean_num[ToSizeType(cluster_type)][EffectiveAge(age)] / cluster_size;
-                        rate = (cluster_type == ClusterType::Work) ? rate*1.7 : rate;
+                        rate = m_master_profile[ToSizeType(cluster_type)][EffectiveAge(age)] / cluster_size;
+                        rate = (cluster_type == ClusterType::Work) ? rate * 1.7 : rate;
                 }
                 return rate;
         }
 
 private:
-        using ContactProfile = std::array<AgeContactProfile, NumOfClusterTypes()>;
+        using MasterContactProfile = std::array<ContactProfile, NumOfClusterTypes()>;
 
 private:
-        ContactProfile            m_age_contact_mean_num;       ///< Cluster types and mean number of contacts per age
+        MasterContactProfile      m_master_profile;       ///< Cluster types and mean number of contacts per age
 	util::Random              m_rng;                        ///< Random number engine.
         double                    m_transmission_rate_adult;    ///< Transmission rate between adults.
 };
