@@ -34,7 +34,7 @@
 namespace stride {
 
 class Population;
-class WorldEnvironment;
+class Calendar;
 
 /**
  * Main class that contains and direct the virtual world.
@@ -71,7 +71,7 @@ private:
 	unsigned int                              m_num_threads;          ///< The number of (OpenMP) threads.
 	LogMode                                   m_log_level;            ///< Specifies logging mode.
         std::shared_ptr<Population>               m_population;           ///< Pointer to the Population.
-        std::shared_ptr<WorldEnvironment>         m_state;                ///< The current state of the simulated world.
+        std::shared_ptr<Calendar>                 m_state;                ///< Management of calendar..
 
 private:
 	std::vector<Cluster>                      m_households;           ///< Container with households Clusters.

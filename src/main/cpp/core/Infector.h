@@ -27,7 +27,7 @@ namespace stride {
 
 class Cluster;
 class ContactHandler;
-class WorldEnvironment;
+class Calendar;
 
 /**
  * Represents a location for social contacts, an group of people.
@@ -39,9 +39,8 @@ public:
 	///
 	static void Execute(Cluster& cluster,
 	        std::shared_ptr<ContactHandler> contact_handler,
-	        std::shared_ptr<const WorldEnvironment> sim_state);
+	        std::shared_ptr<const Calendar> sim_state);
 };
-
 
 extern template class Infector<LogMode::None, false>;
 

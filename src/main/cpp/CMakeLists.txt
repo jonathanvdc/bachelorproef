@@ -29,9 +29,9 @@ set(LIB_SRC
 	output/CasesFile.cpp
 	output/PersonFile.cpp
 	output/SummaryFile.cpp
+	sim/Calendar.cpp
 	sim/run_stride.cpp
 	sim/Simulator.cpp
-	sim/WorldEnvironment.cpp
 	util/InstallDirs.cpp
 )
 

@@ -21,12 +21,13 @@
  */
 
 #include "core/Health.h"
-#include "sim/WorldEnvironment.h"
 
 #include <cstddef>
+#include <memory>
 
 namespace stride {
 
+class Calendar;
 enum class ClusterType;
 
 /**
@@ -84,7 +85,7 @@ public:
 	void SetHouseholdSize(size_t hh_size) { m_household_size = hh_size; }
 
 	/// Update the health status and presence in clusters.
-	void Update(std::shared_ptr<const WorldEnvironment> world_environ);
+	void Update(std::shared_ptr<const Calendar> calendar);
 
 private:
 	unsigned int    m_id;		       		 ///< The id.

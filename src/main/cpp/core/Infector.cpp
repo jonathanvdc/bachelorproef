@@ -24,7 +24,7 @@
 #include "core/Infector.h"
 #include "core/LogMode.h"
 #include "core/Person.h"
-#include "sim/WorldEnvironment.h"
+#include "sim/Calendar.h"
 
 #include "spdlog/spdlog.h"
 #include <cstddef>
@@ -64,7 +64,7 @@ class LOG_POLICY
 {
 public:
         static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
-                ClusterType cluster_type, shared_ptr<const WorldEnvironment> environ)
+                ClusterType cluster_type, shared_ptr<const Calendar> environ)
         {}
 };
 
@@ -76,7 +76,7 @@ class LOG_POLICY<LogMode::Transmissions>
 {
 public:
         static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
-                ClusterType cluster_type, shared_ptr<const WorldEnvironment> environ)
+                ClusterType cluster_type, shared_ptr<const Calendar> environ)
         {
                 logger->info("[TRAN] {} {} {} {}",
                        p1->GetId(), p2->GetId(), ToString(cluster_type), environ->GetSimulationDay());
@@ -91,7 +91,7 @@ class LOG_POLICY<LogMode::Contacts>
 {
 public:
         static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
-                ClusterType cluster_type, shared_ptr<const WorldEnvironment> environ)
+                ClusterType cluster_type, shared_ptr<const Calendar> environ)
         {
                 unsigned int home   = (cluster_type == ClusterType::Household);
                 unsigned int work   = (cluster_type == ClusterType::Work);
@@ -113,7 +113,7 @@ public:
         ///
         static void Execute(Cluster& cluster,
                 std::shared_ptr<ContactHandler> contact_handler,
-                std::shared_ptr<const WorldEnvironment> sim_state);
+                std::shared_ptr<const Calendar> sim_state);
 };
 
 //--------------------------------------------------------------------------
@@ -124,7 +124,7 @@ public:
 template<LogMode log_level, bool track_index_case>
 void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
                                 shared_ptr<ContactHandler> contact_handler,
-                                shared_ptr<const WorldEnvironment> sim_state)
+                                shared_ptr<const Calendar> sim_state)
 {
         // check if the cluster has infected members and sort
         bool infectious_cases;
@@ -171,7 +171,7 @@ void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
 template<bool track_index_case>
 void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster,
                                 shared_ptr<ContactHandler> contact_handler,
-                                shared_ptr<const WorldEnvironment> sim_state)
+                                shared_ptr<const Calendar> sim_state)
 {
         cluster.UpdateMemberPresence();
 

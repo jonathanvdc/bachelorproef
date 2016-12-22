@@ -20,11 +20,11 @@
 
 #include "Simulator.h"
 
-#include "WorldEnvironment.h"
 #include "core/ClusterType.h"
 #include "core/LogMode.h"
 #include "core/Population.h"
 #include "core/PopulationBuilder.h"
+#include "sim/Calendar.h"
 #include "util/InstallDirs.h"
 
 #include <boost/filesystem.hpp>
@@ -51,7 +51,7 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	}
 
 	// initialize world environment
-	m_state = make_shared<WorldEnvironment>(pt_config);
+	m_state = make_shared<Calendar>(pt_config);
 
 	// get log level
 	const string l = pt_config.get<string>("run.log_level", "None");
@@ -196,29 +196,19 @@ void Simulator::InitializeContactHandlers()
                 read_xml(file_path.string(), pt_contacts);
         }
 
-        // Household contact matrices
-        const vector<double> household_contact_nums = GetMeanNumbersOfContacts(ClusterType::Household, pt_contacts);
-        // Home district contact matrices
-        const vector<double> home_district_contact_nums = GetMeanNumbersOfContacts(ClusterType::HomeDistrict, pt_contacts);
-        // Work contact matrices
-        const vector<double> work_contact_nums = GetMeanNumbersOfContacts(ClusterType::Work, pt_contacts);
-
-        // School contact matrices
-        const vector<double> school_contact_nums = GetMeanNumbersOfContacts(ClusterType::School, pt_contacts);
-
-        // Day district contact matrices
-        const vector<double> day_district_contact_nums = GetMeanNumbersOfContacts(ClusterType::DayDistrict, pt_contacts);
+        // Contact data
+        const auto household = GetMeanNumbersOfContacts(ClusterType::Household, pt_contacts);
+        const auto home_district = GetMeanNumbersOfContacts(ClusterType::HomeDistrict, pt_contacts);
+        const auto work = GetMeanNumbersOfContacts(ClusterType::Work, pt_contacts);
+        const auto school = GetMeanNumbersOfContacts(ClusterType::School, pt_contacts);
+        const auto day_district = GetMeanNumbersOfContacts(ClusterType::DayDistrict, pt_contacts);
 
         for (auto contact_handler : m_contact_handler) {
-                contact_handler->AddMeanNumsContacts(ClusterType::Household, household_contact_nums);
-
-                contact_handler->AddMeanNumsContacts(ClusterType::HomeDistrict, home_district_contact_nums);
-
-                contact_handler->AddMeanNumsContacts(ClusterType::Work, work_contact_nums);
-
-                contact_handler->AddMeanNumsContacts(ClusterType::School, school_contact_nums);
-
-                contact_handler->AddMeanNumsContacts(ClusterType::DayDistrict, day_district_contact_nums);
+                contact_handler->AddMeanNumsContacts(ClusterType::Household, household);
+                contact_handler->AddMeanNumsContacts(ClusterType::HomeDistrict, home_district);
+                contact_handler->AddMeanNumsContacts(ClusterType::Work, work);
+                contact_handler->AddMeanNumsContacts(ClusterType::School, school);
+                contact_handler->AddMeanNumsContacts(ClusterType::DayDistrict, day_district);
         }
 }
 

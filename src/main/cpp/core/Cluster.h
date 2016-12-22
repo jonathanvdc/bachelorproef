@@ -31,7 +31,7 @@ namespace stride {
 
 class ContactHandler;
 class Person;
-class WorldEnvironment;
+class Calendar;
 
 
 /**
@@ -54,7 +54,7 @@ public:
 
 	/// Update the cluster state.
 	void Update(std::shared_ptr<ContactHandler> contact_handler,
-	        std::shared_ptr<const WorldEnvironment> sim_state, LogMode log_mode, bool index_case = false);
+	        std::shared_ptr<const Calendar> sim_state, LogMode log_mode, bool index_case = false);
 
 private:
 	/// Sort members of cluster according to health status

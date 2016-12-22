@@ -15,10 +15,11 @@
 
 /**
  * @file
- * Implementation file for the WorldEnvironment class.
+ * Implementation file for the Calendar class.
  */
 
-#include "WorldEnvironment.h"
+#include "Calendar.h"
+
 #include "util/InstallDirs.h"
 
 #include <boost/filesystem.hpp>
@@ -29,7 +30,7 @@ namespace stride {
 using namespace std;
 using namespace boost::filesystem;
 
-WorldEnvironment::WorldEnvironment(const boost::property_tree::ptree& pt_config)
+Calendar::Calendar(const boost::property_tree::ptree& pt_config)
         : m_day(0)
 {
 	// Set start date
@@ -40,13 +41,13 @@ WorldEnvironment::WorldEnvironment(const boost::property_tree::ptree& pt_config)
 	InitializeHolidays(pt_config);
 }
 
-void WorldEnvironment::AdvanceDay()
+void Calendar::AdvanceDay()
 {
 	m_day++;
 	m_date = m_date + boost::gregorian::date_duration(1);
 }
 
-void WorldEnvironment::InitializeHolidays(const boost::property_tree::ptree& pt_config)
+void Calendar::InitializeHolidays(const boost::property_tree::ptree& pt_config)
 {
 	// Load json file
 	boost::property_tree::ptree pt_holidays;

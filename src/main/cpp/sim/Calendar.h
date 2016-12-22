@@ -1,5 +1,5 @@
-#ifndef SRC_MAIN_CPP_SIM_WORLDENVIRONMENT_H_
-#define SRC_MAIN_CPP_SIM_WORLDENVIRONMENT_H_
+#ifndef SRC_MAIN_CPP_SIM_CALENDAR_H_
+#define SRC_MAIN_CPP_SIM_CALENDAR_H_
 /*
  *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 /**
  * @file
- * Header file for the WorldEnvironment class.
+ * Header file for the Calendar class.
  */
 
 #include "boost/date_time/gregorian/gregorian.hpp"
@@ -34,10 +34,10 @@ namespace stride {
  * Class that keeps track of the 'state' of simulated world.
  * E.g. what day it is, holidays, quarantines, ...
  */
-class WorldEnvironment {
+class Calendar {
 public:
 	/// Constructor
-	WorldEnvironment(const boost::property_tree::ptree& pt_config);
+	Calendar(const boost::property_tree::ptree& pt_config);
 
 	/// Advance the internal calendar by one day
 	void AdvanceDay();

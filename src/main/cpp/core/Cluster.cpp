@@ -23,7 +23,7 @@
 #include "Infector.h"
 #include "LogMode.h"
 #include "Person.h"
-#include "sim/WorldEnvironment.h"
+#include "sim/Calendar.h"
 
 #include "spdlog/spdlog.h"
 #include <cstddef>
@@ -86,7 +86,7 @@ tuple<bool, size_t> Cluster::SortMembers()
         return make_tuple(infectious_cases, num_cases);
 }
 
-void Cluster::Update(shared_ptr<ContactHandler> contact_handler, shared_ptr<const WorldEnvironment> sim_state, LogMode log_mode, bool index_case)
+void Cluster::Update(shared_ptr<ContactHandler> contact_handler, shared_ptr<const Calendar> sim_state, LogMode log_mode, bool index_case)
 {
         switch (log_mode) {
                 case LogMode::Contacts:

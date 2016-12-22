@@ -21,7 +21,7 @@
 #include "Person.h"
 
 #include "core/ClusterType.h"
-#include "sim/WorldEnvironment.h"
+#include "sim/Calendar.h"
 
 #include <memory>
 
@@ -63,13 +63,13 @@ bool Person::IsInCluster(ClusterType c) const
         }
 }
 
-void Person::Update(shared_ptr<const WorldEnvironment> world_environ)
+void Person::Update(shared_ptr<const Calendar> calendar)
 {
         m_health.Update();
 
         // update presence in clusters
         if (m_age > 18) { // adult
-                if (world_environ->IsHoliday() || world_environ->IsWeekend()) {
+                if (calendar->IsHoliday() || calendar->IsWeekend()) {
                         m_in_day_cluster   = false;
                         m_in_day_district  = false;
                         m_in_home_district = true;
@@ -79,7 +79,7 @@ void Person::Update(shared_ptr<const WorldEnvironment> world_environ)
                         m_in_home_district = false;
                 }
         } else { // kid, so look at school holidays too
-                if (world_environ->IsHoliday() || world_environ->IsSchoolHoliday() || world_environ->IsWeekend()) {
+                if (calendar->IsHoliday() || calendar->IsSchoolHoliday() || calendar->IsWeekend()) {
                         m_in_day_cluster   = false;
                         m_in_day_district  = false;
                         m_in_home_district = true;
