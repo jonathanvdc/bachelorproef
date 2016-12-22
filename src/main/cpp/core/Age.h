@@ -1,5 +1,5 @@
-#ifndef CLUSTER_TYPE_H_INCLUDED
-#define CLUSTER_TYPE_H_INCLUDED
+#ifndef AGE_H_INCLUDED
+#define AGE_H_INCLUDED
 /*
  *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
@@ -17,30 +17,20 @@
 
 /**
  * @file
- * Definition of ClusterType.
+ * Helpers for age.
  */
 
-#include <string>
+#include <array>
 
 namespace stride {
 
-/// Enumerates the cluster types.
-enum class ClusterType
-{
-	Household, School, Work, HomeDistrict, DayDistrict, Null
-};
+/// Maximum age for Person's.
+inline constexpr unsigned int  MaximumAge() { return 80U; }
 
-/// Number of Cluster types (not including Null type).
-inline constexpr unsigned int  NumOfClusterTypes() { return 5U; }
+/// Effective age (topping of at maximum).
+inline unsigned int EffectiveAge(unsigned int age) { return (age <= MaximumAge()) ? age : MaximumAge(); }
 
-/// Converts a ClusterType value to corresponding name.
-std::string ToString(ClusterType w);
-
-/// Check whether string is name of a ClusterType value.
-bool IsClusterType(const std::string& s);
-
-/// Converts a string with name to ClusterType value.
-ClusterType ToClusterType(const std::string& s);
+using AgeContactProfile = std::array<double, MaximumAge() + 1>;
 
 } // namespace
 
