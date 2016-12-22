@@ -54,7 +54,7 @@ private:
 	/**
 	 *
 	 */
-	static unsigned int SampleFromDistribution(util::Random& rng, const std::vector<double>& distribution);
+	static unsigned int Sample(util::Random& rng, const std::vector<double>& distribution);
 };
 
 } // end_of_namespace

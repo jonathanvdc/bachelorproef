@@ -32,7 +32,6 @@ namespace stride {
 */
 enum class LogMode {None = 0U, Transmissions = 1U, Contacts = 2U, Null};
 
-
 /// Converts a LogMode value to corresponding name.
 std::string ToString(LogMode w);
 

@@ -25,9 +25,9 @@ namespace stride {
 using namespace std;
 using namespace boost::property_tree;
 
-ContactProfile::ContactProfile(ClusterType c_type,  const boost::property_tree::ptree& pt_contacts)
+ContactProfile::ContactProfile(ClusterType cluster_type,  const boost::property_tree::ptree& pt_contacts)
 {
-        const string key = "matrices." + ToString(c_type);
+        const string key = "matrices." + ToString(cluster_type);
         ContactProfile mean_nums;
         for(const auto& participant: pt_contacts.get_child(key)) {
                 double total_contacts = 0;

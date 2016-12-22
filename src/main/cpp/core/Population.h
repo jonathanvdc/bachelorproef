@@ -37,11 +37,12 @@ public:
 	/// Get the cumulative number of cases.
 	unsigned int GetInfectedCount() const
 	{
-		const auto counter  = [](unsigned int total, const Person& p) {
-		                                const auto& h = p.GetHealth();
-						return total + (h.IsInfected() || h.IsRecovered());
-		                        };
-		return std::accumulate(this->begin(), this->end(), 0U, counter);
+	        unsigned int total {0U};
+		for (const auto& p : *this) {
+		        const auto& h = p.GetHealth();
+		        total += h.IsInfected() || h.IsRecovered();
+		}
+		return total;
 	}
 
 };

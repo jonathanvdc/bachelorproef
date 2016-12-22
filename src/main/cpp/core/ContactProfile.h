@@ -35,7 +35,7 @@ public:
         ContactProfile() {};
 
         /// Explicitly initialize
-        ContactProfile(ClusterType c_type,  const boost::property_tree::ptree& pt_contacts);
+        ContactProfile(ClusterType cluster_type,  const boost::property_tree::ptree& pt_contacts);
 };
 
 } // namespace

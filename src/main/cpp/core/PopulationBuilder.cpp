@@ -58,6 +58,9 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
         const unsigned int rng_seed       = pt_config.get<double>("run.rng_seed");
         const string disease_config_file  = pt_config.get<string>("run.disease_config_file");
 
+        Random rng(rng_seed);
+        const unsigned int max_population_index = population.size() - 1;
+
         //------------------------------------------------
         // Check input.
         //------------------------------------------------
@@ -82,31 +85,29 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
                                 + "> Error opening population file " + file_path.string() + ". Aborting.");
                 }
 
-                const vector<double> start_infectiousness = GetDistribution(pt_disease,"disease.start_infectiousness");
-                const vector<double> start_symptomatic    = GetDistribution(pt_disease,"disease.start_symptomatic");
-                const vector<double> time_infectious      = GetDistribution(pt_disease,"disease.time_infectious");
-                const vector<double> time_symptomatic     = GetDistribution(pt_disease,"disease.time_symptomatic");
-                util::Random rng_disease(rng_seed); // random numbers for disease characteristics
+                const auto distrib_start_infectiousness = GetDistribution(pt_disease, "disease.start_infectiousness");
+                const auto distrib_start_symptomatic    = GetDistribution(pt_disease, "disease.start_symptomatic");
+                const auto distrib_time_infectious      = GetDistribution(pt_disease, "disease.time_infectious");
+                const auto distrib_time_symptomatic     = GetDistribution(pt_disease, "disease.time_symptomatic");
 
                 string line;
                 getline(pop_file, line); // step over file header
                 unsigned int person_id = 0U;
                 while (getline(pop_file, line)) {
                         //make use of stochastic disease characteristics
-                        const auto person_start_infectiousness = SampleFromDistribution(rng_disease, start_infectiousness);
-                        const auto person_start_symptomatic    = SampleFromDistribution(rng_disease, start_symptomatic);
-                        const auto person_time_infectious      = SampleFromDistribution(rng_disease, time_infectious);
-                        const auto person_time_symptomatic     = SampleFromDistribution(rng_disease, time_symptomatic);
+                        const auto start_infectiousness = Sample(rng, distrib_start_infectiousness);
+                        const auto start_symptomatic    = Sample(rng, distrib_start_symptomatic);
+                        const auto time_infectious      = Sample(rng, distrib_time_infectious);
+                        const auto time_symptomatic     = Sample(rng, distrib_time_symptomatic);
 
-                        const auto values = util::StringUtils::Tokenize(line, ";");
+                        const auto values = StringUtils::Tokenize(line, ";");
                         population.emplace_back(Person(person_id,
-                                util::StringUtils::FromString<unsigned int>(values[0]),
-                                util::StringUtils::FromString<unsigned int>(values[1]),
-                                util::StringUtils::FromString<unsigned int>(values[3]),
-                                util::StringUtils::FromString<unsigned int>(values[2]),
-                                util::StringUtils::FromString<unsigned int>(values[4]),
-                                person_start_infectiousness, person_start_symptomatic,
-                                person_time_infectious, person_time_symptomatic));
+                                StringUtils::FromString<unsigned int>(values[0]),
+                                StringUtils::FromString<unsigned int>(values[1]),
+                                StringUtils::FromString<unsigned int>(values[3]),
+                                StringUtils::FromString<unsigned int>(values[2]),
+                                StringUtils::FromString<unsigned int>(values[4]),
+                                start_infectiousness, start_symptomatic, time_infectious, time_symptomatic));
                         ++person_id;
                 }
                 pop_file.close();
@@ -117,12 +118,6 @@ bool PopulationBuilder::Build(shared_ptr<Population> pop,
         // Customize the population.
         //------------------------------------------------
         if (status) {
-
-                //------------------------------------------------
-                // Set up.
-                //------------------------------------------------
-                util::Random rng(rng_seed);
-                const unsigned int max_population_index = population.size() - 1;
 
                 //------------------------------------------------
                 // Set participants in social contact survey.
@@ -187,7 +182,7 @@ vector<double> PopulationBuilder::GetDistribution(const boost::property_tree::pt
         return values;
 }
 
-unsigned int PopulationBuilder::SampleFromDistribution(util::Random& rng, const vector<double>& distribution)
+unsigned int PopulationBuilder::Sample(Random& rng, const vector<double>& distribution)
 {
         double random_value = rng.NextDouble();
         for(unsigned int i = 0; i < distribution.size(); i++) {

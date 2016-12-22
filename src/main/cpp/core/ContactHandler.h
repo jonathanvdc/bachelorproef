@@ -63,7 +63,7 @@ public:
 	}
 
         /// Check if two individuals make contact.
-        double GetContactRate(unsigned int age, ClusterType cluster_type, size_t cluster_size)
+        double GetContactRate(unsigned int age, ClusterType cluster_type, size_t cluster_size) const
         {
                 double rate = 1.0;
                 if (cluster_type != ClusterType::Household) {
@@ -77,7 +77,7 @@ private:
         using MasterContactProfile = std::array<ContactProfile, NumOfClusterTypes()>;
 
 private:
-        MasterContactProfile      m_master_profile;       ///< Cluster types and mean number of contacts per age
+        MasterContactProfile      m_master_profile;             ///< Cluster types and mean number of contacts per age
 	util::Random              m_rng;                        ///< Random number engine.
         double                    m_transmission_rate_adult;    ///< Transmission rate between adults.
 };

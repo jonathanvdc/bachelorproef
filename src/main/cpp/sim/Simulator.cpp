@@ -55,21 +55,16 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 
 	// get log level
 	const string l = pt_config.get<string>("run.log_level", "None");
-	m_log_level = IsLogMode(l) ?
-	                ToLogMode(l)
-	                : throw runtime_error(std::string(__func__) + "> Invalid input for LogMode");
+	m_log_level = IsLogMode(l) ? ToLogMode(l) : throw runtime_error(string(__func__) + "> Invalid input for LogMode.");
 
 	// Get the disease configuration
 	ptree pt_disease;
-	{
-	        const auto file_name { pt_config.get<string>("run.disease_config_file") };
-	        const auto file_path { InstallDirs::GetConfigDir() /= file_name };
-                if ( !is_regular_file(file_path) ) {
-                        throw runtime_error(std::string(__func__)
-                                + ">Disease file " + file_path.string() + " not present. Aborting.");
-                }
-	        read_xml(file_path.string(), pt_disease);
+	const auto file_name { pt_config.get<string>("run.disease_config_file") };
+	const auto file_path { InstallDirs::GetConfigDir() /= file_name };
+	if ( !is_regular_file(file_path) ) {
+	        throw runtime_error(std::string(__func__)  + "> No file " + file_path.string());
 	}
+	read_xml(file_path.string(), pt_disease);
 
 	// Build population and initialize clusters.
 	PopulationBuilder::Build(m_population, pt_config, pt_disease);
@@ -167,22 +162,25 @@ void Simulator::InitializeContactHandlers()
 {
         // Get the contact configuration to initialize contact matrices for each cluster type
         ptree pt;
-        {
-                const auto file_name { m_config_pt.get("run.age_contact_matrix_file", "contact_matrix.xml") };
-                const auto file_path { InstallDirs::GetConfigDir() /= file_name };
-                if ( !is_regular_file(file_path) ) {
-                        throw runtime_error(std::string(__func__)
-                                + "> Contact file " + file_path.string() + " not present. Aborting.");
-                }
-                read_xml(file_path.string(), pt);
+        const auto file_name { m_config_pt.get("run.age_contact_matrix_file", "contact_matrix.xml") };
+        const auto file_path { InstallDirs::GetConfigDir() /= file_name };
+        if ( !is_regular_file(file_path) ) {
+                throw runtime_error(string(__func__)  + "> No file " + file_path.string());
         }
+        read_xml(file_path.string(), pt);
+
+        const ContactProfile hh_profile(ClusterType::Household, pt);
+        const ContactProfile sc_profile(ClusterType::School, pt);
+        const ContactProfile wo_profile(ClusterType::Work, pt);
+        const ContactProfile hd_profile(ClusterType::HomeDistrict, pt);
+        const ContactProfile dd_profile(ClusterType::DayDistrict, pt);
 
         for (auto c : m_contact_handler) {
-                c->AddProfile(ClusterType::Household,     ContactProfile(ClusterType::Household, pt));
-                c->AddProfile(ClusterType::HomeDistrict,  ContactProfile(ClusterType::HomeDistrict, pt));
-                c->AddProfile(ClusterType::Work,          ContactProfile(ClusterType::Work, pt));
-                c->AddProfile(ClusterType::School,        ContactProfile(ClusterType::School, pt));
-                c->AddProfile(ClusterType::DayDistrict,   ContactProfile(ClusterType::DayDistrict, pt));
+                c->AddProfile(ClusterType::Household,     hh_profile);
+                c->AddProfile(ClusterType::School,        sc_profile);
+                c->AddProfile(ClusterType::Work,          wo_profile);
+                c->AddProfile(ClusterType::HomeDistrict,  hd_profile);
+                c->AddProfile(ClusterType::DayDistrict,   dd_profile);
         }
 }
 
