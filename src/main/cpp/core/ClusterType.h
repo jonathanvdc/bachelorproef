@@ -20,6 +20,7 @@
  * Definition of ClusterType.
  */
 
+#include <cstddef>
 #include <string>
 
 namespace stride {
@@ -32,6 +33,9 @@ enum class ClusterType
 
 /// Number of Cluster types (not including Null type).
 inline constexpr unsigned int  NumOfClusterTypes() { return 5U; }
+
+/// Cast for array access.
+inline std::size_t  ToSizeType(ClusterType c) { return static_cast<std::size_t>(c); }
 
 /// Converts a ClusterType value to corresponding name.
 std::string ToString(ClusterType w);

@@ -24,6 +24,7 @@
 #include "core/ClusterType.h"
 #include "util/Random.h"
 
+#include <cstddef>
 #include <map>
 #include <vector>
 
@@ -42,9 +43,9 @@ public:
 		m_rng.Split(stream_count, id);
 	}
 
-	void AddMeanNumsContacts(ClusterType cluster_type, const std::vector<double>& mean_nums)
+	void AddProfile(ClusterType cluster_type, const AgeContactProfile& mean_nums)
 	{
-		m_age_contact_mean_num[cluster_type] = mean_nums;
+		m_age_contact_mean_num.at(ToSizeType(cluster_type)) = mean_nums;
 	}
 
 	/// Handle one contact between persons of the given age. Performs a Bernoulli process with a random
@@ -65,19 +66,19 @@ public:
         {
                 double rate = 1.0;
                 if (cluster_type != ClusterType::Household) {
-                        rate = m_age_contact_mean_num[cluster_type][EffectiveAge(age)] / cluster_size;
+                        rate = m_age_contact_mean_num[ToSizeType(cluster_type)][EffectiveAge(age)] / cluster_size;
                         rate = (cluster_type == ClusterType::Work) ? rate*1.7 : rate;
                 }
                 return rate;
         }
 
 private:
-	std::map<ClusterType, std::vector<double>>      m_age_contact_mean_num;       ///< Cluster types and mean number of contacts per age
+        using ContactProfile = std::array<AgeContactProfile, NumOfClusterTypes()>;
 
-        //using ContactProfile = std::array<AgeContactProfile, NumOfClusterTypes()>;
-	//std::array<std::array<double, MaximumAge() + 1>, NumOfClusterTypes()>   m_age_contact_mean_num;       ///< Cluster types and mean number of contacts per age
-	util::Random                                    m_rng;                        ///< Random number engine.
-        double                                          m_transmission_rate_adult;    ///< Transmission rate between adults.
+private:
+        ContactProfile            m_age_contact_mean_num;       ///< Cluster types and mean number of contacts per age
+	util::Random              m_rng;                        ///< Random number engine.
+        double                    m_transmission_rate_adult;    ///< Transmission rate between adults.
 };
 
 } // end_of_namespace

@@ -88,18 +88,18 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	InitializeContactHandlers();
 }
 
-vector<double> Simulator::GetMeanNumbersOfContacts(ClusterType c_type,  const boost::property_tree::ptree& pt_contacts)
+AgeContactProfile Simulator::GetProfile(ClusterType c_type,  const boost::property_tree::ptree& pt_contacts)
 {
         const string key = "matrices." + ToString(c_type);
-        vector<double> meanNums;
+        AgeContactProfile mean_nums;
         for(const auto& participant: pt_contacts.get_child(key)) {
                 double total_contacts = 0;
                 for (const auto& contact: participant.second.get_child("contacts")) {
                         total_contacts += contact.second.get<double>("rate");
                 }
-                meanNums.push_back(total_contacts);
+                mean_nums.back() = total_contacts;
         }
-        return meanNums;
+        return mean_nums;
 }
 
 const shared_ptr<const Population> Simulator::GetPopulation() const
@@ -185,7 +185,7 @@ void Simulator::InitializeClusters()
 void Simulator::InitializeContactHandlers()
 {
         // Get the contact configuration to initialize contact matrices for each cluster type
-        ptree pt_contacts;
+        ptree pt;
         {
                 const auto file_name { m_config_pt.get("run.age_contact_matrix_file", "contact_matrix.xml") };
                 const auto file_path { InstallDirs::GetConfigDir() /= file_name };
@@ -193,22 +193,15 @@ void Simulator::InitializeContactHandlers()
                         throw runtime_error(std::string(__func__)
                                 + "> Contact file " + file_path.string() + " not present. Aborting.");
                 }
-                read_xml(file_path.string(), pt_contacts);
+                read_xml(file_path.string(), pt);
         }
 
-        // Contact data
-        const auto household = GetMeanNumbersOfContacts(ClusterType::Household, pt_contacts);
-        const auto home_district = GetMeanNumbersOfContacts(ClusterType::HomeDistrict, pt_contacts);
-        const auto work = GetMeanNumbersOfContacts(ClusterType::Work, pt_contacts);
-        const auto school = GetMeanNumbersOfContacts(ClusterType::School, pt_contacts);
-        const auto day_district = GetMeanNumbersOfContacts(ClusterType::DayDistrict, pt_contacts);
-
-        for (auto contact_handler : m_contact_handler) {
-                contact_handler->AddMeanNumsContacts(ClusterType::Household, household);
-                contact_handler->AddMeanNumsContacts(ClusterType::HomeDistrict, home_district);
-                contact_handler->AddMeanNumsContacts(ClusterType::Work, work);
-                contact_handler->AddMeanNumsContacts(ClusterType::School, school);
-                contact_handler->AddMeanNumsContacts(ClusterType::DayDistrict, day_district);
+        for (auto c : m_contact_handler) {
+                c->AddProfile(ClusterType::Household,     GetProfile(ClusterType::Household, pt));
+                c->AddProfile(ClusterType::HomeDistrict,  GetProfile(ClusterType::HomeDistrict, pt));
+                c->AddProfile(ClusterType::Work,          GetProfile(ClusterType::Work, pt));
+                c->AddProfile(ClusterType::School,        GetProfile(ClusterType::School, pt));
+                c->AddProfile(ClusterType::DayDistrict,   GetProfile(ClusterType::DayDistrict, pt));
         }
 }
 

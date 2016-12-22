@@ -20,6 +20,7 @@
  * Header for the Simulator class.
  */
 
+#include "core/Age.h"
 #include "core/ContactHandler.h"
 #include "core/Cluster.h"
 #include "core/ClusterType.h"
@@ -53,7 +54,7 @@ public:
 
 private:
 	/// Get mean number of contacts a day per age for given cluster type
-	std::vector<double> GetMeanNumbersOfContacts(ClusterType c_type, const boost::property_tree::ptree& pt_contacts);
+	AgeContactProfile GetProfile(ClusterType c_type, const boost::property_tree::ptree& pt_contacts);
 
 	/// Initialize the clusters.
 	void InitializeClusters();
