@@ -43,8 +43,7 @@ public:
 		: m_id(id), m_age(age), m_gender('M'),
 		  m_household(household_id), m_home_district(home_district_id),
 		  m_day_cluster(day_cluster_id), m_day_district(day_district_id),
-		  m_in_household(true), m_in_home_district(true),
-		  m_in_day_cluster(true), m_in_day_district(true),
+		  m_in_household(true), m_in_home_district(true), m_in_day_cluster(true), m_in_day_district(true),
 		  m_health(start_infectiousness, start_symptomatic, time_infectious, time_symptomatic),
 		  m_is_participant(false) {}
 

@@ -19,13 +19,11 @@
  */
 
 #include "InstallDirs.h"
+
 #include "util/StringUtils.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/predef/os.h>
-#include <ios>
-#include <iostream>
-#include <algorithm>
 #include <string>
 
 #if (BOOST_OS_WINDOWS)
@@ -39,11 +37,11 @@
 #  include <limits.h>
 #endif
 
+namespace stride {
+namespace util {
+
 using namespace std;
 using namespace boost::filesystem;
-using namespace stride::util;
-
-namespace stride {
 
 path     InstallDirs::g_bin_dir;
 path     InstallDirs::g_config_dir;
@@ -181,4 +179,5 @@ path InstallDirs::GetRootDir()
 	return g_root_dir;
 }
 
+} // namespace
 } // namespace

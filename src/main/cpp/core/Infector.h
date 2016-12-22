@@ -21,6 +21,7 @@
  */
 
 #include "core/LogMode.h"
+
 #include <memory>
 
 namespace stride {
@@ -42,16 +43,22 @@ public:
 	        std::shared_ptr<const Calendar> sim_state);
 };
 
+///
 extern template class Infector<LogMode::None, false>;
 
+///
 extern template class Infector<LogMode::None, true>;
 
+///
 extern template class Infector<LogMode::Transmissions, false>;
 
+///
 extern template class Infector<LogMode::Transmissions, true>;
 
+///
 extern template class Infector<LogMode::Contacts, false>;
 
+///
 extern template class Infector<LogMode::Contacts, true>;
 
 } // end_of_namespace

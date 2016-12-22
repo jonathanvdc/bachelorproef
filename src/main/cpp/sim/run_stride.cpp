@@ -31,7 +31,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/filesystem.hpp>
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 #include <cmath>
 #include <ios>

@@ -55,12 +55,11 @@ void SummaryFile::Print(
 {
 	unsigned int num_threads = 0;
 
-#ifdef _OPENMP
-#pragma omp parallel
+        #pragma omp parallel
 	{
 		num_threads = omp_get_num_threads();
 	}
-#endif
+
 	m_fstream
 		<< pt_config.get<string>("run.population_file") << ";"
 		<< pt_config.get<unsigned int>("run.num_days") << ";"

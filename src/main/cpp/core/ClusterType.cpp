@@ -23,14 +23,12 @@
 #include <boost/algorithm/string.hpp>
 #include <map>
 #include <string>
-#include <iostream>
-
-using namespace std;
-using boost::to_upper;
 
 namespace {
 
 using stride::ClusterType;
+using boost::to_upper;
+using namespace std;
 
 map<ClusterType, string> g_cluster_type_name {
                 make_pair(ClusterType::Household,      "household"),

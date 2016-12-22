@@ -24,12 +24,11 @@
 #include <map>
 #include <string>
 
-using namespace std;
-using boost::to_upper;
-
 namespace {
 
 using stride::LogMode;
+using boost::to_upper;
+using namespace std;
 
 map<LogMode, string> g_log_mode_name {
                 make_pair(LogMode::None,             "None"),
@@ -65,7 +64,7 @@ LogMode ToLogMode(const string& s)
 {
         std::string t {s};
         to_upper(t);
-	return (g_name_log_mode.count(t) == 1) ? g_name_log_mode[s] : LogMode::Null;
+	return (g_name_log_mode.count(t) == 1) ? g_name_log_mode[t] : LogMode::Null;
 }
 
 } // namespace

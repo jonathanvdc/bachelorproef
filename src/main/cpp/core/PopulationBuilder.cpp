@@ -27,7 +27,7 @@
 #include "util/Random.h"
 #include "util/StringUtils.h"
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/filesystem.hpp>
@@ -43,6 +43,7 @@ namespace stride {
 using namespace std;
 using namespace boost::filesystem;
 using namespace boost::property_tree;
+using namespace stride::util;
 
 bool PopulationBuilder::Build(shared_ptr<Population> pop,
                         const boost::property_tree::ptree& pt_config,

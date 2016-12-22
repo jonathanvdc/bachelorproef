@@ -20,12 +20,13 @@
 
 #include "Cluster.h"
 
+#include "Age.h"
 #include "Infector.h"
 #include "LogMode.h"
 #include "Person.h"
 #include "sim/Calendar.h"
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -44,8 +45,7 @@ void Cluster::AddPerson(Person* p)
 {
         m_members.emplace_back(std::make_pair(p, true));
         m_index_immune++;
-
-        if ((m_cluster_type == ClusterType::School) && (p->GetAge() > 24U)) {
+        if ((m_cluster_type == ClusterType::School) && (p->GetAge() > MinAdultAge())) {
                 m_cluster_type = ClusterType::Work;
         }
 }

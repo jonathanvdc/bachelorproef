@@ -40,15 +40,14 @@ namespace stride {
 using namespace std;
 using namespace boost::filesystem;
 using namespace boost::property_tree;
+using namespace stride::util;
 
 Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	: m_config_pt(pt_config), m_num_threads(1U), m_population(make_shared<Population>())
 {
 	#pragma omp parallel
 	{
-		#ifdef _OPENMP
 		m_num_threads = omp_get_num_threads();
-		#endif
 	}
 
 	// initialize world environment
@@ -104,19 +103,19 @@ void Simulator::InitializeClusters()
 	Population& population              = *m_population;
 
 	for (const auto& p : population) {
-	        num_households      = std::max(num_households, p.GetClusterId(ClusterType::Household));
-	        num_day_clusters    = std::max(num_day_clusters, p.GetClusterId(ClusterType::Work));
+	        num_households      = std::max(num_households,     p.GetClusterId(ClusterType::Household));
+	        num_day_clusters    = std::max(num_day_clusters,   p.GetClusterId(ClusterType::Work));
 	        num_home_districts  = std::max(num_home_districts, p.GetClusterId(ClusterType::HomeDistrict));
-	        num_day_districts   = std::max(num_day_districts, p.GetClusterId(ClusterType::DayDistrict));
+	        num_day_districts   = std::max(num_day_districts,  p.GetClusterId(ClusterType::DayDistrict));
 	}
 
-	// add extra '0' nbh (=not present)
+	// Add extra '0' nbh (=not present).
 	num_households++;
 	num_day_clusters++;
 	num_home_districts++;
 	num_day_districts++;
 
-	// keep separate id counter to provide a unique id for every cluster
+	// Keep separate id counter to provide a unique id for every cluster.
 	unsigned int cluster_id = 1;
 
 	for (size_t i = 1; i <= num_households; i++) {
@@ -124,9 +123,8 @@ void Simulator::InitializeClusters()
 		cluster_id++;
 	}
 	for (size_t i = 1; i <= num_day_clusters; i++) {
-		// Day clusters are initialized as school clusters.
-		// However, when a person older than 24 is added to such a cluster,
-		// the cluster type will be changed to "work".
+		// Day clusters are initialized as school clusters. However, when an adult is
+	        // added to such a cluster, the cluster type will be changed to "work".
 		m_day_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
 		cluster_id++;
 	}
@@ -138,25 +136,29 @@ void Simulator::InitializeClusters()
 		m_day_districts.emplace_back(Cluster(cluster_id, ClusterType::DayDistrict));
 		cluster_id++;
 	}
-	for (auto p: population) {
-		if (p.GetClusterId(ClusterType::Household) > 0) {
-			m_households[p.GetClusterId(ClusterType::Household)].AddPerson(&p);
+	for (auto& p: population) {
+	        const auto hh_id = p.GetClusterId(ClusterType::Household);
+		if (hh_id > 0) {
+		        m_households[hh_id].AddPerson(&p);
 		}
-		if (p.GetClusterId(ClusterType::Work) > 0) {
-			m_day_clusters[p.GetClusterId(ClusterType::Work)].AddPerson(&p);
+		const auto wo_id = p.GetClusterId(ClusterType::Work);
+		if (wo_id > 0) {
+		        m_day_clusters[wo_id].AddPerson(&p);
 		}
-		if (p.GetClusterId(ClusterType::HomeDistrict) > 0) {
-			m_home_districts[p.GetClusterId(ClusterType::HomeDistrict)].AddPerson(&p);
+		const auto hd_id = p.GetClusterId(ClusterType::HomeDistrict);
+		if (hd_id > 0) {
+		        m_home_districts[hd_id].AddPerson(&p);
 		}
-		if (p.GetClusterId(ClusterType::DayDistrict) > 0) {
-			m_day_districts[p.GetClusterId(ClusterType::DayDistrict)].AddPerson(&p);
+		const auto dd_id = p.GetClusterId(ClusterType::DayDistrict);
+		if (dd_id > 0) {
+		        m_day_districts[dd_id].AddPerson(&p);
 		}
 	}
 	// Set household sizes for persons
 	for (auto& p: population) {
-		if (p.GetClusterId(ClusterType::Household) > 0) {
-			size_t hh_size = m_households[p.GetClusterId(ClusterType::Household)].GetSize();
-			p.SetHouseholdSize(hh_size);
+	        const auto hh_id = p.GetClusterId(ClusterType::Household);
+		if (hh_id > 0) {
+			p.SetHouseholdSize(m_households[hh_id].GetSize());
 		}
 	}
 }

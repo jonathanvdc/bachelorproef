@@ -43,19 +43,19 @@ public:
 	void AdvanceDay();
 
 	/// Get the current day of the month
-	size_t GetDay() const { return m_date.day(); }
+	std::size_t GetDay() const { return m_date.day(); }
 
         /// Get the current day of the week (0 (Sunday), ..., 6 (Saturday))
-        size_t GetDayOfTheWeek() const { return m_date.day_of_week(); }
+	std::size_t GetDayOfTheWeek() const { return m_date.day_of_week(); }
 
 	/// Get the current month
-	size_t GetMonth() const { return m_date.month(); }
+	std::size_t GetMonth() const { return m_date.month(); }
 
         /// Get the current day of the simulation
-        size_t GetSimulationDay() const { return m_day; }
+	std::size_t GetSimulationDay() const { return m_day; }
 
 	/// Get the current year
-	size_t GetYear() const { return m_date.year(); }
+	std::size_t GetYear() const { return m_date.year(); }
 
         /// Check if it's a holiday
         bool IsHoliday() const { return (std::find(m_holidays.begin(), m_holidays.end(), m_date) != m_holidays.end()); }

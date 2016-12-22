@@ -29,6 +29,7 @@ namespace stride {
 
 using namespace std;
 using namespace boost::filesystem;
+using namespace stride::util;
 
 Calendar::Calendar(const boost::property_tree::ptree& pt_config)
         : m_day(0)

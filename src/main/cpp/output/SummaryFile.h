@@ -43,8 +43,7 @@ public:
 
 	/// Print the given output with corresponding tag.
 	void Print(const boost::property_tree::ptree& pt_config, unsigned int population_size,
-	        unsigned int num_cases, unsigned int run_time,
-	        unsigned int total_time);
+	        unsigned int num_cases, unsigned int run_time, unsigned int total_time);
 
 private:
 	/// Generate file name and open the file stream.

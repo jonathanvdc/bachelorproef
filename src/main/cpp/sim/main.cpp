@@ -19,7 +19,8 @@
  */
 
 #include "run_stride.h"
-#include "tclap/CmdLine.h"
+
+#include <tclap/CmdLine.h>
 #include <exception>
 #include <iostream>
 

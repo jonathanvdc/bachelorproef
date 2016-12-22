@@ -26,7 +26,7 @@
 #include "core/Person.h"
 #include "sim/Calendar.h"
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 #include <cstddef>
 #include <memory>
 #include <utility>
@@ -209,7 +209,6 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster,
                                                                 p1->StartInfection();
                                                                 R0_POLICY<track_index_case>::Execute(p1);
                                                         }
-                                                        //TODO log transmission?
                                                 }*/
                                                 LOG_POLICY<LogMode::Contacts>::Execute(logger, p1, p2, c_type, sim_state);
 

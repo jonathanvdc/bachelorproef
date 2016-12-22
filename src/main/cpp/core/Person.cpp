@@ -18,6 +18,7 @@
  * Header file for the Person class.
  */
 
+#include "Age.h"
 #include "Person.h"
 
 #include "core/ClusterType.h"
@@ -32,34 +33,24 @@ using namespace std;
 unsigned int Person::GetClusterId(ClusterType cluster_type) const
 {
         switch (cluster_type) {
-                case ClusterType::Household:
-                        return m_household;
+                case ClusterType::Household:        return m_household;
                 case ClusterType::School:
-                case ClusterType::Work:
-                        return m_day_cluster;
-                case ClusterType::HomeDistrict:
-                        return m_home_district;
-                case ClusterType::DayDistrict:
-                        return m_day_district;
-                default:
-                        return -1;
+                case ClusterType::Work:             return m_day_cluster;
+                case ClusterType::HomeDistrict:     return m_home_district;
+                case ClusterType::DayDistrict:      return m_day_district;
+                default:                            return -1;
         }
 }
 
 bool Person::IsInCluster(ClusterType c) const
 {
         switch(c) {
-                case ClusterType::Household:
-                        return m_in_household; break;
-                case ClusterType::HomeDistrict:
-                        return m_in_home_district; break;
+                case ClusterType::Household:         return m_in_household;
                 case ClusterType::School:
-                case ClusterType::Work:
-                        return m_in_day_cluster; break;
-                case ClusterType::DayDistrict:
-                        return m_in_day_district; break;
-                default:
-                        return false;
+                case ClusterType::Work:              return m_in_day_cluster;
+                case ClusterType::HomeDistrict:      return m_in_home_district;
+                case ClusterType::DayDistrict:       return m_in_day_district;
+                default:                             return false;
         }
 }
 
@@ -67,27 +58,15 @@ void Person::Update(shared_ptr<const Calendar> calendar)
 {
         m_health.Update();
 
-        // update presence in clusters
-        if (m_age > 18) { // adult
-                if (calendar->IsHoliday() || calendar->IsWeekend()) {
-                        m_in_day_cluster   = false;
-                        m_in_day_district  = false;
-                        m_in_home_district = true;
-                } else {
-                        m_in_day_cluster   = true;
-                        m_in_day_district  = true;
-                        m_in_home_district = false;
-                }
-        } else { // kid, so look at school holidays too
-                if (calendar->IsHoliday() || calendar->IsSchoolHoliday() || calendar->IsWeekend()) {
-                        m_in_day_cluster   = false;
-                        m_in_day_district  = false;
-                        m_in_home_district = true;
-                } else {
-                        m_in_day_cluster   = true;
-                        m_in_day_district  = true;
-                        m_in_home_district = false;
-                }
+        // Update presence in clusters.
+        if (calendar->IsWeekend() || (m_age <= MinAdultAge() && calendar->IsSchoolHoliday()) || calendar->IsHoliday()) {
+                m_in_day_cluster   = false;
+                m_in_day_district  = false;
+                m_in_home_district = true;
+        } else {
+                m_in_day_cluster   = true;
+                m_in_day_district  = true;
+                m_in_home_district = false;
         }
 }
 

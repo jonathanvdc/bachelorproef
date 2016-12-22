@@ -20,7 +20,8 @@ namespace stride {
 /*
  *
  */
-enum class HealthStatus {Susceptible = 0U, Exposed = 1U, Infectious = 2U, Symptomatic = 3U, InfectiousAndSymptomatic = 4U, Recovered = 5U, Immune = 6U, Null};
+enum class HealthStatus {Susceptible = 0U, Exposed = 1U, Infectious = 2U,
+        Symptomatic = 3U, InfectiousAndSymptomatic = 4U, Recovered = 5U, Immune = 6U, Null};
 
 /*
  *
@@ -101,9 +102,8 @@ private:
 	void ResetDiseaseCounter() { m_disease_counter = 0U; }
 
 private:
+	unsigned int            m_disease_counter;              ///< The disease counter.
 	HealthStatus		m_status;                       ///< The current status of the person w.r.t. the disease.
-
-	unsigned int		m_disease_counter;              ///< The disease counter.
 
 	unsigned int		m_start_infectiousness;         ///< Days after infection to become infectious.
 	unsigned int		m_start_symptomatic;            ///< Days after infection to become symptomatic.

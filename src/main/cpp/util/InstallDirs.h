@@ -23,6 +23,7 @@
 #include <boost/filesystem.hpp>
 
 namespace stride {
+namespace util {
 
 /**
  * Install directories.
@@ -63,6 +64,7 @@ private:
 	static boost::filesystem::path 	g_root_dir;
 };
 
+} // namespace
 } // namespace
 
 #endif // end-of-include-guard
