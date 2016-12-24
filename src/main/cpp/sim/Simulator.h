@@ -67,7 +67,7 @@ private:
 	unsigned int                              m_num_threads;          ///< The number of (OpenMP) threads.
 	LogMode                                   m_log_level;            ///< Specifies logging mode.
         std::shared_ptr<Population>               m_population;           ///< Pointer to the Population.
-        std::shared_ptr<Calendar>                 m_state;                ///< Management of calendar..
+        std::shared_ptr<Calendar>                 m_calendar;             ///< Management of calendar..
 
 private:
 	std::vector<Cluster>                      m_households;           ///< Container with household Clusters.

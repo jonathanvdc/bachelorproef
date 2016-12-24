@@ -124,7 +124,7 @@ public:
 template<LogMode log_level, bool track_index_case>
 void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
                                 shared_ptr<ContactHandler> contact_handler,
-                                shared_ptr<const Calendar> sim_state)
+                                shared_ptr<const Calendar> calendar)
 {
         // check if the cluster has infected members and sort
         bool infectious_cases;
@@ -153,7 +153,7 @@ void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
                                                 if (c_members[i_contact].second) {
                                                         auto p2 = c_members[i_contact].first;
                                                         if ((*contact_handler)(age1, c_type, c_size)) {
-                                                                LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, sim_state);
+                                                                LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, calendar);
                                                                 p2->GetHealth().StartInfection();
                                                                 R0_POLICY<track_index_case>::Execute(p2);
                                                         }
@@ -171,7 +171,7 @@ void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
 template<bool track_index_case>
 void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster,
                                 shared_ptr<ContactHandler> contact_handler,
-                                shared_ptr<const Calendar> sim_state)
+                                shared_ptr<const Calendar> calendar)
 {
         cluster.UpdateMemberPresence();
 
@@ -210,7 +210,7 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster,
                                                                 R0_POLICY<track_index_case>::Execute(p1);
                                                         }
                                                 }*/
-                                                LOG_POLICY<LogMode::Contacts>::Execute(logger, p1, p2, c_type, sim_state);
+                                                LOG_POLICY<LogMode::Contacts>::Execute(logger, p1, p2, c_type, calendar);
 
                                         }
                                 }

@@ -35,11 +35,17 @@ public:
         using value_type = std::array<ContactProfile, NumOfClusterTypes()>;
 
 public:
-        /// Need to keep the default constructor available.
+        /// return the data.
         static value_type& Get()
         {
                 static value_type p;
                 return p;
+        };
+
+        /// return the ContactProfile.
+        static const ContactProfile& Get(ClusterType cluster_type)
+        {
+                return Get().at(ToSizeType(cluster_type));
         };
 
         /// Add profile.

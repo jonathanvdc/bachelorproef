@@ -58,7 +58,7 @@ public:
         {
                 double rate = 1.0;
                 if (cluster_type != ClusterType::Household) {
-                        rate = MasterProfile::Get()[ToSizeType(cluster_type)][EffectiveAge(age)] / cluster_size;
+                        rate = MasterProfile::Get(cluster_type)[EffectiveAge(age)] / cluster_size;
                         rate = (cluster_type == ClusterType::Work) ? rate * 1.7 : rate;
                 }
                 return rate;

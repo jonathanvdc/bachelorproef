@@ -53,7 +53,7 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	}
 
 	// initialize world environment
-	m_state = make_shared<Calendar>(pt_config);
+	m_calendar = make_shared<Calendar>(pt_config);
 
 	// get log level
 	const string l = pt_config.get<string>("run.log_level", "None");
@@ -193,22 +193,22 @@ void Simulator::UpdateClusters()
                 #pragma omp for schedule(runtime)
                 for (size_t cluster_i = 0; cluster_i < m_households.size(); cluster_i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_households[cluster_i],  m_contact_handler[thread_i], m_state);
+                                m_households[cluster_i],  m_contact_handler[thread_i], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t cluster_i = 0; cluster_i < m_day_clusters.size(); cluster_i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_day_clusters[cluster_i], m_contact_handler[thread_i], m_state);
+                                m_day_clusters[cluster_i], m_contact_handler[thread_i], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t cluster_i = 0; cluster_i < m_home_districts.size(); cluster_i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_home_districts[cluster_i], m_contact_handler[thread_i], m_state);
+                                m_home_districts[cluster_i], m_contact_handler[thread_i], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t cluster_i = 0; cluster_i < m_day_districts.size(); cluster_i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_day_districts[cluster_i], m_contact_handler[thread_i], m_state);
+                                m_day_districts[cluster_i], m_contact_handler[thread_i], m_calendar);
                 }
         }
 }
@@ -216,7 +216,7 @@ void Simulator::UpdateClusters()
 void Simulator::UpdateTimeStep(bool track_index_case)
 {
         for (auto& p : *m_population) {
-                p.Update(m_state);
+                p.Update(m_calendar);
         }
 
         if (track_index_case) {
@@ -243,6 +243,6 @@ void Simulator::UpdateTimeStep(bool track_index_case)
                 }
         }
 
-        m_state->AdvanceDay();
+        m_calendar->AdvanceDay();
 }
 } // end_of_namespace
