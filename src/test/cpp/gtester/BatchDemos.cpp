@@ -148,7 +148,7 @@ TEST_P( BatchDemos, RunOnce )
 	Simulator sim(pt_config);
 	cerr << "  starting up: " << test_tag << endl;
 	for(size_t i = 0U; i < g_num_days; i++){
-		sim.RunTimeStep();
+		sim.UpdateTimeStep();
 	}
 
 	// Round up
@@ -211,7 +211,7 @@ TEST_P( BatchDemos, RunOnce_omp )
 	Simulator sim(pt_config);
 	cerr << "  starting up ..." << endl;
 	for (size_t i = 0U; i < g_num_days; i++){
-		sim.RunTimeStep();
+		sim.UpdateTimeStep();
 	}
 
 	// Round up

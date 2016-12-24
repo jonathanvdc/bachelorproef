@@ -86,34 +86,32 @@ tuple<bool, size_t> Cluster::SortMembers()
         return make_tuple(infectious_cases, num_cases);
 }
 
-void Cluster::Update(shared_ptr<ContactHandler> contact_handler, shared_ptr<const Calendar> sim_state, LogMode log_mode, bool index_case)
+void Cluster::Update(shared_ptr<ContactHandler> contact_handler, shared_ptr<const Calendar> calendar, LogMode log_mode, bool index_case)
 {
         switch (log_mode) {
                 case LogMode::Contacts:
                         if (index_case) {
-                                Infector<LogMode::Contacts, true>::Execute(*this, contact_handler, sim_state);
+                                Infector<LogMode::Contacts, true>::Execute(*this, contact_handler, calendar);
                         } else {
-                                Infector<LogMode::Contacts, false>::Execute(*this, contact_handler, sim_state);
+                                Infector<LogMode::Contacts, false>::Execute(*this, contact_handler, calendar);
                         }
                         break;
                 case LogMode::Transmissions:
                         if (index_case ) {
-                                Infector<LogMode::Transmissions, true>::Execute(*this, contact_handler, sim_state);
+                                Infector<LogMode::Transmissions, true>::Execute(*this, contact_handler, calendar);
                         } else {
-                                Infector<LogMode::Transmissions, false>::Execute(*this, contact_handler, sim_state);
+                                Infector<LogMode::Transmissions, false>::Execute(*this, contact_handler, calendar);
                         }
                         break;
                 case LogMode::None:
                         if (index_case) {
-                                Infector<LogMode::None, true>::Execute(*this, contact_handler, sim_state);
+                                Infector<LogMode::None, true>::Execute(*this, contact_handler, calendar);
                         } else {
-                                Infector<LogMode::None, false>::Execute(*this, contact_handler, sim_state);
+                                Infector<LogMode::None, false>::Execute(*this, contact_handler, calendar);
                         }
                         break;
                 default: throw runtime_error(std::string(__func__) + "Logging screwed up!");
         }
-
-
 }
 
 void Cluster::UpdateMemberPresence()

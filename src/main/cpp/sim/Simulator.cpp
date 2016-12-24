@@ -22,6 +22,7 @@
 
 #include "core/ClusterType.h"
 #include "core/ContactProfile.h"
+#include "core/Infector.h"
 #include "core/LogMode.h"
 #include "core/MasterProfile.h"
 #include "core/Population.h"
@@ -182,31 +183,66 @@ void Simulator::InitializeContactHandlers()
         MasterProfile::AddProfile(ClusterType::DayDistrict,   ContactProfile(ClusterType::DayDistrict, pt));
 }
 
-void Simulator::RunTimeStep(bool track_index_case)
+template<LogMode log_level, bool track_index_case>
+void Simulator::UpdateClusters()
+{
+        #pragma omp parallel
+        {
+                const unsigned int thread_i = omp_get_thread_num();
+
+                #pragma omp for schedule(runtime)
+                for (size_t cluster_i = 0; cluster_i < m_households.size(); cluster_i++) {
+                        Infector<log_level, track_index_case>::Execute(
+                                m_households[cluster_i],  m_contact_handler[thread_i], m_state);
+                }
+                #pragma omp for schedule(runtime)
+                for (size_t cluster_i = 0; cluster_i < m_day_clusters.size(); cluster_i++) {
+                        Infector<log_level, track_index_case>::Execute(
+                                m_day_clusters[cluster_i], m_contact_handler[thread_i], m_state);
+                }
+                #pragma omp for schedule(runtime)
+                for (size_t cluster_i = 0; cluster_i < m_home_districts.size(); cluster_i++) {
+                        Infector<log_level, track_index_case>::Execute(
+                                m_home_districts[cluster_i], m_contact_handler[thread_i], m_state);
+                }
+                #pragma omp for schedule(runtime)
+                for (size_t cluster_i = 0; cluster_i < m_day_districts.size(); cluster_i++) {
+                        Infector<log_level, track_index_case>::Execute(
+                                m_day_districts[cluster_i], m_contact_handler[thread_i], m_state);
+                }
+        }
+}
+
+void Simulator::UpdateTimeStep(bool track_index_case)
 {
         for (auto& p : *m_population) {
                 p.Update(m_state);
         }
 
-	UpdateCluster(m_households, track_index_case);
-        UpdateCluster(m_day_clusters, track_index_case);
-        UpdateCluster(m_home_districts, track_index_case);
-        UpdateCluster(m_day_districts, track_index_case);
+        if (track_index_case) {
+                switch (m_log_level) {
+                        case LogMode::Contacts:
+                                UpdateClusters<LogMode::Contacts, true>(); break;
+                        case LogMode::Transmissions:
+                                UpdateClusters<LogMode::Transmissions, true>(); break;
+                        case LogMode::None:
+                                UpdateClusters<LogMode::None, true>(); break;
+                        default:
+                                throw runtime_error(std::string(__func__) + "Log mode screwed up!");
+                }
+        } else {
+                switch (m_log_level) {
+                        case LogMode::Contacts:
+                                UpdateClusters<LogMode::Contacts, false>(); break;
+                        case LogMode::Transmissions:
+                                UpdateClusters<LogMode::Transmissions, false>();  break;
+                        case LogMode::None:
+                                UpdateClusters<LogMode::None, false>(); break;
+                        default:
+                                throw runtime_error(std::string(__func__) + "Log mode screwed up!");
+                }
+        }
 
         m_state->AdvanceDay();
 }
-
-void Simulator::UpdateCluster(vector<Cluster>& clusters, bool track_index_case)
-{
-	#pragma omp parallel
-	{
-	        const unsigned int thread_i = omp_get_thread_num();
-		#pragma omp for schedule(runtime)
-		for (size_t cluster_i = 0; cluster_i < clusters.size(); cluster_i++) {
-		        clusters[cluster_i].Update(m_contact_handler[thread_i], m_state, m_log_level, track_index_case);
-		}
-	}
-}
-
-
 } // end_of_namespace

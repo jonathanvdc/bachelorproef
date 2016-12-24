@@ -46,8 +46,8 @@ public:
         /// Get the population.
         const std::shared_ptr<const Population> GetPopulation() const;
 
-	/// Run one time step, computing full simulation (default) or only index case.
-	void RunTimeStep(bool track_index_case = false);
+        /// Run one time step, computing full simulation (default) or only index case.
+        void UpdateTimeStep(bool track_index_case = false);
 
 private:
 	/// Initialize the clusters.
@@ -56,8 +56,9 @@ private:
         /// Initialize the contact handlers.
         void InitializeContactHandlers();
 
-	/// Update the contacts in the given clusters.
-	void UpdateCluster(std::vector<Cluster>& clusters, bool index_case = false);
+        /// Update the contacts in the given clusters.
+	template<LogMode log_level, bool track_index_case = false>
+        void UpdateClusters();
 
 private:
 	boost::property_tree::ptree               m_config_pt;            ///< Configuration property tree.

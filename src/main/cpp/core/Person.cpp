@@ -24,6 +24,8 @@
 #include "core/ClusterType.h"
 #include "sim/Calendar.h"
 
+#include <stdexcept>
+#include <string>
 #include <memory>
 
 namespace stride {
@@ -38,7 +40,7 @@ unsigned int Person::GetClusterId(ClusterType cluster_type) const
                 case ClusterType::Work:             return m_day_cluster;
                 case ClusterType::HomeDistrict:     return m_home_district;
                 case ClusterType::DayDistrict:      return m_day_district;
-                default:                            return -1;
+                default: throw runtime_error(string(__func__)  + "> Should not reach default.");
         }
 }
 
@@ -50,7 +52,7 @@ bool Person::IsInCluster(ClusterType c) const
                 case ClusterType::Work:              return m_in_day_cluster;
                 case ClusterType::HomeDistrict:      return m_in_home_district;
                 case ClusterType::DayDistrict:       return m_in_day_district;
-                default:                             return false;
+                default: throw runtime_error(string(__func__)  + "> Should not reach default.");
         }
 }
 
