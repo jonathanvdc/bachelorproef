@@ -45,21 +45,21 @@ using namespace boost::property_tree;
 using namespace stride::util;
 
 Simulator::Simulator(const boost::property_tree::ptree& pt_config)
-	: m_config_pt(pt_config), m_num_threads(1U), m_population(make_shared<Population>())
+	: m_config_pt(pt_config), m_num_threads(1U), m_population(nullptr)
 {
 	#pragma omp parallel
 	{
 		m_num_threads = omp_get_num_threads();
 	}
 
-	// initialize world environment
+	// Initialize calendar.
 	m_calendar = make_shared<Calendar>(pt_config);
 
-	// get log level
+	// Get log level.
 	const string l = pt_config.get<string>("run.log_level", "None");
 	m_log_level = IsLogMode(l) ? ToLogMode(l) : throw runtime_error(string(__func__) + "> Invalid input for LogMode.");
 
-	// Get the disease configuration
+	// Get the disease configuration.
 	ptree pt_disease;
 	const auto file_name { pt_config.get<string>("run.disease_config_file") };
 	const auto file_path { InstallDirs::GetDataDir() /= file_name };
@@ -68,26 +68,30 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	}
 	read_xml(file_path.string(), pt_disease);
 
-	// Build population and initialize clusters.
+	// Build population.
 	cerr << "Building the population. "<< endl;
-	PopulationBuilder::Build(m_population, pt_config, pt_disease);
+	m_population = PopulationBuilder::Build(pt_config, pt_disease);
+
+        // Initialize clusters.
 	cerr << "Initializing the clusters. "<< endl;
 	InitializeClusters();
 
-	// Build contact handlers.
-        // R0 and transmission rate;use linear model fitted to simulation data: Expected(R0) = (b0+b1*transm_rate)
+	// Contact handlers: R0 and transmission rate;use linear model fitted
+	// to simulation data: Expected(R0) = (b0+b1*transm_rate)
 	cerr << "Setting up contact handlers. "<< endl;
         const double r0   = pt_config.get<double>("run.r0");
         const double b0   = pt_disease.get<double>("disease.transmission.b0");
         const double b1   = pt_disease.get<double>("disease.transmission.b1");
-        const double transmission_rate = (r0-b0)/b1;
+        const double transmission_rate = (r0 - b0) / b1;
+        const double seed = pt_config.get<double>("run.rng_seed");
+
         for (size_t i = 0; i < m_num_threads; i++) {
-                m_contact_handler.emplace_back(ContactHandler(transmission_rate,
-                                pt_config.get<double>("run.rng_seed"), m_num_threads, i));
+                m_contact_handler.emplace_back(ContactHandler(transmission_rate, seed, m_num_threads, i));
         }
-        cerr << "Initializing contact handlers. "<< endl;
+
+        // Initialize contact profiles.
+        cerr << "Initializing contact profiles. "<< endl;
 	InitializeContactProfiles();
-	cerr << "Done initializing contact handlers. "<< endl;
 }
 
 const shared_ptr<const Population> Simulator::GetPopulation() const
