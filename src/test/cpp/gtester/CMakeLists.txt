@@ -21,7 +21,7 @@
 set( EXEC       gtester     )
 set( SRC
 		main.cpp
-		BatchDemos.cpp
+		BatchRuns.cpp
 )
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride>)
