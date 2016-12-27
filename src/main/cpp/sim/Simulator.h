@@ -54,7 +54,7 @@ private:
 	void InitializeClusters();
 
         /// Initialize the contact handlers.
-        void InitializeContactHandlers();
+        void InitializeContactProfiles();
 
         /// Update the contacts in the given clusters.
 	template<LogMode log_level, bool track_index_case = false>
@@ -75,7 +75,7 @@ private:
 	std::vector<Cluster>                      m_home_districts;       ///< Container with home district Clusters.
 	std::vector<Cluster>                      m_day_districts;        ///< Container with day district Clusters.
 
-	std::vector<std::shared_ptr<ContactHandler>>    m_contact_handler;      ///< Pointer to the ContactHandler.
+	std::vector<ContactHandler>               m_contact_handler;      ///< Pointer to the ContactHandler.
 };
 
 } // end_of_namespace

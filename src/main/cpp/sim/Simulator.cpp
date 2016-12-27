@@ -82,11 +82,11 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
         const double b1   = pt_disease.get<double>("disease.transmission.b1");
         const double transmission_rate = (r0-b0)/b1;
         for (size_t i = 0; i < m_num_threads; i++) {
-                m_contact_handler.emplace_back(make_shared<ContactHandler>(transmission_rate,
+                m_contact_handler.emplace_back(ContactHandler(transmission_rate,
                                 pt_config.get<double>("run.rng_seed"), m_num_threads, i));
         }
         cerr << "Initializing contact handlers. "<< endl;
-	InitializeContactHandlers();
+	InitializeContactProfiles();
 	cerr << "Done initializing contact handlers. "<< endl;
 }
 
@@ -165,7 +165,7 @@ void Simulator::InitializeClusters()
 	}
 }
 
-void Simulator::InitializeContactHandlers()
+void Simulator::InitializeContactProfiles()
 {
         // Get the contact configuration to initialize contact matrices for each cluster type
         ptree pt;

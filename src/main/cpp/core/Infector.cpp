@@ -111,9 +111,8 @@ class Infector<LogMode::Contacts, track_index_case>
 {
 public:
         ///
-        static void Execute(Cluster& cluster,
-                std::shared_ptr<ContactHandler> contact_handler,
-                std::shared_ptr<const Calendar> sim_state);
+        static void Execute(Cluster& cluster, ContactHandler& contact_handler,
+                std::shared_ptr<const Calendar> calendar);
 };
 
 //--------------------------------------------------------------------------
@@ -122,8 +121,7 @@ public:
 // track_index_case false and true..
 //--------------------------------------------------------------------------
 template<LogMode log_level, bool track_index_case>
-void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
-                                shared_ptr<ContactHandler> contact_handler,
+void Infector<log_level, track_index_case>::Execute(Cluster& cluster, ContactHandler& contact_handler,
                                 shared_ptr<const Calendar> calendar)
 {
         // check if the cluster has infected members and sort
@@ -152,7 +150,7 @@ void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
                                                 // check if member is present today
                                                 if (c_members[i_contact].second) {
                                                         auto p2 = c_members[i_contact].first;
-                                                        if ((*contact_handler)(age1, c_type, c_size)) {
+                                                        if (contact_handler(age1, c_type, c_size)) {
                                                                 LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, calendar);
                                                                 p2->GetHealth().StartInfection();
                                                                 R0_POLICY<track_index_case>::Execute(p2);
@@ -169,8 +167,7 @@ void Infector<log_level, track_index_case>::Execute(Cluster& cluster,
 // Definition of partial specialization for LogMode::Contacts.
 //--------------------------------------------------------------------------
 template<bool track_index_case>
-void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster,
-                                shared_ptr<ContactHandler> contact_handler,
+void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster, ContactHandler& contact_handler,
                                 shared_ptr<const Calendar> calendar)
 {
         cluster.UpdateMemberPresence();
@@ -192,7 +189,7 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster,
                                 if ((i_person1 != i_person2) && c_members[i_person2].second) {
                                         auto p2 = c_members[i_person2].first;
                                         // check for contact
-                                        if (contact_handler->HasContact(age1, c_type, c_size)) {
+                                        if (contact_handler.HasContact(age1, c_type, c_size)) {
                                                 // TODO ContactHandler doesn't have a separate transmission function anymore to
                                                 // check for transmission when contact has already been checked.
                                                 // check for transmission

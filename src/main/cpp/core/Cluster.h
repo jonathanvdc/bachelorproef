@@ -52,10 +52,6 @@ public:
 	/// Return the type of this cluster.
 	ClusterType GetClusterType() const { return m_cluster_type; }
 
-	/// Update the cluster state.
-	void Update(std::shared_ptr<ContactHandler> contact_handler,
-	        std::shared_ptr<const Calendar> sim_state, LogMode log_mode, bool index_case = false);
-
 private:
 	/// Sort members of cluster according to health status
 	/// (order: exposed/infected/recovered, susceptible, immune).

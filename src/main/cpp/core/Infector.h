@@ -38,8 +38,7 @@ class Infector
 {
 public:
 	///
-	static void Execute(Cluster& cluster,
-	        std::shared_ptr<ContactHandler> contact_handler,
+	static void Execute(Cluster& cluster, ContactHandler& contact_handler,
 	        std::shared_ptr<const Calendar> sim_state);
 };
 
