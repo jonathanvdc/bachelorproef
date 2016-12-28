@@ -29,12 +29,13 @@ ContactProfile::ContactProfile(ClusterType cluster_type,  const boost::property_
 {
         const string key = "matrices." + ToString(cluster_type);
         ContactProfile mean_nums;
+        unsigned int i = 0U;
         for(const auto& participant: pt_contacts.get_child(key)) {
                 double total_contacts = 0;
                 for (const auto& contact: participant.second.get_child("contacts")) {
                         total_contacts += contact.second.get<double>("rate");
                 }
-                this->back() = total_contacts;
+                (*this)[i++] = total_contacts;
         }
 }
 
