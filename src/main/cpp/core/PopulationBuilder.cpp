@@ -66,7 +66,7 @@ shared_ptr<Population> PopulationBuilder::Build(
         //------------------------------------------------
         bool status = (seeding_rate <= 1) && (immunity_rate <= 1) && ((seeding_rate + immunity_rate) <= 1);
         if ( !status ) {
-                throw runtime_error(string(__func__) + "> Bad input data. Aborting.");
+                throw runtime_error(string(__func__) + "> Bad input data.");
         }
 
         //------------------------------------------------
@@ -76,14 +76,14 @@ shared_ptr<Population> PopulationBuilder::Build(
         const auto file_path = InstallDirs::GetDataDir() /= file_name;
         if ( !is_regular_file(file_path) ) {
                 throw runtime_error(string(__func__)
-                        + "> Population file " + file_path.string() + " not present. Aborting.");
+                        + "> Population file " + file_path.string() + " not present.");
         }
 
         ifstream pop_file;
         pop_file.open(file_path.string());
         if ( !pop_file.is_open()) {
                 throw runtime_error(string(__func__)
-                        + "> Error opening population file " + file_path.string() + ". Aborting.");
+                        + "> Error opening population file " + file_path.string());
         }
 
         const auto distrib_start_infectiousness = GetDistribution(pt_disease, "disease.start_infectiousness");
