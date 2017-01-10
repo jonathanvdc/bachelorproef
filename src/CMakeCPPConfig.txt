@@ -104,6 +104,8 @@ if( NOT STRIDE_FORCE_NO_OPENMP )
 else()
     # This is done to eliminate blank output of undefined CMake variables.
     set( OPENMP_FOUND FALSE )
+    set( HAVE_CHECKED_OpenMP FALSE )
+    set( HAVE_FOUND_OpenMP FALSE )
 endif()
 # If not found, use the dummy omp.
 if( NOT OPENMP_FOUND )

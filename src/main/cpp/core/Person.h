@@ -42,8 +42,8 @@ public:
 			unsigned int day_cluster_id, unsigned int day_district_id, unsigned int start_infectiousness,
 			unsigned int start_symptomatic, unsigned int time_infectious, unsigned int time_symptomatic)
 		: m_id(id), m_age(age), m_gender('M'),
-		  m_household(household_id), m_home_district(home_district_id),
-		  m_day_cluster(day_cluster_id), m_day_district(day_district_id),
+		  m_household_id(household_id), m_home_district_id(home_district_id),
+		  m_day_cluster_id(day_cluster_id), m_day_district_id(day_district_id),
 		  m_in_household(true), m_in_home_district(true), m_in_day_cluster(true), m_in_day_district(true),
 		  m_health(start_infectiousness, start_symptomatic, time_infectious, time_symptomatic),
 		  m_is_participant(false) {}
@@ -92,11 +92,11 @@ private:
 	double          m_age;		       		 ///< The age.
 	char            m_gender;                        ///< The gender.
 
-	unsigned int    m_household;	   		 ///< The household id.
+	unsigned int    m_household_id;	   		 ///< The household id.
 	std::size_t     m_household_size;		 ///< The number of persons in the household.
-	unsigned int    m_home_district;   		 ///< The home district id
-	unsigned int    m_day_cluster;	   		 ///< The day cluster id
-	unsigned int    m_day_district;	   		 ///< The day district id
+	unsigned int    m_home_district_id;   		 ///< The home district id
+	unsigned int    m_day_cluster_id;                ///< The day cluster id
+	unsigned int    m_day_district_id;               ///< The day district id
 
 	bool            m_in_household;			 ///< Is person present in household today?
 	bool            m_in_home_district;		 ///< Is person present in home_district today?

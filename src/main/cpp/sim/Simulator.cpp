@@ -124,21 +124,21 @@ void Simulator::InitializeClusters()
 	// Keep separate id counter to provide a unique id for every cluster.
 	unsigned int cluster_id = 1;
 
-	for (size_t i = 1; i <= num_households; i++) {
+	for (size_t i = 0; i < num_households; i++) {
 		m_households.emplace_back(Cluster(cluster_id, ClusterType::Household));
 		cluster_id++;
 	}
-	for (size_t i = 1; i <= num_day_clusters; i++) {
+	for (size_t i = 0; i < num_day_clusters; i++) {
 		// Day clusters are initialized as school clusters. However, when an adult is
 	        // added to such a cluster, the cluster type will be changed to "work".
 		m_day_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
 		cluster_id++;
 	}
-	for (size_t i = 1; i <= num_home_districts; i++) {
+	for (size_t i = 0; i < num_home_districts; i++) {
 		m_home_districts.emplace_back(Cluster(cluster_id, ClusterType::HomeDistrict));
 		cluster_id++;
 	}
-	for (size_t i = 1; i <= num_day_districts; i++) {
+	for (size_t i = 0; i < num_day_districts; i++) {
 		m_day_districts.emplace_back(Cluster(cluster_id, ClusterType::DayDistrict));
 		cluster_id++;
 	}
@@ -192,27 +192,27 @@ void Simulator::UpdateClusters()
 {
         #pragma omp parallel
         {
-                const unsigned int thread_i = omp_get_thread_num();
+                const unsigned int thread = omp_get_thread_num();
 
                 #pragma omp for schedule(runtime)
-                for (size_t cluster_i = 0; cluster_i < m_households.size(); cluster_i++) {
+                for (size_t i = 0; i < m_households.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_households[cluster_i],  m_contact_handler[thread_i], m_calendar);
+                                m_households[i],  m_contact_handler[thread], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
-                for (size_t cluster_i = 0; cluster_i < m_day_clusters.size(); cluster_i++) {
+                for (size_t i = 0; i < m_day_clusters.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_day_clusters[cluster_i], m_contact_handler[thread_i], m_calendar);
+                                m_day_clusters[i], m_contact_handler[thread], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
-                for (size_t cluster_i = 0; cluster_i < m_home_districts.size(); cluster_i++) {
+                for (size_t i = 0; i < m_home_districts.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_home_districts[cluster_i], m_contact_handler[thread_i], m_calendar);
+                                m_home_districts[i], m_contact_handler[thread], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
-                for (size_t cluster_i = 0; cluster_i < m_day_districts.size(); cluster_i++) {
+                for (size_t i = 0; i < m_day_districts.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_day_districts[cluster_i], m_contact_handler[thread_i], m_calendar);
+                                m_day_districts[i], m_contact_handler[thread], m_calendar);
                 }
         }
 }

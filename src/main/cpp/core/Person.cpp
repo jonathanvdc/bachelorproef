@@ -35,11 +35,11 @@ using namespace std;
 unsigned int Person::GetClusterId(ClusterType cluster_type) const
 {
         switch (cluster_type) {
-                case ClusterType::Household:        return m_household;
+                case ClusterType::Household:        return m_household_id;
                 case ClusterType::School:
-                case ClusterType::Work:             return m_day_cluster;
-                case ClusterType::HomeDistrict:     return m_home_district;
-                case ClusterType::DayDistrict:      return m_day_district;
+                case ClusterType::Work:             return m_day_cluster_id;
+                case ClusterType::HomeDistrict:     return m_home_district_id;
+                case ClusterType::DayDistrict:      return m_day_district_id;
                 default: throw runtime_error(string(__func__)  + "> Should not reach default.");
         }
 }
