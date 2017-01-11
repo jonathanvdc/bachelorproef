@@ -20,6 +20,7 @@
  * Conversion from or to string.
  */
 
+#include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <cctype>
 #include <iomanip>
@@ -45,7 +46,17 @@ public:
 		return t;
 	}
 
-	/// Tokenize a string (in order of occurence) by splitting it on the given delimiters.
+        /// Split a string (in order of occurence) by splitting it on the given delimiters.
+        static std::vector<std::string> Split(const std::string& str, const std::string& delimiters)
+        {
+                std::vector<std::string> tokens;
+                boost::algorithm::split(tokens, str, boost::is_any_of(delimiters));
+                return tokens;
+        }
+
+	/// Tokenize a string (in order of occurence) with the given delimiters.
+        /// Multiple consecutive delimiters do NOT define "empty" tokens; they
+        /// are simply skipped.
 	static std::vector<std::string> Tokenize(const std::string& str, const std::string& delimiters)
 	{
 		std::vector<std::string> tokens;
