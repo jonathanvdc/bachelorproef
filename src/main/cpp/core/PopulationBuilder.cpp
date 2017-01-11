@@ -46,20 +46,18 @@ using namespace boost::property_tree;
 using namespace stride::util;
 
 shared_ptr<Population> PopulationBuilder::Build(
-        const boost::property_tree::ptree& pt_config, const boost::property_tree::ptree& pt_disease)
+        const boost::property_tree::ptree& pt_config,
+        const boost::property_tree::ptree& pt_disease,
+        util::Random& rng)
 {
         //------------------------------------------------
         // Setup.
         //------------------------------------------------
         const auto pop                    = make_shared<Population>();
         Population& population            = *pop;
-
         const double seeding_rate         = pt_config.get<double>("run.seeding_rate");
         const double immunity_rate        = pt_config.get<double>("run.immunity_rate");
-        const unsigned int rng_seed       = pt_config.get<double>("run.rng_seed");
         const string disease_config_file  = pt_config.get<string>("run.disease_config_file");
-
-        Random rng(rng_seed);
 
         //------------------------------------------------
         // Check input.

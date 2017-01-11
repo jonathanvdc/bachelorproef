@@ -41,6 +41,9 @@ class Calendar;
 class Simulator
 {
 public:
+        // Default constructor for empty simulator.
+        Simulator();
+
 	/// Constructor: Initialize the Simulator.
 	Simulator(const boost::property_tree::ptree& pt_config, unsigned int num_threads =1U, bool track_index_case =false);
 
@@ -85,6 +88,9 @@ private:
 	DiseaseProfile                      m_disease_profile;      ///< Profile of disease.
 
 	bool                                m_track_index_case;     ///< General simulation or tracking index case.
+
+private:
+	friend class SimulatorBuilder;
 };
 
 } // end_of_namespace

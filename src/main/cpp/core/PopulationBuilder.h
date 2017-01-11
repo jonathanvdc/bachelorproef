@@ -43,7 +43,9 @@ public:
 	 * @param pt_config       The property_tree with configuration settings.
 	 */
 	static std::shared_ptr<Population> Build(
-	        const boost::property_tree::ptree& pt_config, const boost::property_tree::ptree& pt_disease);
+	        const boost::property_tree::ptree& pt_config,
+	        const boost::property_tree::ptree& pt_disease,
+	        util::Random& rng);
 
 private:
 	///

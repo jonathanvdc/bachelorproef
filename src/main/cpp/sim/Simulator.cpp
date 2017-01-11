@@ -35,6 +35,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <omp.h>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 
 namespace stride {
@@ -43,6 +44,12 @@ using namespace std;
 using namespace boost::filesystem;
 using namespace boost::property_tree;
 using namespace stride::util;
+
+Simulator::Simulator()
+        : m_config_pt(), m_num_threads(1U), m_log_level(LogMode::Null), m_population(nullptr),
+          m_disease_profile(), m_track_index_case(false)
+{
+}
 
 Simulator::Simulator(const boost::property_tree::ptree& pt_config, unsigned int num_threads, bool track_index_case)
 	: m_config_pt(pt_config), m_num_threads(num_threads), m_population(nullptr),
@@ -64,9 +71,13 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config, unsigned int 
 	}
 	read_xml(file_path.string(), pt_disease);
 
+	// Rng's.
+	const auto seed = pt_config.get<double>("run.rng_seed");
+	Random rng(seed);
+
 	// Build population.
 	cerr << "Building the population. "<< endl;
-	m_population = PopulationBuilder::Build(pt_config, pt_disease);
+	m_population = PopulationBuilder::Build(pt_config, pt_disease, rng);
 
         // Initialize clusters.
 	cerr << "Initializing the clusters. "<< endl;
@@ -78,9 +89,9 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config, unsigned int 
 
 	// Contact handlers
 	cerr << "Setting up contact handlers. "<< endl;
-        const double seed = pt_config.get<double>("run.rng_seed");
+        unsigned int new_seed = rng(numeric_limits<unsigned int>::max());
         for (size_t i = 0; i < m_num_threads; i++) {
-                m_rng_handler.emplace_back(RngHandler(seed, m_num_threads, i));
+                m_rng_handler.emplace_back(RngHandler(new_seed, m_num_threads, i));
         }
 
         // Initialize contact profiles.
