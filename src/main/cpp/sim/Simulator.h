@@ -20,7 +20,7 @@
  * Header for the Simulator class.
  */
 
-#include "core/ContactHandler.h"
+#include "../core/RngHandler.h"
 #include "core/Cluster.h"
 #include "core/DiseaseProfile.h"
 #include "core/LogMode.h"
@@ -42,13 +42,16 @@ class Simulator
 {
 public:
 	/// Constructor: Initialize the Simulator.
-	Simulator(const boost::property_tree::ptree& pt_config);
+	Simulator(const boost::property_tree::ptree& pt_config, unsigned int num_threads =1U, bool track_index_case =false);
 
         /// Get the population.
         const std::shared_ptr<const Population> GetPopulation() const;
 
+        /// Change track_index_case setting.
+        void SetTrackIndexCase(bool track_index_case);
+
         /// Run one time step, computing full simulation (default) or only index case.
-        void UpdateTimeStep(bool track_index_case = false);
+        void UpdateTimeStep();
 
 private:
 	/// Initialize the clusters.
@@ -62,24 +65,26 @@ private:
         void UpdateClusters();
 
 private:
-	boost::property_tree::ptree               m_config_pt;            ///< Configuration property tree.
+	boost::property_tree::ptree         m_config_pt;            ///< Configuration property tree.
 
 private:
-	unsigned int                              m_num_threads;          ///< The number of (OpenMP) threads.
-	LogMode                                   m_log_level;            ///< Specifies logging mode.
-        std::shared_ptr<Population>               m_population;           ///< Pointer to the Population.
-        std::shared_ptr<Calendar>                 m_calendar;             ///< Management of calendar.
+	unsigned int                        m_num_threads;          ///< The number of (OpenMP) threads.
+        std::vector<RngHandler>             m_rng_handler;          ///< Pointer to the RngHandlers.
+	LogMode                             m_log_level;            ///< Specifies logging mode.
+        std::shared_ptr<Calendar>           m_calendar;             ///< Management of calendar.
 
 private:
-	std::vector<Cluster>                      m_households;           ///< Container with household Clusters.
-        std::vector<Cluster>                      m_school_clusters;      ///< Container with school Clusters.
-        std::vector<Cluster>                      m_work_clusters;        ///< Container with work Clusters.
-	std::vector<Cluster>                      m_home_districts;       ///< Container with home district Clusters.
-	std::vector<Cluster>                      m_day_districts;        ///< Container with day district Clusters.
+        std::shared_ptr<Population>         m_population;           ///< Pointer to the Population.
 
-	DiseaseProfile                            m_disease_profile;      ///< Profile of disease.
+	std::vector<Cluster>                m_households;           ///< Container with household Clusters.
+        std::vector<Cluster>                m_school_clusters;      ///< Container with school Clusters.
+        std::vector<Cluster>                m_work_clusters;        ///< Container with work Clusters.
+	std::vector<Cluster>                m_home_districts;       ///< Container with home district Clusters.
+	std::vector<Cluster>                m_day_districts;        ///< Container with day district Clusters.
 
-	std::vector<ContactHandler>               m_contact_handler;      ///< Pointer to the ContactHandler.
+	DiseaseProfile                      m_disease_profile;      ///< Profile of disease.
+
+	bool                                m_track_index_case;     ///< General simulation or tracking index case.
 };
 
 } // end_of_namespace

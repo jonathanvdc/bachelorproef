@@ -19,7 +19,6 @@
  */
 
 #include "core/Cluster.h"
-#include "core/ContactHandler.h"
 #include "core/Health.h"
 #include "core/Infector.h"
 #include "core/LogMode.h"
@@ -27,6 +26,7 @@
 #include "sim/Calendar.h"
 
 #include <spdlog/spdlog.h>
+#include "RngHandler.h"
 #include <cstddef>
 #include <memory>
 #include <utility>
@@ -112,7 +112,7 @@ class Infector<LogMode::Contacts, track_index_case>
 public:
         ///
         static void Execute(Cluster& cluster, DiseaseProfile disease_profile,
-                ContactHandler& contact_handler, std::shared_ptr<const Calendar> calendar);
+                RngHandler& contact_handler, std::shared_ptr<const Calendar> calendar);
 };
 
 //--------------------------------------------------------------------------
@@ -123,7 +123,7 @@ public:
 template<LogMode log_level, bool track_index_case>
 void Infector<log_level, track_index_case>::Execute(
         Cluster& cluster, DiseaseProfile disease_profile,
-        ContactHandler& contact_handler, shared_ptr<const Calendar> calendar)
+        RngHandler& contact_handler, shared_ptr<const Calendar> calendar)
 {
         // check if the cluster has infected members and sort
         bool infectious_cases;
@@ -170,7 +170,7 @@ void Infector<log_level, track_index_case>::Execute(
 template<bool track_index_case>
 void Infector<LogMode::Contacts, track_index_case>::Execute(
         Cluster& cluster, DiseaseProfile disease_profile,
-        ContactHandler& contact_handler, shared_ptr<const Calendar> calendar)
+        RngHandler& contact_handler, shared_ptr<const Calendar> calendar)
 {
         cluster.UpdateMemberPresence();
 

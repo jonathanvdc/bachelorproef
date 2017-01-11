@@ -1,5 +1,5 @@
 /*
- *  This is free software: you can redistribute it and/or modify it
+\ *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  any later version.
@@ -139,7 +139,7 @@ TEST_P( BatchDemos, Run )
 	}
 
 	// Initialize simulator and run it.
-	Simulator sim(pt_config);
+	Simulator sim(pt_config, num_threads);
 	for (size_t i = 0U; i < g_num_days; i++) {
 		sim.UpdateTimeStep();
 	}

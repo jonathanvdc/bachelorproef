@@ -1,5 +1,5 @@
-#ifndef CONTACTHANDLER_H_INCLUDED
-#define CONTACTHANDLER_H_INCLUDED
+#ifndef RNG_HANDLER_H_INCLUDED
+#define RNG_HANDLER_H_INCLUDED
 /*
  *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
@@ -27,11 +27,11 @@ namespace stride {
 /**
  * Processes the contacts between persons and determines whether transmission occurs.
  */
-class ContactHandler
+class RngHandler
 {
 public:
 	/// Constructor sets the transmission rate and random number generator.
-	ContactHandler(unsigned int seed, unsigned int stream_count, unsigned int id)
+	RngHandler(unsigned int seed, unsigned int stream_count, unsigned int id)
 			: m_rng(seed)
 	{
 		m_rng.Split(stream_count, id);

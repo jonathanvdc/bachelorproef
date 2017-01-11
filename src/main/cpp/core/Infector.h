@@ -28,7 +28,7 @@
 namespace stride {
 
 class Cluster;
-class ContactHandler;
+class RngHandler;
 class Calendar;
 
 /**
@@ -40,7 +40,7 @@ class Infector
 public:
 	///
 	static void Execute(Cluster& cluster, DiseaseProfile disease_profile,
-	        ContactHandler& contact_handler, std::shared_ptr<const Calendar> sim_state);
+	        RngHandler& contact_handler, std::shared_ptr<const Calendar> sim_state);
 };
 
 ///

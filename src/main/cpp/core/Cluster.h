@@ -32,7 +32,7 @@
 
 namespace stride {
 
-class ContactHandler;
+class RngHandler;
 class Person;
 class Calendar;
 

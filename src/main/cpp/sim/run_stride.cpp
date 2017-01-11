@@ -89,10 +89,11 @@ void run_stride(bool track_index_case, const string& config_file_name)
                         + ">Config file " + file_path.string() + " not present. Aborting.");
         }
         read_xml(file_path.string(), pt_config);
-
         cout << "Configuration file:  " << file_path.string() << endl;
-        cout << "Setting for track_index_case:  " << boolalpha << track_index_case << endl;
 
+        // -----------------------------------------------------------------------------------------
+        // OpenMP.
+        // -----------------------------------------------------------------------------------------
         unsigned int num_threads;
         #pragma omp parallel
         {
@@ -101,7 +102,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
         if (ConfigInfo::HaveOpenMP()) {
                 cout << "Using OpenMP threads:  " << num_threads << endl;
         } else {
-                cout << "NOt using OpenMP threads." << endl;
+                cout << "Not using OpenMP threads." << endl;
         }
         // -----------------------------------------------------------------------------------------
         // Set output path prefix.
@@ -113,11 +114,16 @@ void run_stride(bool track_index_case, const string& config_file_name)
         cout << "Project output tag:  " << output_prefix << endl << endl;
 
         // -----------------------------------------------------------------------------------------
-        // Set additional run configurations.
+        // Additional run configurations.
         // -----------------------------------------------------------------------------------------
         if (pt_config.get_optional<bool>("run.num_participants_survey") == false) {
                 pt_config.put("run.num_participants_survey", 1);
         }
+
+        // -----------------------------------------------------------------------------------------
+        // Track index case setting.
+        // -----------------------------------------------------------------------------------------
+        cout << "Setting for track_index_case:  " << boolalpha << track_index_case << endl;
 
         // -----------------------------------------------------------------------------------------
         // Create logger
@@ -130,23 +136,23 @@ void run_stride(bool track_index_case, const string& config_file_name)
         file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
         // -----------------------------------------------------------------------------------------
-        // Run the simulation.
+        // Create simulator.
         // -----------------------------------------------------------------------------------------
-        // Create simulator
         Stopwatch<> total_clock("total_clock", true);
         cout << "Building the simulator. "<< endl;
-        Simulator sim(pt_config);
+        Simulator sim(pt_config, num_threads, track_index_case);
         cout << "Done building the simulator. "<< endl <<endl;
 
-        // Run
+        // -----------------------------------------------------------------------------------------
+        // Run the simulation.
+        // -----------------------------------------------------------------------------------------
         Stopwatch<> run_clock("run_clock");
         const unsigned int num_days = pt_config.get<unsigned int>("run.num_days");
         vector<unsigned int> cases(num_days);
         for (unsigned int i = 0; i < num_days; i++) {
                 cout << "Simulating day: " << setw(5) << i;
                 run_clock.Start();
-                //sim.RunTimeStep(track_index_case);
-                sim.UpdateTimeStep(track_index_case);
+                sim.UpdateTimeStep();
                 run_clock.Stop();
                 cout << "     Done, infected count: ";
                 cases[i] = sim.GetPopulation()->GetInfectedCount();

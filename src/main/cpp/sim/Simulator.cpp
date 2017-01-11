@@ -44,14 +44,10 @@ using namespace boost::filesystem;
 using namespace boost::property_tree;
 using namespace stride::util;
 
-Simulator::Simulator(const boost::property_tree::ptree& pt_config)
-	: m_config_pt(pt_config), m_num_threads(1U), m_population(nullptr), m_disease_profile()
+Simulator::Simulator(const boost::property_tree::ptree& pt_config, unsigned int num_threads, bool track_index_case)
+	: m_config_pt(pt_config), m_num_threads(num_threads), m_population(nullptr),
+	  m_disease_profile(), m_track_index_case(track_index_case)
 {
-	#pragma omp parallel
-	{
-		m_num_threads = omp_get_num_threads();
-	}
-
 	// Initialize calendar.
 	m_calendar = make_shared<Calendar>(pt_config);
 
@@ -84,7 +80,7 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	cerr << "Setting up contact handlers. "<< endl;
         const double seed = pt_config.get<double>("run.rng_seed");
         for (size_t i = 0; i < m_num_threads; i++) {
-                m_contact_handler.emplace_back(ContactHandler(seed, m_num_threads, i));
+                m_rng_handler.emplace_back(RngHandler(seed, m_num_threads, i));
         }
 
         // Initialize contact profiles.
@@ -195,48 +191,53 @@ void Simulator::InitializeContactProfiles()
         Cluster::AddContactProfile(ClusterType::DayDistrict,   ContactProfile(ClusterType::DayDistrict, pt));
 }
 
+void Simulator::SetTrackIndexCase(bool track_index_case)
+{
+        m_track_index_case = track_index_case;
+}
+
 template<LogMode log_level, bool track_index_case>
 void Simulator::UpdateClusters()
 {
-        #pragma omp parallel
+        #pragma omp parallel num_threads(m_num_threads)
         {
                 const unsigned int thread = omp_get_thread_num();
 
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_households.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_households[i], m_disease_profile, m_contact_handler[thread], m_calendar);
+                                m_households[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_school_clusters.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_school_clusters[i], m_disease_profile, m_contact_handler[thread], m_calendar);
+                                m_school_clusters[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_work_clusters.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_work_clusters[i], m_disease_profile, m_contact_handler[thread], m_calendar);
+                                m_work_clusters[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_home_districts.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_home_districts[i], m_disease_profile, m_contact_handler[thread], m_calendar);
+                                m_home_districts[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_day_districts.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_day_districts[i], m_disease_profile, m_contact_handler[thread], m_calendar);
+                                m_day_districts[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
                 }
         }
 }
 
-void Simulator::UpdateTimeStep(bool track_index_case)
+void Simulator::UpdateTimeStep()
 {
         for (auto& p : *m_population) {
                 p.Update(m_calendar);
         }
 
-        if (track_index_case) {
+        if (m_track_index_case) {
                 switch (m_log_level) {
                         case LogMode::Contacts:
                                 UpdateClusters<LogMode::Contacts, true>(); break;
