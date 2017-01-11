@@ -42,7 +42,12 @@ Cluster::Cluster(std::size_t cluster_id, ClusterType cluster_type)
 {
 }
 
-/// Add the given Person to the Cluster.
+void Cluster::AddContactProfile(ClusterType cluster_type, const ContactProfile& profile)
+{
+        g_profiles.at(ToSizeType(cluster_type)) = profile;
+}
+
+
 void Cluster::AddPerson(Person* p)
 {
         m_members.emplace_back(std::make_pair(p, true));

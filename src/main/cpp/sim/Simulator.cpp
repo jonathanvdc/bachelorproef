@@ -76,26 +76,21 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config, unsigned int 
 	Random rng(seed);
 
 	// Build population.
-	cerr << "Building the population. "<< endl;
 	m_population = PopulationBuilder::Build(pt_config, pt_disease, rng);
 
         // Initialize clusters.
-	cerr << "Initializing the clusters. "<< endl;
 	InitializeClusters();
 
 	// Disease profile.
-	cerr << "Initializing disease profile. "<< endl;
 	m_disease_profile.Initialize(pt_config, pt_disease);
 
 	// Contact handlers
-	cerr << "Setting up contact handlers. "<< endl;
         unsigned int new_seed = rng(numeric_limits<unsigned int>::max());
         for (size_t i = 0; i < m_num_threads; i++) {
                 m_rng_handler.emplace_back(RngHandler(new_seed, m_num_threads, i));
         }
 
         // Initialize contact profiles.
-        cerr << "Initializing contact profiles. "<< endl;
 	InitializeContactProfiles();
 }
 
@@ -217,27 +212,27 @@ void Simulator::UpdateClusters()
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_households.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_households[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
+                                m_households[i], m_disease_profile, m_rng_handler[thread], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_school_clusters.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_school_clusters[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
+                                m_school_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_work_clusters.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_work_clusters[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
+                                m_work_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_home_districts.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_home_districts[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
+                                m_home_districts[i], m_disease_profile, m_rng_handler[thread], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_day_districts.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_day_districts[i], m_disease_profile, m_rng_handler.at(thread), m_calendar);
+                                m_day_districts[i], m_disease_profile, m_rng_handler[thread], m_calendar);
                 }
         }
 }

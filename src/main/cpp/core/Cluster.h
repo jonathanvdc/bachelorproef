@@ -36,7 +36,6 @@ class RngHandler;
 class Person;
 class Calendar;
 
-
 /**
  * Represents a location for social contacts, an group of people.
  */
@@ -45,12 +44,6 @@ class Cluster
 public:
 	/// Constructor
 	Cluster(std::size_t cluster_id, ClusterType cluster_type);
-
-        /// Add contact profile.
-        static void AddContactProfile(ClusterType cluster_type, const ContactProfile& profile)
-        {
-                g_profiles.at(ToSizeType(cluster_type)) = profile;
-        }
 
 	/// Add the given Person to the Cluster.
 	void AddPerson(Person* p);
@@ -72,9 +65,12 @@ public:
                 return rate;
         }
 
+public:
+        /// Add contact profile.
+        static void AddContactProfile(ClusterType cluster_type, const ContactProfile& profile);
+
 private:
-	/// Sort members of cluster according to health status
-	/// (order: exposed/infected/recovered, susceptible, immune).
+	/// Sort members w.r.t. health status (order: exposed/infected/recovered, susceptible, immune).
 	std::tuple<bool, size_t> SortMembers();
 
 	/// Infector calculates contacts and transmissions.

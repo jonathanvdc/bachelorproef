@@ -20,10 +20,10 @@
  * Header for the Simulator class.
  */
 
-#include "../core/RngHandler.h"
 #include "core/Cluster.h"
 #include "core/DiseaseProfile.h"
 #include "core/LogMode.h"
+#include "core/RngHandler.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
