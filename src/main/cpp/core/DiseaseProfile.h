@@ -1,5 +1,5 @@
-#ifndef MASTER_PROFILE_H_INCLUDED
-#define MASTER_PROFILE_H_INCLUDED
+#ifndef DISEASE_PROFILE_H_INCLUDED
+#define DISEASE_PROFILE_H_INCLUDED
 /*
  *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
@@ -17,42 +17,27 @@
 
 /**
  * @file
- * Contact profile.
+ * Disease profile.
  */
 
-#include "Age.h"
-#include "ClusterType.h"
-#include "ContactProfile.h"
-
 #include <boost/property_tree/ptree.hpp>
-#include <array>
 
 namespace stride {
 
-class MasterProfile
+class DiseaseProfile
 {
 public:
-        using value_type = std::array<ContactProfile, NumOfClusterTypes()>;
+        /// Initialize.
+        DiseaseProfile() : m_transmission_rate(0.0) {}
 
-public:
-        /// return the data.
-        static value_type& Get()
-        {
-                static value_type p;
-                return p;
-        };
+        /// Return transmission rate.
+        double GetTransmissionRate() { return m_transmission_rate;}
 
-        /// return the ContactProfile.
-        static const ContactProfile& Get(ClusterType cluster_type)
-        {
-                return Get().at(ToSizeType(cluster_type));
-        };
+        /// Initialize.
+        void Initialize(const boost::property_tree::ptree& pt_config, const boost::property_tree::ptree& pt_disease);
 
-        /// Add profile.
-        static void AddProfile(ClusterType cluster_type, const ContactProfile& profile)
-        {
-                Get().at(ToSizeType(cluster_type)) = profile;
-        }
+private:
+        double m_transmission_rate;
 };
 
 } // namespace

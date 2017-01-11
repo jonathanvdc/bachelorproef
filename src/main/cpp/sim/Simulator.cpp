@@ -20,11 +20,11 @@
 
 #include "Simulator.h"
 
+#include "core/Cluster.h"
 #include "core/ClusterType.h"
 #include "core/ContactProfile.h"
 #include "core/Infector.h"
 #include "core/LogMode.h"
-#include "core/MasterProfile.h"
 #include "core/Population.h"
 #include "core/PopulationBuilder.h"
 #include "sim/Calendar.h"
@@ -45,7 +45,7 @@ using namespace boost::property_tree;
 using namespace stride::util;
 
 Simulator::Simulator(const boost::property_tree::ptree& pt_config)
-	: m_config_pt(pt_config), m_num_threads(1U), m_population(nullptr)
+	: m_config_pt(pt_config), m_num_threads(1U), m_population(nullptr), m_disease_profile()
 {
 	#pragma omp parallel
 	{
@@ -76,8 +76,10 @@ Simulator::Simulator(const boost::property_tree::ptree& pt_config)
 	cerr << "Initializing the clusters. "<< endl;
 	InitializeClusters();
 
-	// Contact handlers: R0 and transmission rate;use linear model fitted
-	// to simulation data: Expected(R0) = (b0+b1*transm_rate)
+	// Disease profile.
+	m_disease_profile.Initialize(pt_config, pt_disease);
+
+	// Contact handlers
 	cerr << "Setting up contact handlers. "<< endl;
         const double r0   = pt_config.get<double>("run.r0");
         const double b0   = pt_disease.get<double>("disease.transmission.b0");
@@ -121,6 +123,8 @@ void Simulator::InitializeClusters()
 	num_home_districts++;
 	num_day_districts++;
 
+	vector<Cluster> day_clusters;
+
 	// Keep separate id counter to provide a unique id for every cluster.
 	unsigned int cluster_id = 1;
 
@@ -131,7 +135,7 @@ void Simulator::InitializeClusters()
 	for (size_t i = 0; i < num_day_clusters; i++) {
 		// Day clusters are initialized as school clusters. However, when an adult is
 	        // added to such a cluster, the cluster type will be changed to "work".
-		m_day_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
+		day_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
 		cluster_id++;
 	}
 	for (size_t i = 0; i < num_home_districts; i++) {
@@ -149,7 +153,7 @@ void Simulator::InitializeClusters()
 		}
 		const auto wo_id = p.GetClusterId(ClusterType::Work);
 		if (wo_id > 0) {
-		        m_day_clusters[wo_id].AddPerson(&p);
+		        day_clusters[wo_id].AddPerson(&p);
 		}
 		const auto hd_id = p.GetClusterId(ClusterType::HomeDistrict);
 		if (hd_id > 0) {
@@ -160,6 +164,14 @@ void Simulator::InitializeClusters()
 		        m_day_districts[dd_id].AddPerson(&p);
 		}
 	}
+        // Set up separate school & work clusters.
+        for (const auto& c : day_clusters) {
+                if (c.GetClusterType() == ClusterType::School) {
+                        m_school_clusters.emplace_back(c);
+                } else {
+                        m_work_clusters.emplace_back(c);
+                }
+        }
 	// Set household sizes for persons
 	for (auto& p: population) {
 	        const auto hh_id = p.GetClusterId(ClusterType::Household);
@@ -180,11 +192,11 @@ void Simulator::InitializeContactProfiles()
         }
         read_xml(file_path.string(), pt);
 
-        MasterProfile::AddProfile(ClusterType::Household,     ContactProfile(ClusterType::Household, pt));
-        MasterProfile::AddProfile(ClusterType::School,        ContactProfile(ClusterType::School, pt));
-        MasterProfile::AddProfile(ClusterType::Work,          ContactProfile(ClusterType::Work, pt));
-        MasterProfile::AddProfile(ClusterType::HomeDistrict,  ContactProfile(ClusterType::HomeDistrict, pt));
-        MasterProfile::AddProfile(ClusterType::DayDistrict,   ContactProfile(ClusterType::DayDistrict, pt));
+        Cluster::AddContactProfile(ClusterType::Household,     ContactProfile(ClusterType::Household, pt));
+        Cluster::AddContactProfile(ClusterType::School,        ContactProfile(ClusterType::School, pt));
+        Cluster::AddContactProfile(ClusterType::Work,          ContactProfile(ClusterType::Work, pt));
+        Cluster::AddContactProfile(ClusterType::HomeDistrict,  ContactProfile(ClusterType::HomeDistrict, pt));
+        Cluster::AddContactProfile(ClusterType::DayDistrict,   ContactProfile(ClusterType::DayDistrict, pt));
 }
 
 template<LogMode log_level, bool track_index_case>
@@ -200,9 +212,14 @@ void Simulator::UpdateClusters()
                                 m_households[i],  m_contact_handler[thread], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
-                for (size_t i = 0; i < m_day_clusters.size(); i++) {
+                for (size_t i = 0; i < m_school_clusters.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_day_clusters[i], m_contact_handler[thread], m_calendar);
+                                m_school_clusters[i], m_contact_handler[thread], m_calendar);
+                }
+                #pragma omp for schedule(runtime)
+                for (size_t i = 0; i < m_work_clusters.size(); i++) {
+                        Infector<log_level, track_index_case>::Execute(
+                                m_work_clusters[i], m_contact_handler[thread], m_calendar);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_home_districts.size(); i++) {

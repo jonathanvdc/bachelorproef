@@ -91,7 +91,7 @@ class LOG_POLICY<LogMode::Contacts>
 {
 public:
         static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
-                ClusterType cluster_type, shared_ptr<const Calendar> environ)
+                ClusterType cluster_type, shared_ptr<const Calendar> calendar)
         {
                 unsigned int home   = (cluster_type == ClusterType::Household);
                 unsigned int work   = (cluster_type == ClusterType::Work);
@@ -99,7 +99,7 @@ public:
                 unsigned int other  = (cluster_type == ClusterType::HomeDistrict || cluster_type == ClusterType::DayDistrict);
 
                 logger->info("[CONT] {} {} {} {} {} {} {} {}",
-                        p1->GetId(), p1->GetAge(), p2->GetAge(), home, work, school, other, environ->GetSimulationDay());
+                        p1->GetId(), p1->GetAge(), p2->GetAge(), home, work, school, other, calendar->GetSimulationDay());
         }
 };
 
@@ -132,25 +132,24 @@ void Infector<log_level, track_index_case>::Execute(Cluster& cluster, ContactHan
         if (infectious_cases) {
                 cluster.UpdateMemberPresence();
 
-                // set up some stuff
+                // Set up some stuff
                 auto logger            = spdlog::get("contact_logger");
                 const auto c_type      = cluster.m_cluster_type;
                 const auto c_immune    = cluster.m_index_immune;
                 const auto& c_members  = cluster.m_members;
-                const auto c_size      = cluster.GetSize();
 
-                // match infectious in first part with susceptible in second part, skip last part (immune)
+                // Match infectious in first part with susceptible in second part, skip last part (immune)
                 for (size_t i_infected = 0; i_infected < num_cases; i_infected++) {
                         // check if member is present today
                         if (c_members[i_infected].second) {
                                 const auto p1 = c_members[i_infected].first;
                                 if (p1->GetHealth().IsInfectious()) {
-                                        const auto age1 = p1->GetAge();
+                                        const double contact_rate = cluster.GetContactRate(p1->GetAge());
                                         for (size_t i_contact = num_cases; i_contact < c_immune; i_contact++) {
                                                 // check if member is present today
                                                 if (c_members[i_contact].second) {
                                                         auto p2 = c_members[i_contact].first;
-                                                        if (contact_handler(age1, c_type, c_size)) {
+                                                        if (contact_handler.HasTransmission(contact_rate)) {
                                                                 LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, calendar);
                                                                 p2->GetHealth().StartInfection();
                                                                 R0_POLICY<track_index_case>::Execute(p2);
@@ -176,20 +175,20 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster, Co
         auto logger            = spdlog::get("contact_logger");
         const auto c_type      = cluster.m_cluster_type;
         const auto& c_members  = cluster.m_members;
-        const auto c_size      = cluster.GetSize();
+        //const auto c_size      = cluster.GetSize();
 
         // check all contacts
         for (size_t i_person1 = 0; i_person1 < cluster.m_members.size(); i_person1++) {
                 // check if member participates in the social contact survey && member is present today
                 if (c_members[i_person1].second && c_members[i_person1].first->IsParticipatingInSurvey()) {
                         auto p1 = c_members[i_person1].first;
-                        const auto age1 = p1->GetAge();
+                        const double contact_rate = cluster.GetContactRate(p1->GetAge());
                         for (size_t i_person2 = 0; i_person2 < c_members.size(); i_person2++) {
                                 // check if member is present today
                                 if ((i_person1 != i_person2) && c_members[i_person2].second) {
                                         auto p2 = c_members[i_person2].first;
                                         // check for contact
-                                        if (contact_handler.HasContact(age1, c_type, c_size)) {
+                                        if (contact_handler.HasContact(contact_rate)) {
                                                 // TODO ContactHandler doesn't have a separate transmission function anymore to
                                                 // check for transmission when contact has already been checked.
                                                 // check for transmission
@@ -208,7 +207,6 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(Cluster& cluster, Co
                                                         }
                                                 }*/
                                                 LOG_POLICY<LogMode::Contacts>::Execute(logger, p1, p2, c_type, calendar);
-
                                         }
                                 }
                         }

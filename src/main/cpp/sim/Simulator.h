@@ -22,6 +22,7 @@
 
 #include "core/ContactHandler.h"
 #include "core/Cluster.h"
+#include "core/DiseaseProfile.h"
 #include "core/LogMode.h"
 
 #include <boost/property_tree/ptree.hpp>
@@ -67,13 +68,16 @@ private:
 	unsigned int                              m_num_threads;          ///< The number of (OpenMP) threads.
 	LogMode                                   m_log_level;            ///< Specifies logging mode.
         std::shared_ptr<Population>               m_population;           ///< Pointer to the Population.
-        std::shared_ptr<Calendar>                 m_calendar;             ///< Management of calendar..
+        std::shared_ptr<Calendar>                 m_calendar;             ///< Management of calendar.
 
 private:
 	std::vector<Cluster>                      m_households;           ///< Container with household Clusters.
-	std::vector<Cluster>                      m_day_clusters;         ///< Container with day Clusters.
+        std::vector<Cluster>                      m_school_clusters;      ///< Container with school Clusters.
+        std::vector<Cluster>                      m_work_clusters;        ///< Container with work Clusters.
 	std::vector<Cluster>                      m_home_districts;       ///< Container with home district Clusters.
 	std::vector<Cluster>                      m_day_districts;        ///< Container with day district Clusters.
+
+	DiseaseProfile                            m_disease_profile;      ///< Profile of disease.
 
 	std::vector<ContactHandler>               m_contact_handler;      ///< Pointer to the ContactHandler.
 };

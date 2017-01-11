@@ -95,24 +95,12 @@ shared_ptr<Population> PopulationBuilder::Build(
         getline(pop_file, line); // step over file header
         unsigned int person_id = 0U;
         while (getline(pop_file, line)) {
-                //make use of stochastic disease characteristics
+                // Make use of stochastic disease characteristics.
                 const auto start_infectiousness = Sample(rng, distrib_start_infectiousness);
                 const auto start_symptomatic    = Sample(rng, distrib_start_symptomatic);
                 const auto time_infectious      = Sample(rng, distrib_time_infectious);
                 const auto time_symptomatic     = Sample(rng, distrib_time_symptomatic);
                 const auto values = StringUtils::Tokenize(line, ";");
-                if (StringUtils::FromString<unsigned int>(values[1]) == 0U) {
-                        cerr <<"GOTCHA 1" << endl;
-                }
-                if (StringUtils::FromString<unsigned int>(values[3]) == 0U) {
-                        cerr <<"GOTCHA 3" << endl;
-                }
-                if (StringUtils::FromString<unsigned int>(values[2]) == 0U) {
-                        //cerr <<"GOTCHA 2" << endl;
-                }
-                if (StringUtils::FromString<unsigned int>(values[4]) == 0U) {
-                        cerr <<"GOTCHA 4" << endl;
-                }
                 population.emplace_back(Person(person_id,
                         StringUtils::FromString<unsigned int>(values[0]),
                         StringUtils::FromString<unsigned int>(values[1]),

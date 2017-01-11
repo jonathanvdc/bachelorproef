@@ -20,9 +20,6 @@
  * Header for the ContactHandler class.
  */
 
-#include "core/Age.h"
-#include "core/ClusterType.h"
-#include "core/MasterProfile.h"
 #include "util/Random.h"
 
 namespace stride {
@@ -40,28 +37,16 @@ public:
 		m_rng.Split(stream_count, id);
 	}
 
-	/// Handle one contact between persons of the given age. Performs a Bernoulli process with a random
-	/// number. The given ages determine the transmission rate (=probability for "success").
-	bool operator()(unsigned int age, ClusterType cluster_type, size_t cluster_size)
-	{
-		return m_rng.NextDouble() < m_transmission_rate_adult * GetContactRate(age, cluster_type, cluster_size);
-	}
-
-	/// Check if two individuals make contact.
-	bool HasContact(unsigned int age, ClusterType cluster_type, size_t cluster_size)
-	{
-		return m_rng.NextDouble() < GetContactRate(age, cluster_type, cluster_size);
-	}
+        /// Handle one contact between persons of the given age. Performs a Bernoulli process.
+        bool HasTransmission(double contact_rate)
+        {
+                return m_rng.NextDouble() < m_transmission_rate_adult * contact_rate;
+        }
 
         /// Check if two individuals make contact.
-        double GetContactRate(unsigned int age, ClusterType cluster_type, size_t cluster_size) const
+        bool HasContact(double contact_rate)
         {
-                double rate = 1.0;
-                if (cluster_type != ClusterType::Household) {
-                        rate = MasterProfile::Get(cluster_type)[EffectiveAge(age)] / cluster_size;
-                        rate = (cluster_type == ClusterType::Work) ? rate * 1.7 : rate;
-                }
-                return rate;
+                return m_rng.NextDouble() < contact_rate;
         }
 
 private:

@@ -15,28 +15,23 @@
 
 /**
  * @file
- * Contact profile.
+ * Disease profile.
  */
 
-#include "ContactProfile.h"
+#include "DiseaseProfile.h"
 
 namespace stride {
 
 using namespace std;
 using namespace boost::property_tree;
 
-ContactProfile::ContactProfile(ClusterType cluster_type,  const ptree& pt_contacts)
+void DiseaseProfile::Initialize(const ptree& pt_config, const ptree& pt_disease)
 {
-        const string key = "matrices." + ToString(cluster_type);
-        ContactProfile mean_nums;
-        unsigned int i = 0U;
-        for(const auto& participant: pt_contacts.get_child(key)) {
-                double total_contacts = 0;
-                for (const auto& contact: participant.second.get_child("contacts")) {
-                        total_contacts += contact.second.get<double>("rate");
-                }
-                (*this)[i++] = total_contacts;
-        }
+        // Use linear model fitted to simulation data: Expected(R0) = (b0+b1*transm_rate).
+        const double r0   = pt_config.get<double>("run.r0");
+        const double b0   = pt_disease.get<double>("disease.transmission.b0");
+        const double b1   = pt_disease.get<double>("disease.transmission.b1");
+        m_transmission_rate = (r0 - b0) / b1;
 }
 
 } // namespace

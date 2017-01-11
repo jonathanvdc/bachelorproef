@@ -46,14 +46,10 @@ public:
 	        const boost::property_tree::ptree& pt_config, const boost::property_tree::ptree& pt_disease);
 
 private:
-	/**
-	 *
-	 */
+	///
 	static std::vector<double> GetDistribution(const boost::property_tree::ptree& pt_root, const std::string& xml_tag);
 
-	/**
-	 *
-	 */
+	///
 	static unsigned int Sample(util::Random& rng, const std::vector<double>& distribution);
 };
 

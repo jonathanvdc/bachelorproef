@@ -20,12 +20,15 @@
  * Header for the core Cluster class.
  */
 
+#include "core/Age.h"
 #include "core/ClusterType.h"
+#include "core/ContactProfile.h"
 #include "core/LogMode.h"
 
+#include <array>
 #include <cstddef>
 #include <vector>
-#include <memory>
+//#include <memory>
 
 namespace stride {
 
@@ -43,6 +46,12 @@ public:
 	/// Constructor
 	Cluster(std::size_t cluster_id, ClusterType cluster_type);
 
+        /// Add contact profile.
+        static void AddContactProfile(ClusterType cluster_type, const ContactProfile& profile)
+        {
+                g_profiles.at(ToSizeType(cluster_type)) = profile;
+        }
+
 	/// Add the given Person to the Cluster.
 	void AddPerson(Person* p);
 
@@ -51,6 +60,17 @@ public:
 
 	/// Return the type of this cluster.
 	ClusterType GetClusterType() const { return m_cluster_type; }
+
+        /// Get basic contact rate in this cluster.
+        double GetContactRate(unsigned int age) const
+        {
+                double rate = 1.0;
+                if (m_cluster_type != ClusterType::Household) {
+                        rate = g_profiles.at(ToSizeType(m_cluster_type))[EffectiveAge(age)] / m_members.size();
+                        rate = (m_cluster_type == ClusterType::Work) ? rate * 1.7 : rate;
+                }
+                return rate;
+        }
 
 private:
 	/// Sort members of cluster according to health status
@@ -69,6 +89,9 @@ private:
 	ClusterType                               m_cluster_type;   ///< The type of the Cluster (for logging purposes).
 	std::size_t                               m_index_immune;   ///< Index of the first immune member in the Cluster.
 	std::vector<std::pair<Person*, bool>>     m_members;        ///< Container with pointers to Cluster members.
+
+private:
+	static std::array<ContactProfile, NumOfClusterTypes()> g_profiles;
 };
 
 } // end_of_namespace

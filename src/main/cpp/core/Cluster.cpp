@@ -35,6 +35,8 @@ namespace stride {
 
 using namespace std;
 
+std::array<ContactProfile, NumOfClusterTypes()> Cluster::g_profiles;
+
 Cluster::Cluster(std::size_t cluster_id, ClusterType cluster_type)
         : m_cluster_id(cluster_id), m_cluster_type(cluster_type), m_index_immune(0)
 {
