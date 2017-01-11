@@ -31,19 +31,19 @@ class ContactHandler
 {
 public:
 	/// Constructor sets the transmission rate and random number generator.
-	ContactHandler(double transmission_rate, unsigned int seed, unsigned int stream_count, unsigned int id)
-			: m_rng(seed), m_transmission_rate_adult(transmission_rate)
+	ContactHandler(unsigned int seed, unsigned int stream_count, unsigned int id)
+			: m_rng(seed)
 	{
 		m_rng.Split(stream_count, id);
 	}
 
-        /// Handle one contact between persons of the given age. Performs a Bernoulli process.
-        bool HasTransmission(double contact_rate)
+	/// Check if two individuals have transmission.
+        bool HasTransmission(double contact_rate, double transmission_rate)
         {
-                return m_rng.NextDouble() < m_transmission_rate_adult * contact_rate;
+                return m_rng.NextDouble() < transmission_rate * contact_rate;
         }
 
-        /// Check if two individuals make contact.
+        /// Check if two individuals have contact.
         bool HasContact(double contact_rate)
         {
                 return m_rng.NextDouble() < contact_rate;
@@ -51,7 +51,6 @@ public:
 
 private:
 	util::Random              m_rng;                        ///< Random number engine.
-        double                    m_transmission_rate_adult;    ///< Transmission rate between adults.
 };
 
 } // end_of_namespace

@@ -20,6 +20,7 @@
  * Header for the core Cluster class.
  */
 
+#include "core/DiseaseProfile.h"
 #include "core/LogMode.h"
 
 #include <memory>
@@ -38,8 +39,8 @@ class Infector
 {
 public:
 	///
-	static void Execute(Cluster& cluster, ContactHandler& contact_handler,
-	        std::shared_ptr<const Calendar> sim_state);
+	static void Execute(Cluster& cluster, DiseaseProfile disease_profile,
+	        ContactHandler& contact_handler, std::shared_ptr<const Calendar> sim_state);
 };
 
 ///
