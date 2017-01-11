@@ -24,6 +24,7 @@
 #include "output/PersonFile.h"
 #include "output/SummaryFile.h"
 #include "sim/Simulator.h"
+#include "sim/SimulatorBuilder.h"
 #include "util/ConfigInfo.h"
 #include "util/InstallDirs.h"
 #include "util/Stopwatch.h"
@@ -140,7 +141,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
         // -----------------------------------------------------------------------------------------
         Stopwatch<> total_clock("total_clock", true);
         cout << "Building the simulator. "<< endl;
-        Simulator sim(pt_config, num_threads, track_index_case);
+        auto sim = SimulatorBuilder::Build(pt_config, num_threads, track_index_case);
         cout << "Done building the simulator. "<< endl <<endl;
 
         // -----------------------------------------------------------------------------------------
@@ -152,10 +153,10 @@ void run_stride(bool track_index_case, const string& config_file_name)
         for (unsigned int i = 0; i < num_days; i++) {
                 cout << "Simulating day: " << setw(5) << i;
                 run_clock.Start();
-                sim.UpdateTimeStep();
+                sim->UpdateTimeStep();
                 run_clock.Stop();
                 cout << "     Done, infected count: ";
-                cases[i] = sim.GetPopulation()->GetInfectedCount();
+                cases[i] = sim->GetPopulation()->GetInfectedCount();
                 cout << setw(10) << cases[i] << endl;
         }
 
@@ -169,14 +170,14 @@ void run_stride(bool track_index_case, const string& config_file_name)
         // Summary
         SummaryFile  summary_file(output_prefix);
         summary_file.Print(pt_config,
-                sim.GetPopulation()->size(), sim.GetPopulation()->GetInfectedCount(),
+                sim->GetPopulation()->size(), sim->GetPopulation()->GetInfectedCount(),
                 duration_cast<milliseconds>(run_clock.Get()).count(),
                 duration_cast<milliseconds>(total_clock.Get()).count());
 
         // Persons
         if (pt_config.get<double>("run.generate_person_file") == 1) {
                 PersonFile	 person_file(output_prefix);
-                person_file.Print(sim.GetPopulation());
+                person_file.Print(sim->GetPopulation());
         }
 
         // -----------------------------------------------------------------------------------------

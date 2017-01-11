@@ -41,11 +41,8 @@ class Calendar;
 class Simulator
 {
 public:
-        // Default constructor for empty simulator.
+        // Default constructor for empty Simulator.
         Simulator();
-
-	/// Constructor: Initialize the Simulator.
-	Simulator(const boost::property_tree::ptree& pt_config, unsigned int num_threads =1U, bool track_index_case =false);
 
         /// Get the population.
         const std::shared_ptr<const Population> GetPopulation() const;
@@ -57,12 +54,6 @@ public:
         void UpdateTimeStep();
 
 private:
-	/// Initialize the clusters.
-	void InitializeClusters();
-
-        /// Initialize the contact handlers.
-        void InitializeContactProfiles();
-
         /// Update the contacts in the given clusters.
 	template<LogMode log_level, bool track_index_case = false>
         void UpdateClusters();

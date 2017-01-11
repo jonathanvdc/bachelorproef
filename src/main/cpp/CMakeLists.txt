@@ -34,6 +34,7 @@ set(LIB_SRC
 	sim/Calendar.cpp
 	sim/run_stride.cpp
 	sim/Simulator.cpp
+	sim/SimulatorBuilder.cpp
 	util/InstallDirs.cpp
 )
 

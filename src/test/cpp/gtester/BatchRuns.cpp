@@ -20,6 +20,7 @@
 
 #include "core/Population.h"
 #include "sim/Simulator.h"
+#include "sim/SimulatorBuilder.h"
 
 #include <gtest/gtest.h>
 #include <boost/property_tree/ptree.hpp>
@@ -139,13 +140,13 @@ TEST_P( BatchDemos, Run )
 	}
 
 	// Initialize simulator and run it.
-	Simulator sim(pt_config, num_threads);
+	auto sim = SimulatorBuilder::Build(pt_config, num_threads);
 	for (size_t i = 0U; i < g_num_days; i++) {
-		sim.UpdateTimeStep();
+		sim->UpdateTimeStep();
 	}
 
 	// Round up
-	const unsigned int num_cases = sim.GetPopulation()->GetInfectedCount();
+	const unsigned int num_cases = sim->GetPopulation()->GetInfectedCount();
 	ASSERT_EQ(num_cases, g_results.at(test_tag)) << "!! CHANGED !!";
 }
 

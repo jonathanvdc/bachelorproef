@@ -82,7 +82,7 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
         read_xml(file_path_c.string(), pt_contact);
 
         // Done.
-        return Build(pt_config);
+        return Build(pt_config, pt_disease, pt_contact, num_threads, track_index_case);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
@@ -108,26 +108,21 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
         Random rng(seed);
 
         // Build population.
-        cerr << "Building the population. "<< endl;
         sim->m_population = PopulationBuilder::Build(pt_config, pt_disease, rng);
 
         // Initialize clusters.
-        cerr << "Initializing the clusters. "<< endl;
         InitializeClusters(sim);
 
         // Initialize disease profile.
-        cerr << "Initializing disease profile. "<< endl;
         sim->m_disease_profile.Initialize(pt_config, pt_disease);
 
         // Initialize Rng handlers
-        cerr << "Initializing rng handlers. "<< endl;
         unsigned int new_seed = rng(numeric_limits<unsigned int>::max());
         for (size_t i = 0; i < sim->m_num_threads; i++) {
                 sim->m_rng_handler.emplace_back(RngHandler(new_seed, sim->m_num_threads, i));
         }
 
         // Initialize contact profiles.
-        cerr << "Initializing contact profiles. "<< endl;
         Cluster::AddContactProfile(ClusterType::Household,     ContactProfile(ClusterType::Household, pt_contact));
         Cluster::AddContactProfile(ClusterType::School,        ContactProfile(ClusterType::School, pt_contact));
         Cluster::AddContactProfile(ClusterType::Work,          ContactProfile(ClusterType::Work, pt_contact));

@@ -22,26 +22,17 @@
 
 #include "core/Cluster.h"
 #include "core/ClusterType.h"
-#include "core/ContactProfile.h"
 #include "core/Infector.h"
 #include "core/LogMode.h"
 #include "core/Population.h"
-#include "core/PopulationBuilder.h"
 #include "sim/Calendar.h"
-#include "util/InstallDirs.h"
 
-#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 #include <omp.h>
-#include <iostream>
-#include <limits>
-#include <stdexcept>
 
 namespace stride {
 
 using namespace std;
-using namespace boost::filesystem;
 using namespace boost::property_tree;
 using namespace stride::util;
 
@@ -51,150 +42,9 @@ Simulator::Simulator()
 {
 }
 
-Simulator::Simulator(const boost::property_tree::ptree& pt_config, unsigned int num_threads, bool track_index_case)
-	: m_config_pt(pt_config), m_num_threads(num_threads), m_population(nullptr),
-	  m_disease_profile(), m_track_index_case(track_index_case)
-{
-	// Initialize calendar.
-	m_calendar = make_shared<Calendar>(pt_config);
-
-	// Get log level.
-	const string l = pt_config.get<string>("run.log_level", "None");
-	m_log_level = IsLogMode(l) ? ToLogMode(l) : throw runtime_error(string(__func__) + "> Invalid input for LogMode.");
-
-	// Get the disease configuration.
-	ptree pt_disease;
-	const auto file_name { pt_config.get<string>("run.disease_config_file") };
-	const auto file_path { InstallDirs::GetDataDir() /= file_name };
-	if ( !is_regular_file(file_path) ) {
-	        throw runtime_error(std::string(__func__)  + "> No file " + file_path.string());
-	}
-	read_xml(file_path.string(), pt_disease);
-
-	// Rng's.
-	const auto seed = pt_config.get<double>("run.rng_seed");
-	Random rng(seed);
-
-	// Build population.
-	m_population = PopulationBuilder::Build(pt_config, pt_disease, rng);
-
-        // Initialize clusters.
-	InitializeClusters();
-
-	// Disease profile.
-	m_disease_profile.Initialize(pt_config, pt_disease);
-
-	// Contact handlers
-        unsigned int new_seed = rng(numeric_limits<unsigned int>::max());
-        for (size_t i = 0; i < m_num_threads; i++) {
-                m_rng_handler.emplace_back(RngHandler(new_seed, m_num_threads, i));
-        }
-
-        // Initialize contact profiles.
-	InitializeContactProfiles();
-}
-
 const shared_ptr<const Population> Simulator::GetPopulation() const
 {
         return m_population;
-}
-
-void Simulator::InitializeClusters()
-{
-	// Determine number of clusters and districts.
-	unsigned int num_households         = 0U;
-	unsigned int num_day_clusters       = 0U;
-	unsigned int num_home_districts     = 0U;
-	unsigned int num_day_districts      = 0U;
-	Population& population              = *m_population;
-
-	for (const auto& p : population) {
-	        num_households      = std::max(num_households,     p.GetClusterId(ClusterType::Household));
-	        num_day_clusters    = std::max(num_day_clusters,   p.GetClusterId(ClusterType::Work));
-	        num_home_districts  = std::max(num_home_districts, p.GetClusterId(ClusterType::HomeDistrict));
-	        num_day_districts   = std::max(num_day_districts,  p.GetClusterId(ClusterType::DayDistrict));
-	}
-
-	// Add extra '0' nbh (=not present).
-	num_households++;
-	num_day_clusters++;
-	num_home_districts++;
-	num_day_districts++;
-
-	vector<Cluster> day_clusters;
-
-	// Keep separate id counter to provide a unique id for every cluster.
-	unsigned int cluster_id = 1;
-
-	for (size_t i = 0; i < num_households; i++) {
-		m_households.emplace_back(Cluster(cluster_id, ClusterType::Household));
-		cluster_id++;
-	}
-	for (size_t i = 0; i < num_day_clusters; i++) {
-		// Day clusters are initialized as school clusters. However, when an adult is
-	        // added to such a cluster, the cluster type will be changed to "work".
-		day_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
-		cluster_id++;
-	}
-	for (size_t i = 0; i < num_home_districts; i++) {
-		m_home_districts.emplace_back(Cluster(cluster_id, ClusterType::HomeDistrict));
-		cluster_id++;
-	}
-	for (size_t i = 0; i < num_day_districts; i++) {
-		m_day_districts.emplace_back(Cluster(cluster_id, ClusterType::DayDistrict));
-		cluster_id++;
-	}
-	for (auto& p: population) {
-	        const auto hh_id = p.GetClusterId(ClusterType::Household);
-		if (hh_id > 0) {
-		        m_households[hh_id].AddPerson(&p);
-		}
-		const auto wo_id = p.GetClusterId(ClusterType::Work);
-		if (wo_id > 0) {
-		        day_clusters[wo_id].AddPerson(&p);
-		}
-		const auto hd_id = p.GetClusterId(ClusterType::HomeDistrict);
-		if (hd_id > 0) {
-		        m_home_districts[hd_id].AddPerson(&p);
-		}
-		const auto dd_id = p.GetClusterId(ClusterType::DayDistrict);
-		if (dd_id > 0) {
-		        m_day_districts[dd_id].AddPerson(&p);
-		}
-	}
-        // Set up separate school & work clusters.
-        for (const auto& c : day_clusters) {
-                if (c.GetClusterType() == ClusterType::School) {
-                        m_school_clusters.emplace_back(c);
-                } else {
-                        m_work_clusters.emplace_back(c);
-                }
-        }
-	// Set household sizes for persons
-	for (auto& p: population) {
-	        const auto hh_id = p.GetClusterId(ClusterType::Household);
-		if (hh_id > 0) {
-			p.SetHouseholdSize(m_households[hh_id].GetSize());
-		}
-	}
-}
-
-void Simulator::InitializeContactProfiles()
-{
-        // Get the contact configuration to initialize contact matrices for each cluster type
-        ptree pt;
-        const auto file_name { m_config_pt.get("run.age_contact_matrix_file", "contact_matrix.xml") };
-        const auto file_path { InstallDirs::GetDataDir() /= file_name };
-        if ( !is_regular_file(file_path) ) {
-                throw runtime_error(string(__func__)  + "> No file " + file_path.string());
-        }
-        read_xml(file_path.string(), pt);
-
-        Cluster::AddContactProfile(ClusterType::Household,     ContactProfile(ClusterType::Household, pt));
-        Cluster::AddContactProfile(ClusterType::School,        ContactProfile(ClusterType::School, pt));
-        Cluster::AddContactProfile(ClusterType::Work,          ContactProfile(ClusterType::Work, pt));
-        Cluster::AddContactProfile(ClusterType::HomeDistrict,  ContactProfile(ClusterType::HomeDistrict, pt));
-        Cluster::AddContactProfile(ClusterType::DayDistrict,   ContactProfile(ClusterType::DayDistrict, pt));
 }
 
 void Simulator::SetTrackIndexCase(bool track_index_case)
