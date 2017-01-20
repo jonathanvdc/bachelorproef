@@ -34,7 +34,7 @@ class Calendar;
 /**
  * Represents a location for social contacts, an group of people.
  */
-template<LogMode log_level, bool track_index_case = false>
+template<LogMode log_level, bool track_index_case>
 class Infector
 {
 public:

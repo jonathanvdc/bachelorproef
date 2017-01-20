@@ -9,7 +9,7 @@
     <output_prefix></output_prefix>
     <disease_config_file>disease_measles.xml</disease_config_file>
     <generate_person_file>1</generate_person_file>
-    <num_participants_survey>0</num_participants_survey>
+    <num_participants_survey>10</num_participants_survey>
     <start_date>2017-01-02</start_date>
     <holidays_file>holidays_flanders_2017.json</holidays_file>
     <age_contact_matrix_file>contact_matrix_week_week.xml</age_contact_matrix_file>

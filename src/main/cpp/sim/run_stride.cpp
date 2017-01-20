@@ -65,7 +65,6 @@ void run_stride(bool track_index_case, const string& config_file_name)
         cout << "Current directory:   " << InstallDirs::GetCurrentDir().string() << endl;
         cout << "Install directory:   " << InstallDirs::GetRootDir().string() << endl;
         cout << "Data    directory:   " << InstallDirs::GetDataDir().string() << endl;
-        cout << "Config  file:        " << config_file_name << endl;
 
 
         // -----------------------------------------------------------------------------------------

@@ -125,44 +125,93 @@ void Infector<log_level, track_index_case>::Execute(
         Cluster& cluster, DiseaseProfile disease_profile,
         RngHandler& contact_handler, shared_ptr<const Calendar> calendar)
 {
-        // check if the cluster has infected members and sort
-        bool infectious_cases;
-        size_t num_cases;
-        tie(infectious_cases, num_cases) = cluster.SortMembers();
+	if(log_level == LogMode::Contacts)
+		{
+			cluster.UpdateMemberPresence();
 
-        if (infectious_cases) {
-                cluster.UpdateMemberPresence();
+			// set up some stuff
+			auto logger            = spdlog::get("contact_logger");
+			const auto c_type      = cluster.m_cluster_type;
+			const auto& c_members  = cluster.m_members;
+			//const auto c_size      = cluster.GetSize();
+		std::cout << "check contacts" << std::endl;
+			// check all contacts
+			for (size_t i_person1 = 0; i_person1 < cluster.m_members.size(); i_person1++) {
+					// check if member participates in the social contact survey && member is present today
+					if (c_members[i_person1].second && c_members[i_person1].first->IsParticipatingInSurvey()) {
+							auto p1 = c_members[i_person1].first;
+							const double contact_rate = cluster.GetContactRate(p1->GetAge());
+							for (size_t i_person2 = 0; i_person2 < c_members.size(); i_person2++) {
+									// check if member is present today
+									if ((i_person1 != i_person2) && c_members[i_person2].second) {
+											auto p2 = c_members[i_person2].first;
+											// check for contact
+											if (contact_handler.HasContact(contact_rate)) {
+													// TODO ContactHandler doesn't have a separate transmission function anymore to
+													// check for transmission when contact has already been checked.
+													// check for transmission
+													/*bool transmission = contact_handler->transmission(age1, p2->GetAge());
+													unsigned int infecter = 0;
+													if (transmission) {
+															if (p1->IsInfectious() && p2->IsSusceptible()) {
+																	infecter = 1;
+																	p2->StartInfection();
+																	R0_POLICY<track_index_case>::Execute(p2);
+															}
+															else if (p2->IsInfectious() && p1->IsSusceptible()) {
+																	infecter = 2;
+																	p1->StartInfection();
+																	R0_POLICY<track_index_case>::Execute(p1);
+															}
+													}*/
+													LOG_POLICY<LogMode::Contacts>::Execute(logger, p1, p2, c_type, calendar);
+											}
+									}
+							}
+					}
+				}
+		} else {
 
-                // Set up some stuff
-                auto logger            = spdlog::get("contact_logger");
-                const auto c_type      = cluster.m_cluster_type;
-                const auto c_immune    = cluster.m_index_immune;
-                const auto& c_members  = cluster.m_members;
-                const auto transmission_rate = disease_profile.GetTransmissionRate();
+			// check if the cluster has infected members and sort
+			bool infectious_cases;
+			size_t num_cases;
+			tie(infectious_cases, num_cases) = cluster.SortMembers();
 
-                // Match infectious in first part with susceptible in second part, skip last part (immune)
-                for (size_t i_infected = 0; i_infected < num_cases; i_infected++) {
-                        // check if member is present today
-                        if (c_members[i_infected].second) {
-                                const auto p1 = c_members[i_infected].first;
-                                if (p1->GetHealth().IsInfectious()) {
-                                        const double contact_rate = cluster.GetContactRate(p1->GetAge());
-                                        for (size_t i_contact = num_cases; i_contact < c_immune; i_contact++) {
-                                                // check if member is present today
-                                                if (c_members[i_contact].second) {
-                                                        auto p2 = c_members[i_contact].first;
-                                                        if (contact_handler.HasTransmission(contact_rate, transmission_rate)) {
-                                                                LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, calendar);
-                                                                p2->GetHealth().StartInfection();
-                                                                R0_POLICY<track_index_case>::Execute(p2);
-                                                        }
-                                                }
-                                        }
-                                }
-                        }
-                }
+			if (infectious_cases) {
+					cluster.UpdateMemberPresence();
+
+					// Set up some stuff
+					auto logger            = spdlog::get("contact_logger");
+					const auto c_type      = cluster.m_cluster_type;
+					const auto c_immune    = cluster.m_index_immune;
+					const auto& c_members  = cluster.m_members;
+					const auto transmission_rate = disease_profile.GetTransmissionRate();
+
+					// Match infectious in first part with susceptible in second part, skip last part (immune)
+					for (size_t i_infected = 0; i_infected < num_cases; i_infected++) {
+							// check if member is present today
+							if (c_members[i_infected].second) {
+									const auto p1 = c_members[i_infected].first;
+									if (p1->GetHealth().IsInfectious()) {
+											const double contact_rate = cluster.GetContactRate(p1->GetAge());
+											for (size_t i_contact = num_cases; i_contact < c_immune; i_contact++) {
+													// check if member is present today
+													if (c_members[i_contact].second) {
+															auto p2 = c_members[i_contact].first;
+															if (contact_handler.HasTransmission(contact_rate, transmission_rate)) {
+																	LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, calendar);
+																	p2->GetHealth().StartInfection();
+																	R0_POLICY<track_index_case>::Execute(p2);
+															}
+													}
+											}
+									}
+							}
+					}
+			}
         }
 }
+
 
 //--------------------------------------------------------------------------
 // Definition of partial specialization for LogMode::Contacts.
