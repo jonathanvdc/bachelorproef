@@ -64,8 +64,9 @@ void run_stride(bool track_index_case, const string& config_file_name)
         cout << "Executing:           " << InstallDirs::GetExecPath().string() << endl;
         cout << "Current directory:   " << InstallDirs::GetCurrentDir().string() << endl;
         cout << "Install directory:   " << InstallDirs::GetRootDir().string() << endl;
-        cout << "Config  directory:   " << InstallDirs::GetConfigDir().string() << endl;
         cout << "Data    directory:   " << InstallDirs::GetDataDir().string() << endl;
+        cout << "Config  file:        " << config_file_name << endl;
+
 
         // -----------------------------------------------------------------------------------------
         // Check execution environment.
@@ -73,18 +74,15 @@ void run_stride(bool track_index_case, const string& config_file_name)
         if ( InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0 ) {
                 throw runtime_error(string(__func__) + "> Current directory is not install root! Aborting.");
         }
-        if ( InstallDirs::GetConfigDir().empty() ) {
-                throw runtime_error(string(__func__) + "Config dir not present! Aborting.");
-        }
         if ( InstallDirs::GetDataDir().empty() ) {
-                throw runtime_error(string(__func__) + "> Data dir not present! Aborting.");
+                throw runtime_error(string(__func__) + "> Data directory not present! Aborting.");
         }
 
         // -----------------------------------------------------------------------------------------
         // Configuration.
         // -----------------------------------------------------------------------------------------
         ptree pt_config;
-        const auto file_path = InstallDirs::GetConfigDir() /= config_file_name;
+        const auto file_path = canonical(system_complete(config_file_name));
         if ( !is_regular_file(file_path) ) {
                 throw runtime_error(string(__func__)
                         + ">Config file " + file_path.string() + " not present. Aborting.");

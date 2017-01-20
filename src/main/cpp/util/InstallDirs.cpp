@@ -44,7 +44,6 @@ using namespace std;
 using namespace boost::filesystem;
 
 path     InstallDirs::g_bin_dir;
-path     InstallDirs::g_config_dir;
 path     InstallDirs::g_current_dir;
 path     InstallDirs::g_data_dir;
 path     InstallDirs::g_exec_path;
@@ -127,11 +126,6 @@ void InstallDirs::Initialize()
 		}
 	}
 
-	//------- Config Dir
-	{
-                g_config_dir = g_root_dir / "config";
-                g_config_dir = is_directory(g_config_dir) ? g_config_dir : path();
-	}
 	//------- Data Dir
 	{
                 g_data_dir = g_root_dir / "data";
@@ -147,12 +141,6 @@ path InstallDirs::GetBinDir()
 {
         Check();
         return g_bin_dir;
-}
-
-path InstallDirs::GetConfigDir()
-{
-        Check();
-        return g_config_dir;
 }
 
 path InstallDirs::GetCurrentDir()

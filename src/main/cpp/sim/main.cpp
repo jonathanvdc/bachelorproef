@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 		CmdLine cmd("stride", ' ', "1.0", false);
 		SwitchArg         index_case_Arg("r", "r0", "R0 only", cmd, false);
 		ValueArg<string>  config_file_Arg("c", "config_file", "Config File", false,
-		                                "run_config_default.xml", "CONFIGURATION FILE", cmd);
+		                                "./config/run_default.xml", "CONFIGURATION FILE", cmd);
 		cmd.parse(argc, argv);
 
 		// -----------------------------------------------------------------------------------------

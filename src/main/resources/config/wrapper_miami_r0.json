@@ -1,0 +1,19 @@
+{
+	"indismo_path":"bin/stride",
+	"threads":[8],
+	"omp_schedule":"DYNAMIC,1",
+	"rng_seed":[1,2,3],
+	"r0":[1.5,2],
+	"seeding_rate":[0.00000041],
+	"immunity_rate": [0.0],
+	"population_file":["pop_miami.csv"],
+	"num_days":14,
+	"output_tag":"r0_miami_week",
+	"disease_config_file":"disease_influenza.xml",
+	"generate_person_file":0,
+	"num_participants_survey":0,
+	"start_date":"2017-01-02",
+    	"holidays_file":"holidays_none.json",
+    	"age_contact_matrix_file":"contact_matrix_week_weekend.xml",
+    	"log_level":"None"
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<run>
+    <rng_seed>1</rng_seed>
+    <r0>3</r0>
+    <seeding_rate>0.002</seeding_rate>
+    <immunity_rate>0.0</immunity_rate>
+    <population_file>pop_miami.csv</population_file>
+    <num_days>100</num_days>
+    <output_prefix>miami_stride</output_prefix>
+    <disease_config_file>disease_influenza.xml</disease_config_file>
+    <generate_person_file>1</generate_person_file>
+    <num_participants_survey>0</num_participants_survey>
+    <start_date>2017-01-01</start_date>
+    <holidays_file>holidays_none.json</holidays_file>
+    <age_contact_matrix_file>contact_matrix_week_week.xml</age_contact_matrix_file>
+    <log_level>None</log_level>
+</run>

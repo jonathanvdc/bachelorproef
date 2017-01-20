@@ -49,7 +49,7 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const string& config_file_name,
 {
         // Configuration file.
         ptree pt_config;
-        const auto file_path = InstallDirs::GetConfigDir() /= config_file_name;
+        const auto file_path = InstallDirs::GetCurrentDir() /= config_file_name;
         if ( !is_regular_file(file_path) ) {
                 throw runtime_error(string(__func__)
                         + ">Config file " + file_path.string() + " not present. Aborting.");

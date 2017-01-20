@@ -77,7 +77,7 @@ shared_ptr<Population> PopulationBuilder::Build(
                         + "> Population file " + file_path.string() + " not present.");
         }
 
-        ifstream pop_file;
+        boost::filesystem::ifstream pop_file;
         pop_file.open(file_path.string());
         if ( !pop_file.is_open()) {
                 throw runtime_error(string(__func__)

@@ -31,7 +31,7 @@ import xml.etree.cElementTree as ET
 # --------------------------------
 # Function that runs the simulator.
 # --------------------------------
-def runSimulator(path, num_days, rng_seed, seeding_rate, r0, population_file, immunity_rate, output_prefix, disease_config_file, generate_person_file, num_participants_survey, environment={}):
+def runSimulator(path, num_days, rng_seed, seeding_rate, r0, population_file, immunity_rate, output_prefix, disease_config_file, generate_person_file, num_participants_survey, start_date, holidays_file, age_contact_matrix_file, log_level, environment={}):
     
     # Write configuration file
     root = ET.Element("run")
@@ -46,6 +46,11 @@ def runSimulator(path, num_days, rng_seed, seeding_rate, r0, population_file, im
     ET.SubElement(root, "disease_config_file").text = str(str(disease_config_file))
     ET.SubElement(root, "generate_person_file").text = str(str(generate_person_file))
     ET.SubElement(root, "num_participants_survey").text = str(str(num_participants_survey))
+
+    ET.SubElement(root, "start_date").text = str(str(start_date))
+    ET.SubElement(root, "holidays_file").text = str(str(holidays_file))
+    ET.SubElement(root, "age_contact_matrix_file").text = str(str(age_contact_matrix_file))
+    ET.SubElement(root, "log_level").text = str(str(log_level))
     
     tree = ET.ElementTree(root)
     tree.write(str(output_prefix)+ ".xml")
@@ -148,7 +153,7 @@ def main(argv):
     
     # Arguments parser
     parser = argparse.ArgumentParser(description='Script to execute multiple runs of the simulator.')
-    parser.add_argument('--config', help = 'A config file describing the experiments to run.', default = './config/config_default.json', type=str)
+    parser.add_argument('--config', help = 'A config file describing the experiments to run.', default = './config/wrapper_miami.json', type=str)
     
     args = vars(parser.parse_args())
     
@@ -200,7 +205,7 @@ def main(argv):
         env['OMP_SCHEDULE']     = str(config['omp_schedule'])
         
         # Run the simulator     ('experiment[0]' has been used for the OMP_NUM_THREADS)
-        runSimulator(config['stride_path'], config['num_days'], experiment[1], experiment[2], experiment[3], experiment[4], experiment[5], output_prefix, config['disease_config_file'],config['generate_person_file'],config['num_participants_survey'], env)
+        runSimulator(config['indismo_path'], config['num_days'], experiment[1], experiment[2], experiment[3], experiment[4], experiment[5], output_prefix, config['disease_config_file'],config['generate_person_file'],config['num_participants_survey'], config['start_date'], config['holidays_file'], config['age_contact_matrix_file'], config['log_level'], env)
                
         # Append the aggregated outputs
         if is_first:
