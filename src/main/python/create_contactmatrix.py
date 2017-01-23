@@ -26,38 +26,10 @@ import sys
 import csv
 import xml.etree.cElementTree as ET
 
-def createUniform():
+def createFromCSV(household_file, work_file, school_file, community_file_week, community_file_weekend, prefix=""):
     """
-    Create a matrix that has the same number of contacts for all adults (children x 2) and cluster types.
-    """
-    root = ET.Element("matrices")
-
-    cluster_types = ["household", "home_district", "work", "school", "day_district"]
-
-    for cluster_type in cluster_types:
-        cluster_root = ET.SubElement(root, cluster_type)
-
-        for part_age in range(0, 81):
-            participant = ET.SubElement(cluster_root, "participant")
-            ET.SubElement(participant, "age").text = str(part_age)
-            contacts = ET.SubElement(participant, "contacts")
-            for cnt_age in range(0, 81):
-                contact = ET.SubElement(contacts, "contact")
-                ET.SubElement(contact, "age").text = str(cnt_age)
-                rate = 3
-                # if both persons are under 18, the contact rate is doubled            
-                if part_age < 18 and cnt_age < 18:
-                    rate *= 2
-                ET.SubElement(contact, "rate").text = str(rate)
-
-    tree = ET.ElementTree(root)
-    tree.write("contact_matrix_uniform.xml")
-
-
-def createFromCSV(household_file, work_file, school_file, community_file, prefix=""):
-    """
-    Create contact matrices from files with diary-study results.
-    """
+        Create contact matrices from files with diary-study results.
+        """
     root = ET.Element("matrices")
     cluster_types = ["household", "home_district", "work", "school", "day_district"]
     for cluster_type in cluster_types:
@@ -69,12 +41,14 @@ def createFromCSV(household_file, work_file, school_file, community_file, prefix
             cluster_file = work_file
         elif cluster_type == "school":
             cluster_file = school_file
+        elif cluster_type == "home_district":
+            cluster_file = community_file_weekend
         else:
-            cluster_file = community_file
-
+            cluster_file = community_file_week
+    
         with open(cluster_file, 'r') as f:
             part_age = 0
-
+            
             reader = csv.DictReader(f, delimiter=';')
             for row in reader:
                 # make participant element
@@ -88,26 +62,28 @@ def createFromCSV(household_file, work_file, school_file, community_file, prefix
                     # get number of contacts
                     key = "age" + str(cnt_age)
                     rate = float(row[key].replace(',','.'))
-                    if (cluster_type == "home_district") or (cluster_type == "day_district"):
-                        rate /= 2
+                    
+                    if cluster_type == "household":
+                        rate = rate*10
+                    elif cluster_type == "work":
+                        rate = rate*2.5
+                    
                     ET.SubElement(contact, "rate").text = str(rate)
                 part_age += 1
 
     tree = ET.ElementTree(root)
-    output_file = prefix + "_contact_matrix.xml";
+    output_file = prefix + "_contact_matrix_stride.xml";
     tree.write(output_file)
 
 
 def main(argv):
-    if len(argv) == 5:
-        crateFromCSV(argv[0], argv[1], argv[2], argv[3], argv[4])
-    elif len(argv) == 4:
+    if len(argv) == 6:
         print "Creating contact matrix from CSV files."
-        createFromCSV(argv[0], argv[1], argv[2], argv[3])
+        createFromCSV(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5])
     else:
-        print "Creating uniform contact matrix."
-        createUniform()
-
+        print ""
+        print "!! ERROR: Program requires 5 input files: household, home_district, work, school, day_district, PREFIX"
+        print ""
 
 if __name__ == "__main__":
     main(sys.argv[1:])

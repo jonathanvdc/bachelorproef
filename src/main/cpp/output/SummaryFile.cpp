@@ -36,9 +36,9 @@ SummaryFile::SummaryFile(const std::string& file)
 	m_fstream.open((file + "_output.csv").c_str());
 
 	// add header
-	m_fstream << "pop_file;num_days;pop_size;seeding_rate;"
-	        << "R0;transm_rate;immunity_rate;num_threads;rng_seed;run_time;"
-	        << "total_time;num_cases;AR" << endl;
+	m_fstream << "pop_file,num_days,pop_size,seeding_rate,"
+	        << "R0,transm_rate,immunity_rate,num_threads,rng_seed,run_time,"
+	        << "total_time,num_cases,AR" << endl;
 }
 
 SummaryFile::~SummaryFile()
@@ -61,16 +61,16 @@ void SummaryFile::Print(
 	}
 
 	m_fstream
-		<< pt_config.get<string>("run.population_file") << ";"
-		<< pt_config.get<unsigned int>("run.num_days") << ";"
-		<< population_size << ";"
-		<< pt_config.get<double>("run.seeding_rate") << ";"
-		<< pt_config.get<double>("run.r0") << ";"
-		<< "NA" << ";" // << pt_config.get<double>("run.transmission_rate") << ";"
-		<< pt_config.get<double>("run.immunity_rate") << ";"
-		<< num_threads << ";"
-		<< pt_config.get<unsigned int>("run.rng_seed") << ";"
-		<< run_time << ";" << total_time << ";" << num_cases << ";"
+		<< pt_config.get<string>("run.population_file") << ","
+		<< pt_config.get<unsigned int>("run.num_days") << ","
+		<< population_size << ","
+		<< pt_config.get<double>("run.seeding_rate") << ","
+		<< pt_config.get<double>("run.r0") << ","
+		<< "NA" << "," // << pt_config.get<double>("run.transmission_rate") << ";"
+		<< pt_config.get<double>("run.immunity_rate") << ","
+		<< num_threads << ","
+		<< pt_config.get<unsigned int>("run.rng_seed") << ","
+		<< run_time << "," << total_time << "," << num_cases << ","
 		<< static_cast<double>(num_cases) / population_size << endl;
 }
 

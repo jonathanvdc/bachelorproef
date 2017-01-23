@@ -48,7 +48,7 @@ void CasesFile::Initialize(const std::string& file)
 void CasesFile::Print(const vector<unsigned int>& cases)
 {
 	for(unsigned int i = 0; i < (cases.size()-1); i++) {
-		m_fstream << cases[i] << ";" ;
+		m_fstream << cases[i] << "," ;
 	}
 	m_fstream << cases[cases.size()-1] << endl;
 }

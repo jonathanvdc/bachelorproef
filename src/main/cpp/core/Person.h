@@ -38,12 +38,12 @@ class Person
 {
 public:
 	/// Constructor: set the person data.
-	Person(unsigned int id, double age, unsigned int household_id, unsigned int home_district_id,
-			unsigned int day_cluster_id, unsigned int day_district_id, unsigned int start_infectiousness,
+	Person(unsigned int id, double age, unsigned int household_id, unsigned int school_id,
+			unsigned int work_id,unsigned int home_district_id, unsigned int day_district_id, unsigned int start_infectiousness,
 			unsigned int start_symptomatic, unsigned int time_infectious, unsigned int time_symptomatic)
 		: m_id(id), m_age(age), m_gender('M'),
-		  m_household_id(household_id), m_home_district_id(home_district_id),
-		  m_day_cluster_id(day_cluster_id), m_day_district_id(day_district_id),
+		  m_household_id(household_id), m_school_id(school_id),
+		  m_work_id(work_id), m_home_district_id(home_district_id), m_day_district_id(day_district_id),
 		  m_in_household(true), m_in_home_district(true), m_in_day_cluster(true), m_in_day_district(true),
 		  m_health(start_infectiousness, start_symptomatic, time_infectious, time_symptomatic),
 		  m_is_participant(false) {}
@@ -60,10 +60,7 @@ public:
         ///
 	char GetGender() const { return m_gender; }
 
-        ///
-	size_t GetHouseholdSize() const { return m_household_size; }
-
-	///
+  	///
 	Health& GetHealth()  { return m_health; }
 
 	///
@@ -81,9 +78,6 @@ public:
 	/// Participate in social contact study and log person details
 	void ParticipateInSurvey() { m_is_participant = true; }
 
-	///
-	void SetHouseholdSize(size_t hh_size) { m_household_size = hh_size; }
-
 	/// Update the health status and presence in clusters.
 	void Update(std::shared_ptr<const Calendar> calendar);
 
@@ -93,10 +87,10 @@ private:
 	char            m_gender;                        ///< The gender.
 
 	unsigned int    m_household_id;	   		 ///< The household id.
-	std::size_t     m_household_size;		 ///< The number of persons in the household.
-	unsigned int    m_home_district_id;   		 ///< The home district id
-	unsigned int    m_day_cluster_id;                ///< The day cluster id
-	unsigned int    m_day_district_id;               ///< The day district id
+	unsigned int    m_school_id;             ///< The school cluster id
+	unsigned int    m_work_id;               ///< The work cluster id
+	unsigned int    m_home_district_id;   	 ///< The home district id
+	unsigned int    m_day_district_id;       ///< The day district id
 
 	bool            m_in_household;			 ///< Is person present in household today?
 	bool            m_in_home_district;		 ///< Is person present in home_district today?

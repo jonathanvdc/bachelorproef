@@ -98,13 +98,14 @@ shared_ptr<Population> PopulationBuilder::Build(
                 const auto start_symptomatic    = Sample(rng, distrib_start_symptomatic);
                 const auto time_infectious      = Sample(rng, distrib_time_infectious);
                 const auto time_symptomatic     = Sample(rng, distrib_time_symptomatic);
-                const auto values = StringUtils::Tokenize(line, ";");
+                const auto values = StringUtils::Split(line, ",");
                 population.emplace_back(Person(person_id,
                         StringUtils::FromString<unsigned int>(values[0]),
                         StringUtils::FromString<unsigned int>(values[1]),
-                        StringUtils::FromString<unsigned int>(values[3]),
                         StringUtils::FromString<unsigned int>(values[2]),
+                        StringUtils::FromString<unsigned int>(values[3]),
                         StringUtils::FromString<unsigned int>(values[4]),
+                        StringUtils::FromString<unsigned int>(values[5]),
                         start_infectiousness, start_symptomatic, time_infectious, time_symptomatic));
                 ++person_id;
         }

@@ -134,7 +134,7 @@ void Infector<log_level, track_index_case>::Execute(
 			const auto c_type      = cluster.m_cluster_type;
 			const auto& c_members  = cluster.m_members;
 			//const auto c_size      = cluster.GetSize();
-		std::cout << "check contacts" << std::endl;
+
 			// check all contacts
 			for (size_t i_person1 = 0; i_person1 < cluster.m_members.size(); i_person1++) {
 					// check if member participates in the social contact survey && member is present today

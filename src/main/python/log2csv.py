@@ -27,33 +27,7 @@ import sys
 import csv
 import random
 
-def prepare_csv_transmissions(log_file, csv_file):
-    """
-    Create .csv file from logfile with only transmissions. 
-    """
-
-    with open(csv_file, 'w') as c:
-
-        c_fieldnames = ['person_id', 'begin_infection']
-        c_writer = csv.DictWriter(c, fieldnames=c_fieldnames)
-        c_writer.writeheader()
-            
-        with open (log_file, 'r') as f:
-            for line in f:
-                # remove logging info
-                line = line[50:]
-                # check if [PART] or [CONT]
-                identifier = line[:14]
-                line = line[15:]
-                line = line.split()
-
-                dic = {}
-                dic['person_id'] = line[1]
-                dic['begin_infection'] =line[4]
-                c_writer.writerow(dic)
-
-
-def prepare_csv(log_file_path, participants_file='participants.csv', contacts_file='contacts.csv'):
+def prepare_csv(log_file_path):
     """
     From logfile with all contacts, logged in the following format:
     [PART] local_id part_age part_gender
@@ -61,8 +35,12 @@ def prepare_csv(log_file_path, participants_file='participants.csv', contacts_fi
     Create csv-files Participants.csv and Contacts.csv
     """
 
+    participants_file = log_file_path + '_participants.csv'
+    contacts_file     = log_file_path + '_contacts.csv'
+    transmission_file = log_file_path + '_transmissions.csv'
+    
     # Open csv files to write to.
-    with open(log_file_path+'_'+participants_file, 'w') as p, open(log_file_path+'_'+contacts_file, 'w') as c:
+    with open(participants_file, 'w') as p, open(contacts_file, 'w') as c, open(transmission_file,'w') as t:
 
         # Write headers for csv files
         p_fieldnames = ['local_id', 'part_age', 'part_gender']
@@ -72,12 +50,13 @@ def prepare_csv(log_file_path, participants_file='participants.csv', contacts_fi
         c_fieldnames = ['local_id', 'part_age', 'cnt_age', 'cnt_home', 'cnt_work', 'cnt_school', 'cnt_other', 'sim_day']
         c_writer = csv.DictWriter(c, fieldnames=c_fieldnames)
         c_writer.writeheader()
-                     
+        
+        t_fieldnames = ['person_id', 'begin_infection']
+        t_writer = csv.DictWriter(t, fieldnames=t_fieldnames)
+        t_writer.writeheader()
+        
         with open (log_file_path+'_logfile.txt', 'r') as f:
             for line in f:
-                ## remove logging info
-                # line = line[50:]
-                ## check if line-tag is [CONT]
                 identifier = line[:6]
                 line = line[7:]
                 line = line.split()
@@ -88,21 +67,25 @@ def prepare_csv(log_file_path, participants_file='participants.csv', contacts_fi
                         dic[p_fieldnames[i]] = value
                     p_writer.writerow(dic)
                 # else for Contacts.csv
-                else:
+                if identifier == "[CONT]":
                     dic = {}
                     for i in range(len(c_fieldnames)):
                         value = line[i]
                         dic[c_fieldnames[i]] = value
                     c_writer.writerow(dic)
+                # else for transmissions
+                if identifier == "[TRAN]":
+                    dic = {}
+                    for i in range(len(t_fieldnames)):
+                        value = line[i]
+                        dic[t_fieldnames[i]] = value
+                    c_writer.writerow(dic)
 
 def main(argv):
     if len(argv) == 1:
         prepare_csv(argv[0])
-    
-    elif len(argv) == 2:
-        prepare_csv(argv[0], argv[1])
     else:
-        print ("Usage: python prepare_cnt_csv.py <logfile.txt> [<participants_file.csv>] [<contacts_file.csv>]")
+        print ("Usage: python prepare_csv.py <run_file_path>")
 
 
 if __name__ == "__main__":
