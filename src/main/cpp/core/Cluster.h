@@ -24,6 +24,7 @@
 #include "core/ClusterType.h"
 #include "core/ContactProfile.h"
 #include "core/LogMode.h"
+#include "core/Person.h"
 
 #include <array>
 #include <cstddef>
@@ -33,7 +34,6 @@
 namespace stride {
 
 class RngHandler;
-class Person;
 class Calendar;
 
 /**
@@ -55,11 +55,11 @@ public:
 	ClusterType GetClusterType() const { return m_cluster_type; }
 
         /// Get basic contact rate in this cluster.
-        double GetContactRate(unsigned int age) const
+        double GetContactRate(const Person* p) const
         {
                 double rate = 1.0;
                 if (m_cluster_type != ClusterType::Household) {
-                        rate = g_profiles.at(ToSizeType(m_cluster_type))[EffectiveAge(age)] / m_members.size();
+                        rate = g_profiles.at(ToSizeType(m_cluster_type))[EffectiveAge(p->GetAge())] / m_members.size();
                         rate = (m_cluster_type == ClusterType::Work) ? rate * 1.7 : rate;
                 }
                 return rate;

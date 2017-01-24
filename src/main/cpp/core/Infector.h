@@ -17,7 +17,7 @@
 
 /**
  * @file
- * Header for the core Cluster class.
+ * Header for the Infector class.
  */
 
 #include "core/DiseaseProfile.h"
@@ -70,7 +70,7 @@ extern template class Infector<LogMode::Transmissions, true>;
 /// Explicit instantiation in cpp file.
 extern template class Infector<LogMode::Contacts, false>;
 
-///
+/// Explicit instantiation in cpp file.
 extern template class Infector<LogMode::Contacts, true>;
 
 } // end_of_namespace
