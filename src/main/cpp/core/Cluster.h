@@ -45,6 +45,9 @@ public:
 	/// Constructor
 	Cluster(std::size_t cluster_id, ClusterType cluster_type);
 
+        /// Constructor
+        //Cluster(const Cluster& rhs);
+
 	/// Add the given Person to the Cluster.
 	void AddPerson(Person* p);
 
@@ -59,7 +62,7 @@ public:
         {
                 double rate = 1.0;
                 if (m_cluster_type != ClusterType::Household) {
-                        rate = g_profiles.at(ToSizeType(m_cluster_type))[EffectiveAge(p->GetAge())] / m_members.size();
+                        rate = m_profile[EffectiveAge(p->GetAge())] / m_members.size();
                         rate = (m_cluster_type == ClusterType::Work) ? rate * 1.7 : rate;
                 }
                 return rate;
@@ -85,7 +88,7 @@ private:
 	ClusterType                               m_cluster_type;   ///< The type of the Cluster (for logging purposes).
 	std::size_t                               m_index_immune;   ///< Index of the first immune member in the Cluster.
 	std::vector<std::pair<Person*, bool>>     m_members;        ///< Container with pointers to Cluster members.
-
+	const ContactProfile&                     m_profile;
 private:
 	static std::array<ContactProfile, NumOfClusterTypes()> g_profiles;
 };
