@@ -42,7 +42,7 @@ CasesFile::~CasesFile()
 
 void CasesFile::Initialize(const std::string& file)
 {
-	m_fstream.open((file + "_log.csv").c_str());
+	m_fstream.open((file + "_cases.csv").c_str());
 }
 
 void CasesFile::Print(const vector<unsigned int>& cases)

@@ -25,6 +25,8 @@ import itertools
 import datetime
 import shutil
 import csv
+import random
+
 
 import xml.etree.cElementTree as ET
 
@@ -55,8 +57,10 @@ def runSimulator(path, num_days, rng_seed, seeding_rate, r0, population_file, im
     tree = ET.ElementTree(root)
     tree.write(str(output_prefix)+ ".xml")
     
+    
     # Execute the call
-    return subprocess.call([path, '--config_file', str(output_prefix)+ ".xml"], env=environment)
+    cmd_stride = "".join([str(path) + ' --config_file ', str(output_prefix)+ '.xml'])
+    os.system(cmd_stride)
 
 # -----------------------------------------------------
 # Function that uses an R script to process the results
@@ -66,87 +70,28 @@ def processOutput(output_dir,file_tag):
     work_dir = os.getcwd()
     r_file = open(os.path.join(output_dir,'plot_timings.R'), 'w')
     r_file.write('# R file to plot the output' + '\n')
+
     r_file.write('\n' + '## SET R WORK DIR' + '\n')
     r_file.write('setwd("' + os.path.join(work_dir,output_dir) + '")' + '\n')
+
     r_file.write('\n' + '## LOAD HELP FUNCTIONS' + '\n')
     r_file.write('source("' + work_dir + '/lib/plot_results_lib.R")' + '\n')
+    r_file.write('source("' + work_dir + '/lib/plot_social_contacts_lib.R")' + '\n')
+    
     r_file.write('\n' + '## GET DATA' + '\n')
     r_file.write('data_tag <- "' + file_tag + '"' + '\n')
+    r_file.write('project_dir <- "' + work_dir + '"' + '\n')
+    
     r_file.write('\n## PLOT ALL RESULTS' + '\n')
-    r_file.write('plot_all_results(data_tag)' + '\n')
+    r_file.write('plot_results(data_tag)' + '\n')
+    r_file.write('plot_social_contacts(data_tag,project_dir)' + '\n')
+
+
     r_file.close()
+    
+    # RUN Rscript
     cmd_r = 'Rscript ' + output_dir + '/plot_timings.R'
-    # RUN Rscript
     os.system(cmd_r)
-
-    work_dir = os.getcwd()
-    r_file = open(os.path.join(output_dir,'score_contacts.R'), 'w')
-    r_file.write('# R file to score the contacts' + '\n')
-    r_file.write('\n' + '## SET R WORK DIR' + '\n')
-    r_file.write('setwd("' + os.path.join(work_dir,output_dir) + '")' + '\n')
-    r_file.write('\n' + '## LOAD HELP FUNCTIONS' + '\n')
-    r_file.write('source("' + work_dir + '/lib/score_cnt_data_lib.R")' + '\n')
-    r_file.close()
-    cmd_r = 'Rscript ' + output_dir + '/score_contacts.R'
-    # RUN Rscript
-    os.system(cmd_r)
-
-
-"""
-    From logfile with all contacts, logged in the following format:
-    [PART] local_id part_age part_gender
-    [CONT] local_id part_age cnt_age cnt_home cnt_work cnt_school cnt_other sim_day
-    Create csv-files Contacts.csv
-    """
-
-import sys
-import csv
-import random
-
-def prepare_csv(log_file_path, participants_file = 'participants.csv', contacts_file = 'contacts.csv', transmission_file = 'transmission.csv'):
-    with open(log_file_path + '_' + participants_file, 'w') as p, open(log_file_path + '_' + contacts_file, 'w') as c, open(log_file_path + '_' + transmission_file, 'w') as t:
-        p_fieldnames  = ['local_id', 'part_age', 'part_gender']
-        p_writer      = csv.DictWriter(p, fieldnames=p_fieldnames)
-        p_writer.writeheader()
-        
-        c_fieldnames  = ['local_id', 'part_age', 'cnt_age', 'cnt_home', 'cnt_work', 'cnt_school', 'cnt_other', 'sim_day']
-        c_writer      = csv.DictWriter(c, fieldnames=c_fieldnames)
-        c_writer.writeheader()
-        
-        t_fieldnames  = ['local_id', 'new_infected_id', 'cnt_location','sim_day']
-        t_writer      = csv.DictWriter(t, fieldnames=t_fieldnames)
-        t_writer.writeheader()
-            
-        with open (log_file_path + '_logfile.txt', 'r') as f:
-            for line in f:
-                ## remove logging info
-                # line = line[50:]
-                ## check if line-tag is [CONT]
-                identifier = line[:6]
-                line = line[7:]
-                line = line.split()
-                if identifier == "[PART]":
-                    dic = {}
-                    for i in range(len(p_fieldnames)):
-                        value = line[i]
-                        dic[p_fieldnames[i]] = value
-                    p_writer.writerow(dic)
-                
-                # else for Contacts.csv
-                if identifier == "[CONT]":
-                    dic = {}
-                    for i in range(len(c_fieldnames)):
-                        value = line[i]
-                        dic[c_fieldnames[i]] = value
-                    c_writer.writerow(dic)
-
-                if identifier == "[TRAN]":
-                    dic = {}
-                    for i in range(len(t_fieldnames)):
-                        value = line[i]
-                        dic[t_fieldnames[i]] = value
-                    t_writer.writerow(dic)
-
 
 
 def main(argv):
@@ -178,8 +123,8 @@ def main(argv):
         os.makedirs(experiments_dirs)
     
     # Open the aggregated output files
-    output_file  = open(os.path.join(output_dir, file_tag + '_output.csv'), 'w')
-    log_file     = open(os.path.join(output_dir, file_tag + '_log.csv'), 'w')
+    summary_file  = open(os.path.join(output_dir, file_tag + '_summary.csv'), 'w')
+    cases_file     = open(os.path.join(output_dir, file_tag + '_cases.csv'), 'w')
 
     # Copy the json configuration file
     config_file  = open(os.path.join(experiments_dirs, 'exp_config.json'), 'w')
@@ -209,23 +154,25 @@ def main(argv):
                
         # Append the aggregated outputs
         if is_first:
-            output_file.write(open(output_prefix+'_output.csv','r').read())
+            summary_file.write(open(output_prefix+'_summary.csv','r').read())
             is_first = False
         else:
-            lines = open(output_prefix+'_output.csv','r').readlines()
+            lines = open(output_prefix+'_summary.csv','r').readlines()
             for line in lines[1:]:
-                output_file.write(line)
+                summary_file.write(line)
         
-        log_file.write(open(output_prefix + '_log.csv', 'r').read())
-        log_file.flush()
-        output_file.flush()
+        cases_file.write(open(output_prefix + '_cases.csv', 'r').read())
+        cases_file.flush()
+        summary_file.flush()
 
         # get contact and participant files
-        prepare_csv(output_prefix)
+#        prepare_csv(output_prefix)
+        cmd_parse = './lib/log2csv.py ' + output_prefix
+        os.system(cmd_parse)
 
 
-    output_file.close()
-    log_file.close()
+    summary_file.close()
+    cases_file.close()
 
     ## process the output
     processOutput(output_dir, file_tag)

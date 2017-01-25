@@ -20,12 +20,17 @@
 #============================================================================
 
 INSTALL( FILES 
+         wrapper_stride.py 
+   	DESTINATION ${BIN_INSTALL_LOCATION}  
+	PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_WRITE GROUP_READ
+	)
+
+INSTALL( FILES 
         create_contactmatrix.py 
+        interactive_maps.py 
         log2csv.py 
         plot_maps.py 
-        sim_wrapper.py 
-        slider_maps.py 
-	DESTINATION ${BIN_INSTALL_LOCATION}  
+   	DESTINATION ${LIB_INSTALL_LOCATION}  
 	PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_WRITE GROUP_READ
 	)
 

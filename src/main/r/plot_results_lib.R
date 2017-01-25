@@ -19,15 +19,15 @@
 #
 #############################################################################
 
-plot_all_results <- function(data_tag){
+plot_results <- function(data_tag){
   
   
   ######################
   ## GET DATA       ##
   ######################
   
-  data	   <- read.table(paste(data_tag,'_output.csv',sep=''),header=TRUE,sep=";",stringsAsFactors=F)
-  data_log <-read.table(paste(data_tag,'_log.csv',sep=''),header=FALSE,sep=";")
+  data	   <- read.table(paste(data_tag,'_summary.csv',sep=''),header=TRUE,sep=",",stringsAsFactors=F)
+  data_log <-read.table(paste(data_tag,'_cases.csv',sep=''),header=FALSE,sep=",")
   
   if(dim(data_log)[2]>1)
   {
@@ -68,48 +68,6 @@ plot_all_results <- function(data_tag){
   ######################
   
   plot(data$AR, data$total_time,xlab='attack rate',ylab='total time (s)',main='TIMINGS')
-  
-  
-  # ######################
-  # ## PLOT SUMMARY  	 	##
-  # ######################
-  # 
-  # # input
-  # opt_pop_file      <- unique(data$pop_file)
-  # opt_seeding_rate  <- sort(unique(data$seeding_rate))
-  # opt_R0            <- sort(unique(data$R0))
-  # opt_transm_rate   <- sort(unique(data$transm_rate))
-  # opt_immunity_rate <- sort(unique(data$immunity_rate))
-  # 
-  # # stochastic realisations
-  # opt_rng_seed      <- unique(data$rng_seed)
-  # num_realisations  <- length(opt_rng_seed) 
-  # 
-  # # for each population
-  # # for each seeding rate
-  # # for each R0 AND transmission rate
-  # for(pop_file in opt_pop_file)
-  # {
-  #   for(seeding_rate in opt_seeding_rate)
-  #   {
-  #     for(immunity_rate in opt_immunity_rate)
-  #     {
-  #       out_ar    <- data.frame(matrix(0,ncol=length(opt_R0),nrow=num_realisations))
-  #       out_time  <- out_ar
-  #       for(i in 1:length(opt_R0))
-  #       {
-  #         sel <- data$pop_file == pop_file & data$seeding_rate == seeding_rate & data$R0 == opt_R0[i] & data$immunity_rate == immunity_rate
-  #         out_ar[,i] <- data$AR[sel]
-  #         out_time[,i] <- data$total_time[sel]
-  #       }
-  #       names(out_ar)  <- opt_R0
-  #       names(out_time) <- opt_R0
-  #       boxplot(out_ar,ylab='attack rate',xlab='R0',main=paste(pop_file,'\n','seeding rate:',seeding_rate))
-  #       boxplot(out_time,ylab='total time (s)',xlab='R0',main=paste(pop_file,'\n','seeding rate:',seeding_rate)) 
-  #     }    
-  #   }
-  # }
-  
   
   ######################
   ## SINGLE PLOTS     ##

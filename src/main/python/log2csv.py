@@ -52,7 +52,7 @@ def prepare_csv(log_file_path):
         c_writer = csv.DictWriter(c, fieldnames=c_fieldnames)
         c_writer.writeheader()
         
-        t_fieldnames = ['person_id', 'start_infection']
+        t_fieldnames  = ['local_id', 'new_infected_id', 'cnt_location','sim_day']
         t_writer = csv.DictWriter(t, fieldnames=t_fieldnames)
         t_writer.writeheader()
         
@@ -80,7 +80,7 @@ def prepare_csv(log_file_path):
                     for i in range(len(t_fieldnames)):
                         value = line[i]
                         dic[t_fieldnames[i]] = value
-                    c_writer.writerow(dic)
+                    t_writer.writerow(dic)
 
 def main(argv):
     if len(argv) == 1:

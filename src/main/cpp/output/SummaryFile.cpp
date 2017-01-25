@@ -33,7 +33,7 @@ using namespace std;
 
 SummaryFile::SummaryFile(const std::string& file)
 {
-	m_fstream.open((file + "_output.csv").c_str());
+	m_fstream.open((file + "_summary.csv").c_str());
 
 	// add header
 	m_fstream << "pop_file,num_days,pop_size,seeding_rate,"
