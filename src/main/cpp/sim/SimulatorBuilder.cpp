@@ -93,6 +93,9 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
         // Initialize config ptree.
         sim->m_config_pt = pt_config;
 
+        // Initialize track_index_case policy
+        sim->m_track_index_case = track_index_case;
+
         // Initialize number of threads.
         sim->m_num_threads = number_of_threads;
 
