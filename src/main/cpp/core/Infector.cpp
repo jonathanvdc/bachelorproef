@@ -36,9 +36,9 @@ namespace stride {
 
 using namespace std;
 
-//--------------------------------------------------------------------------
-// Primary R0_POLICY: do nothing i.e. track all cases.
-//--------------------------------------------------------------------------
+/**
+ * Primary R0_POLICY: do nothing i.e. track all cases.
+ */
 template<bool track_index_case = false>
 class R0_POLICY
 {
@@ -46,9 +46,9 @@ public:
         static void Execute(Person* p) {}
 };
 
-//--------------------------------------------------------------------------
-// Specialized R0_POLICY: track only the index case.
-//--------------------------------------------------------------------------
+/**
+ * Specialized R0_POLICY: track only the index case.
+ */
 template<>
 class R0_POLICY<true>
 {
@@ -56,9 +56,9 @@ public:
         static void Execute(Person* p) { p->GetHealth().StopInfection(); }
 };
 
-//--------------------------------------------------------------------------
-// Primary LOG_POLICY policy, implements LogMode::None.
-//--------------------------------------------------------------------------
+/**
+ * Primary LOG_POLICY policy, implements LogMode::None.
+ */
 template<LogMode log_level = LogMode::None>
 class LOG_POLICY
 {
@@ -68,9 +68,9 @@ public:
         {}
 };
 
-//--------------------------------------------------------------------------
-// Specialized LOG_POLICY policy LogMode::Transmissions.
-//--------------------------------------------------------------------------
+/**
+ * Specialized LOG_POLICY policy LogMode::Transmissions.
+ */
 template<>
 class LOG_POLICY<LogMode::Transmissions>
 {
@@ -83,9 +83,9 @@ public:
         }
 };
 
-//--------------------------------------------------------------------------
-// Specialized LOG_POLICY policy LogMode::Contacts.
-//--------------------------------------------------------------------------
+/**
+ * Specialized LOG_POLICY policy LogMode::Contacts.
+ */
 template<>
 class LOG_POLICY<LogMode::Contacts>
 {
@@ -134,7 +134,7 @@ void Infector<log_level, track_index_case>::Execute(
                         if (c_members[i_infected].second) {
                                 const auto p1 = c_members[i_infected].first;
                                 if (p1->GetHealth().IsInfectious()) {
-                                        const double contact_rate = cluster.GetContactRate(p1->GetAge());
+                                        const double contact_rate = cluster.GetContactRate(p1);
                                         for (size_t i_contact = num_cases; i_contact < c_immune; i_contact++) {
                                                 // check if member is present today
                                                 if (c_members[i_contact].second) {
@@ -174,7 +174,7 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(
                 // check if member participates in the social contact survey && member is present today
                 if (c_members[i_person1].second && c_members[i_person1].first->IsParticipatingInSurvey()) {
                         auto p1 = c_members[i_person1].first;
-                        const double contact_rate = cluster.GetContactRate(p1->GetAge());
+                        const double contact_rate = cluster.GetContactRate(p1);
                         for (size_t i_person2 = 0; i_person2 < c_members.size(); i_person2++) {
                                 // check if member is present today
                                 if ((i_person1 != i_person2) && c_members[i_person2].second) {

@@ -24,6 +24,7 @@
 #include "core/ClusterType.h"
 #include "core/ContactProfile.h"
 #include "core/LogMode.h"
+#include "core/Person.h"
 
 #include <array>
 #include <cstddef>
@@ -33,7 +34,6 @@
 namespace stride {
 
 class RngHandler;
-class Person;
 class Calendar;
 
 /**
@@ -45,6 +45,9 @@ public:
 	/// Constructor
 	Cluster(std::size_t cluster_id, ClusterType cluster_type);
 
+        /// Constructor
+        //Cluster(const Cluster& rhs);
+
 	/// Add the given Person to the Cluster.
 	void AddPerson(Person* p);
 
@@ -55,9 +58,9 @@ public:
 	ClusterType GetClusterType() const { return m_cluster_type; }
 
 	/// Get basic contact rate in this cluster.
-	double GetContactRate(unsigned int age) const
+	double GetContactRate(const Person* p) const
 	{
-		return g_profiles.at(ToSizeType(m_cluster_type))[EffectiveAge(age)] / m_members.size();;
+		return g_profiles.at(ToSizeType(m_cluster_type))[EffectiveAge(p->GetAge())] / m_members.size();;
 	}
 
 public:
@@ -80,7 +83,7 @@ private:
 	ClusterType                               m_cluster_type;   ///< The type of the Cluster (for logging purposes).
 	std::size_t                               m_index_immune;   ///< Index of the first immune member in the Cluster.
 	std::vector<std::pair<Person*, bool>>     m_members;        ///< Container with pointers to Cluster members.
-
+	const ContactProfile&                     m_profile;
 private:
 	static std::array<ContactProfile, NumOfClusterTypes()> g_profiles;
 };

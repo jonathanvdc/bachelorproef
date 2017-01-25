@@ -42,7 +42,9 @@ set( SRC
 	src/yarn5s.cc
 )
 
-add_library( trng STATIC ${SRC} )
+#set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto" )
+add_library( trng OBJECT ${SRC} )
+target_compile_options(trng PUBLIC "-flto")
 unset( SRC )	
 
 #############################################################################

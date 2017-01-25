@@ -199,7 +199,6 @@ void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 		        sim->m_day_districts[dd_id].AddPerson(&p);
 		}
 	}
-
 }
 
 } // end_of_namespace

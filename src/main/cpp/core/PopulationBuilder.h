@@ -39,8 +39,9 @@ public:
 	/**
 	 * Initializes a Population: add persons, set immunity, seed infection.
 	 *
-	 * @param pop             Pointer to the initialized population.
-	 * @param pt_config       The property_tree with configuration settings.
+	 * @param pt_config       Property_tree with generalconfiguration settings.
+	 * @param pt_disease      Property_tree with disease configuration settings.
+	 * @return                Pointer to the initialized population.
 	 */
 	static std::shared_ptr<Population> Build(
 	        const boost::property_tree::ptree& pt_config,
@@ -48,10 +49,10 @@ public:
 	        util::Random& rng);
 
 private:
-	///
+	/// Get distribution associateed with tag values.
 	static std::vector<double> GetDistribution(const boost::property_tree::ptree& pt_root, const std::string& xml_tag);
 
-	///
+	/// Sample from the distribution.
 	static unsigned int Sample(util::Random& rng, const std::vector<double>& distribution);
 };
 
