@@ -52,8 +52,11 @@ STRIDE_VERBOSE_TESTING     = ON
 STRIDE_FORCE_NO_OPENMP     = ON
 
 #----------------------------------------------------------------------------
-#LABEL=$(shell git rev-parse --short HEAD)
-CMAKE_INSTALL_PREFIX  = $(HOME)/opt/Stride-$(LABEL)
+LABEL=$(shell git rev-list HEAD --count)
+ifneq ($(shell git status | grep 'modified:' -c),0)
+	LABEL=$(shell git rev-list HEAD --count)+
+endif
+CMAKE_INSTALL_PREFIX  = $(HOME)/opt/stride-$(LABEL)
     
 ifeq ($(shell uname),Darwin)
 		CC  = /opt/local/bin/clang
