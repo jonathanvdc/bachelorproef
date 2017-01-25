@@ -54,16 +54,11 @@ public:
 	/// Return the type of this cluster.
 	ClusterType GetClusterType() const { return m_cluster_type; }
 
-        /// Get basic contact rate in this cluster.
-        double GetContactRate(unsigned int age) const
-        {
-                double rate = 1.0;
-                if (m_cluster_type != ClusterType::Household) {
-                        rate = g_profiles.at(ToSizeType(m_cluster_type))[EffectiveAge(age)] / m_members.size();
-                        rate = (m_cluster_type == ClusterType::Work) ? rate * 1.7 : rate;
-                }
-                return rate;
-        }
+	/// Get basic contact rate in this cluster.
+	double GetContactRate(unsigned int age) const
+	{
+		return g_profiles.at(ToSizeType(m_cluster_type))[EffectiveAge(age)] / m_members.size();;
+	}
 
 public:
         /// Add contact profile.

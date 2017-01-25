@@ -99,7 +99,7 @@ public:
                 unsigned int other  = (cluster_type == ClusterType::HomeDistrict || cluster_type == ClusterType::DayDistrict);
 
                 logger->info("[CONT] {} {} {} {} {} {} {} {}",
-                        p1->GetId(), p1->GetAge(), p2->GetAge(), home, work, school, other, calendar->GetSimulationDay());
+                        p1->GetId(), p1->GetAge(), p2->GetAge(), home, school, work, other, calendar->GetSimulationDay());
         }
 };
 

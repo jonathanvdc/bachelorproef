@@ -52,9 +52,9 @@ void Cluster::AddPerson(Person* p)
 {
         m_members.emplace_back(std::make_pair(p, true));
         m_index_immune++;
-        if ((m_cluster_type == ClusterType::School) && (p->GetAge() > MinAdultAge())) {
-                m_cluster_type = ClusterType::Work;
-        }
+//        if ((m_cluster_type == ClusterType::School) && (p->GetAge() > MinAdultAge())) {
+//                m_cluster_type = ClusterType::Work;
+//        }
 }
 
 tuple<bool, size_t> Cluster::SortMembers()

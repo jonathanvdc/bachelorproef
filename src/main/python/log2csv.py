@@ -20,7 +20,6 @@
 """
 Create .csv files from logfiles produced by the simulator.
 
-Author: Elise Kuylen (2016)
 """
 
 import sys
@@ -29,10 +28,12 @@ import random
 
 def prepare_csv(log_file_path):
     """
-    From logfile with all contacts, logged in the following format:
+    From logfile with all contacts or transmissions logged in the following format:
     [PART] local_id part_age part_gender
-    [CONT] local_id part_age cnt_age cnt_home cnt_work cnt_school cnt_other sim_day
-    Create csv-files Participants.csv and Contacts.csv
+    [CONT] local_id part_age cnt_age cnt_home cnt_school cnt_work cnt_other sim_day
+    [TRAN] local_id start_infection
+    
+    Create csv-files participants.csv, contacts.csv and transmissions.csv
     """
 
     participants_file = log_file_path + '_participants.csv'
@@ -47,11 +48,11 @@ def prepare_csv(log_file_path):
         p_writer = csv.DictWriter(p, fieldnames=p_fieldnames)
         p_writer.writeheader()
         
-        c_fieldnames = ['local_id', 'part_age', 'cnt_age', 'cnt_home', 'cnt_work', 'cnt_school', 'cnt_other', 'sim_day']
+        c_fieldnames = ['local_id', 'part_age', 'cnt_age', 'cnt_home', 'cnt_school', 'cnt_work', 'cnt_other', 'sim_day']
         c_writer = csv.DictWriter(c, fieldnames=c_fieldnames)
         c_writer.writeheader()
         
-        t_fieldnames = ['person_id', 'begin_infection']
+        t_fieldnames = ['person_id', 'start_infection']
         t_writer = csv.DictWriter(t, fieldnames=t_fieldnames)
         t_writer.writeheader()
         

@@ -136,57 +136,47 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
 void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 {
 	// Determine number of clusters and districts.
-	unsigned int num_households         = 0U;
-	unsigned int num_school_clusters    = 0U;
-	unsigned int num_work_clusters      = 0U;
-	unsigned int num_home_districts     = 0U;
-	unsigned int num_day_districts      = 0U;
+	unsigned int max_id_households         = 0U;
+	unsigned int max_id_school_clusters    = 0U;
+	unsigned int max_id_work_clusters      = 0U;
+	unsigned int max_id_home_districts     = 0U;
+	unsigned int max_id_day_districts      = 0U;
 	Population& population              = *sim->m_population;
 
 	for (const auto& p : population) {
-	        num_households      = std::max(num_households,      p.GetClusterId(ClusterType::Household));
-	        num_school_clusters = std::max(num_school_clusters, p.GetClusterId(ClusterType::School));
-	        num_work_clusters   = std::max(num_work_clusters,   p.GetClusterId(ClusterType::Work));
-	        num_home_districts  = std::max(num_home_districts,  p.GetClusterId(ClusterType::HomeDistrict));
-	        num_day_districts   = std::max(num_day_districts,   p.GetClusterId(ClusterType::DayDistrict));
+		max_id_households      = std::max(max_id_households,      p.GetClusterId(ClusterType::Household));
+		max_id_school_clusters = std::max(max_id_school_clusters, p.GetClusterId(ClusterType::School));
+		max_id_work_clusters   = std::max(max_id_work_clusters,   p.GetClusterId(ClusterType::Work));
+		max_id_home_districts  = std::max(max_id_home_districts,  p.GetClusterId(ClusterType::HomeDistrict));
+		max_id_day_districts   = std::max(max_id_day_districts,   p.GetClusterId(ClusterType::DayDistrict));
 
 	}
-
-	// Add extra '0' nbh (=not present).
-	num_households++;
-	num_school_clusters++;
-	num_work_clusters++;
-	num_home_districts++;
-	num_day_districts++;
-
-	std::cout << num_work_clusters << std::endl;
-	std::cout << num_school_clusters << std::endl;
-
-	//vector<Cluster> day_clusters;
 
 	// Keep separate id counter to provide a unique id for every cluster.
 	unsigned int cluster_id = 1;
 
-	for (size_t i = 0; i < num_households; i++) {
+	for (size_t i = 0; i <= max_id_households; i++) {
 		sim->m_households.emplace_back(Cluster(cluster_id, ClusterType::Household));
 		cluster_id++;
 	}
-	for (size_t i = 0; i < num_school_clusters; i++) {
+	for (size_t i = 0; i <= max_id_school_clusters; i++) {
 		sim->m_school_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
 		cluster_id++;
 	}
-	for (size_t i = 0; i < num_work_clusters; i++) {
+	for (size_t i = 0; i <= max_id_work_clusters; i++) {
 		sim->m_work_clusters.emplace_back(Cluster(cluster_id, ClusterType::Work));
 		cluster_id++;
 	}
-	for (size_t i = 0; i < num_home_districts; i++) {
+	for (size_t i = 0; i <= max_id_home_districts; i++) {
 		sim->m_home_districts.emplace_back(Cluster(cluster_id, ClusterType::HomeDistrict));
 		cluster_id++;
 	}
-	for (size_t i = 0; i < num_day_districts; i++) {
+	for (size_t i = 0; i <= max_id_day_districts; i++) {
 		sim->m_day_districts.emplace_back(Cluster(cluster_id, ClusterType::DayDistrict));
 		cluster_id++;
 	}
+
+	// cluster id '0' = not present.
 	for (auto& p: population) {
 	        const auto hh_id = p.GetClusterId(ClusterType::Household);
 		if (hh_id > 0) {
@@ -209,21 +199,7 @@ void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 		        sim->m_day_districts[dd_id].AddPerson(&p);
 		}
 	}
-//        // Set up separate school & work clusters.
-//        for (const auto& c : day_clusters) {
-//                if (c.GetClusterType() == ClusterType::School) {
-//                        sim->m_school_clusters.emplace_back(c);
-//                } else {
-//                        sim->m_work_clusters.emplace_back(c);
-//                }
-//        }
-//	// Set household sizes for persons
-//	for (auto& p: population) {
-//	        const auto hh_id = p.GetClusterId(ClusterType::Household);
-//		if (hh_id > 0) {
-//			p.SetHouseholdSize(sim->m_households[hh_id].GetSize());
-//		}
-//	}
+
 }
 
 } // end_of_namespace
