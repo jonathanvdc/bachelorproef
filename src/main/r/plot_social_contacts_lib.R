@@ -19,25 +19,29 @@
 plot_social_contacts <- function(data_tag,project_dir)
 {
   
+  
+  summary_data_all	<- read.table(paste(data_tag,'_summary.csv',sep=''),header=TRUE,sep=",",stringsAsFactors=F)
+  
   ######################
   ## GET DATA       ##
   ######################
   
   exp_dir <- './experiments'
   exp_files <- dir(exp_dir)
-  exp_logfiles <- exp_files[grepl('logfile',exp_files)]
+  exp_cnt_files <- exp_files[grepl('_contacts.csv',exp_files)]
   
-  i_logfile <- 1
-  for(i_logfile in 1:length(exp_logfiles))
+  i_file <- 1
+  if(length(exp_cnt_files)>0)
+  for(i_file in 1:length(exp_cnt_files))
   {
    
-    exp_tag       <- substr(exp_logfiles[i_logfile],0,nchar(exp_logfiles) - nchar('_logfile.txt'))
+    exp_tag       <- paste0('exp',i_file-1)
     exp_path      <- paste0('./experiments/',exp_tag)
     
     cdata         <- read.table(paste0(exp_path,'_contacts.csv'),sep=',',header=T)
     pdata         <- read.table(paste0(exp_path,'_participants.csv'),sep=',',header=T)
-    summary_data	<- read.table(paste(exp_path,'_summary.csv',sep=''),header=TRUE,sep=",",stringsAsFactors=F)
-    num_days      <- as.double(summary_data$num_days[i_logfile])
+    summary_data  <- summary_data_all[i_file,]
+    num_days      <- as.double(summary_data$num_days[i_file])
     
     dim(cdata)
     sum(cdata$cnt_home)
@@ -183,9 +187,7 @@ plot_social_contacts <- function(data_tag,project_dir)
       print(paste('PLOT SOCIAL CONTACTS COMPLETE for:', data_tag, exp_path))
       
       # end if-clause 
-    } else {
-      print(paste('NO SOCIAL CONTACT DATA for:', data_tag, exp_path))
-    }
+    } 
     
   } # end for(logfiles)
   
