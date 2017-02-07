@@ -66,6 +66,9 @@ endif
 ifneq ($(CMAKE_CXX_FLAGS_DEBUG),)
 	CMAKE_ARGS += -DCMAKE_CXX_FLAGS_DEBUG:STRING=$(CMAKE_CXX_FLAGS_DEBUG)
 endif
+ifneq ($(STRIDE_BOOST_ROOT),)
+	CMAKE_ARGS += -DSTRIDE_BOOST_ROOT:PATH=$(STRIDE_BOOST_ROOT)
+endif
 ifneq ($(STRIDE_INCLUDE_DOC),)
 	CMAKE_ARGS += -DSTRIDE_INCLUDE_DOC:BOOL=$(STRIDE_INCLUDE_DOC)
 endif
@@ -92,6 +95,7 @@ help:
 	@ $(CMAKE) -E echo "    "
 	@ $(CMAKE) -E echo " Current macro values are (cmake will use an appropriate"
 	@ $(CMAKE) -E echo " default for any macro that has not been set):"
+	@ $(CMAKE) -E echo "   STRIDE_BOOST_ROOT          : " $(STRIDE_BOOST_ROOT)
 	@ $(CMAKE) -E echo "   STRIDE_INCLUDE_DOC         : " $(STRIDE_INCLUDE_DOC)
 	@ $(CMAKE) -E echo "   STRIDE_FORCE_NO_OPENMP     : " $(STRIDE_FORCE_NO_OPENMP)
 	@ $(CMAKE) -E echo "   STRIDE_VERBOSE_TESTING     : " $(STRIDE_VERBOSE_TESTING)

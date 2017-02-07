@@ -45,15 +45,14 @@ set(MAIN_SRC
 #============================================================================
 # Build & install the (OpenMP enabled if OpenMP available) executable.
 #============================================================================
-#set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -flto" )
 add_library(libstride  OBJECT  ${LIB_SRC})
-target_compile_options(libstride PUBLIC "-flto")
+#target_compile_options(libstride PUBLIC "-flto")
 #
 add_executable(stride  ${MAIN_SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
-target_compile_options(stride PUBLIC "-flto")
+#target_compile_options(stride PUBLIC "-flto")
 #
 target_link_libraries(stride ${LIBS})
-set_target_properties(stride PROPERTIES LINK_FLAGS_RELEASE "-flto")
+#set_target_properties(stride PROPERTIES LINK_FLAGS_RELEASE "-flto")
 install(TARGETS stride  DESTINATION   ${BIN_INSTALL_LOCATION})
 
 #============================================================================
