@@ -1,5 +1,5 @@
-#ifndef AGE_H_INCLUDED
-#define AGE_H_INCLUDED
+#ifndef SRC_MAIN_CALENDAR_DAYS_OFF_ALL_H_
+#define SRC_MAIN_CALENDAR_DAYS_OFF_ALL_H_
 /*
  *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
@@ -17,22 +17,29 @@
 
 /**
  * @file
- * Helpers for age.
+ * DaysOffAll class: everybody gets the day off.
  */
 
-#include <array>
+#include "DaysOffInterface.h"
 
 namespace stride {
 
-/// Maximum age for Person's.
-inline constexpr unsigned int  MaximumAge() { return 80U; }
+/**
+ * No  days off work or school.
+ */
+class DaysOffAll : public DaysOffInterface
+{
+public:
+        /// Initialize calendar.
+        DaysOffAll(std::shared_ptr<Calendar> cal) {}
 
-/// Maximum age for Person's.
-inline constexpr unsigned int  MinAdultAge() { return 18U; }
+        /// See DaysOffInterface.
+        bool IsWorkOff() override { return true; }
 
-/// Effective age (topping of at maximum).
-inline unsigned int EffectiveAge(unsigned int age) { return (age <= MaximumAge()) ? age : MaximumAge(); }
+        /// See DaysOffInterface.
+        bool IsSchoolOff() override { return true; }
+};
 
-} // namespace
+} // end_of_namespace
 
-#endif // end-of-include-guard
+#endif // end of include guard

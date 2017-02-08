@@ -1,5 +1,5 @@
-#ifndef AGE_H_INCLUDED
-#define AGE_H_INCLUDED
+#ifndef SRC_MAIN_CALENDAR_DAYS_OFF_INTERFACE_H_
+#define SRC_MAIN_CALENDAR_DAYS_OFF_INTERFACE_H_
 /*
  *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
@@ -17,22 +17,27 @@
 
 /**
  * @file
- * Helpers for age.
+ * Interface for DaysOff classes.
  */
-
-#include <array>
 
 namespace stride {
 
-/// Maximum age for Person's.
-inline constexpr unsigned int  MaximumAge() { return 80U; }
+/**
+ * Interface definition.
+ */
+class DaysOffInterface
+{
+public:
+        /// Whether today is a work day.
+        virtual bool IsWorkOff() =0;
 
-/// Maximum age for Person's.
-inline constexpr unsigned int  MinAdultAge() { return 18U; }
+        /// Whether today is school day.
+        virtual bool IsSchoolOff() =0;
 
-/// Effective age (topping of at maximum).
-inline unsigned int EffectiveAge(unsigned int age) { return (age <= MaximumAge()) ? age : MaximumAge(); }
+        /// Virtual destructor.
+        virtual ~DaysOffInterface() {}
+};
 
-} // namespace
+} // end_of_namespace
 
-#endif // end-of-include-guard
+#endif // end of include guard

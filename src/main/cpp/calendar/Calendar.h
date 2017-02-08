@@ -1,5 +1,5 @@
-#ifndef SRC_MAIN_CPP_SIM_CALENDAR_H_
-#define SRC_MAIN_CPP_SIM_CALENDAR_H_
+#ifndef SRC_MAIN_CPP_CALENDAR_CALENDAR_H_
+#define SRC_MAIN_CPP_CALENDAR_CALENDAR_H_
 /*
  *  This is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
  */
 
 /**

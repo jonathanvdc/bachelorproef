@@ -21,6 +21,7 @@
 #include "Simulator.h"
 
 #include "calendar/Calendar.h"
+#include "calendar/DaysOffStandard.h"
 #include "core/Cluster.h"
 #include "core/ClusterType.h"
 #include "core/Infector.h"
@@ -29,6 +30,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <omp.h>
+#include <memory>
 
 namespace stride {
 
@@ -89,8 +91,14 @@ void Simulator::UpdateClusters()
 
 void Simulator::TimeStep()
 {
-        const bool is_work_off {m_calendar->IsWeekend() || m_calendar->IsHoliday() };
-        const bool is_school_off { m_calendar->IsSchoolHoliday() };
+        shared_ptr<DaysOffInterface> days_off {nullptr};
+
+        // Logic where you compute (on the basis of input/config for initial day
+        // or on the basis of number of sick persons, duration of epidemic etc)
+        // what kind of DaysOff scheme you apply.
+        days_off = make_shared<DaysOffStandard>(m_calendar);
+        const bool is_work_off {days_off->IsWorkOff() };
+        const bool is_school_off { days_off->IsSchoolOff() };
 
         for (auto& p : *m_population) {
                 p.Update(is_work_off, is_school_off);
