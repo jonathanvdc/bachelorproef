@@ -21,6 +21,7 @@
  */
 
 #include "util/Random.h"
+#include "math.h"
 
 namespace stride {
 
@@ -37,17 +38,23 @@ public:
 		m_rng.Split(stream_count, id);
 	}
 
-	/// Check if two individuals have transmission.
-        bool HasTransmission(double contact_rate, double transmission_rate)
-        {
-                return m_rng.NextDouble() < transmission_rate * contact_rate;
-        }
+	/// Convert rate into probability
+	double RateToProbability(double rate)
+	{
+		return 1 - exp(-rate);
+	}
 
-        /// Check if two individuals have contact.
-        bool HasContact(double contact_rate)
-        {
-                return m_rng.NextDouble() < contact_rate;
-        }
+	/// Check if two individuals have transmission.
+    bool HasTransmission(double contact_rate, double transmission_rate)
+	{
+			return m_rng.NextDouble() < RateToProbability(transmission_rate * contact_rate);
+	}
+
+	/// Check if two individuals have contact.
+	bool HasContact(double contact_rate)
+	{
+			return m_rng.NextDouble() < RateToProbability(contact_rate);
+	}
 
 private:
 	util::Random              m_rng;                        ///< Random number engine.
