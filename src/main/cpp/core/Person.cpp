@@ -22,7 +22,6 @@
 #include "Person.h"
 
 #include "core/ClusterType.h"
-#include "sim/Calendar.h"
 
 #include <stdexcept>
 #include <string>
@@ -56,12 +55,12 @@ bool Person::IsInCluster(ClusterType c) const
         }
 }
 
-void Person::Update(shared_ptr<const Calendar> calendar)
+void Person::Update(bool is_work_off, bool is_school_off)
 {
         m_health.Update();
 
         // Update presence in clusters.
-        if (calendar->IsWeekend() || (m_age <= MinAdultAge() && calendar->IsSchoolHoliday()) || calendar->IsHoliday()) {
+        if (is_work_off || (m_age <= MinAdultAge() && is_school_off)) {
                 m_in_day_cluster   = false;
                 m_in_day_district  = false;
                 m_in_home_district = true;

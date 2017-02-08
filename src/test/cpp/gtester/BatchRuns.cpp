@@ -142,7 +142,7 @@ TEST_P( BatchDemos, Run )
 	// Initialize simulator and run it.
 	auto sim = SimulatorBuilder::Build(pt_config, num_threads);
 	for (size_t i = 0U; i < g_num_days; i++) {
-		sim->UpdateTimeStep();
+		sim->TimeStep();
 	}
 
 	// Round up

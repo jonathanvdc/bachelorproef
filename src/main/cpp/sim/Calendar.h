@@ -34,7 +34,8 @@ namespace stride {
  * Class that keeps track of the 'state' of simulated world.
  * E.g. what day it is, holidays, quarantines, ...
  */
-class Calendar {
+class Calendar
+{
 public:
 	/// Constructor
 	Calendar(const boost::property_tree::ptree& pt_config);

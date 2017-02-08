@@ -79,7 +79,7 @@ public:
 	void ParticipateInSurvey() { m_is_participant = true; }
 
 	/// Update the health status and presence in clusters.
-	void Update(std::shared_ptr<const Calendar> calendar);
+	void Update(bool is_work_off, bool is_school_off);
 
 private:
 	unsigned int    m_id;		       		 ///< The id.

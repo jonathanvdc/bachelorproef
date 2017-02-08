@@ -51,7 +51,7 @@ public:
         void SetTrackIndexCase(bool track_index_case);
 
         /// Run one time step, computing full simulation (default) or only index case.
-        void UpdateTimeStep();
+        void TimeStep();
 
 private:
         /// Update the contacts in the given clusters.

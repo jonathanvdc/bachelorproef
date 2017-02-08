@@ -43,13 +43,6 @@ Cluster::Cluster(std::size_t cluster_id, ClusterType cluster_type)
 {
 }
 
-//Cluster::Cluster(const Cluster& rhs)
-//        : m_cluster_id(rhs.m_cluster_id), m_cluster_type(rhs.m_cluster_type),
-//          m_index_immune(rhs.m_index_immune), m_members(rhs.m_members),
-//          m_profile(g_profiles.at(ToSizeType(m_cluster_type)))
-//{
-//}
-
 void Cluster::AddContactProfile(ClusterType cluster_type, const ContactProfile& profile)
 {
         g_profiles.at(ToSizeType(cluster_type)) = profile;

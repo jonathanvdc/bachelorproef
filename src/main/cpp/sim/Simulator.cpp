@@ -87,10 +87,13 @@ void Simulator::UpdateClusters()
         }
 }
 
-void Simulator::UpdateTimeStep()
+void Simulator::TimeStep()
 {
+        const bool is_work_off {m_calendar->IsWeekend() || m_calendar->IsHoliday() };
+        const bool is_school_off { m_calendar->IsSchoolHoliday() };
+
         for (auto& p : *m_population) {
-                p.Update(m_calendar);
+                p.Update(is_work_off, is_school_off);
         }
 
         if (m_track_index_case) {

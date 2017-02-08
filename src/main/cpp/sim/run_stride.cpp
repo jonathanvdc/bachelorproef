@@ -150,7 +150,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
         for (unsigned int i = 0; i < num_days; i++) {
                 cout << "Simulating day: " << setw(5) << i;
                 run_clock.Start();
-                sim->UpdateTimeStep();
+                sim->TimeStep();
                 run_clock.Stop();
                 cout << "     Done, infected count: ";
                 cases[i] = sim->GetPopulation()->GetInfectedCount();
