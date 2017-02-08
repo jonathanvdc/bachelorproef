@@ -57,13 +57,13 @@ public:
 	/// Get cluster ID of cluster_type
 	unsigned int GetClusterId(ClusterType cluster_type) const;
 
-        ///
+        /// Return person's gender.
 	char GetGender() const { return m_gender; }
 
-  	///
+  	/// Return person's health status.
 	Health& GetHealth()  { return m_health; }
 
-	///
+	/// Return person's health status.
 	const Health& GetHealth() const { return m_health; }
 
 	/// Get the id.
@@ -82,24 +82,24 @@ public:
 	void Update(bool is_work_off, bool is_school_off);
 
 private:
-	unsigned int    m_id;		       		 ///< The id.
-	double          m_age;		       		 ///< The age.
-	char            m_gender;                        ///< The gender.
+	unsigned int    m_id;                    ///< The id.
+	double          m_age;                   ///< The age.
+	char            m_gender;                ///< The gender.
 
-	unsigned int    m_household_id;	   		 ///< The household id.
+	unsigned int    m_household_id;          ///< The household id.
 	unsigned int    m_school_id;             ///< The school cluster id
 	unsigned int    m_work_id;               ///< The work cluster id
 	unsigned int    m_home_district_id;   	 ///< The home district id
 	unsigned int    m_day_district_id;       ///< The day district id
 
-	bool            m_in_household;			 ///< Is person present in household today?
-	bool            m_in_home_district;		 ///< Is person present in home_district today?
-	bool            m_in_day_cluster;		 ///< Is person present in day_cluster today?
-	bool            m_in_day_district;		 ///< Is person present in day_district today?
+	bool            m_in_household;          ///< Is person present in household today?
+	bool            m_in_home_district;      ///< Is person present in home_district today?
+	bool            m_in_day_cluster;        ///< Is person present in day_cluster today?
+	bool            m_in_day_district;       ///< Is person present in day_district today?
 
-	Health          m_health;                        ///< Health info for this person.
+	Health          m_health;                ///< Health info for this person.
 
-	bool            m_is_participant;		 ///< Is participating in the social contact study
+	bool            m_is_participant;        ///< Is participating in the social contact study
 };
 
 } // end_of_namespace

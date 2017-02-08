@@ -179,7 +179,7 @@ void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 		cluster_id++;
 	}
 
-	// cluster id '0' = not present.
+	// Cluster id '0' means "not present in any cluster of that type".
 	for (auto& p: population) {
 	        const auto hh_id = p.GetClusterId(ClusterType::Household);
 		if (hh_id > 0) {

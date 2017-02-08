@@ -95,7 +95,8 @@ void Simulator::TimeStep()
 
         // Logic where you compute (on the basis of input/config for initial day
         // or on the basis of number of sick persons, duration of epidemic etc)
-        // what kind of DaysOff scheme you apply.
+        // what kind of DaysOff scheme you apply. If we want to make this cluster
+        // dependent then the days_off object has to be passed into the Update function.
         days_off = make_shared<DaysOffStandard>(m_calendar);
         const bool is_work_off {days_off->IsWorkOff() };
         const bool is_school_off { days_off->IsSchoolOff() };
