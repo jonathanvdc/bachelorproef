@@ -20,11 +20,10 @@
 
 #include "Cluster.h"
 
-#include "Age.h"
 #include "Infector.h"
 #include "LogMode.h"
-#include "Person.h"
-#include "sim/Calendar.h"
+#include "calendar/Calendar.h"
+#include "pop/Person.h"
 
 #include <spdlog/spdlog.h>
 #include <cstddef>

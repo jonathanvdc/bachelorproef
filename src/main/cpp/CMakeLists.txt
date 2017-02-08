@@ -19,6 +19,9 @@
 # Sources.
 #============================================================================
 set(LIB_SRC
+#---
+    calendar/Calendar.cpp
+#---
     core/Cluster.cpp
     core/ClusterType.cpp
     core/ContactProfile.cpp
@@ -26,15 +29,18 @@ set(LIB_SRC
     core/Health.cpp
     core/Infector.cpp
     core/LogMode.cpp
-    core/Person.cpp
-    core/PopulationBuilder.cpp
+#---
 	output/CasesFile.cpp
 	output/PersonFile.cpp
 	output/SummaryFile.cpp
-	sim/Calendar.cpp
+#---	
+    pop/Person.cpp
+    pop/PopulationBuilder.cpp
+#---
 	sim/run_stride.cpp
 	sim/Simulator.cpp
 	sim/SimulatorBuilder.cpp
+#---
 	util/InstallDirs.cpp
 )
 

@@ -20,12 +20,12 @@
 
 #include "Simulator.h"
 
+#include "calendar/Calendar.h"
 #include "core/Cluster.h"
 #include "core/ClusterType.h"
 #include "core/Infector.h"
 #include "core/LogMode.h"
-#include "core/Population.h"
-#include "sim/Calendar.h"
+#include "pop/Population.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <omp.h>

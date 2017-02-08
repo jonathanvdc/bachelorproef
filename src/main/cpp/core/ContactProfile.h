@@ -20,8 +20,8 @@
  * Contact profile.
  */
 
-#include "Age.h"
-#include "ClusterType.h"
+#include "core/ClusterType.h"
+#include "pop/Age.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <array>

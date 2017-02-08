@@ -20,11 +20,10 @@
  * Header for the core Cluster class.
  */
 
-#include "core/Age.h"
 #include "core/ClusterType.h"
 #include "core/ContactProfile.h"
 #include "core/LogMode.h"
-#include "core/Person.h"
+#include "pop/Person.h"
 
 #include <array>
 #include <cstddef>

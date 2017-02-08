@@ -18,12 +18,12 @@
  * Implementation of Infector algorithms.
  */
 
+#include "calendar/Calendar.h"
 #include "core/Cluster.h"
 #include "core/Health.h"
 #include "core/Infector.h"
 #include "core/LogMode.h"
-#include "core/Person.h"
-#include "sim/Calendar.h"
+#include "pop/Person.h"
 
 #include <spdlog/spdlog.h>
 #include "RngHandler.h"

@@ -20,14 +20,14 @@
 
 #include "SimulatorBuilder.h"
 
+#include "calendar/Calendar.h"
 #include "core/Cluster.h"
 #include "core/ClusterType.h"
 #include "core/ContactProfile.h"
 #include "core/Infector.h"
 #include "core/LogMode.h"
-#include "core/Population.h"
-#include "core/PopulationBuilder.h"
-#include "sim/Calendar.h"
+#include "pop/Population.h"
+#include "pop/PopulationBuilder.h"
 #include "util/InstallDirs.h"
 
 #include <boost/property_tree/ptree.hpp>

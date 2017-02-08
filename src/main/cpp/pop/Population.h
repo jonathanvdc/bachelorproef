@@ -20,8 +20,8 @@
  * Header file for the core Population class
  */
 
+#include "Person.h"
 #include "core/Health.h"
-#include "core/Person.h"
 
 #include <numeric>
 #include <vector>

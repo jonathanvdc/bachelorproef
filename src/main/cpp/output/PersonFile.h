@@ -20,7 +20,7 @@
  * Header for the PersonFile class.
  */
 
-#include "core/Population.h"
+#include "pop/Population.h"
 
 #include <fstream>
 #include <memory>

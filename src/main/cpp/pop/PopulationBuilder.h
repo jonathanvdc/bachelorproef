@@ -20,7 +20,7 @@
  * Initialize populations.
  */
 
-#include "core/Population.h"
+#include "Population.h"
 #include "util/Random.h"
 
 #include <boost/property_tree/ptree.hpp>

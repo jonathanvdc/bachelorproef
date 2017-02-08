@@ -21,8 +21,8 @@
 #include "PopulationBuilder.h"
 
 #include "core/Health.h"
-#include "core/Person.h"
-#include "core/Population.h"
+#include "pop/Person.h"
+#include "pop/Population.h"
 #include "util/InstallDirs.h"
 #include "util/Random.h"
 #include "util/StringUtils.h"

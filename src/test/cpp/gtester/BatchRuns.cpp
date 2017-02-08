@@ -18,7 +18,7 @@
  * Implementation of scenario tests running in batch mode.
  */
 
-#include "core/Population.h"
+#include "pop/Population.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
 
