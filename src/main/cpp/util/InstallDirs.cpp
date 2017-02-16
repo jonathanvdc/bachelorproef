@@ -23,16 +23,15 @@
 #include "util/StringUtils.h"
 
 #include <boost/filesystem.hpp>
-#include <boost/predef/os.h>
 #include <string>
 
-#if (BOOST_OS_WINDOWS)
+#if defined(WIN32)
 #  include <stdlib.h>
 #  include <windows.h>
-#elif (BOOST_OS_LINUX)
+#elif defined(__linux__)
 #  include <unistd.h>
 #  include <limits.h>
-#elif (BOOST_OS_MACOS)
+#elif defined(__APPLE__)
 #  include <mach-o/dyld.h>
 #  include <limits.h>
 #endif
@@ -65,19 +64,19 @@ void InstallDirs::Initialize()
 		// Returns the full path to the currently running executable, or an empty string in case of failure.
 		// http://stackoverflow.com/questions/1023306/finding-current-executables-path-without-proc-self-exe/33249023#33249023
 
-	        #if (BOOST_OS_WINDOWS)
+	        #if defined(WIN32)
                         char exePath[MAX_PATH];
                         HMODULE hModule = GetModuleHandle(NULL);
                         if (GetModuleFileName(NULL, exePath, sizeof(exePath)) !=0); {
                                 g_exec_path = canonical(system_complete(exePath));
                         }
-		#elif (BOOST_OS_LINUX)
+		#elif defined(__linux__)
 			char exePath[PATH_MAX];
 			size_t size = ::readlink("/proc/self/exe", exePath, sizeof(exePath));
 		        if (size > 0 && size != sizeof(exePath)) {
                                 g_exec_path = canonical(system_complete(exePath));
 		        }
-		#elif (BOOST_OS_MACOS)
+		#elif defined(__APPLE__)
 			char exePath[PATH_MAX];
 			uint32_t size = sizeof(exePath);
 		        if (_NSGetExecutablePath(exePath, &size) == 0) {
@@ -90,7 +89,7 @@ void InstallDirs::Initialize()
 	{
 	        path exec_dir = g_exec_path.parent_path();
 		if (!g_exec_path.empty()) {
-                        #if (BOOST_OS_MACOS)
+                        #if (__APPLE__)
                                 if (exec_dir.filename().string() == "MacOS") {
                                         // app
                                         //      -Contents               <-Root Path
@@ -109,7 +108,7 @@ void InstallDirs::Initialize()
                                         g_bin_dir  = exec_dir.parent_path();
                                         g_root_dir = exec_dir.parent_path().parent_path();
                                 } else
-                        #if (BOOST_OS_WINDOWS)
+                        #if (WIN32)
                                 if (exec_dir.filename().string() != "bin") {
                                         // Executables in root folder
                                         g_bin_dir  = exec_dir;
