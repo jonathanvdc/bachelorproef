@@ -97,8 +97,8 @@ const string         BatchDemos::g_start_date                  = "2017-01-01";
 const double         BatchDemos::g_seeding_rate_adapted        = 0.0;
 const double         BatchDemos::g_immunity_rate_adapted       = 0.999991;
 const string         BatchDemos::g_disease_config_file_adapted = "disease_measles.xml";
-const double		 BatchDemos::g_transmission_rate_measles   = 16U;
-const double   		 BatchDemos::g_transmission_rate_maximum   = 100U;
+const double         BatchDemos::g_transmission_rate_measles   = 16U;
+const double         BatchDemos::g_transmission_rate_maximum   = 100U;
 
 const map<string, unsigned int> BatchDemos::g_results {
 	make_pair("default", 70000),
@@ -136,9 +136,7 @@ TEST_P( BatchDemos, Run )
 	pt_config.put("run.holidays_file",g_holidays_file);
 	pt_config.put("run.age_contact_matrix_file","contact_matrix_average.xml");
 	pt_config.put("run.log_level","None");
-
 	bool track_index_case = false;
-
 
 	// -----------------------------------------------------------------------------------------
 	// Override scenario settings.
@@ -161,7 +159,6 @@ TEST_P( BatchDemos, Run )
 		pt_config.put("run.r0", g_transmission_rate_maximum);
 	}
 
-
 	// -----------------------------------------------------------------------------------------
 	// Initialize the logger.
 	// -----------------------------------------------------------------------------------------
@@ -170,14 +167,12 @@ TEST_P( BatchDemos, Run )
 			std::numeric_limits<size_t>::max(),  std::numeric_limits<size_t>::max());
 	file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-
 	// -----------------------------------------------------------------------------------------
 	// Initialize the simulation.
 	// -----------------------------------------------------------------------------------------
 	cout << "Building the simulator. "<< endl;
 	auto sim = SimulatorBuilder::Build(pt_config, num_threads, track_index_case);
 	cout << "Done building the simulator. "<< endl <<endl;
-
 
 	// -----------------------------------------------------------------------------------------
 	// Run the simulation.
@@ -187,19 +182,16 @@ TEST_P( BatchDemos, Run )
 			sim->TimeStep();
 	}
 
-
 	// -----------------------------------------------------------------------------------------
 	// Release and close logger.
 	// -----------------------------------------------------------------------------------------
-      spdlog::drop_all();
+        spdlog::drop_all();
 
-
-    // -----------------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------
 	// Round up.
-    // -----------------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------
 	const unsigned int num_cases = sim->GetPopulation()->GetInfectedCount();
 	ASSERT_NEAR(num_cases, g_results.at(test_tag),10000) << "!! CHANGED !!";
-
 }
 
 namespace {
@@ -219,8 +211,20 @@ namespace {
 
 }
 
-INSTANTIATE_TEST_CASE_P(RunBatch, BatchDemos,
-        ::testing::Combine(::testing::ValuesIn(scenarios), ::testing::ValuesIn(threads)));
+INSTANTIATE_TEST_CASE_P(Run_default, BatchDemos,
+        ::testing::Combine(::testing::Values(string("default")), ::testing::ValuesIn(threads)));
+
+INSTANTIATE_TEST_CASE_P(Run_seeding_rate, BatchDemos,
+        ::testing::Combine(::testing::Values(string("seeding_rate")), ::testing::ValuesIn(threads)));
+
+INSTANTIATE_TEST_CASE_P(Run_immunity_rate, BatchDemos,
+        ::testing::Combine(::testing::Values(string("immunity_rate")), ::testing::ValuesIn(threads)));
+
+INSTANTIATE_TEST_CASE_P(Run_measles, BatchDemos,
+        ::testing::Combine(::testing::Values(string("measles")), ::testing::ValuesIn(threads)));
+
+INSTANTIATE_TEST_CASE_P(Run_maximum, BatchDemos,
+        ::testing::Combine(::testing::Values(string("maximum")), ::testing::ValuesIn(threads)));
 
 } //end-of-namespace-Tests
 

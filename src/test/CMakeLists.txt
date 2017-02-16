@@ -1,6 +1,5 @@
 #############################################################################
-#  This file is part of the Indismo software. 
-#  It is free software: you can redistribute it and/or modify
+#  This is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by 
 #  the Free Software Foundation, either version 3 of the License, or any 
 #  later version.
@@ -12,29 +11,29 @@
 #  along with the software. If not, see <http://www.gnu.org/licenses/>.
 #  see http://www.gnu.org/licenses/.
 #
-#  Reference: Willem L, Stijven S, Tijskens E, Beutels P, Hens N and 
-#  Broeckhove J. (2015) Optimizing agent-based transmission models for  
-#  infectious diseases, BMC Bioinformatics.
-#
-#  Copyright 2015, Willem L, Stijven S & Broeckhove J
+#  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
 #############################################################################
 
 #============================================================================
 # Test verbosity:
 #============================================================================
 unset( CTEST_VERBOSE_OPTION )
-if( INDISMO2_VERBOSE_TESTING )
+if( STRIDE_VERBOSE_TESTING )
 	set( CTEST_VERBOSE_OPTION "-V" )
 endif()
 
 #============================================================================
-# Top level custom targets:
+# Meke test directory in install tree:
 #============================================================================
 set( TESTS_DIR ${CMAKE_INSTALL_PREFIX}/${TESTS_INSTALL_LOCATION} )
+install(DIRECTORY DESTINATION  ${TESTS_DIR} )
+
+#============================================================================
+# Top level custom target for instactive use through make:
+#============================================================================
 add_custom_target( run_ctest
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${TESTS_DIR}
-	COMMAND ctest --exclude-regex .*perf.* ${CTEST_VERBOSE_OPTION} 
-				-O ${TESTS_DIR}/reports/ctests.txt
+	COMMAND ctest --tests-regex default ${CTEST_VERBOSE_OPTION} 
+				-O ${TESTS_DIR}/ctests_default.txt
 )
 
 #============================================================================

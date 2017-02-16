@@ -113,10 +113,4 @@ if( NOT OPENMP_FOUND )
     include_directories( ${CMAKE_HOME_DIRECTORY}/main/resources/lib/domp/include )
 endif()
 
-#----------------------------------------------------------------------------
-# Linking.
-#----------------------------------------------------------------------------
-#set( BUILD_SHARED_LIBS 	    ON 	 )
-#set( CMAKE_INSTALL_RPATH    ${CMAKE_INSTALL_PREFIX}/bin )
-
 #############################################################################
