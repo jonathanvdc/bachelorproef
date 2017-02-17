@@ -1,6 +1,6 @@
 # Bachelorproef Informatica Universiteit Antwerpen 2016–2017
 
-Groepsleden:
+Groepsleden (flu-plus-plus):
 * Sibert Aerts
 * Cédric De Haes
 * Jonathan Van der Cruysse
