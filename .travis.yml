@@ -1,3 +1,7 @@
+# This .travis.yml is based on LOOT's .travis.yml:
+# https://github.com/loot/loot/blob/dev/.travis.yml
+ 
+
 # We are (unfortunately) dealing with a C++ project.
 language: cpp
 compiler: gcc
@@ -36,14 +40,6 @@ before_install:
     - export BOOST_ROOT=$HOME/boost_1_61_0
 
 script:
-    # make configure
-    - cmake -E make_directory ./build
-    - cmake -E chdir ./build cmake -DCMAKE_GENERATOR="Unix Makefiles" ../src
-    # make all
-    - make -j -C ./build all
-    # make install_main
-    - make -j -C ./build/main --no-print-directory install
-    # make install_test
-    - make -j -C ./build/test --no-print-directory install
-    # make test
-    - make -C ./build/test --no-print-directory run_ctest
+    # `make all; make test`, as per the build instructions.
+    - make all
+    - make test
