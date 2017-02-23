@@ -12,6 +12,10 @@ addons:
         - cmake
         - libboost-all-dev
 
+before_install:
+    # Print the CMake version.
+    - cmake --version
+
 script:
     # Make the project and run the tests.
     - make all
