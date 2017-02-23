@@ -5,6 +5,9 @@ compiler:
     - clang
     - gcc
 
+# Use Ubuntu 14.04.5 LTS (Trusty Tahr) instead of Ubuntu 12.04.5 LTS (Precise Pangolin)
+dist: trusty
+
 # We're going to need cmake and boost.
 addons:
     apt:
