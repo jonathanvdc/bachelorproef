@@ -36,7 +36,7 @@ before_install:
 script:
     # make configure
     - cmake -E make_directory ./build
-    - cmake -E chdir ./build cmake -DCMAKE_GENERATOR="Unix Makefiles" -DBOOST_ROOT=$HOME/boost_1_61_0/boost ../src
+    - cmake -E chdir ./build cmake -DCMAKE_GENERATOR="Unix Makefiles" -DBOOST_ROOT=$HOME/boost_1_61_0 ../src
     # make all
     - make -j -C ./build all
     # make install_main
