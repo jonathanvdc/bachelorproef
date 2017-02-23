@@ -10,7 +10,7 @@ addons:
     apt:
         packages:
         - cmake
-        - libboost-dev-all
+        - libboost-all-dev
 
 script:
     # Make the project and run the tests.
