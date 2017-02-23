@@ -1,0 +1,18 @@
+# We are (unfortunately) dealing with a C++ project.
+language: cpp
+# Test with both clang and gcc, because why not?
+compiler:
+    - clang
+    - gcc
+
+# We're going to need cmake and boost.
+addons:
+    apt:
+        packages:
+        - cmake
+        - libboost-dev-all
+
+script:
+    # Make the project and run the tests.
+    - make all
+    - make test
