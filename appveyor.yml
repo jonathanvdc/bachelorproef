@@ -9,8 +9,8 @@ clone_depth: 50
 configuration: Release
 
 cache:
-    - C:\projects\boost_1_61_0\boost
-    - C:\projects\boost_1_61_0\stage\32\lib
+    - C:\projects\boost_1_61_0\boost -> appveyor.yml
+    - C:\projects\boost_1_61_0\stage\32\lib -> appveyor.yml
 
 install:
     - ps: (New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/WrinklyNinja/ci-scripts/1.1.0/install_boost.py', "$env:APPVEYOR_BUILD_FOLDER\install_boost.py")
