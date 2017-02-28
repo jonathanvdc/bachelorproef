@@ -79,6 +79,7 @@ include_directories( SYSTEM ${CMAKE_HOME_DIRECTORY}/main/resources/lib/trng-4.15
 set(BOOST_ROOT ${STRIDE_BOOST_ROOT})
 message("Boost root: ${BOOST_ROOT}")
 message("Boost library dir: ${BOOST_LIBRARYDIR}")
+set(Boost_DEBUG TRUE)
 find_package( Boost COMPONENTS filesystem thread date_time system REQUIRED )
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS} )
 set( LIBS   ${LIBS} ${Boost_LIBRARIES} )
