@@ -14,13 +14,13 @@ cache:
 
 install:
     - ps: (New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/WrinklyNinja/ci-scripts/1.1.0/install_boost.py', "$env:APPVEYOR_BUILD_FOLDER\install_boost.py")
-    - ps: python $env:APPVEYOR_BUILD_FOLDER\install_boost.py -d C:\projects -b 1.61.0 -a 64 date_time filesystem system thread
+    - ps: python $env:APPVEYOR_BUILD_FOLDER\install_boost.py -d C:\projects -b 1.61.0 -a 32 atomic chrono date_time filesystem iostreams locale log regex system thread
 
 before_build:
     - cd %APPVEYOR_BUILD_FOLDER%
     - ps: mkdir build
     - cd build
-    - cmake ..\src -G "Visual Studio 14 2015" -DBOOST_ROOT="C:\projects\boost_1_61_0" -DBOOST_LIBRARYDIR="C:\projects\boost_1_61_0\stage\64\lib"
+    - cmake ../src -G "Visual Studio 14 2015" -DBOOST_ROOT="C:\projects\boost_1_61_0" -DBOOST_LIBRARYDIR="C:\projects\boost_1_61_0\stage\32\lib"
 
 build:
     verbosity: minimal
