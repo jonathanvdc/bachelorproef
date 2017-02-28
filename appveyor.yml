@@ -23,7 +23,6 @@ before_build:
     - cmake --version
     - cmake ..\src -G "Visual Studio 14 2015" -DSTRIDE_BOOST_ROOT="C:\projects\boost_1_61_0" -DBOOST_LIBRARYDIR="C:\projects\boost_1_61_0\stage\32\lib"
 
-# build:
-#     verbosity: minimal
-#     project: '$(APPVEYOR_BUILD_FOLDER)\build\STRIDE.sln'
-build: off
+build:
+    verbosity: minimal
+    project: '$(APPVEYOR_BUILD_FOLDER)\build\STRIDE.sln
