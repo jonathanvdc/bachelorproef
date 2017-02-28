@@ -21,7 +21,7 @@ before_build:
     - ps: mkdir build
     - cd build
     - cmake --version
-    - cmake ..\src -G "Visual Studio 14 2015" -DSTRIDE_BOOST_ROOT="C:\projects\boost_1_61_0" -DBOOST_LIBRARYDIR="C:\projects\boost_1_61_0\stage\32\lib"
+    - cmake ..\src -G "Visual Studio 14 2015" -DSTRIDE_BOOST_HUNTER=ON
 
 build:
     verbosity: minimal
