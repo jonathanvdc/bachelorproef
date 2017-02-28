@@ -18,7 +18,7 @@
 #  CMake config.
 #
 #############################################################################
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 #============================================================================
 # Macros that need to be set prior to project definition:
@@ -31,7 +31,19 @@ set( CMAKE_INSTALL_PREFIX  "${CMAKE_BINARY_DIR}/installed"
 #
 set( CMAKE_PROGRAM_PATH  "/opt/local/bin;/usr/texbin;/usr/local/bin;/usr/bin" 
 	CACHE PATH "Where to look with find_program." )
-	
+
+#============================================================================
+# If we are going to use Hunter to grab Boost, then this would be a good time
+# to configure Hunter.
+#============================================================================
+if ( STRIDE_BOOST_HUNTER )
+    include( "cmake/HunterGate.cmake" )
+    HunterGate(
+        URL "https://github.com/ruslo/hunter/archive/v0.18.6.tar.gz"
+        SHA1 "d4f29b42eadb17e2df0814eea2bb7491e4100af4"
+    )
+endif()
+
 #============================================================================
 # Project name, configuration for CMake, macros for build & install.
 #============================================================================
