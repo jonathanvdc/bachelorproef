@@ -17,7 +17,7 @@ before_build:
     - cd build
     - cmake --version
     - clang --version
-    - cmake ..\src -G "Visual Studio 14 2015" -DSTRIDE_BOOST_HUNTER=ON
+    - cmake ..\src -G "Visual Studio 14 2015" -T "LLVM-vs2014" -DSTRIDE_BOOST_HUNTER=ON
 
 build:
     verbosity: minimal
