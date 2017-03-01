@@ -31,7 +31,7 @@ endif()
 
 if( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" )
 	# Always include iso646.h, which defines 'not', 'and' and 'or' macros.
-	set( CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} /FI iso646.h" )
+	set( CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} /FI\"iso646.h\"" )
 else()
 	#----------------------------------------------------------------------------
 	# Compile flags
