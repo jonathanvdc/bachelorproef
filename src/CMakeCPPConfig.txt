@@ -30,7 +30,8 @@ if( NOT (CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "Debug")
 endif()
 
 if( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" )
-	set( CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} /Za" )
+	# Always include ciso646, which defines 'not', 'and' and 'or' macros.
+	set( CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} /FI ciso646" )
 else()
 	#----------------------------------------------------------------------------
 	# Compile flags
