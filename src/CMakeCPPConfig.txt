@@ -29,25 +29,27 @@ if( NOT (CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "Debug")
 	message(FATAL_ERROR  "========> CMAKE_BUILD_TYPE HAS TO MATCH EITHER Release OR Debug." )
 endif()
 
-#----------------------------------------------------------------------------
-# Compile flags
-#----------------------------------------------------------------------------
-set( CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wall -Wno-unknown-pragmas -Wno-array-bounds -Wno-unused-private-field" )
-set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast" )
-set( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -O0"   )
+if ( NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" )
+	#----------------------------------------------------------------------------
+	# Compile flags
+	#----------------------------------------------------------------------------
+	set( CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wall -Wno-unknown-pragmas -Wno-array-bounds -Wno-unused-private-field" )
+	set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast" )
+	set( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -O0"   )
 
-#----------------------------------------------------------------------------
-# Platform dependent compile flags
-#----------------------------------------------------------------------------
-if( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_HOST_APPLE )
-	add_definitions( -D__APPLE__ )
-	set( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-elseif( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT CMAKE_HOST_APPLE )
-	set( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -std=c++11" )
-	add_definitions( -D__extern_always_inline=inline )
-elseif( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
-	set( CMAKE_CXX_FLAGS 	       "${CMAKE_CXX_FLAGS} -fPIC -std=c++11" )
-	set( CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -fPIC" )
+	#----------------------------------------------------------------------------
+	# Platform dependent compile flags
+	#----------------------------------------------------------------------------
+	if( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_HOST_APPLE )
+		add_definitions( -D__APPLE__ )
+		set( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+	elseif( CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT CMAKE_HOST_APPLE )
+		set( CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -std=c++11" )
+		add_definitions( -D__extern_always_inline=inline )
+	elseif( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
+		set( CMAKE_CXX_FLAGS 	       "${CMAKE_CXX_FLAGS} -fPIC -std=c++11" )
+		set( CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -fPIC" )
+	endif()
 endif()
 #
 include_directories( ${CMAKE_HOME_DIRECTORY}/main/cpp             )
