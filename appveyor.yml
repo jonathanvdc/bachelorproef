@@ -18,9 +18,6 @@ before_build:
     - cmake --version
     - cmake ..\src -G "Visual Studio 14 2015" -DSTRIDE_BOOST_HUNTER=ON
 
-# build:
-#     verbosity: minimal
-#     project: '$(APPVEYOR_BUILD_FOLDER)\build\STRIDE.sln'
-
-build_script:
-    - echo "Build has been disabled"
+build:
+    verbosity: minimal
+    project: '$(APPVEYOR_BUILD_FOLDER)\build\STRIDE.sln'
