@@ -29,7 +29,8 @@ if( NOT (CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "Debug")
 	message(FATAL_ERROR  "========> CMAKE_BUILD_TYPE HAS TO MATCH EITHER Release OR Debug." )
 endif()
 
-if ( NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" )
+if ( CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" )
+else()
 	#----------------------------------------------------------------------------
 	# Compile flags
 	#----------------------------------------------------------------------------
