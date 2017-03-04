@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popgen>
+    <age>
+        <!--
+          The age distribution is a piecewise linear curve connecting
+          (0, h), (elbow_age, h), and (maximum_age, 0), where h is computed
+          so that the area under the curve is 1.
+        -->
+        <maximum>95</maximum>
+        <elbow>65</elbow>
+    </age>
+    <family>
+        <age>
+            <!-- Minimum age for members of families of size <= 2. -->
+            <live_alone_minimum>18</live_alone_minimum>
+
+            <!-- Maximum age for children in families of size >= 3. -->
+            <child_maximum>23</child_maximum>
+
+            <!-- Minimum age for parents, in families of size >= 3. -->
+            <parent_minimum>20</parent_minimum>
+
+            <!-- Maximum age for parents, in families of size >= 3. -->
+            <parent_maximum>50</parent_maximum>
+        </age>
+        <age_gap>
+            <!-- Minimum age gap between children and parents. -->
+            <child_parent_minimum>18</child_parent_minimum>
+
+            <!-- Inter-parent age gap range. -->
+            <parent_minimum>0</parent_minimum>
+            <parent_maximum>5</parent_maximum>
+
+            <!-- Inter-child age gap range. -->
+            <child_minimum>1</child_minimum>
+            <child_maximum>10</child_maximum>
+        </age_gap>
+        <size_distribution>
+            <p>12</p> <!-- 1 member  -->
+            <p>27</p> <!-- 2 members -->
+            <p>20</p> <!-- 3 members -->
+            <p>22</p> <!-- 4 members -->
+            <p>10</p> <!-- 5 members -->
+            <p>9</p>  <!-- 6 members -->
+        </size_distribution>
+    </family>
+    <school>
+        <age>
+            <!-- The age at which people start going to kindergarten. -->
+            <kindergarten>3</kindergarten>
+
+            <!-- The age at which people start going to primary school. -->
+            <primary_school>7</primary_school>
+
+            <!-- The age at which people start going to secondary school. -->
+            <secondary_school>13</secondary_school>
+
+            <!-- The age at which people start higher education (or leave school). -->
+            <higher_education>19</higher_education>
+
+            <!-- The age at which people graduate from higher education. -->
+            <graduation>24</graduation>
+        </age>
+
+        <!-- The percentage of people who go into higher education. -->
+        <p_higher_education>0.25</p_higher_education>
+
+        <!-- The size range for schools (in # of students). The distribution is linear. -->
+        <size>
+            <!-- "approximately 500" -->
+            <minimum>450</minimum>
+            <maximum>550</maximum>
+        </size>
+    </school>
+    <work>
+        <!-- The age range for employees. -->
+        <age>
+            <minimum>18</minimum>
+            <maximum>65</maximum>
+        </age>
+
+        <!-- The percentage of people, within this age range, that is employed. -->
+        <p_employed>0.70</p_employed>
+
+        <!-- The size range for work sites (in # of employees). The distribution is linear. -->
+        <size>
+            <minimum>1</minimum>
+            <maximum>25</maximum>
+        </size>
+    </work>
+    <community>
+        <!-- The size range for communities (in # of members). The distribution is linear. -->
+        <size>
+            <!-- "approximately 2000" -->
+            <minimum>1800</minimum>
+            <maximum>2200</maximum>
+        </size>
+    </community>
+</popgen>
