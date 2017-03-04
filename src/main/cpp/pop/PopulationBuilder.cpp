@@ -23,11 +23,13 @@
 #include "core/Health.h"
 #include "pop/Person.h"
 #include "pop/Population.h"
+#include "pop/PopulationModel.h"
 #include "util/InstallDirs.h"
 #include "util/Random.h"
 #include "util/StringUtils.h"
 
 #include <spdlog/spdlog.h>
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/filesystem.hpp>
@@ -60,6 +62,11 @@ shared_ptr<Population> PopulationBuilder::Build(
         const double immunity_rate        = pt_config.get<double>("run.immunity_rate");
         const string disease_config_file  = pt_config.get<string>("run.disease_config_file");
 
+        const auto distrib_start_infectiousness = GetDistribution(pt_disease, "disease.start_infectiousness");
+        const auto distrib_start_symptomatic    = GetDistribution(pt_disease, "disease.start_symptomatic");
+        const auto distrib_time_infectious      = GetDistribution(pt_disease, "disease.time_infectious");
+        const auto distrib_time_symptomatic     = GetDistribution(pt_disease, "disease.time_symptomatic");
+
         //------------------------------------------------
         // Check input.
         //------------------------------------------------
@@ -85,31 +92,50 @@ shared_ptr<Population> PopulationBuilder::Build(
                         + "> Error opening population file " + file_path.string());
         }
 
-        const auto distrib_start_infectiousness = GetDistribution(pt_disease, "disease.start_infectiousness");
-        const auto distrib_start_symptomatic    = GetDistribution(pt_disease, "disease.start_symptomatic");
-        const auto distrib_time_infectious      = GetDistribution(pt_disease, "disease.time_infectious");
-        const auto distrib_time_symptomatic     = GetDistribution(pt_disease, "disease.time_symptomatic");
+        if (boost::algorithm::ends_with(file_name, ".csv")) {
+                // Read population data file.
+                string line;
+                getline(pop_file, line); // step over file header
+                unsigned int person_id = 0U;
+                while (getline(pop_file, line)) {
+                        // Make use of stochastic disease characteristics.
+                        const auto start_infectiousness = Sample(rng, distrib_start_infectiousness);
+                        const auto start_symptomatic    = Sample(rng, distrib_start_symptomatic);
+                        const auto time_infectious      = Sample(rng, distrib_time_infectious);
+                        const auto time_symptomatic     = Sample(rng, distrib_time_symptomatic);
+                        const auto values = StringUtils::Split(line, ",");
+                        population.emplace_back(Person(
+                                person_id,
+                                StringUtils::FromString<unsigned int>(values[0]), // age
+                                StringUtils::FromString<unsigned int>(values[1]), // household_id
+                                StringUtils::FromString<unsigned int>(values[2]), // school_id
+                                StringUtils::FromString<unsigned int>(values[3]), // work_id
+                                StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
+                                StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
+                                start_infectiousness,
+                                start_symptomatic,
+                                time_infectious,
+                                time_symptomatic));
+                        ++person_id;
+                }
+        } else if (boost::algorithm::ends_with(file_name, ".xml")) {
+                // Read population model file.
+                using boost::property_tree::ptree;
+                ptree pt;
+                read_xml(pop_file, pt);
+                PopulationModel model{ pt };
 
-        string line;
-        getline(pop_file, line); // step over file header
-        unsigned int person_id = 0U;
-        while (getline(pop_file, line)) {
-                // Make use of stochastic disease characteristics.
-                const auto start_infectiousness = Sample(rng, distrib_start_infectiousness);
-                const auto start_symptomatic    = Sample(rng, distrib_start_symptomatic);
-                const auto time_infectious      = Sample(rng, distrib_time_infectious);
-                const auto time_symptomatic     = Sample(rng, distrib_time_symptomatic);
-                const auto values = StringUtils::Split(line, ",");
-                population.emplace_back(Person(person_id,
-                        StringUtils::FromString<unsigned int>(values[0]),
-                        StringUtils::FromString<unsigned int>(values[1]),
-                        StringUtils::FromString<unsigned int>(values[2]),
-                        StringUtils::FromString<unsigned int>(values[3]),
-                        StringUtils::FromString<unsigned int>(values[4]),
-                        StringUtils::FromString<unsigned int>(values[5]),
-                        start_infectiousness, start_symptomatic, time_infectious, time_symptomatic));
-                ++person_id;
+                // Example:
+                std::cout << "child_maximum_age_gap: " << model.child_maximum_age_gap << std::endl;
+                // TODO: generate `population` from `model`.
+
+        } else {
+                throw runtime_error(string(__func__)
+                        + "> Population file " + file_path.string() + " must be CSV (population"
+                          "data file) or XML (population model file).");
         }
+
+
 
         pop_file.close();
 
