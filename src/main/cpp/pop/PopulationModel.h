@@ -23,7 +23,8 @@ struct InclusiveRange
 };
 
 template <typename T>
-void InclusiveRange<T>::parse(const boost::property_tree::ptree& pt) {
+void InclusiveRange<T>::parse(const boost::property_tree::ptree& pt)
+{
 	minimum = pt.get<T>("minimum");
 	maximum = pt.get<T>("maximum");
 }
@@ -41,8 +42,8 @@ struct Age
 	int elbow;
 };
 
-struct FamilyAge{
-
+struct FamilyAge
+{
 	// Read the family age model values from a ptree.
 	// Throws `boost::property_tree::ptree_error` on invalid inputs.
 	void parse(const boost::property_tree::ptree& pt);
@@ -57,8 +58,8 @@ struct FamilyAge{
 	InclusiveRange<int> parent;
 };
 
-struct FamilyAgeGap{
-
+struct FamilyAgeGap
+{
 	// Read the family age gap model values from a ptree.
 	// Throws `boost::property_tree::ptree_error` on invalid inputs.
 	void parse(const boost::property_tree::ptree& pt);
