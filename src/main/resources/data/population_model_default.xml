@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<popgen>
+<population_model>
     <age>
         <!--
           The age distribution is a piecewise linear curve connecting
@@ -17,23 +17,27 @@
             <!-- Maximum age for children in families of size >= 3. -->
             <child_maximum>23</child_maximum>
 
-            <!-- Minimum age for parents, in families of size >= 3. -->
-            <parent_minimum>20</parent_minimum>
-
-            <!-- Maximum age for parents, in families of size >= 3. -->
-            <parent_maximum>50</parent_maximum>
+            <!-- Age range for parents, in families of size >= 3. -->
+            <parent>
+                <minimum>20</minimum>
+                <maximum>50</maximum>
+            </parent>
         </age>
         <age_gap>
             <!-- Minimum age gap between children and parents. -->
             <child_parent_minimum>18</child_parent_minimum>
 
             <!-- Inter-parent age gap range. -->
-            <parent_minimum>0</parent_minimum>
-            <parent_maximum>5</parent_maximum>
+            <parent>
+                <minimum>0</minimum>
+                <maximum>5</maximum>
+            </parent>
 
             <!-- Inter-child age gap range. -->
-            <child_minimum>1</child_minimum>
-            <child_maximum>10</child_maximum>
+            <child>
+                <minimum>1</minimum>
+                <maximum>10</maximum>
+            </child>
         </age_gap>
         <size_distribution>
             <p>12</p> <!-- 1 member  -->
@@ -66,8 +70,7 @@
         <p_higher_education>0.25</p_higher_education>
 
         <!-- The size range for schools (in # of students). The distribution is linear. -->
-        <size>
-            <!-- "approximately 500" -->
+        <size> <!-- "approximately 500" -->
             <minimum>450</minimum>
             <maximum>550</maximum>
         </size>
@@ -90,10 +93,13 @@
     </work>
     <community>
         <!-- The size range for communities (in # of members). The distribution is linear. -->
-        <size>
-            <!-- "approximately 2000" -->
+        <size> <!-- "approximately 2000" -->
             <minimum>1800</minimum>
             <maximum>2200</maximum>
         </size>
     </community>
-</popgen>
+    <size>
+        <minimum>18000</minimum>
+        <maximum>22000</maximum>
+    </size>
+</population_model>

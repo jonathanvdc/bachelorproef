@@ -123,10 +123,11 @@ shared_ptr<Population> PopulationBuilder::Build(
                 using boost::property_tree::ptree;
                 ptree pt;
                 read_xml(pop_file, pt);
-                PopulationModel model{ pt };
+                population_model::Model model;
+                model.parse(pt);
 
                 // Example:
-                std::cout << "child_maximum_age_gap: " << model.child_maximum_age_gap << std::endl;
+                std::cout << "child_maximum_age_gap: " << model.family.age_gap.child.maximum << std::endl;
                 // TODO: generate `population` from `model`.
 
         } else {
