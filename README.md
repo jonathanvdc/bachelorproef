@@ -5,3 +5,5 @@ Groepsleden (flu-plus-plus):
 * Cédric De Haes
 * Jonathan Van der Cruysse
 * Lynn Van Hauwe
+
+###[[Tijdsschema]](http://i.imgur.com/ilkTQZ7.png)
