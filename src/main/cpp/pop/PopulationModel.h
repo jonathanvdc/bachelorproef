@@ -8,26 +8,12 @@
 
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
+#include "util/InclusiveRange.h"
 
 namespace stride {
 namespace population_model {
 
-template <typename T>
-struct InclusiveRange
-{
-	// Parse an inclusive range from a ptree with "minimum" and "maximum" keys.
-	// Throws `boost::property_tree::ptree_error` on invalid inputs.
-	void parse(const boost::property_tree::ptree& pt);
-	T minimum;
-	T maximum;
-};
-
-template <typename T>
-void InclusiveRange<T>::parse(const boost::property_tree::ptree& pt)
-{
-	minimum = pt.get<T>("minimum");
-	maximum = pt.get<T>("maximum");
-}
+using stride::util::InclusiveRange;
 
 struct Age
 {

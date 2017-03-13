@@ -22,10 +22,14 @@
 
 #include <trng/mrg2.hpp>
 #include <trng/uniform01_dist.hpp>
+#include <trng/uniform_dist.hpp>
 #include <trng/uniform_int_dist.hpp>
+#include "InclusiveRange.h"
 
 namespace stride {
 namespace util {
+
+using stride::util::InclusiveRange;
 
 /**
  * The random number generator.
@@ -41,11 +45,7 @@ public:
 	}
 
 	/// Get random double.
-	double NextDouble()
-	{
-		return m_uniform_dist(m_engine);
-
-	}
+	double NextDouble() { return m_uniform_dist(m_engine); }
 
 	/// Get random unsigned int from [0, max[.
 	unsigned int operator()(unsigned int max)
@@ -54,20 +54,29 @@ public:
 		return dis(m_engine);
 	}
 
+	/// Get random int from [a, b[ (excludes the endpoint).
+	int operator()(int a, int b) { return trng::uniform_int_dist(a, b)(m_engine); }
+
+	/// Get random double from [a, b].
+	double operator()(double a, double b) { return trng::uniform_dist<double>(a, b)(m_engine); }
+
+	/// Get random int from an integer InclusiveRange.
+	int operator()(InclusiveRange<int> r) { return (*this)(r.minimum, r.maximum + 1); }
+
+	/// Get random double from [a, b].
+	double operator()(InclusiveRange<double> r) { return (*this)(r.minimum, r.maximum); }
+
 	/**
 	 * Split random engines
 	 * E. g. stream 0 1 2 3 4 5...
 	 * => stream A: 0 2 4...
 	 * => stream B: 1 3 5...
 	 */
-	void Split(unsigned int total, unsigned int id)
-	{
-		m_engine.split(total,id);
-	}
+	void Split(unsigned int total, unsigned int id) { m_engine.split(total, id); }
 
 private:
-	trng::mrg2               	m_engine;         ///< The random number engine.
-	trng::uniform01_dist<double>	m_uniform_dist;   ///< The random distribution.
+	trng::mrg2 m_engine;			     ///< The random number engine.
+	trng::uniform01_dist<double> m_uniform_dist; ///< The random distribution.
 };
 
 } // end namespace
