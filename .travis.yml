@@ -35,7 +35,7 @@ before_install:
     - cmake --version
     # Build and install boost.
     - wget https://raw.githubusercontent.com/WrinklyNinja/ci-scripts/1.0.0/install_boost.py
-    - python install_boost.py --directory ~ --boost-version 1.61.0 atomic chrono date_time filesystem iostreams locale log regex system thread
+    - python install_boost.py --directory ~ --boost-version 1.61.0 atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
     # Set the BOOST_ROOT environment variable.
     - export BOOST_ROOT=$HOME/boost_1_61_0
 
