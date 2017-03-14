@@ -74,6 +74,13 @@ include_directories( SYSTEM ${CMAKE_HOME_DIRECTORY}/main/resources/lib/trng-4.15
 #set( LIBS ${LIBS} trng )
 
 #----------------------------------------------------------------------------
+# MPI compile flags
+#----------------------------------------------------------------------------
+find_package( MPI )
+include_directories( SYSTEM ${MPI_INCLUDE_PATH} )
+set( LIBS ${LIBS} ${MPI_CXX_LIBRARIES} )
+
+#----------------------------------------------------------------------------
 # Boost
 #----------------------------------------------------------------------------
 set(BOOST_ROOT ${STRIDE_BOOST_ROOT})
