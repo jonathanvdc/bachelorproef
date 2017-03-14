@@ -22,8 +22,9 @@ struct Fate
 	unsigned int time_symptomatic;
 };
 
-// A Distribution is, essentially, a list `v` of n doubles that sum to 1, representing
-// a probability distribution over {0, 1, ..., n-1}. See the Sample method.
+// A Distribution is, essentially, the cumulative sum of a list `v` of n positive reals
+// that sum to 1, representing a probability distribution over {0, 1, ..., n-1}.
+// See the Sample method.
 class Distribution
 {
 public:
@@ -37,6 +38,8 @@ public:
 	static std::unique_ptr<Distribution> Parse(const ptree& pt_probability_list);
 
 private:
+	// The cumulative sum of `v`; that is, `probabilities[n]` equals `sum(k=0..n) v[k]`.
+	// This means `probabilities` is an ascending list of reals, ending in 1.
 	std::vector<double> probabilities;
 };
 
