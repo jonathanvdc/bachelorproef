@@ -25,6 +25,7 @@ set(LIB_SRC
     core/Cluster.cpp
     core/ClusterType.cpp
     core/ContactProfile.cpp
+    core/Disease.cpp
     core/DiseaseProfile.cpp
     core/Health.cpp
     core/Infector.cpp
