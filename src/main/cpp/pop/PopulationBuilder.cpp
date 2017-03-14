@@ -47,6 +47,7 @@ namespace stride {
 using namespace std;
 using namespace boost::filesystem;
 using namespace boost::property_tree;
+using namespace stride::disease;
 using namespace stride::util;
 
 shared_ptr<Population> PopulationBuilder::Build(
@@ -63,10 +64,7 @@ shared_ptr<Population> PopulationBuilder::Build(
         const double immunity_rate        = pt_config.get<double>("run.immunity_rate");
         const string disease_config_file  = pt_config.get<string>("run.disease_config_file");
 
-        const auto distrib_start_infectiousness = GetDistribution(pt_disease, "disease.start_infectiousness");
-        const auto distrib_start_symptomatic    = GetDistribution(pt_disease, "disease.start_symptomatic");
-        const auto distrib_time_infectious      = GetDistribution(pt_disease, "disease.time_infectious");
-        const auto distrib_time_symptomatic     = GetDistribution(pt_disease, "disease.time_symptomatic");
+        const auto disease = Disease::Parse(pt_disease);
 
         //------------------------------------------------
         // Check input.
@@ -99,11 +97,6 @@ shared_ptr<Population> PopulationBuilder::Build(
                 getline(pop_file, line); // step over file header
                 unsigned int person_id = 0U;
                 while (getline(pop_file, line)) {
-                        // Make use of stochastic disease characteristics.
-                        const auto start_infectiousness = Sample(rng, distrib_start_infectiousness);
-                        const auto start_symptomatic    = Sample(rng, distrib_start_symptomatic);
-                        const auto time_infectious      = Sample(rng, distrib_time_infectious);
-                        const auto time_symptomatic     = Sample(rng, distrib_time_symptomatic);
                         const auto values = StringUtils::Split(line, ",");
                         population.emplace_back(Person(
                                 person_id,
@@ -113,12 +106,7 @@ shared_ptr<Population> PopulationBuilder::Build(
                                 StringUtils::FromString<unsigned int>(values[3]), // work_id
                                 StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
                                 StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
-                                disease::Fate{
-                                        start_infectiousness,
-                                        start_symptomatic,
-                                        start_infectiousness + time_infectious,
-                                        start_symptomatic + time_symptomatic
-                                }));
+                                disease->Sample(rng))); // Fate
                         ++person_id;
                 }
         } else if (boost::algorithm::ends_with(file_name, ".xml")) {
@@ -200,29 +188,6 @@ shared_ptr<Population> PopulationBuilder::Build(
         // Done
         //------------------------------------------------
         return pop;
-}
-
-
-vector<double> PopulationBuilder::GetDistribution(const boost::property_tree::ptree& pt_root, const string& xml_tag)
-{
-        vector<double> values;
-        boost::property_tree::ptree subtree = pt_root.get_child(xml_tag);
-        for(const auto& tree : subtree) {
-                values.push_back(tree.second.get<double>(""));
-        }
-        return values;
-}
-
-unsigned int PopulationBuilder::Sample(Random& rng, const vector<double>& distribution)
-{
-        double random_value = rng.NextDouble();
-        for(unsigned int i = 0; i < distribution.size(); i++) {
-                if (random_value <= distribution[i]) {
-                        return i;
-                }
-        }
-        cerr << "WARNING: PROBLEM WITH DISEASE DISTRIBUTION [PopulationBuilder]" << endl;
-        return distribution.size();
 }
 
 } // end_of_namespace
