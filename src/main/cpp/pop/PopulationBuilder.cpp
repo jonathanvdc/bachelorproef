@@ -118,7 +118,7 @@ shared_ptr<Population> PopulationBuilder::Build(
                 model.parse(pt);
 
                 // Example:
-                std::cout << "child_maximum_age_gap: " << model.family.age_gap.child.maximum << std::endl;
+                std::cout << "child_maximum_age_gap: " << model.household.age_gap.child.maximum << std::endl;
                 // TODO: generate `population` from `model`.
 
         } else {

@@ -20,6 +20,9 @@ struct InclusiveRange
 		maximum = pt.get<T>("maximum");
 	}
 
+	T average() { return (minimum + maximum) / 2; }
+	bool include(T x) { return minimum <= x && x <= maximum; }
+
 	T minimum;
 	T maximum;
 };

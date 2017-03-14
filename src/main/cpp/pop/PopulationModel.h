@@ -28,25 +28,25 @@ struct Age
 	int elbow;
 };
 
-struct FamilyAge
+struct HouseholdAge
 {
-	// Read the family age model values from a ptree.
+	// Read the household age model values from a ptree.
 	// Throws `boost::property_tree::ptree_error` on invalid inputs.
 	void parse(const boost::property_tree::ptree& pt);
 
-	// Minimum age for members of families of size <= 2.
+	// Minimum age for members of households of size <= 2.
 	int live_alone_minimum;
 
-	// Maximum age for children in families of size >= 3.
+	// Maximum age for children in households of size >= 3.
 	int child_maximum;
 
-	// Age range for parents, in families of size >= 3.
+	// Age range for parents, in households of size >= 3.
 	InclusiveRange<int> parent;
 };
 
-struct FamilyAgeGap
+struct HouseholdAgeGap
 {
-	// Read the family age gap model values from a ptree.
+	// Read the household age gap model values from a ptree.
 	// Throws `boost::property_tree::ptree_error` on invalid inputs.
 	void parse(const boost::property_tree::ptree& pt);
 
@@ -60,17 +60,17 @@ struct FamilyAgeGap
 	InclusiveRange<int> child;
 };
 
-struct Family
+struct Household
 {
-	// Read the family model values from a ptree.
+	// Read the household model values from a ptree.
 	// Throws `boost::property_tree::ptree_error` on invalid inputs.
 	void parse(const boost::property_tree::ptree& pt);
 
-	FamilyAge age;
-	FamilyAgeGap age_gap;
+	HouseholdAge age;
+	HouseholdAgeGap age_gap;
 
-	// Family size probabilities (relative to sum of vector).
-	// size_distribution[k] is the relative probability of a family having (k + 1) members.
+	// Household size probabilities (relative to sum of vector).
+	// size_distribution[k] is the relative probability of a household having (k + 1) members.
 	std::vector<int> size_distribution;
 };
 
@@ -90,7 +90,7 @@ struct SchoolAge
 	int secondary_school;
 
 	// The age at which people start higher education (or leave school).
-	int higher_eduation;
+	int higher_education;
 
 	// The age at which people graduate from higher education.
 	int graduation;
@@ -148,7 +148,7 @@ struct Model
 	void parse(const boost::property_tree::ptree& pt);
 
 	Age age;
-	Family family;
+	Household household;
 	School school;
 	Work work;
 	Community community;

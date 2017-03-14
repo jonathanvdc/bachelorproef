@@ -6,10 +6,12 @@
  * Header file for the population generator class
  */
 
+#include <cstddef>
 #include <memory>
 #include <vector>
 #include "Person.h"
 #include "PopulationModel.h"
+#include "core/Disease.h"
 #include "util/Random.h"
 
 namespace stride {
@@ -18,14 +20,30 @@ namespace population_model {
 class Generator
 {
 public:
-	Generator(Model* m, util::Random* r) : model(m), random(r) {}
+	Generator(Model& m, disease::Disease& d, util::Random& r) : model(m), disease(d), random(r) {}
 
 	/// Generate a random population.
-	std::unique_ptr<Population> generate();
+	std::unique_ptr<Population> Generate();
 
 private:
-	Model* model;
-	util::Random* random;
+	Model& model;
+	disease::Disease& disease;
+	util::Random& random;
+
+	/// Used internally:
+	int num_schools;
+	int num_works;
+	int num_communities;
+	int people_generated;
+	unsigned int household_id;
+
+	void GenerateHousehold(Population& population, int size);
+	void GeneratePerson(Population& population, int age);
+	unsigned int SchoolID(int age);
+	unsigned int WorkID(int age);
+	unsigned int CommunityID();
+
+	std::vector<int> SampleApart(InclusiveRange<int> range, InclusiveRange<int> gap, std::size_t count);
 };
 
 } // namespace population_model
