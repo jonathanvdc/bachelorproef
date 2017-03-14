@@ -4,6 +4,10 @@
 namespace stride {
 namespace disease {
 
+using util::Random;
+using boost::property_tree::ptree;
+using boost::property_tree::ptree_error;
+
 unsigned int Distribution::Sample(Random& rng)
 {
 	const double random_value = rng.NextDouble();
@@ -37,7 +41,7 @@ Fate Disease::Sample(Random& rng)
 	const unsigned int ss = start_symptomatic.Sample(rng);
 	const unsigned int ti = time_infectious.Sample(rng);
 	const unsigned int ts = time_symptomatic.Sample(rng);
-	return Fate{si, ss, ti, ts};
+	return Fate{si, ss, si + ti, ss + ts};
 }
 
 std::unique_ptr<Disease> Disease::Parse(const ptree& pt_disease)

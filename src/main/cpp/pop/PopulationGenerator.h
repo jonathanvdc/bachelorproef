@@ -12,22 +12,20 @@
 #include "PopulationModel.h"
 #include "util/Random.h"
 
-using stride::util::Random;
-
 namespace stride {
 namespace population_model {
 
 class Generator
 {
 public:
-	Generator(Model* m, Random* r) : model(m), random(r) {}
+	Generator(Model* m, util::Random* r) : model(m), random(r) {}
 
 	/// Generate a random population.
 	std::unique_ptr<Population> generate();
 
 private:
 	Model* model;
-	Random* random;
+	util::Random* random;
 };
 
 } // namespace population_model

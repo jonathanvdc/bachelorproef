@@ -7,10 +7,6 @@
 namespace stride {
 namespace disease {
 
-using boost::property_tree::ptree;
-using boost::property_tree::ptree_error;
-using stride::util::Random;
-
 // A Fate records how many days into the simulation a Person will become
 // infectious/symptomatic, and for how long. It is assigned to each Person
 // when the simulation starts, hence the name.
@@ -18,8 +14,8 @@ struct Fate
 {
 	unsigned int start_infectiousness;
 	unsigned int start_symptomatic;
-	unsigned int time_infectious;
-	unsigned int time_symptomatic;
+	unsigned int end_infectiousness;
+	unsigned int end_symptomatic;
 };
 
 // A Distribution is, essentially, the cumulative sum of a list `v` of n positive reals
@@ -33,9 +29,9 @@ public:
 
 	// Return a random index into the `probabilities` vector, yielding `i` with
 	// probability `v[i]`.
-	unsigned int Sample(Random& rng);
+	unsigned int Sample(util::Random& rng);
 
-	static std::unique_ptr<Distribution> Parse(const ptree& pt_probability_list);
+	static std::unique_ptr<Distribution> Parse(const boost::property_tree::ptree& pt_probability_list);
 
 private:
 	// The cumulative sum of `v`; that is, `probabilities[n]` equals `sum(k=0..n) v[k]`.
@@ -55,9 +51,9 @@ public:
 	{
 	}
 
-	Fate Sample(Random& rng);
+	Fate Sample(util::Random& rng);
 
-	static std::unique_ptr<Disease> Parse(const ptree& pt_disease);
+	static std::unique_ptr<Disease> Parse(const boost::property_tree::ptree& pt_disease);
 
 private:
 	Distribution start_infectiousness;

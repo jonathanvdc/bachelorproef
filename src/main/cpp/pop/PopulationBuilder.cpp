@@ -20,6 +20,7 @@
 
 #include "PopulationBuilder.h"
 
+#include "core/Disease.h"
 #include "core/Health.h"
 #include "pop/Person.h"
 #include "pop/Population.h"
@@ -112,10 +113,12 @@ shared_ptr<Population> PopulationBuilder::Build(
                                 StringUtils::FromString<unsigned int>(values[3]), // work_id
                                 StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
                                 StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
-                                start_infectiousness,
-                                start_symptomatic,
-                                time_infectious,
-                                time_symptomatic));
+                                disease::Fate{
+                                        start_infectiousness,
+                                        start_symptomatic,
+                                        start_infectiousness + time_infectious,
+                                        start_symptomatic + time_symptomatic
+                                }));
                         ++person_id;
                 }
         } else if (boost::algorithm::ends_with(file_name, ".xml")) {

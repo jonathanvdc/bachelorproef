@@ -29,8 +29,6 @@
 namespace stride {
 namespace util {
 
-using stride::util::InclusiveRange;
-
 /**
  * The random number generator.
  */

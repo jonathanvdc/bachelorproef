@@ -20,6 +20,7 @@
  * Header file for the Person class.
  */
 
+#include "core/Disease.h"
 #include "core/Health.h"
 
 #include <cstddef>
@@ -39,13 +40,12 @@ class Person
 public:
 	/// Constructor: set the person data.
 	Person(unsigned int id, double age, unsigned int household_id, unsigned int school_id,
-			unsigned int work_id,unsigned int primary_community_id, unsigned int secondary_community_id, unsigned int start_infectiousness,
-			unsigned int start_symptomatic, unsigned int time_infectious, unsigned int time_symptomatic)
+			unsigned int work_id, unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
 		: m_id(id), m_age(age), m_gender('M'),
 		  m_household_id(household_id), m_school_id(school_id),
 		  m_work_id(work_id), m_primary_community_id(primary_community_id), m_secondary_community_id(secondary_community_id),
 		  m_at_household(true), m_at_school(true),m_at_work(true),m_at_primary_community(true), m_at_secondary_community(true),
-		  m_health(start_infectiousness, start_symptomatic, time_infectious, time_symptomatic),
+		  m_health(fate),
 		  m_is_participant(false) {}
 
 	/// Is this person not equal to the given person?
