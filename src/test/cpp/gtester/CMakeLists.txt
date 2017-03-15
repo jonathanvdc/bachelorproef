@@ -23,6 +23,7 @@ set( SRC
 		main.cpp
 		BatchRuns.cpp
 		ParsePopulationModel.cpp
+		MpiTests.cpp
 )
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
