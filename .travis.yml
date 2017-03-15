@@ -24,7 +24,7 @@ addons:
             - gcc-5
             - g++-5
             - cmake
-            - libopenmpi-dev
+            - libmpich-dev
             # Don't grab the APT boost package, because that package is stale.
             # We'll need to build boost ourselves.
             # - libboost-all-dev
