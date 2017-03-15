@@ -40,6 +40,7 @@ before_install:
     - python install_boost.py --directory ~ --boost-version 1.61.0 atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
     # Set the BOOST_ROOT environment variable.
     - export BOOST_ROOT=$HOME/boost_1_61_0
+    - export LD_LIBRARY_PATH=$HOME/boost_1_61_0/stage/lib:$LD_LIBRARY_PATH
 
 script:
     # `make all; make test`, as per the build instructions.
