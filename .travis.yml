@@ -45,5 +45,5 @@ before_install:
 script:
     # `make all; make test`, as per the build instructions.
     - make all
-    - make test
+    - make test_all
     - cat build/test/Testing/Temporary/LastTest.log
