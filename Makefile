@@ -133,6 +133,9 @@ distclean clean:
 	$(CMAKE) -E remove_directory $(BUILD_DIR)
 
 test installcheck: install_test
-	$(MAKE) -C $(BUILD_DIR)/test --no-print-directory run_ctest 
+	$(MAKE) -C $(BUILD_DIR)/test --no-print-directory run_ctest
+
+test_all: install_test
+	$(MAKE) -C $(BUILD_DIR)/test --no-print-directory run_ctest_all
 	
 #############################################################################
