@@ -43,6 +43,8 @@ set(LIB_SRC
 	sim/SimulatorBuilder.cpp
 #---
 	util/InstallDirs.cpp
+#---
+    alias/Alias.cpp
 )
 
 set(MAIN_SRC
