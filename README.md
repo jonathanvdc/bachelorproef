@@ -1,8 +1,8 @@
-# Bachelorproef Informatica Universiteit Antwerpen 2016–2017
+# Computer Science BSc project @ University of Antwerp 2016–2017
 
 [![Build Status](https://travis-ci.org/flu-plus-plus/bachelorproef.svg?branch=master)](https://travis-ci.org/flu-plus-plus/bachelorproef)
 
-Hey there. We're group flu-plus-plus, and this is our project: a fork of the Stride disease simulator.
+Hey there. We're group flu-plus-plus, and this is our BSc project: a fork of the Stride disease simulator.
 
 Oh, and this is us:
 * [Sibert Aerts](https://github.com/Sibert-Aerts)
