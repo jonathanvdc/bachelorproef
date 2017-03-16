@@ -2,11 +2,13 @@
 
 [![Build Status](https://travis-ci.org/flu-plus-plus/bachelorproef.svg?branch=master)](https://travis-ci.org/flu-plus-plus/bachelorproef)
 
-Groepsleden (flu-plus-plus):
-* Sibert Aerts
-* Cédric De Haes
-* Jonathan Van der Cruysse
-* Lynn Van Hauwe
+Hey there. We're group flu-plus-plus, and this is our project: a fork of the Stride disease simulator.
+
+Oh, and this is us:
+* [Sibert Aerts](https://github.com/Sibert-Aerts)
+* [Cédric De Haes](https://github.com/cekefun)
+* [Jonathan Van der Cruysse](https://github.com/jonathanvdc)
+* [Lynn Van Hauwe](https://github.com/lynn)
 
 ## Progress
 
