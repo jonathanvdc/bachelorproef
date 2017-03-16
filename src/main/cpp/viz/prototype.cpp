@@ -1,5 +1,6 @@
 /*
-    This is a prototype for the Awesomium web view visualization interface package component functionality
+    This is a prototype for the Awesomium web view,
+    adapted from an example included in the SDK
 */
 
 #include "prototype.h"
@@ -62,11 +63,7 @@ void AwesomiumProto::main(){
 
 void AwesomiumProto::Update(int sleep_ms) {
     // Sleep a specified amount
-    #if defined(__WIN32__) || defined(_WIN32)
-    Sleep(sleep_ms);
-    #elif defined(__APPLE__)
     usleep(sleep_ms * 1000);
-    #endif
 
     // You must call WebCore::update periodically
     // during the lifetime of your application.

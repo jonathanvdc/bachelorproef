@@ -2,6 +2,7 @@
 #include <Awesomium/WebCore.h>
 #include <Awesomium/BitmapSurface.h>
 #include <Awesomium/STLHelpers.h>
+#include <unistd.h>
 #include <iostream>
 
 

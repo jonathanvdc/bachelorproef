@@ -1,3 +1,5 @@
+# Credit to Ousmane Traore at http://stackoverflow.com/questions/33771104/how-can-i-link-to-awesomium-using-cmake#33804482
+
 include (FindPackageHandleStandardArgs)
 
 find_path(AWESOMIUM_INCLUDE_DIR Awesomium/WebCore.h
