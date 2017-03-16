@@ -55,6 +55,7 @@ before_install:
     - tar -xvzf awesomium.tar.gz 
     - cd awesomium_v1.7.5_sdk_linux64/
     - sudo make install
+    - cd ..
 
 script:
     # `make all; make test`, as per the build instructions.
