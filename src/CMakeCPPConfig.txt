@@ -79,6 +79,7 @@ include_directories( SYSTEM ${CMAKE_HOME_DIRECTORY}/main/resources/lib/trng-4.15
 #----------------------------------------------------------------------------
 find_package (Awesomium REQUIRED)
 include_directories (${AWESOMIUM_INCLUDE_DIR})
+set( LIBS ${LIBS} ${AWESOMIUM_LIBRARY} )
 
 #----------------------------------------------------------------------------
 # MPI compile flags

@@ -24,6 +24,7 @@ set( SRC
 		BatchRuns.cpp
 		ParsePopulationModel.cpp
 		MpiTests.cpp
+		AwesomiumTests.cpp
 )
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
