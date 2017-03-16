@@ -5,10 +5,11 @@
 Hey there. We're group flu-plus-plus, and this is our BSc project: a fork of the Stride disease simulator.
 
 Oh, and this is us:
-* [Sibert Aerts](https://github.com/Sibert-Aerts)
-* [Cédric De Haes](https://github.com/cekefun)
-* [Jonathan Van der Cruysse](https://github.com/jonathanvdc)
-* [Lynn Van Hauwe](https://github.com/lynn)
+
+  * [Sibert Aerts](https://github.com/Sibert-Aerts)
+  * [Cédric De Haes](https://github.com/cekefun)
+  * [Jonathan Van der Cruysse](https://github.com/jonathanvdc)
+  * [Lynn Van Hauwe](https://github.com/lynn)
 
 ## Progress
 
