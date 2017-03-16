@@ -10,7 +10,7 @@ namespace Tests {
 
 TEST(ParsePopulationModel, ParseDefaultPopulationModel)
 {
-	std::ifstream pop_file{"data/population_model_default.xml"};
+	std::ifstream pop_file{"../data/population_model_default.xml"};
 	boost::property_tree::ptree pt;
 	boost::property_tree::read_xml(pop_file, pt);
 	stride::population_model::Model model;

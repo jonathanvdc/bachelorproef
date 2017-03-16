@@ -24,6 +24,8 @@ addons:
             - gcc-5
             - g++-5
             - cmake
+            - mpich
+            - libmpich-dev
             # Don't grab the APT boost package, because that package is stale.
             # We'll need to build boost ourselves.
             # - libboost-all-dev
@@ -34,12 +36,15 @@ before_install:
     # Print the CMake version.
     - cmake --version
     # Build and install boost.
+    - echo "using mpi ;" > ~/site-config.jam
     - wget https://raw.githubusercontent.com/WrinklyNinja/ci-scripts/1.0.0/install_boost.py
-    - python install_boost.py --directory ~ --boost-version 1.61.0 atomic chrono date_time filesystem iostreams locale log regex system thread
+    - python install_boost.py --directory ~ --boost-version 1.61.0 atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
     # Set the BOOST_ROOT environment variable.
     - export BOOST_ROOT=$HOME/boost_1_61_0
+    - export LD_LIBRARY_PATH=$HOME/boost_1_61_0/stage/lib:$LD_LIBRARY_PATH
 
 script:
     # `make all; make test`, as per the build instructions.
     - make all
-    - make test
+    - make test_all
+    - cat build/test/Testing/Temporary/LastTest.log
