@@ -58,5 +58,8 @@ before_install:
 script:
     # `make all; make test`, as per the build instructions.
     - make all
-    - make test_all
+    # - make test_all
+    - cd ./build/installed/bin
+    - ./gtester
+    - cd ../../..
     - cat build/test/Testing/Temporary/LastTest.log
