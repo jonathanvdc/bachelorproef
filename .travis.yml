@@ -59,7 +59,7 @@ script:
     # `make all; make test`, as per the build instructions.
     - make all
     # - make test_all
-    - cd build/test/cpp
+    - cd build/test/cpp/gtester
     - ./gtester
-    - cd ../../..
+    - cd ../../../..
     - cat build/test/Testing/Temporary/LastTest.log
