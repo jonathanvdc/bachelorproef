@@ -44,9 +44,11 @@ set(LIB_SRC
     sim/SimulatorBuilder.cpp
 #---
     util/InstallDirs.cpp
-#---
-    viz/prototype.cpp
 )
+
+if( AWESOMIUM_FOUND )
+    set(LIB_SRC $LIB_SRC viz/prototype.cpp)
+endif()
 
 set(MAIN_SRC
     sim/main.cpp
