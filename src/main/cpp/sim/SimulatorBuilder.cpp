@@ -100,7 +100,11 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
         sim->m_num_threads = number_of_threads;
 
         // Initialize calendar.
-        sim->m_calendar = make_shared<Calendar>(pt_config);
+        string start_date_string { pt_config.get<string>("run.start_date", "2016-01-01") };
+        auto file_name { pt_config.get<string>("run.holidays_file", "holidays_flanders_2016.json") };
+        auto start_date = boost::gregorian::from_simple_string(start_date_string);
+        sim->m_calendar = make_shared<Calendar>();
+        sim->m_calendar->Initialize(start_date, file_name);
 
         // Get log level.
         const string l = pt_config.get<string>("run.log_level", "None");
