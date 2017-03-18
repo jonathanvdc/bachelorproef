@@ -12,7 +12,8 @@ using namespace Stride;
 
 namespace Tests {
 
-TEST(Awesomium, Prototype)
+// Tests that make use of X need to end in '_x'
+TEST(Awesomium_x, AwesomiumRunPrototype_x)
 {
 	AwesomiumProto p = AwesomiumProto();
 

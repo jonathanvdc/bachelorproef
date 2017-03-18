@@ -58,8 +58,6 @@ before_install:
 script:
     # `make all; make test`, as per the build instructions.
     - make all
-    # - make test_all
-    - cd build/test/cpp/gtester
-    - ./gtester
-    - cd ../../../..
+    # Don't make tests that rely on X to work/render things.
+    - make test_all_no_x
     - cat build/test/Testing/Temporary/LastTest.log
