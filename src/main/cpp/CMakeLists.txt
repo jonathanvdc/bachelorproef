@@ -30,23 +30,24 @@ set(LIB_SRC
     core/Infector.cpp
     core/LogMode.cpp
 #---
-	output/CasesFile.cpp
-	output/PersonFile.cpp
-	output/SummaryFile.cpp
+    output/CasesFile.cpp
+    output/PersonFile.cpp
+    output/SummaryFile.cpp
 #---	
     pop/Person.cpp
     pop/PopulationBuilder.cpp
     pop/PopulationModel.cpp
 #---
-	sim/run_stride.cpp
-	sim/Simulator.cpp
-	sim/SimulatorBuilder.cpp
+    sim/run_stride.cpp
+    sim/SimulationConfig.cpp
+    sim/Simulator.cpp
+    sim/SimulatorBuilder.cpp
 #---
-	util/InstallDirs.cpp
+    util/InstallDirs.cpp
 )
 
 set(MAIN_SRC
-	sim/main.cpp
+    sim/main.cpp
 )
 
 #============================================================================
