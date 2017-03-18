@@ -47,7 +47,7 @@ set(LIB_SRC
 )
 
 if( AWESOMIUM_FOUND )
-    set(LIB_SRC $LIB_SRC viz/prototype.cpp)
+    set(LIB_SRC ${LIB_SRC} viz/prototype.cpp)
 endif()
 
 set(MAIN_SRC
