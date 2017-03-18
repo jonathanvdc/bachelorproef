@@ -12,7 +12,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -21,6 +22,7 @@
  */
 
 #include "Simulator.h"
+#include "sim/SimulationConfig.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
@@ -51,11 +53,23 @@ public:
 
         /// Build simulator.
         static std::shared_ptr<Simulator> Build(
+                const SingleSimulationConfig& config,
+                unsigned int num_threads =1U);
+
+        /// Build simulator.
+        static std::shared_ptr<Simulator> Build(
                 const boost::property_tree::ptree& pt_config,
                 const boost::property_tree::ptree& pt_disease,
                 const boost::property_tree::ptree& pt_contact,
                 unsigned int number_of_threads = 1U,
                 bool track_index_case =false);
+
+        /// Build simulator.
+        static std::shared_ptr<Simulator> Build(
+                const SingleSimulationConfig& config,
+                const boost::property_tree::ptree& pt_disease,
+                const boost::property_tree::ptree& pt_contact,
+                unsigned int number_of_threads = 1U);
 
 private:
         /// Initialize the clusters.

@@ -23,9 +23,13 @@ set( SRC
 		main.cpp
 		BatchRuns.cpp
 		ParsePopulationModel.cpp
+		ParseSimulationConfig.cpp
 		MpiTests.cpp
-		AwesomiumTests.cpp
 )
+
+if( AWESOMIUM_FOUND )
+	set( SRC ${SRC} AwesomiumTests.cpp)
+endif()
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
 target_link_libraries( ${EXEC}    ${LIBS} gtest pthread)

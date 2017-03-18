@@ -10,7 +10,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -29,6 +30,7 @@
 #include "pop/Population.h"
 #include "pop/PopulationBuilder.h"
 #include "util/InstallDirs.h"
+#include "sim/SimulationConfig.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -60,12 +62,23 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const string& config_file_name,
         return Build(pt_config, num_threads, track_index_case);
 }
 
-shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
+shared_ptr<Simulator> SimulatorBuilder::Build(
+        const ptree& pt_config,
         unsigned int num_threads, bool track_index_case)
+{
+        SingleSimulationConfig config;
+        config.Parse(pt_config.get_child("run"));
+        config.common_config->track_index_case = track_index_case;
+        return Build(config, num_threads);
+}
+
+shared_ptr<Simulator> SimulatorBuilder::Build(
+        const SingleSimulationConfig& config,
+        unsigned int num_threads)
 {
         // Disease file.
         ptree pt_disease;
-        const auto file_name_d { pt_config.get<string>("run.disease_config_file") };
+        const auto file_name_d = config.common_config->disease_config_file_name;
         const auto file_path_d { InstallDirs::GetDataDir() /= file_name_d };
         if ( !is_regular_file(file_path_d) ) {
                 throw runtime_error(std::string(__func__)  + "> No file " + file_path_d.string());
@@ -74,7 +87,7 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
 
         // Contact file.
         ptree pt_contact;
-        const auto file_name_c { pt_config.get("run.age_contact_matrix_file", "contact_matrix.xml") };
+        const auto file_name_c = config.common_config->contact_matrix_file_name;
         const auto file_path_c { InstallDirs::GetDataDir() /= file_name_c };
         if ( !is_regular_file(file_path_c) ) {
                 throw runtime_error(string(__func__)  + "> No file " + file_path_c.string());
@@ -82,42 +95,56 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
         read_xml(file_path_c.string(), pt_contact);
 
         // Done.
-        return Build(pt_config, pt_disease, pt_contact, num_threads, track_index_case);
+        return Build(config, pt_disease, pt_contact, num_threads);
 }
 
-shared_ptr<Simulator> SimulatorBuilder::Build(const ptree& pt_config,
-        const ptree& pt_disease, const ptree& pt_contact, unsigned int number_of_threads, bool track_index_case)
+shared_ptr<Simulator> SimulatorBuilder::Build(
+        const ptree& pt_config,
+        const ptree& pt_disease,
+        const ptree& pt_contact,
+        unsigned int number_of_threads,
+        bool track_index_case)
+{
+        SingleSimulationConfig config;
+        config.Parse(pt_config.get_child("run"));
+        config.common_config->track_index_case = track_index_case;
+        return Build(config, pt_disease, pt_contact, number_of_threads);
+}
+
+shared_ptr<Simulator> SimulatorBuilder::Build(
+        const SingleSimulationConfig& config,
+        const ptree& pt_disease,
+        const ptree& pt_contact,
+        unsigned int number_of_threads)
 {
         auto sim = make_shared<Simulator>();
 
         // Initialize config ptree.
-        sim->m_config_pt = pt_config;
+        sim->m_config = config;
 
         // Initialize track_index_case policy
-        sim->m_track_index_case = track_index_case;
+        sim->m_track_index_case = config.common_config->track_index_case;
 
         // Initialize number of threads.
         sim->m_num_threads = number_of_threads;
 
         // Initialize calendar.
-        sim->m_calendar = make_shared<Calendar>(pt_config);
+        sim->m_calendar = make_shared<Calendar>(config.common_config->initial_calendar);
 
         // Get log level.
-        const string l = pt_config.get<string>("run.log_level", "None");
-        sim->m_log_level = IsLogMode(l) ? ToLogMode(l) : throw runtime_error(string(__func__) + "> Invalid input for LogMode.");
+        sim->m_log_level = config.log_config->log_level;
 
         // Rng's.
-        const auto seed = pt_config.get<double>("run.rng_seed");
-        Random rng(seed);
+        Random rng(config.common_config->rng_seed);
 
         // Build population.
-        sim->m_population = PopulationBuilder::Build(pt_config, pt_disease, rng);
+        sim->m_population = PopulationBuilder::Build(config, pt_disease, rng);
 
         // Initialize clusters.
         InitializeClusters(sim);
 
         // Initialize disease profile.
-        sim->m_disease_profile.Initialize(pt_config, pt_disease);
+        sim->m_disease_profile.Initialize(config, pt_disease);
 
         // Initialize Rng handlers
         unsigned int new_seed = rng(numeric_limits<unsigned int>::max());

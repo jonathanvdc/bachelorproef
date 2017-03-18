@@ -89,6 +89,10 @@ void run_stride(bool track_index_case, const string& config_file_name)
         read_xml(file_path.string(), pt_config);
         cout << "Configuration file:  " << file_path.string() << endl;
 
+        SingleSimulationConfig config;
+        config.Parse(pt_config);
+        config.common_config->track_index_case = track_index_case;
+
         // -----------------------------------------------------------------------------------------
         // OpenMP.
         // -----------------------------------------------------------------------------------------
@@ -105,18 +109,11 @@ void run_stride(bool track_index_case, const string& config_file_name)
         // -----------------------------------------------------------------------------------------
         // Set output path prefix.
         // -----------------------------------------------------------------------------------------
-        auto output_prefix = pt_config.get<string>("run.output_prefix", "");
+        auto output_prefix = config.log_config->output_prefix;
         if (output_prefix.length() == 0) {
                 output_prefix = TimeStamp().ToTag();
         }
         cout << "Project output tag:  " << output_prefix << endl << endl;
-
-        // -----------------------------------------------------------------------------------------
-        // Additional run configurations.
-        // -----------------------------------------------------------------------------------------
-        if (pt_config.get_optional<bool>("run.num_participants_survey") == false) {
-                pt_config.put("run.num_participants_survey", 1);
-        }
 
         // -----------------------------------------------------------------------------------------
         // Track index case setting.
@@ -138,14 +135,14 @@ void run_stride(bool track_index_case, const string& config_file_name)
         // -----------------------------------------------------------------------------------------
         Stopwatch<> total_clock("total_clock", true);
         cout << "Building the simulator. "<< endl;
-        auto sim = SimulatorBuilder::Build(pt_config, num_threads, track_index_case);
+        auto sim = SimulatorBuilder::Build(config, num_threads);
         cout << "Done building the simulator. "<< endl <<endl;
 
         // -----------------------------------------------------------------------------------------
         // Run the simulation.
         // -----------------------------------------------------------------------------------------
         Stopwatch<> run_clock("run_clock");
-        const unsigned int num_days = pt_config.get<unsigned int>("run.num_days");
+        const unsigned int num_days = config.common_config->number_of_days;
         vector<unsigned int> cases(num_days);
         for (unsigned int i = 0; i < num_days; i++) {
                 cout << "Simulating day: " << setw(5) << i;
@@ -166,13 +163,14 @@ void run_stride(bool track_index_case, const string& config_file_name)
 
         // Summary
         SummaryFile  summary_file(output_prefix);
-        summary_file.Print(pt_config,
+        summary_file.Print(
+                config,
                 sim->GetPopulation()->size(), sim->GetPopulation()->GetInfectedCount(),
                 duration_cast<milliseconds>(run_clock.Get()).count(),
                 duration_cast<milliseconds>(total_clock.Get()).count());
 
         // Persons
-        if (pt_config.get<double>("run.generate_person_file") == 1) {
+        if (config.log_config->generate_person_file) {
                 PersonFile	 person_file(output_prefix);
                 person_file.Print(sim->GetPopulation());
         }
