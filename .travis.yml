@@ -60,5 +60,3 @@ script:
     - make all
     # Don't make tests that rely on X to work/render things.
     - make test_all_no_x
-    
-    - cat build/test/Testing/Temporary/LastTest.log
