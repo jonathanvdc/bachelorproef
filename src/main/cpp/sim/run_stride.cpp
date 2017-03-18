@@ -163,7 +163,8 @@ void run_stride(bool track_index_case, const string& config_file_name)
 
         // Summary
         SummaryFile  summary_file(output_prefix);
-        summary_file.Print(pt_config,
+        summary_file.Print(
+                config,
                 sim->GetPopulation()->size(), sim->GetPopulation()->GetInfectedCount(),
                 duration_cast<milliseconds>(run_clock.Get()).count(),
                 duration_cast<milliseconds>(total_clock.Get()).count());

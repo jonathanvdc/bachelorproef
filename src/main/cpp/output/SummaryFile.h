@@ -21,6 +21,7 @@
  */
 
 #include "pop/Population.h"
+#include "sim/SimulationConfig.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <fstream>
@@ -42,7 +43,7 @@ public:
 	~SummaryFile();
 
 	/// Print the given output with corresponding tag.
-	void Print(const boost::property_tree::ptree& pt_config, unsigned int population_size,
+	void Print(const SingleSimulationConfig& config, unsigned int population_size,
 	        unsigned int num_cases, unsigned int run_time, unsigned int total_time);
 
 private:
