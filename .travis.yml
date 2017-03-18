@@ -59,5 +59,9 @@ script:
     # `make all; make test`, as per the build instructions.
     - make all
     # Don't make tests that rely on X to work/render things.
-    - make test_all_no_x
+    # - make test_all_no_x
+    - make install_test
+    - cd build/installed/bin/
+    - ./gtester  --gtest_filter=-*_x  --gtest_output=xml:gtester_all_no_x.xml
+    - cd ../../..    
     - cat build/test/Testing/Temporary/LastTest.log
