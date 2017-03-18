@@ -66,10 +66,10 @@ shared_ptr<Simulator> SimulatorBuilder::Build(
         const ptree& pt_config,
         unsigned int num_threads, bool track_index_case)
 {
-        MultiSimulationConfig multi_config;
-        multi_config.Parse(pt_config.get_child("run"));
-        multi_config.common_config->track_index_case = track_index_case;
-        return Build(multi_config.AsSingleConfig(), num_threads);
+        SingleSimulationConfig config;
+        config.Parse(pt_config.get_child("run"));
+        config.common_config->track_index_case = track_index_case;
+        return Build(config, num_threads);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(
@@ -105,14 +105,10 @@ shared_ptr<Simulator> SimulatorBuilder::Build(
         unsigned int number_of_threads,
         bool track_index_case)
 {
-        MultiSimulationConfig multi_config;
-        multi_config.Parse(pt_config.get_child("run"));
-        multi_config.common_config->track_index_case = track_index_case;
-        return Build(
-                multi_config.AsSingleConfig(),
-                pt_disease,
-                pt_contact,
-                number_of_threads);
+        SingleSimulationConfig config;
+        config.Parse(pt_config.get_child("run"));
+        config.common_config->track_index_case = track_index_case;
+        return Build(config, pt_disease, pt_contact, number_of_threads);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(

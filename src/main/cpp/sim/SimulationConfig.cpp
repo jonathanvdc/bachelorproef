@@ -58,6 +58,13 @@ void LogConfig::Parse(const boost::property_tree::ptree& pt)
 			: throw std::runtime_error(std::string(__func__) + "> Invalid input for LogMode.");
 }
 
+void SingleSimulationConfig::Parse(const boost::property_tree::ptree& pt)
+{
+	MultiSimulationConfig multi_config;
+	multi_config.Parse(pt);
+	*this = multi_config.AsSingleConfig();
+}
+
 void MultiSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 {
 	common_config = std::make_shared<CommonSimulationConfig>();

@@ -89,6 +89,9 @@ struct SingleSimulationConfig final
 
 	/// The population file for this simulation.
 	std::string population_file_name;
+
+	/// Fills this configuration with data from the given ptree.
+	void Parse(const boost::property_tree::ptree& pt);
 };
 
 /**
