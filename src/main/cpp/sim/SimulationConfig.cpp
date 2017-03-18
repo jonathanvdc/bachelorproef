@@ -48,9 +48,6 @@ LogConfig::LogConfig() : output_prefix(), generate_person_file(), log_level()
 void LogConfig::Parse(const boost::property_tree::ptree& pt)
 {
 	output_prefix = pt.get<std::string>("output_prefix", "");
-	if (output_prefix.length() == 0) {
-		output_prefix = TimeStamp().ToTag();
-	}
 	generate_person_file = pt.get<double>("generate_person_file", 0) == 1;
 	auto log_level_string = pt.get<std::string>("log_level", "None");
 	log_level = IsLogMode(log_level_string)
