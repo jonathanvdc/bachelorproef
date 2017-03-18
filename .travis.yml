@@ -46,7 +46,7 @@ before_install:
     
     # Download, build and install Awesomium and its dependencies
     - wget -O libgcrypt.deb http://security.ubuntu.com/ubuntu/pool/main/libg/libgcrypt11/libgcrypt11_1.5.0-3ubuntu0.6_amd64.deb
-    - sudo dpkg -i libgcrypt.deb    
+    - sudo dpkg -i libgcrypt.deb
     
     - wget -O libudev.deb http://mirrors.kernel.org/ubuntu/pool/main/u/udev/libudev0_175-0ubuntu9_amd64.deb
     - sudo dpkg -i libudev.deb
