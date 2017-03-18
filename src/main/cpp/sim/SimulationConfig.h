@@ -84,6 +84,9 @@ struct SingleSimulationConfig final
 	/// The configuration that is common to all sub-simulations.
 	std::shared_ptr<CommonSimulationConfig> common_config;
 
+	/// The log configuration.
+	std::shared_ptr<LogConfig> log_config;
+
 	/// The population file for this simulation.
 	std::string population_file_name;
 };
@@ -96,14 +99,19 @@ struct MultiSimulationConfig final
 	/// The configuration that is common to all sub-simulations.
 	std::shared_ptr<CommonSimulationConfig> common_config;
 
-	/// The configuration of the log.
+	/// The log configuration.
 	std::shared_ptr<LogConfig> log_config;
 
 	/// The list of population files for populations to simulate.
 	std::vector<std::string> population_file_names;
 
 	/// Creates a vector that contains all single-simulation configurations.
-	std::vector<SingleSimulationConfig> get_single_configs() const;
+	std::vector<SingleSimulationConfig> GetSingleConfigs() const;
+
+	/// Returns this multi-simulation configuration as a single sub-simulation
+	/// configuration. This requires for there to be exactly one sub-simulation
+	/// in this simulation.
+	SingleSimulationConfig AsSingleConfig() const;
 
 	/// Fills this configuration with data from the given ptree.
 	void Parse(const boost::property_tree::ptree& pt);

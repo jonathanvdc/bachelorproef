@@ -3,6 +3,7 @@
  * Configuration data structures for the simulator, built with multi-region in mind.
  */
 
+#include <exception>
 #include <memory>
 #include <string>
 #include <vector>
@@ -50,7 +51,7 @@ void LogConfig::Parse(const boost::property_tree::ptree& pt)
 	if (output_prefix.length() == 0) {
 		output_prefix = TimeStamp().ToTag();
 	}
-	generate_person_file = pt.get<double>("generate_person_file") == 1;
+	generate_person_file = pt.get<double>("generate_person_file", 0) == 1;
 	auto log_level_string = pt.get<std::string>("log_level", "None");
 	log_level = IsLogMode(log_level_string)
 			? ToLogMode(log_level_string)
@@ -63,18 +64,36 @@ void MultiSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 	common_config->Parse(pt);
 	log_config = std::make_shared<LogConfig>();
 	log_config->Parse(pt);
+	population_file_names.clear();
+	for (const auto& item : pt) {
+		if (item.first == "population_file") {
+			population_file_names.push_back(item.second.get_value<std::string>());
+		}
+	}
 }
 
-std::vector<SingleSimulationConfig> MultiSimulationConfig::get_single_configs() const
+std::vector<SingleSimulationConfig> MultiSimulationConfig::GetSingleConfigs() const
 {
 	std::vector<SingleSimulationConfig> results;
 	for (const auto& file_name : population_file_names) {
 		SingleSimulationConfig config;
 		config.common_config = common_config;
+		config.log_config = log_config;
 		config.population_file_name = file_name;
 		results.push_back(config);
 	}
 	return results;
+}
+
+SingleSimulationConfig MultiSimulationConfig::AsSingleConfig() const
+{
+	if (population_file_names.size() != 1) {
+		throw std::runtime_error(
+		    std::string(__func__) +
+		    "> Could not reduce a multi-simulation configuration to a single-region simulation configuration.");
+	}
+
+	return {common_config, log_config, population_file_names[0]};
 }
 
 } // namespace
