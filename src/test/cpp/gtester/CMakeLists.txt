@@ -25,6 +25,7 @@ set( SRC
 		ParsePopulationModel.cpp
 		ParseSimulationConfig.cpp
 		MpiTests.cpp
+		AwesomiumTests.cpp
 )
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
@@ -43,7 +44,13 @@ add_test( NAME  ${EXEC}_default
 add_test( NAME  ${EXEC}_all
         WORKING_DIRECTORY  ${TESTS_DIR}
 		COMMAND   ${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_LOCATION}/${EXEC}
-		         --gtest_output=xml:gtester_all.xml
+		    --gtest_output=xml:gtester_all.xml
+)
+
+add_test( NAME  ${EXEC}_all_no_x
+        WORKING_DIRECTORY  ${TESTS_DIR}
+		COMMAND   ${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_LOCATION}/${EXEC}
+		    --gtest_filter=-*_x  --gtest_output=xml:gtester_all_no_x.xml
 )
 
 #============================================================================

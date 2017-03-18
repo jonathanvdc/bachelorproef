@@ -44,6 +44,8 @@ set(LIB_SRC
     sim/SimulatorBuilder.cpp
 #---
     util/InstallDirs.cpp
+#---
+    viz/prototype.cpp
 )
 
 set(MAIN_SRC

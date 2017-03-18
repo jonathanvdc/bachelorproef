@@ -71,9 +71,10 @@ void InstallDirs::Initialize()
                                 g_exec_path = canonical(system_complete(exePath));
                         }
 		#elif defined(__linux__)
-			char exePath[PATH_MAX];
-			size_t size = ::readlink("/proc/self/exe", exePath, sizeof(exePath));
-		        if (size > 0 && size != sizeof(exePath)) {
+			char exePath[PATH_MAX + 1];
+		        std::memset(exePath, 0, sizeof exePath);
+		        size_t size = ::readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
+		        if (size > 0 && size != sizeof(exePath) - 1) {
                                 g_exec_path = canonical(system_complete(exePath));
 		        }
 		#elif defined(__APPLE__)
