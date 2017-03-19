@@ -25,6 +25,10 @@ public:
 	/// Generate a random population.
 	Population Generate();
 
+	/// Check if a population fits the model.
+	/// If verbose is true, log the checks performed.
+	bool FitsModel(const Population& population, bool verbose=false);
+
 private:
 	const Model& model;
 	const disease::Disease& disease;

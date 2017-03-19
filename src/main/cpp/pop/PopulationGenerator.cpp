@@ -1,8 +1,11 @@
 #include <algorithm>
 #include <cstddef>
+#include <map>
 #include <memory>
 #include <numeric>
 #include <vector>
+#include <spdlog/spdlog.h>
+#include "core/ClusterType.h"
 #include "Population.h"
 #include "PopulationGenerator.h"
 
@@ -151,6 +154,51 @@ void Generator::GeneratePerson(Population& population, int age)
 {
 	population.emplace_back(Person(people_generated++, age, household_id, SchoolID(age), WorkID(age), CommunityID(),
 				       CommunityID(), disease.Sample(random)));
+}
+
+bool Generator::FitsModel(const Population& population, bool verbose)
+{
+	auto console = spdlog::stderr_logger_st("popgen");
+	console->set_level(verbose ? spdlog::level::debug : spdlog::level::off);
+	console->set_pattern("\x1b[36;1m[popgen] %v\x1b[0m");
+	console->debug("Testing if generated population fits model...");
+
+	console->debug("=== Age requirements:");
+	int age_errors = 0;
+	std::map<int, int> age_histogram;
+	for (const auto& p : population) {
+		int age = static_cast<int>(p.GetAge());
+		if (age < 0 || age > model.age.maximum) {
+			age_errors++;
+		} else {
+			age_histogram[age]++;
+		}
+	}
+	console->debug("Generated {} people with invalid ages.", age_errors);
+
+	// console->debug("=== Age distribution:");
+	// for (int age = 0; age <= model.age.maximum; age++) {
+	//     console->debug("{:2}: {}", age, std::string(age_histogram[age] / 10, '#'));
+	// }
+
+	console->debug("=== Household distribution:");
+	std::map<int, std::vector<const Person*>> households;
+	for (const auto& p : population) {
+		int hid = p.GetClusterId(stride::ClusterType::Household);
+		households[hid].emplace_back(&p);
+	}
+
+	std::map<unsigned int, int> household_size_histogram;
+	for (const auto& h : households) {
+		household_size_histogram[h.second.size()]++;
+	}
+
+	for (unsigned int k = 1; household_size_histogram.count(k); k++) {
+		console->debug("{} households of size {}", household_size_histogram[k], k);
+	}
+
+	// We can do more model testing here later.
+	return true;
 }
 
 } // namespace population_model

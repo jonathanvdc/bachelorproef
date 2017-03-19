@@ -111,10 +111,12 @@ shared_ptr<Population> PopulationBuilder::Build(const boost::property_tree::ptre
 		population_model::Generator generator(model, *disease, rng);
 		population = generator.Generate();
 
+		if (!generator.FitsModel(population, true)) {
+			throw runtime_error(string(__func__) + "> Generated population doesn't fit model " + file_name);
+		}
 	} else {
 		throw runtime_error(string(__func__) + "> Population file " + file_path.string() +
-				    " must be CSV (population"
-				    "data file) or XML (population model file).");
+				    " must be CSV (population data file) or XML (population model file).");
 	}
 
 	pop_file.close();
