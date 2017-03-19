@@ -47,7 +47,7 @@ SummaryFile::~SummaryFile()
 }
 
 void SummaryFile::Print(
-        const boost::property_tree::ptree& pt_config,
+        const SingleSimulationConfig& config,
         unsigned int population_size,
         unsigned int num_cases,
         unsigned int run_time,
@@ -61,15 +61,15 @@ void SummaryFile::Print(
 	}
 
 	m_fstream
-		<< pt_config.get<string>("run.population_file") << ","
-		<< pt_config.get<unsigned int>("run.num_days") << ","
+		<< config.population_file_name << ","
+		<< config.common_config->number_of_days << ","
 		<< population_size << ","
-		<< pt_config.get<double>("run.seeding_rate") << ","
-		<< pt_config.get<double>("run.r0") << ","
+		<< config.common_config->seeding_rate << ","
+		<< config.common_config->r0 << ","
 		<< "NA" << "," // << pt_config.get<double>("run.transmission_rate") << ";"
-		<< pt_config.get<double>("run.immunity_rate") << ","
+		<< config.common_config->immunity_rate << ","
 		<< num_threads << ","
-		<< pt_config.get<unsigned int>("run.rng_seed") << ","
+		<< config.common_config->rng_seed << ","
 		<< run_time << "," << total_time << "," << num_cases << ","
 		<< static_cast<double>(num_cases) / population_size << endl;
 }

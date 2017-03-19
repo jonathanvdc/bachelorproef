@@ -37,8 +37,8 @@ namespace stride {
 class Calendar
 {
 public:
-	/// Constructor
-	Calendar(const boost::property_tree::ptree& pt_config);
+	Calendar() : m_day(0)
+	{ }
 
 	/// Advance the internal calendar by one day
 	void AdvanceDay();
@@ -46,13 +46,13 @@ public:
 	/// Get the current day of the month
 	std::size_t GetDay() const { return m_date.day(); }
 
-        /// Get the current day of the week (0 (Sunday), ..., 6 (Saturday))
+	/// Get the current day of the week (0 (Sunday), ..., 6 (Saturday))
 	std::size_t GetDayOfTheWeek() const { return m_date.day_of_week(); }
 
 	/// Get the current month
 	std::size_t GetMonth() const { return m_date.month(); }
 
-        /// Get the current day of the simulation
+	/// Get the current day of the simulation
 	std::size_t GetSimulationDay() const { return m_day; }
 
 	/// Get the current year
@@ -67,9 +67,11 @@ public:
 	/// Check if it's the weekend
 	bool IsWeekend() const { return (GetDayOfTheWeek() == 6 || GetDayOfTheWeek() == 0); }
 
-private:
-	///
-	void InitializeHolidays(const boost::property_tree::ptree& pt_config);
+	/// Initializes this calendar from the given start day and holiday ptree.
+	void Initialize(const boost::gregorian::date& start_date, const boost::property_tree::ptree& holidays_ptree);
+
+	/// Initializes this calendar from the given start day and holiday file.
+	void Initialize(const boost::gregorian::date& start_date, const std::string& holidays_file);
 
 private:
 	std::size_t                            m_day;                     ///< The current simulation day
