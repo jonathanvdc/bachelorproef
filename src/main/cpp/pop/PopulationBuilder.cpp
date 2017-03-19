@@ -52,7 +52,8 @@ using namespace stride::util;
 shared_ptr<Population> PopulationBuilder::Build(
         const SingleSimulationConfig& config,
         const boost::property_tree::ptree& pt_disease,
-        util::Random& rng)
+        util::Random& rng,
+        const std::shared_ptr<spdlog::logger>& log)
 {
         //------------------------------------------------
         // Setup.
@@ -159,12 +160,11 @@ shared_ptr<Population> PopulationBuilder::Build(
                 // use a while-loop to obtain 'num_participant' unique participants (default sampling is with replacement)
                 // A for loop will not do because we might draw the same person twice.
                 unsigned int num_samples = 0;
-                const shared_ptr<spdlog::logger> logger = spdlog::get("contact_logger");
                 while(num_samples < num_participants){
                         Person& p = population[rng(max_population_index)];
                         if ( !p.IsParticipatingInSurvey() ) {
                                 p.ParticipateInSurvey();
-                                logger->info("[PART] {} {} {}", p.GetId(), p.GetAge(), p.GetGender());
+                                log->info("[PART] {} {} {}", p.GetId(), p.GetAge(), p.GetGender());
                                 num_samples++;
                         }
                 }

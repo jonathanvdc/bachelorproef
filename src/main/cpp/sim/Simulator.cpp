@@ -28,6 +28,7 @@
 #include "core/LogMode.h"
 #include "pop/Population.h"
 
+#include <spdlog/spdlog.h>
 #include <boost/property_tree/ptree.hpp>
 #include <omp.h>
 #include <memory>
@@ -62,7 +63,7 @@ void Simulator::SetTrackIndexCase(bool track_index_case)
 template<LogMode log_level, bool track_index_case>
 void Simulator::UpdateClusters()
 {
-        auto log = spdlog::get("contact_logger");
+        auto log = m_log;
 
         #pragma omp parallel num_threads(m_num_threads)
         {

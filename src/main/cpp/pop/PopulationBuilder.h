@@ -25,6 +25,7 @@
 #include "util/Random.h"
 #include "sim/SimulationConfig.h"
 
+#include <spdlog/spdlog.h>
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
@@ -43,12 +44,14 @@ public:
 	 *
 	 * @param config          Single simulation configuration information.
 	 * @param pt_disease      Property_tree with disease configuration settings.
+	 * @param log             The contact log.
 	 * @return                Pointer to the initialized population.
 	 */
 	static std::shared_ptr<Population> Build(
 	        const SingleSimulationConfig& config,
 	        const boost::property_tree::ptree& pt_disease,
-	        util::Random& rng);
+	        util::Random& rng,
+			const std::shared_ptr<spdlog::logger>& log);
 
 private:
 	/// Get distribution associateed with tag values.

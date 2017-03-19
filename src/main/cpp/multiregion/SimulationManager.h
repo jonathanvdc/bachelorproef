@@ -69,7 +69,7 @@ struct SimulationManager
 {
 	/// Creates and initiates a new simulation task based on the given configuration.
 	virtual std::shared_ptr<SimulationTask<TResult>> StartSimulation(
-	    const SingleSimulationConfig& configuration) = 0;
+	    const SingleSimulationConfig& configuration, const std::shared_ptr<spdlog::logger>& log) = 0;
 };
 
 } // namespace

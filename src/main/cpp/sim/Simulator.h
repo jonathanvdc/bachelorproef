@@ -26,6 +26,7 @@
 #include "core/RngHandler.h"
 #include "sim/SimulationConfig.h"
 
+#include <spdlog/spdlog.h>
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
@@ -64,6 +65,7 @@ private:
 
 private:
 	SingleSimulationConfig              m_config;               ///< Configuration for this simulator.
+	std::shared_ptr<spdlog::logger>     m_log;                  ///< Log for this simulator.
 
 private:
 	unsigned int                        m_num_threads;          ///< The number of (OpenMP) threads.

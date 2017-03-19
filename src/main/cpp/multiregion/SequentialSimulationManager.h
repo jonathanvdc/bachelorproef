@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <omp.h>
+#include <spdlog/spdlog.h>
 #include "multiregion/SimulationManager.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
@@ -72,10 +73,10 @@ class SequentialSimulationManager final : public SimulationManager<TResult>
 
 	/// Creates and initiates a new simulation task based on the given configuration.
 	std::shared_ptr<SimulationTask<TResult>> StartSimulation(
-	    const SingleSimulationConfig& configuration) final override
+	    const SingleSimulationConfig& configuration, const std::shared_ptr<spdlog::logger>& log) final override
 	{
 		// Build a simulator.
-		auto sim = SimulatorBuilder::Build(configuration, number_of_sim_threads);
+		auto sim = SimulatorBuilder::Build(configuration, log, number_of_sim_threads);
 		return std::make_shared<SequentialSimulationTask<TResult>>(sim);
 	}
 

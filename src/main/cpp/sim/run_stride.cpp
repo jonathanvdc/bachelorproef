@@ -158,7 +158,7 @@ void run_stride(const SingleSimulationConfig& config)
 	multiregion::SequentialSimulationManager<StrideSimulatorResult> sim_manager{num_threads};
 
 	cout << "Building the simulator. " << endl;
-	auto sim_task = sim_manager.StartSimulation(config);
+	auto sim_task = sim_manager.StartSimulation(config, file_logger);
 	cout << "Done building the simulator. " << endl << endl;
 
 	// -----------------------------------------------------------------------------------------
