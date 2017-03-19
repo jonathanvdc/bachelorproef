@@ -25,6 +25,7 @@ set( SRC
 		ParsePopulationModel.cpp
 		ParseSimulationConfig.cpp
 		MpiTests.cpp
+		RunSimulator.cpp
 )
 
 if( AWESOMIUM_FOUND )
