@@ -24,6 +24,7 @@
 #include "core/DiseaseProfile.h"
 #include "core/LogMode.h"
 #include "core/RngHandler.h"
+#include "sim/SimulationConfig.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
@@ -59,7 +60,7 @@ private:
         void UpdateClusters();
 
 private:
-	boost::property_tree::ptree         m_config_pt;            ///< Configuration property tree.
+	SingleSimulationConfig              m_config;               ///< Configuration for this simulator.
 
 private:
 	unsigned int                        m_num_threads;          ///< The number of (OpenMP) threads.

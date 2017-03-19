@@ -10,7 +10,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -49,7 +50,7 @@ using namespace boost::property_tree;
 using namespace stride::util;
 
 shared_ptr<Population> PopulationBuilder::Build(
-        const boost::property_tree::ptree& pt_config,
+        const SingleSimulationConfig& config,
         const boost::property_tree::ptree& pt_disease,
         util::Random& rng)
 {
@@ -58,9 +59,9 @@ shared_ptr<Population> PopulationBuilder::Build(
         //------------------------------------------------
         const auto pop                    = make_shared<Population>();
         Population& population            = *pop;
-        const double seeding_rate         = pt_config.get<double>("run.seeding_rate");
-        const double immunity_rate        = pt_config.get<double>("run.immunity_rate");
-        const string disease_config_file  = pt_config.get<string>("run.disease_config_file");
+        const double seeding_rate         = config.common_config->seeding_rate;
+        const double immunity_rate        = config.common_config->immunity_rate;
+        const string disease_config_file  = config.common_config->disease_config_file_name;
 
         const auto distrib_start_infectiousness = GetDistribution(pt_disease, "disease.start_infectiousness");
         const auto distrib_start_symptomatic    = GetDistribution(pt_disease, "disease.start_symptomatic");
@@ -78,7 +79,7 @@ shared_ptr<Population> PopulationBuilder::Build(
         //------------------------------------------------
         // Add persons to population.
         //------------------------------------------------
-        const auto file_name = pt_config.get<string>("run.population_file");;
+        const auto file_name = config.population_file_name;
         const auto file_path = InstallDirs::GetDataDir() /= file_name;
         if ( !is_regular_file(file_path) ) {
                 throw runtime_error(string(__func__)
@@ -151,9 +152,9 @@ shared_ptr<Population> PopulationBuilder::Build(
         //------------------------------------------------
         // Set participants in social contact survey.
         //------------------------------------------------
-        const string log_level = pt_config.get<string>("run.log_level", "None");
-        if ( log_level == "Contacts" ) {
-                const unsigned int num_participants = pt_config.get<double>("run.num_participants_survey");
+        const auto log_level = config.log_config->log_level;
+        if ( log_level == LogMode::Contacts ) {
+                const unsigned int num_participants = config.common_config->number_of_survey_participants;
 
                 // use a while-loop to obtain 'num_participant' unique participants (default sampling is with replacement)
                 // A for loop will not do because we might draw the same person twice.
