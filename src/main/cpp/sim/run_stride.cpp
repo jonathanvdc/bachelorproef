@@ -70,13 +70,15 @@ void run_stride(bool track_index_case, const string& config_file_name)
 
 	// -----------------------------------------------------------------------------------------
 	// Check execution environment.
+	// NOTE: the statements below are commented out because they inhibit our ability to write
+	// tests for this function.
 	// -----------------------------------------------------------------------------------------
-	if (InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0) {
-		throw runtime_error(string(__func__) + "> Current directory is not install root! Aborting.");
-	}
-	if (InstallDirs::GetDataDir().empty()) {
-		throw runtime_error(string(__func__) + "> Data directory not present! Aborting.");
-	}
+	// if (InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0) {
+	// 	throw runtime_error(string(__func__) + "> Current directory is not install root! Aborting.");
+	// }
+	// if (InstallDirs::GetDataDir().empty()) {
+	// 	throw runtime_error(string(__func__) + "> Data directory not present! Aborting.");
+	// }
 
 	// -----------------------------------------------------------------------------------------
 	// Configuration.
@@ -203,6 +205,9 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	     << endl
 	     << endl;
 	cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
+
+	// Release the log.
+	spdlog::drop_all();
 }
 
 } // end_of_namespace
