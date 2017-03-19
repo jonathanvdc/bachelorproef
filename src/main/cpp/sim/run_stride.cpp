@@ -10,7 +10,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -55,6 +56,23 @@ using namespace boost::property_tree;
 using namespace std;
 using namespace std::chrono;
 
+/// Performs an action just before a simulator step is performed.
+void StrideSimulatorResult::BeforeSimulatorStep(const Population&)
+{
+	cout << "Simulating day: " << setw(5) << day;
+	run_clock.Start();
+}
+
+/// Performs an action just after a simulator step has been performed.
+void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
+{
+	run_clock.Stop();
+	cout << "     Done, infected count: ";
+	cases.push_back(pop.GetInfectedCount());
+	cout << setw(10) << cases[cases.size() - 1] << endl;
+	day++;
+}
+
 /// Gets the number of threads provided by OpenMP.
 unsigned int get_number_of_omp_threads()
 {
@@ -62,6 +80,18 @@ unsigned int get_number_of_omp_threads()
 #pragma omp parallel
 	{
 		num_threads = omp_get_num_threads();
+	}
+	return num_threads;
+}
+
+/// Prints and returns the number of threads provided by OpenMP.
+unsigned int print_number_of_omp_threads()
+{
+	unsigned int num_threads = get_number_of_omp_threads();
+	if (ConfigInfo::HaveOpenMP()) {
+		cout << "Using OpenMP threads:  " << num_threads << endl;
+	} else {
+		cout << "Not using OpenMP threads." << endl;
 	}
 	return num_threads;
 }
@@ -122,12 +152,8 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
-	unsigned int num_threads = get_number_of_omp_threads();
-	if (ConfigInfo::HaveOpenMP()) {
-		cout << "Using OpenMP threads:  " << num_threads << endl;
-	} else {
-		cout << "Not using OpenMP threads." << endl;
-	}
+	unsigned int num_threads = print_number_of_omp_threads();
+
 	// -----------------------------------------------------------------------------------------
 	// Set output path prefix.
 	// -----------------------------------------------------------------------------------------
@@ -157,37 +183,10 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	// Create simulator.
 	// -----------------------------------------------------------------------------------------
 	Stopwatch<> total_clock("total_clock", true);
-	struct SimulatorResult
-	{
-		SimulatorResult() : run_clock("run_clock", false), day()
-		{
-		}
-
-		Stopwatch<> run_clock;
-		vector<unsigned int> cases;
-		int day;
-
-		static void PreSimStep(SimulatorResult& result, const Population&)
-		{
-			cout << "Simulating day: " << setw(5) << result.day;
-			result.run_clock.Start();
-		}
-
-		static void PostSimStep(SimulatorResult& result, const Population& pop)
-		{
-			result.run_clock.Stop();
-			cout << "     Done, infected count: ";
-			result.cases.push_back(pop.GetInfectedCount());
-			cout << setw(10) << result.cases[result.cases.size() - 1] << endl;
-			result.day++;
-		}
-	};
-
-	multiregion::SequentialSimulationManager<SimulatorResult> sim_manager{num_threads};
+	multiregion::SequentialSimulationManager<StrideSimulatorResult> sim_manager{num_threads};
 
 	cout << "Building the simulator. " << endl;
-	auto sim_task = sim_manager.StartSimulation(config, SimulatorResult(), SimulatorResult::PreSimStep,
-						    SimulatorResult::PostSimStep);
+	auto sim_task = sim_manager.StartSimulation(config);
 	cout << "Done building the simulator. " << endl << endl;
 
 	// -----------------------------------------------------------------------------------------

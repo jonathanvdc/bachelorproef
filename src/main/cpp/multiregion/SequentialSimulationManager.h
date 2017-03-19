@@ -22,11 +22,7 @@ template <typename TResult>
 class SequentialSimulationTask final : public SimulationTask<TResult>
 {
     public:
-	SequentialSimulationTask(const std::shared_ptr<Simulator>& sim, const TResult& initialResult,
-				 void pre_sim_step(TResult&, const Population&),
-				 void post_sim_step(TResult&, const Population&))
-	    : sim(sim), result(initialResult), pre_sim_step(pre_sim_step), post_sim_step(post_sim_step),
-	      has_completed(false)
+	SequentialSimulationTask(const std::shared_ptr<Simulator>& sim) : sim(sim), result(), has_completed(false)
 	{
 	}
 
@@ -44,9 +40,9 @@ class SequentialSimulationTask final : public SimulationTask<TResult>
 
 		has_completed = true;
 		for (unsigned int i = 0; i < sim->GetConfiguration().common_config->number_of_days; i++) {
-			pre_sim_step(result, *sim->GetPopulation());
+			result.BeforeSimulatorStep(*sim->GetPopulation());
 			sim->TimeStep();
-			post_sim_step(result, *sim->GetPopulation());
+			result.AfterSimulatorStep(*sim->GetPopulation());
 		}
 	}
 
@@ -60,8 +56,6 @@ class SequentialSimulationTask final : public SimulationTask<TResult>
     private:
 	std::shared_ptr<Simulator> sim;
 	TResult result;
-	void (*pre_sim_step)(TResult&, const Population&);
-	void (*post_sim_step)(TResult&, const Population&);
 	bool has_completed;
 };
 
@@ -77,16 +71,12 @@ class SequentialSimulationManager final : public SimulationManager<TResult>
 	}
 
 	/// Creates and initiates a new simulation task based on the given configuration.
-	std::shared_ptr<SimulationTask<TResult>> StartSimulation(const SingleSimulationConfig& configuration,
-								 const TResult& initialResult,
-								 void pre_sim_step(TResult&, const Population&),
-								 void post_sim_step(TResult&,
-										    const Population&)) final override
+	std::shared_ptr<SimulationTask<TResult>> StartSimulation(
+	    const SingleSimulationConfig& configuration) final override
 	{
 		// Build a simulator.
 		auto sim = SimulatorBuilder::Build(configuration, number_of_sim_threads);
-		return std::make_shared<SequentialSimulationTask<TResult>>(sim, initialResult, pre_sim_step,
-									   post_sim_step);
+		return std::make_shared<SequentialSimulationTask<TResult>>(sim);
 	}
 
     private:

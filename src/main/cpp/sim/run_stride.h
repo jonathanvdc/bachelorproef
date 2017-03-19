@@ -12,7 +12,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -20,12 +21,42 @@
  * Header for the Simulator class.
  */
 
+#include <iostream>
 #include <string>
+#include <vector>
+#include "pop/Population.h"
+#include "util/Stopwatch.h"
 
 namespace stride {
 
+/**
+ * Defines the result of a single Stride simulation.
+ */
+class StrideSimulatorResult final
+{
+    public:
+	StrideSimulatorResult() : run_clock("run_clock", false), day()
+	{
+	}
+
+	util::Stopwatch<> run_clock;
+	std::vector<unsigned int> cases;
+
+	/// Performs an action just before a simulator step is performed.
+	void BeforeSimulatorStep(const Population&);
+
+	/// Performs an action just after a simulator step has been performed.
+	void AfterSimulatorStep(const Population& pop);
+
+    private:
+	int day;
+};
+
 /// Gets the number of threads provided by OpenMP.
 unsigned int get_number_of_omp_threads();
+
+/// Prints and returns the number of threads provided by OpenMP.
+unsigned int print_number_of_omp_threads();
 
 /// Prints information about the current execution environment.
 void print_execution_environment();
