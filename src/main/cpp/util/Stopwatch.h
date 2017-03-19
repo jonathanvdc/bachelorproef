@@ -35,6 +35,7 @@ class Stopwatch
 {
 public:
 	typedef T TClock;
+	typedef typename T::duration TDuration;
 
 	/// Constructor initializes stopwatch.
 	Stopwatch(std::string name = "stopwatch", bool running = false)
@@ -86,7 +87,7 @@ public:
 	}
 
 	/// Returns the accumulated value without altering the stopwatch state.
-	typename T::duration Get() const
+	TDuration Get() const
 	{
 		auto fTemp = m_accumulated;
 		if (m_running) {
@@ -117,7 +118,7 @@ public:
 	}
 
 private:
-	typename T::duration       m_accumulated;
+	TDuration                  m_accumulated;
 	typename T::time_point     m_last_start;
 	std::string                m_name;
 	bool                       m_running;
