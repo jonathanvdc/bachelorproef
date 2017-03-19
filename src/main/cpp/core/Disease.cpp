@@ -8,7 +8,7 @@ using util::Random;
 using boost::property_tree::ptree;
 using boost::property_tree::ptree_error;
 
-unsigned int Distribution::Sample(Random& rng)
+unsigned int Distribution::Sample(Random& rng) const
 {
 	const double random_value = rng.NextDouble();
 	for (unsigned int i = 0; i < probabilities.size(); i++) {
@@ -35,7 +35,7 @@ std::unique_ptr<Distribution> Distribution::Parse(const ptree& pt_probability_li
 	return std::make_unique<Distribution>(probabilities);
 }
 
-Fate Disease::Sample(Random& rng)
+Fate Disease::Sample(Random& rng) const
 {
 	const unsigned int si = start_infectiousness.Sample(rng);
 	const unsigned int ss = start_symptomatic.Sample(rng);

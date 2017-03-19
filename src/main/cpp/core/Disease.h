@@ -29,7 +29,7 @@ public:
 
 	// Return a random index into the `probabilities` vector, yielding `i` with
 	// probability `v[i]`.
-	unsigned int Sample(util::Random& rng);
+	unsigned int Sample(util::Random& rng) const;
 
 	static std::unique_ptr<Distribution> Parse(const boost::property_tree::ptree& pt_probability_list);
 
@@ -51,7 +51,7 @@ public:
 	{
 	}
 
-	Fate Sample(util::Random& rng);
+	Fate Sample(util::Random& rng) const;
 
 	static std::unique_ptr<Disease> Parse(const boost::property_tree::ptree& pt_disease);
 

@@ -40,9 +40,9 @@ std::vector<int> Generator::SampleApart(InclusiveRange<int> range, InclusiveRang
 	throw std::runtime_error("FATAL: SampleApart couldn't satisfy gap constraint.");
 }
 
-std::unique_ptr<Population> Generator::Generate()
+Population Generator::Generate()
 {
-	std::unique_ptr<Population> population(new Population);
+	Population population;
 	const int population_size = random(model.size);
 	num_schools = population_size / model.school.size.average();
 	num_works = population_size / model.work.size.average();
@@ -60,7 +60,7 @@ std::unique_ptr<Population> Generator::Generate()
 		current_goal += population_size * hsd[h - 1] / hsd_total;
 		while (people_generated < current_goal) {
 			// Add a household of size h.
-			GenerateHousehold(*population, h);
+			GenerateHousehold(population, h);
 		}
 	}
 

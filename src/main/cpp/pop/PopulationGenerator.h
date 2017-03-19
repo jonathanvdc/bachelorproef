@@ -20,14 +20,14 @@ namespace population_model {
 class Generator
 {
 public:
-	Generator(Model& m, disease::Disease& d, util::Random& r) : model(m), disease(d), random(r) {}
+	Generator(const Model& m, const disease::Disease& d, util::Random& r) : model(m), disease(d), random(r) {}
 
 	/// Generate a random population.
-	std::unique_ptr<Population> Generate();
+	Population Generate();
 
 private:
-	Model& model;
-	disease::Disease& disease;
+	const Model& model;
+	const disease::Disease& disease;
 	util::Random& random;
 
 	/// Used internally:
