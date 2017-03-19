@@ -119,7 +119,7 @@ void verify_execution_environment()
 }
 
 /// Run the stride simulator.
-void run_stride(const SingleSimulationConfig& config)
+void run_stride(const MultiSimulationConfig& config)
 {
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
@@ -140,16 +140,8 @@ void run_stride(const SingleSimulationConfig& config)
 	// -----------------------------------------------------------------------------------------
 	cout << "Setting for track_index_case:  " << boolalpha << config.common_config->track_index_case << endl;
 
-	// -----------------------------------------------------------------------------------------
-	// Create logger
-	// Transmissions:     [TRANSMISSION] <infecterID> <infectedID> <clusterID> <day>
-	// General contacts:  [CNT] <person1ID> <person1AGE> <person2AGE>  <at_home> <at_work> <at_school> <at_other>
-	// -----------------------------------------------------------------------------------------
+	// Set the log queue size.
 	spdlog::set_async_mode(1048576);
-	auto file_logger =
-	    spdlog::rotating_logger_mt("contact_logger", output_prefix + "_logfile", std::numeric_limits<size_t>::max(),
-				       std::numeric_limits<size_t>::max());
-	file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
 	// -----------------------------------------------------------------------------------------
 	// Create simulator.
@@ -157,46 +149,81 @@ void run_stride(const SingleSimulationConfig& config)
 	Stopwatch<> total_clock("total_clock", true);
 	multiregion::SequentialSimulationManager<StrideSimulatorResult> sim_manager{num_threads};
 
-	cout << "Building the simulator. " << endl;
-	auto sim_task = sim_manager.StartSimulation(config, file_logger);
-	cout << "Done building the simulator. " << endl << endl;
+	// Build all the simulations.
+	int config_index = 0;
+	std::vector<std::tuple<std::string, SingleSimulationConfig,
+			       std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>>>
+	    tasks;
+	for (const auto& config : config.GetSingleConfigs()) {
+		auto sim_output_prefix = output_prefix + "_sim" + std::to_string(config_index);
 
-	// -----------------------------------------------------------------------------------------
-	// Run the simulation.
-	// -----------------------------------------------------------------------------------------
-	sim_task->Wait();
+		// -----------------------------------------------------------------------------------------
+		// Create logger
+		// Transmissions:     [TRANSMISSION] <infecterID> <infectedID> <clusterID> <day>
+		// General contacts:  [CNT] <person1ID> <person1AGE> <person2AGE>  <at_home> <at_work> <at_school>
+		// <at_other>
+		// -----------------------------------------------------------------------------------------
+		auto log_name = std::string("contact_logger_") + sim_output_prefix;
+		auto file_logger =
+		    spdlog::rotating_logger_mt(log_name, sim_output_prefix + "_logfile",
+					       std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max());
+		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-	// -----------------------------------------------------------------------------------------
-	// Generate output files
-	// -----------------------------------------------------------------------------------------
-	// Cases
-	auto sim_result = sim_task->GetResult();
-	CasesFile cases_file(output_prefix);
-	cases_file.Print(sim_result.cases);
+		cout << "Building simulator #" << config_index << endl;
+		tasks.push_back(std::make_tuple(log_name, config, sim_manager.StartSimulation(config, file_logger)));
+	}
+	cout << "Done building simulators. " << endl << endl;
 
-	// Summary
-	SummaryFile summary_file(output_prefix);
-	summary_file.Print(config, sim_task->GetPopulationSize(), sim_task->GetInfectedCount(),
-			   duration_cast<milliseconds>(sim_result.GetRuntime()).count(),
-			   duration_cast<milliseconds>(total_clock.Get()).count());
+	// Wait for the simulations to complete and generate output files for them.
+	for (const auto& sim_tuple : tasks) {
+		auto log_name = get<0>(sim_tuple);
+		auto single_config = get<1>(sim_tuple);
+		auto sim_task = get<2>(sim_tuple);
 
-	// Persons
-	if (config.log_config->generate_person_file) {
-		auto pop = std::make_shared<Population>(sim_task->GetPopulation());
-		PersonFile person_file(output_prefix);
-		person_file.Print(pop);
+		// -----------------------------------------------------------------------------------------
+		// Run the simulation.
+		// -----------------------------------------------------------------------------------------
+		sim_task->Wait();
+
+		// -----------------------------------------------------------------------------------------
+		// Generate output files
+		// -----------------------------------------------------------------------------------------
+		// Cases
+		auto sim_result = sim_task->GetResult();
+		CasesFile cases_file(output_prefix);
+		cases_file.Print(sim_result.cases);
+
+		// Summary
+		SummaryFile summary_file(output_prefix);
+		summary_file.Print(single_config, sim_task->GetPopulationSize(), sim_task->GetInfectedCount(),
+				   duration_cast<milliseconds>(sim_result.GetRuntime()).count(),
+				   duration_cast<milliseconds>(total_clock.Get()).count());
+
+		// Persons
+		if (single_config.log_config->generate_person_file) {
+			auto pop = std::make_shared<Population>(sim_task->GetPopulation());
+			PersonFile person_file(output_prefix);
+			person_file.Print(pop);
+		}
+
+		cout << endl << endl;
+		cout << "  run_time: " << sim_result.GetRuntimeString() << "  -- total time: " << total_clock.ToString()
+		     << endl
+		     << endl;
+
+		spdlog::drop(log_name);
 	}
 
 	// -----------------------------------------------------------------------------------------
 	// Print final message to command line.
 	// -----------------------------------------------------------------------------------------
-	cout << endl << endl;
-	cout << "  run_time: " << sim_result.GetRuntimeString() << "  -- total time: " << total_clock.ToString() << endl
-	     << endl;
 	cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
+}
 
-	// Release the log.
-	spdlog::drop("contact_logger");
+/// Run the stride simulator.
+void run_stride(const SingleSimulationConfig& config)
+{
+	run_stride(config.AsMultiConfig());
 }
 
 /// Run the stride simulator.

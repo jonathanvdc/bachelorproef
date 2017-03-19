@@ -77,6 +77,9 @@ void print_execution_environment();
 /// Verifies that Stride is being run in the right execution environment.
 void verify_execution_environment();
 
+/// Runs the simulator with the given multi-simulation configuration.
+void run_stride(const MultiSimulationConfig& config);
+
 /// Runs the simulator with the given single-simulation configuration.
 void run_stride(const SingleSimulationConfig& config);
 
