@@ -155,7 +155,7 @@ void run_stride(const MultiSimulationConfig& config)
 	std::vector<std::tuple<std::string, SingleSimulationConfig,
 			       std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>>>
 	    tasks;
-	for (const auto& config : config.GetSingleConfigs()) {
+	for (const auto& single_config : config.GetSingleConfigs()) {
 		auto sim_output_prefix = output_prefix + "_sim" + std::to_string(config_index);
 
 		// -----------------------------------------------------------------------------------------
@@ -171,7 +171,8 @@ void run_stride(const MultiSimulationConfig& config)
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
 		cout << "Building simulator #" << config_index << endl;
-		tasks.push_back(std::make_tuple(log_name, config, sim_manager.StartSimulation(config, file_logger)));
+		tasks.push_back(
+		    std::make_tuple(log_name, single_config, sim_manager.StartSimulation(single_config, file_logger)));
 	}
 	cout << "Done building simulators. " << endl << endl;
 
