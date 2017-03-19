@@ -3,48 +3,74 @@
 
 /**
  * @file
- * Configuration data structures for the simulator built, with multi-region in mind.
+ * Multi-region data structures for the simulator.
  */
 
+#include <functional>
 #include <memory>
+#include <vector>
+#include <boost/any.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include "pop/Population.h"
+#include "sim/SimulationConfig.h"
 
 namespace stride {
 namespace multiregion {
 
-/*
- * Defines a simulation configuration for a single simulation.
+/**
+ * An abstract class that can be used to communicate with and control a single simulation.
  */
-struct SingleSimulationConfig final
+template <typename TResult>
+class SimulationTask
 {
-	SingleSimulationConfig(bool track_index_case, std::string population_file_name)
-	    : track_index_case(track_index_case), population_file_name(population_file_name)
+    public:
+	/// Fetches this simulation task's result.
+	virtual TResult GetResult() = 0;
+
+	/// Waits for this simulation to complete.
+	virtual void Wait() = 0;
+
+	/// Applies the given aggregation function to this simulation task's population.
+	template <typename TAggregate>
+	TAggregate Aggregate(TAggregate apply(const Population&))
 	{
+		return boost::any_cast<TAggregate>(
+		    AggregateAny([apply](const Population& pop) -> boost::any { return boost::any(apply(pop)); }));
 	}
 
-	bool track_index_case;
+	/// Gets the simulation task's population.
+	size_t GetPopulationSize()
+	{
+		return Aggregate<size_t>([](const Population& pop) -> size_t { return pop.size(); });
+	}
 
-    /// The global configuration.
-    boost::property_tree::ptree global_configuration;
+	/// Gets the number of people that are infected in the simulation task's population.
+	size_t GetInfectedCount()
+	{
+		return Aggregate<size_t>([](const Population& pop) -> size_t { return pop.GetInfectedCount(); });
+	}
 
-	/// The name of the population file.
-	std::string population_file_name;
+	/// Gets this simulation task's population.
+	Population GetPopulation()
+	{
+		return Aggregate<Population>([](const Population& pop) -> Population { return pop; });
+	}
+
+    protected:
+	/// Applies the given aggregation function to this simulation task's population.
+	virtual boost::any AggregateAny(std::function<boost::any(const Population&)>) = 0;
 };
 
 /**
  * An abstract class that initiates simulations.
  */
+template <typename TResult>
 struct SimulationManager
 {
-	/// Initializes a new simulation instance based on the given configuration.
-	virtual std::unique_ptr<SimulationInstance> initialize(const SingleSimulationConfig& configuration) = 0;
-};
-
-/**
- * An abstract class that can be used to communicate with and control a single simulation.
- */
-struct SimulationInstance
-{
+	/// Creates and initiates a new simulation task based on the given configuration.
+	virtual std::shared_ptr<SimulationTask<TResult>> StartSimulation(
+	    const SingleSimulationConfig& configuration, const TResult& initialResult,
+	    void pre_sim_step(TResult&, const Population&), void post_sim_step(TResult&, const Population&)) = 0;
 };
 
 } // namespace

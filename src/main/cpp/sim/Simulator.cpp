@@ -49,6 +49,11 @@ const shared_ptr<const Population> Simulator::GetPopulation() const
         return m_population;
 }
 
+SingleSimulationConfig Simulator::GetConfiguration() const
+{
+        return m_config;
+}
+
 void Simulator::SetTrackIndexCase(bool track_index_case)
 {
         m_track_index_case = track_index_case;

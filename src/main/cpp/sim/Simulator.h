@@ -48,6 +48,9 @@ public:
         /// Get the population.
         const std::shared_ptr<const Population> GetPopulation() const;
 
+        /// Gets the simulator's configuration.
+        SingleSimulationConfig GetConfiguration() const;
+
         /// Change track_index_case setting.
         void SetTrackIndexCase(bool track_index_case);
 
