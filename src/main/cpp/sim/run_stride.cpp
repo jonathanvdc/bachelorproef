@@ -55,30 +55,53 @@ using namespace boost::property_tree;
 using namespace std;
 using namespace std::chrono;
 
-/// Run the stride simulator.
-void run_stride(bool track_index_case, const string& config_file_name)
+/// Gets the number of threads provided by OpenMP.
+unsigned int get_number_of_omp_threads()
 {
-	// -----------------------------------------------------------------------------------------
-	// Print output to command line.
-	// -----------------------------------------------------------------------------------------
+	unsigned int num_threads;
+#pragma omp parallel
+	{
+		num_threads = omp_get_num_threads();
+	}
+	return num_threads;
+}
+
+/// Prints information about the current execution environment.
+void print_execution_environment()
+{
 	cout << "\n*************************************************************" << endl;
 	cout << "Starting up at:      " << TimeStamp().ToString() << endl;
 	cout << "Executing:           " << InstallDirs::GetExecPath().string() << endl;
 	cout << "Current directory:   " << InstallDirs::GetCurrentDir().string() << endl;
 	cout << "Install directory:   " << InstallDirs::GetRootDir().string() << endl;
 	cout << "Data    directory:   " << InstallDirs::GetDataDir().string() << endl;
+}
+
+/// Verifies that Stride is being run in the right execution environment.
+void verify_execution_environment()
+{
+	if (InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0) {
+		throw runtime_error(string(__func__) + "> Current directory is not install root! Aborting.");
+	}
+	if (InstallDirs::GetDataDir().empty()) {
+		throw runtime_error(string(__func__) + "> Data directory not present! Aborting.");
+	}
+}
+
+/// Run the stride simulator.
+void run_stride(bool track_index_case, const string& config_file_name)
+{
+	// -----------------------------------------------------------------------------------------
+	// Print output to command line.
+	// -----------------------------------------------------------------------------------------
+	print_execution_environment();
 
 	// -----------------------------------------------------------------------------------------
 	// Check execution environment.
-	// NOTE: the statements below are commented out because they inhibit our ability to write
+	// NOTE: the statement below is commented out because it inhibits our ability to write
 	// tests for this function.
 	// -----------------------------------------------------------------------------------------
-	// if (InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0) {
-	// 	throw runtime_error(string(__func__) + "> Current directory is not install root! Aborting.");
-	// }
-	// if (InstallDirs::GetDataDir().empty()) {
-	// 	throw runtime_error(string(__func__) + "> Data directory not present! Aborting.");
-	// }
+	// verify_execution_environment();
 
 	// -----------------------------------------------------------------------------------------
 	// Configuration.
@@ -99,11 +122,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
-	unsigned int num_threads;
-#pragma omp parallel
-	{
-		num_threads = omp_get_num_threads();
-	}
+	unsigned int num_threads = get_number_of_omp_threads();
 	if (ConfigInfo::HaveOpenMP()) {
 		cout << "Using OpenMP threads:  " << num_threads << endl;
 	} else {

@@ -24,6 +24,15 @@
 
 namespace stride {
 
+/// Gets the number of threads provided by OpenMP.
+unsigned int get_number_of_omp_threads();
+
+/// Prints information about the current execution environment.
+void print_execution_environment();
+
+/// Verifies that Stride is being run in the right execution environment.
+void verify_execution_environment();
+
 /**
  * Run the simulator with config information provided.
  */
