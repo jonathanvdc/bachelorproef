@@ -39,8 +39,19 @@ class StrideSimulatorResult final
 	{
 	}
 
-	util::Stopwatch<> run_clock;
 	std::vector<unsigned int> cases;
+
+	/// Gets the total run-time for this simulator result.
+	util::Stopwatch<>::TDuration GetRuntime() const
+	{
+		return run_clock.Get();
+	}
+
+	/// Gets the total run-time for this simulator result, as a string.
+	std::string GetRuntimeString() const
+	{
+		return run_clock.ToString();
+	}
 
 	/// Performs an action just before a simulator step is performed.
 	void BeforeSimulatorStep(const Population&);
@@ -49,6 +60,7 @@ class StrideSimulatorResult final
 	void AfterSimulatorStep(const Population& pop);
 
     private:
+	util::Stopwatch<> run_clock;
 	int day;
 };
 

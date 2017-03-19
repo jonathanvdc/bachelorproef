@@ -205,7 +205,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	// Summary
 	SummaryFile summary_file(output_prefix);
 	summary_file.Print(config, sim_task->GetPopulationSize(), sim_task->GetInfectedCount(),
-			   duration_cast<milliseconds>(sim_result.run_clock.Get()).count(),
+			   duration_cast<milliseconds>(sim_result.GetRuntime()).count(),
 			   duration_cast<milliseconds>(total_clock.Get()).count());
 
 	// Persons
@@ -219,8 +219,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	// Print final message to command line.
 	// -----------------------------------------------------------------------------------------
 	cout << endl << endl;
-	cout << "  run_time: " << sim_result.run_clock.ToString() << "  -- total time: " << total_clock.ToString()
-	     << endl
+	cout << "  run_time: " << sim_result.GetRuntimeString() << "  -- total time: " << total_clock.ToString() << endl
 	     << endl;
 	cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
 
