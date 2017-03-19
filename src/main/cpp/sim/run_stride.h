@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include "pop/Population.h"
+#include "sim/SimulationConfig.h"
 #include "util/Stopwatch.h"
 
 namespace stride {
@@ -76,9 +77,10 @@ void print_execution_environment();
 /// Verifies that Stride is being run in the right execution environment.
 void verify_execution_environment();
 
-/**
- * Run the simulator with config information provided.
- */
+/// Runs the simulator with the given single-simulation configuration.
+void run_stride(const SingleSimulationConfig& config);
+
+/// Runs the simulator with the given configuration file.
 void run_stride(bool track_index_case, const std::string& config_file_name);
 
 } // end_of_namespace

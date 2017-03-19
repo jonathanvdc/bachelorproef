@@ -119,36 +119,8 @@ void verify_execution_environment()
 }
 
 /// Run the stride simulator.
-void run_stride(bool track_index_case, const string& config_file_name)
+void run_stride(const SingleSimulationConfig& config)
 {
-	// -----------------------------------------------------------------------------------------
-	// Print output to command line.
-	// -----------------------------------------------------------------------------------------
-	print_execution_environment();
-
-	// -----------------------------------------------------------------------------------------
-	// Check execution environment.
-	// NOTE: the statement below is commented out because it inhibits our ability to write
-	// tests for this function.
-	// -----------------------------------------------------------------------------------------
-	// verify_execution_environment();
-
-	// -----------------------------------------------------------------------------------------
-	// Configuration.
-	// -----------------------------------------------------------------------------------------
-	ptree pt_config;
-	const auto file_path = canonical(system_complete(config_file_name));
-	if (!is_regular_file(file_path)) {
-		throw runtime_error(string(__func__) + ">Config file " + file_path.string() +
-				    " not present. Aborting.");
-	}
-	read_xml(file_path.string(), pt_config);
-	cout << "Configuration file:  " << file_path.string() << endl;
-
-	SingleSimulationConfig config;
-	config.Parse(pt_config.get_child("run"));
-	config.common_config->track_index_case = track_index_case;
-
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
@@ -166,7 +138,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	// -----------------------------------------------------------------------------------------
 	// Track index case setting.
 	// -----------------------------------------------------------------------------------------
-	cout << "Setting for track_index_case:  " << boolalpha << track_index_case << endl;
+	cout << "Setting for track_index_case:  " << boolalpha << config.common_config->track_index_case << endl;
 
 	// -----------------------------------------------------------------------------------------
 	// Create logger
@@ -224,7 +196,28 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
 
 	// Release the log.
-	spdlog::drop_all();
+	spdlog::drop("contact_logger");
+}
+
+/// Run the stride simulator.
+void run_stride(bool track_index_case, const string& config_file_name)
+{
+	// Parse the configuration.
+	ptree pt_config;
+	const auto file_path = canonical(system_complete(config_file_name));
+	if (!is_regular_file(file_path)) {
+		throw runtime_error(string(__func__) + ">Config file " + file_path.string() +
+				    " not present. Aborting.");
+	}
+	read_xml(file_path.string(), pt_config);
+	cout << "Configuration file:  " << file_path.string() << endl;
+
+	SingleSimulationConfig config;
+	config.Parse(pt_config.get_child("run"));
+	config.common_config->track_index_case = track_index_case;
+
+	// Run Stride.
+	run_stride(config);
 }
 
 } // end_of_namespace
