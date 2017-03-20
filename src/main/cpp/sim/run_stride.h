@@ -22,6 +22,7 @@
  */
 
 #include <iostream>
+#include <mutex>
 #include <string>
 #include <vector>
 #include "pop/Population.h"
@@ -63,6 +64,7 @@ class StrideSimulatorResult final
     private:
 	util::Stopwatch<> run_clock;
 	int day;
+	static std::mutex io_mutex;
 };
 
 /// Gets the number of threads provided by OpenMP.

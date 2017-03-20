@@ -44,6 +44,7 @@
 #include <ios>
 #include <iostream>
 #include <limits>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -57,10 +58,11 @@ using namespace boost::property_tree;
 using namespace std;
 using namespace std::chrono;
 
+std::mutex StrideSimulatorResult::io_mutex;
+
 /// Performs an action just before a simulator step is performed.
 void StrideSimulatorResult::BeforeSimulatorStep(const Population&)
 {
-	cout << "Simulating day: " << setw(5) << day;
 	run_clock.Start();
 }
 
@@ -68,10 +70,13 @@ void StrideSimulatorResult::BeforeSimulatorStep(const Population&)
 void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 {
 	run_clock.Stop();
-	cout << "     Done, infected count: ";
-	cases.push_back(pop.GetInfectedCount());
-	cout << setw(10) << cases[cases.size() - 1] << endl;
+	auto infected_count = pop.GetInfectedCount();
+	cases.push_back(infected_count);
 	day++;
+
+	lock_guard<mutex> lock(io_mutex);
+	cout << "Simulated day: " << setw(5) << (day - 1) << "     Done, infected count: " << setw(10) << infected_count
+	     << endl;
 }
 
 /// Gets the number of threads provided by OpenMP.
