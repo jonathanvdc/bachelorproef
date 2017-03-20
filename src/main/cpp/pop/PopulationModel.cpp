@@ -10,21 +10,21 @@ void Age::parse(const boost::property_tree::ptree& pt)
 	elbow = pt.get<int>("elbow");
 }
 
-void FamilyAge::parse(const boost::property_tree::ptree& pt)
+void HouseholdAge::parse(const boost::property_tree::ptree& pt)
 {
 	live_alone_minimum = pt.get<int>("live_alone_minimum");
 	child_maximum = pt.get<int>("child_maximum");
 	parent.parse(pt.get_child("parent"));
 }
 
-void FamilyAgeGap::parse(const boost::property_tree::ptree& pt)
+void HouseholdAgeGap::parse(const boost::property_tree::ptree& pt)
 {
 	child_parent_minimum = pt.get<int>("child_parent_minimum");
 	parent.parse(pt.get_child("parent"));
 	child.parse(pt.get_child("child"));
 }
 
-void Family::parse(const boost::property_tree::ptree& pt)
+void Household::parse(const boost::property_tree::ptree& pt)
 {
 	age.parse(pt.get_child("age"));
 	age_gap.parse(pt.get_child("age_gap"));
@@ -47,7 +47,7 @@ void SchoolAge::parse(const boost::property_tree::ptree& pt)
 	kindergarten = pt.get<int>("kindergarten");
 	primary_school = pt.get<int>("primary_school");
 	secondary_school = pt.get<int>("secondary_school");
-	higher_eduation = pt.get<int>("higher_education");
+	higher_education = pt.get<int>("higher_education");
 	graduation = pt.get<int>("graduation");
 }
 
@@ -75,7 +75,7 @@ void Model::parse(const boost::property_tree::ptree& pt)
 	auto root = pt.get_child("population_model");
 
 	age.parse(root.get_child("age"));
-	family.parse(root.get_child("family"));
+	household.parse(root.get_child("household"));
 	school.parse(root.get_child("school"));
 	work.parse(root.get_child("work"));
 	community.parse(root.get_child("community"));

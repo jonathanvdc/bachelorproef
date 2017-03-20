@@ -49,13 +49,6 @@ public:
 	        const SingleSimulationConfig& config,
 	        const boost::property_tree::ptree& pt_disease,
 	        util::Random& rng);
-
-private:
-	/// Get distribution associateed with tag values.
-	static std::vector<double> GetDistribution(const boost::property_tree::ptree& pt_root, const std::string& xml_tag);
-
-	/// Sample from the distribution.
-	static unsigned int Sample(util::Random& rng, const std::vector<double>& distribution);
 };
 
 } // end_of_namespace

@@ -18,9 +18,9 @@ TEST(ParsePopulationModel, ParseDefaultPopulationModel)
 
 	EXPECT_EQ(model.age.elbow, 65);
 	EXPECT_DOUBLE_EQ(model.school.p_higher_education, 0.25);
-	EXPECT_EQ(model.family.size_distribution[0], 12);
-	EXPECT_EQ(model.family.size_distribution[5], 9);
-	EXPECT_EQ(model.family.size_distribution.size(), std::size_t{6});
+	EXPECT_EQ(model.household.size_distribution[0], 12);
+	EXPECT_EQ(model.household.size_distribution[5], 9);
+	EXPECT_EQ(model.household.size_distribution.size(), std::size_t{6});
 }
 
 TEST(ParsePopulationModel, ExceptionOnInvalidFile)
