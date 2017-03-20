@@ -53,9 +53,9 @@ using namespace boost::property_tree;
 using namespace stride::disease;
 using namespace stride::util;
 
-shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& config,
-						const boost::property_tree::ptree& pt_disease, util::Random& rng,
-						const std::shared_ptr<spdlog::logger>& log)
+shared_ptr<Population> PopulationBuilder::Build(
+    const SingleSimulationConfig& config, const boost::property_tree::ptree& pt_disease, util::Random& rng,
+    const std::shared_ptr<spdlog::logger>& log)
 {
 	// Setup.
 	const auto pop = make_shared<Population>();
@@ -92,15 +92,15 @@ shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& co
 		unsigned int person_id = 0U;
 		while (getline(pop_file, line)) {
 			const auto values = StringUtils::Split(line, ",");
-			population.emplace_back(
-			    Person(person_id,
-				   StringUtils::FromString<unsigned int>(values[0]), // age
-				   StringUtils::FromString<unsigned int>(values[1]), // household_id
-				   StringUtils::FromString<unsigned int>(values[2]), // school_id
-				   StringUtils::FromString<unsigned int>(values[3]), // work_id
-				   StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
-				   StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
-				   disease->Sample(rng)));			     // Fate
+			population.emplace_back(Person(
+			    person_id,
+			    StringUtils::FromString<unsigned int>(values[0]), // age
+			    StringUtils::FromString<unsigned int>(values[1]), // household_id
+			    StringUtils::FromString<unsigned int>(values[2]), // school_id
+			    StringUtils::FromString<unsigned int>(values[3]), // work_id
+			    StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
+			    StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
+			    disease->Sample(rng)));			      // Fate
 			++person_id;
 		}
 	} else if (boost::algorithm::ends_with(file_name, ".xml")) {
@@ -118,8 +118,9 @@ shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& co
 			FATAL_ERROR("Generated population doesn't fit model " + file_name);
 		}
 	} else {
-		FATAL_ERROR("Population file " + file_path.string() +
-				    " must be CSV (population data file) or XML (population model file).");
+		FATAL_ERROR(
+		    "Population file " + file_path.string() +
+		    " must be CSV (population data file) or XML (population model file).");
 	}
 
 	pop_file.close();

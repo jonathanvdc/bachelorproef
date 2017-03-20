@@ -47,9 +47,9 @@ public:
 	 * @param log             The contact log.
 	 * @return                Pointer to the initialized population.
 	 */
-	static std::shared_ptr<Population> Build(const SingleSimulationConfig& config,
-						 const boost::property_tree::ptree& pt_disease, util::Random& rng,
-						 const std::shared_ptr<spdlog::logger>& log);
+	static std::shared_ptr<Population> Build(
+	    const SingleSimulationConfig& config, const boost::property_tree::ptree& pt_disease, util::Random& rng,
+	    const std::shared_ptr<spdlog::logger>& log);
 };
 
 } // end_of_namespace
