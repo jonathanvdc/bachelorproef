@@ -171,8 +171,8 @@ void run_stride(const MultiSimulationConfig& config)
 					       std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-		tasks.push_back(
-		    std::make_tuple(log_name, sim_output_prefix, single_config, sim_manager.StartSimulation(single_config, file_logger)));
+		tasks.push_back(std::make_tuple(log_name, sim_output_prefix, single_config,
+						sim_manager.StartSimulation(single_config, file_logger)));
 		config_index++;
 	}
 	cout << "Done building simulators. " << endl << endl;
