@@ -35,20 +35,29 @@ set(LIB_SRC
 	output/PersonFile.cpp
 	output/SummaryFile.cpp
 #---
+    output/CasesFile.cpp
+    output/PersonFile.cpp
+    output/SummaryFile.cpp
+#---	
     pop/Person.cpp
     pop/PopulationBuilder.cpp
     pop/PopulationGenerator.cpp
     pop/PopulationModel.cpp
 #---
-	sim/run_stride.cpp
-	sim/Simulator.cpp
-	sim/SimulatorBuilder.cpp
+    sim/run_stride.cpp
+    sim/SimulationConfig.cpp
+    sim/Simulator.cpp
+    sim/SimulatorBuilder.cpp
 #---
-	util/InstallDirs.cpp
+    util/InstallDirs.cpp
 )
 
+if( AWESOMIUM_FOUND )
+    set(LIB_SRC ${LIB_SRC} viz/prototype.cpp)
+endif()
+
 set(MAIN_SRC
-	sim/main.cpp
+    sim/main.cpp
 )
 
 #============================================================================
