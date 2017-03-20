@@ -4,8 +4,8 @@
  *  Created on: Mar 11, 2017
  *      Author: cedric
  */
-#ifndef ALIAS_H_
-#define ALIAS_H_
+#ifndef ALIAS_H_INCLUDED
+#define ALIAS_H_INCLUDED
 
 #include <util/Random.h>
 #include <vector>
@@ -19,9 +19,9 @@ namespace alias{
 class Alias {
 public:
 	///Constructor. Uses a random seed
-	Alias(const std::vector<double> probabilities);
+	Alias(std::vector<double> probabilities);
 	///Constructor. Uses a given seed
-	Alias(std::vector<double> probabilities,const unsigned int seed);
+	Alias(std::vector<double> probabilities,unsigned int seed);
 	///Generates a new number
 	unsigned int Next();
 private:
@@ -32,4 +32,4 @@ private:
 }
 }
 
-#endif /* ALIAS_H_ */
+#endif

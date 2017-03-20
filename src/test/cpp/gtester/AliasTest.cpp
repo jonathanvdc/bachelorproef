@@ -2,16 +2,16 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include <alias/Alias.h>
+#include <alias/AliasUtil.h>
 
 using namespace stride::alias;
 
 namespace Tests {
 
-TEST(AliasDeathTest, Alias)
+TEST(Alias, Alias)
 {	
-	//Ruzie met death
-	//ASSERT_DEATH(Alias({}),"probabilities.size()!= 0");
-	//ASSERT_DEATH(Alias({},4),"probabilities.size()!= 0");
+	ASSERT_THROW(Alias({}),EmptyProbabilityException);
+	ASSERT_THROW(Alias({},4),EmptyProbabilityException);
 }
 
 TEST(Alias, Next)

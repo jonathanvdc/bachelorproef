@@ -6,21 +6,25 @@
  */
 
 #include "Alias.h"
+#include "AliasUtil.h"
 
 #include <exception>
 #include <math.h>
 #include <assert.h>
-#include <iostream>
+#include <random>
 
 namespace stride{
 namespace alias{
 
 Alias::Alias(std::vector<double> probabilities) : Alias(probabilities,std::random_device()()) {}
 
-Alias::Alias(std::vector<double> probabilities,const unsigned int seed){
+Alias::Alias(std::vector<double> probabilities,unsigned int seed){
 	assert(probabilities.size()>0);
+	if(probabilities.size()<=0){
+		throw EmptyProbabilityException();
+	}
 	m_random = util::Random(seed);
-	const unsigned int n = probabilities.size();
+	unsigned int n = probabilities.size();
 	m_prob.resize(n);
 	m_alias.resize(n);
 	std::vector<unsigned int> small, large;
