@@ -155,10 +155,14 @@ void run_stride(const MultiSimulationConfig& config)
 
 	// Build all the simulations.
 	size_t config_index = 0;
-	std::vector<std::tuple<
-	    std::string, std::string, SingleSimulationConfig,
-	    std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>>>
-	    tasks;
+	struct SimulationTuple
+	{
+		std::string log_name;
+		std::string sim_output_prefix;
+		SingleSimulationConfig sim_config;
+		std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>> sim_task;
+	};
+	std::vector<SimulationTuple> tasks;
 	for (const auto& single_config : config.GetSingleConfigs()) {
 		cout << "Building simulator #" << config_index << endl;
 		auto sim_output_prefix = output_prefix + "_sim" + std::to_string(config_index);
@@ -175,50 +179,44 @@ void run_stride(const MultiSimulationConfig& config)
 		    std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-		tasks.push_back(std::make_tuple(
-		    log_name, sim_output_prefix, single_config,
-		    sim_manager.CreateSimulation(single_config, file_logger, config_index)));
+		tasks.push_back({log_name, sim_output_prefix, single_config,
+				 sim_manager.CreateSimulation(single_config, file_logger, config_index)});
 		config_index++;
 	}
 	cout << "Done building simulators. " << endl << endl;
 
 	// Start all the simulations.
 	for (const auto& sim_tuple : tasks) {
-		auto sim_task = get<3>(sim_tuple);
-		sim_task->Start();
+		sim_tuple.sim_task->Start();
 	}
 
 	// Wait for the simulations to complete and generate output files for them.
 	for (const auto& sim_tuple : tasks) {
-		auto log_name = get<0>(sim_tuple);
-		auto sim_output_prefix = get<1>(sim_tuple);
-		auto single_config = get<2>(sim_tuple);
-		auto sim_task = get<3>(sim_tuple);
-
 		// -----------------------------------------------------------------------------------------
 		// Run the simulation.
 		// -----------------------------------------------------------------------------------------
-		sim_task->Wait();
+		sim_tuple.sim_task->Wait();
 
 		// -----------------------------------------------------------------------------------------
 		// Generate output files
 		// -----------------------------------------------------------------------------------------
 		// Cases
-		auto sim_result = sim_task->GetResult();
-		CasesFile cases_file(sim_output_prefix);
+		auto sim_result = sim_tuple.sim_task->GetResult();
+		CasesFile cases_file(sim_tuple.sim_output_prefix);
 		cases_file.Print(sim_result.cases);
 
 		// Summary
-		SummaryFile summary_file(sim_output_prefix);
+		SummaryFile summary_file(sim_tuple.sim_output_prefix);
 		summary_file.Print(
-		    single_config, sim_task->GetPopulationSize(), sim_task->GetInfectedCount(),
+		    sim_tuple.sim_config, sim_tuple.sim_task->GetPopulationSize(),
+		    sim_tuple.sim_task->GetInfectedCount(),
 		    duration_cast<milliseconds>(sim_result.GetRuntime()).count(),
 		    duration_cast<milliseconds>(total_clock.Get()).count());
 
 		// Persons
-		if (single_config.log_config->generate_person_file) {
-			auto pop = std::make_shared<Population>(sim_task->GetPopulation());
-			PersonFile person_file(sim_output_prefix);
+		if (sim_tuple.sim_config.log_config->generate_person_file) {
+			auto pop = std::make_shared<Population>(sim_tuple.sim_task->GetPopulation());
+			PersonFile person_file(sim_tuple.sim_output_prefix);
 			person_file.Print(pop);
 		}
 
@@ -227,7 +225,7 @@ void run_stride(const MultiSimulationConfig& config)
 		     << endl
 		     << endl;
 
-		spdlog::drop(log_name);
+		spdlog::drop(sim_tuple.log_name);
 	}
 
 	// -----------------------------------------------------------------------------------------
