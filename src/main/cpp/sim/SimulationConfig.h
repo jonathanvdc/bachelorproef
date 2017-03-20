@@ -76,6 +76,8 @@ struct LogConfig final
 	void Parse(const boost::property_tree::ptree& pt);
 };
 
+struct MultiSimulationConfig;
+
 /**
  * Contains configuration info for exactly one sub-simulation.
  */
@@ -89,6 +91,10 @@ struct SingleSimulationConfig final
 
 	/// The population file for this simulation.
 	std::string population_file_name;
+
+	/// Returns this single-simulation configuration as a multi-simulation
+	/// configuration that contains a single sub-simulation.
+	MultiSimulationConfig AsMultiConfig() const;
 
 	/// Fills this configuration with data from the given ptree.
 	void Parse(const boost::property_tree::ptree& pt);

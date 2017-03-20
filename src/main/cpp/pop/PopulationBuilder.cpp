@@ -27,6 +27,7 @@
 #include "pop/Population.h"
 #include "pop/PopulationGenerator.h"
 #include "pop/PopulationModel.h"
+#include "util/Errors.h"
 #include "util/InstallDirs.h"
 #include "util/Random.h"
 #include "util/StringUtils.h"
@@ -52,8 +53,9 @@ using namespace boost::property_tree;
 using namespace stride::disease;
 using namespace stride::util;
 
-shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& config,
-						const boost::property_tree::ptree& pt_disease, util::Random& rng)
+shared_ptr<Population> PopulationBuilder::Build(
+    const SingleSimulationConfig& config, const boost::property_tree::ptree& pt_disease, util::Random& rng,
+    const std::shared_ptr<spdlog::logger>& log)
 {
 	// Setup.
 	const auto pop = make_shared<Population>();
@@ -67,20 +69,20 @@ shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& co
 	// Check input.
 	bool status = (seeding_rate <= 1) && (immunity_rate <= 1) && ((seeding_rate + immunity_rate) <= 1);
 	if (!status) {
-		throw runtime_error(string(__func__) + "> Bad input data.");
+		FATAL_ERROR("Bad input data.");
 	}
 
 	// Add persons to population.
 	const auto file_name = config.population_file_name;
 	const auto file_path = InstallDirs::GetDataDir() /= file_name;
 	if (!is_regular_file(file_path)) {
-		throw runtime_error(string(__func__) + "> Population file " + file_path.string() + " not present.");
+		FATAL_ERROR("Population file " + file_path.string() + " not present.");
 	}
 
 	boost::filesystem::ifstream pop_file;
 	pop_file.open(file_path.string());
 	if (!pop_file.is_open()) {
-		throw runtime_error(string(__func__) + "> Error opening population file " + file_path.string());
+		FATAL_ERROR("Error opening population file " + file_path.string());
 	}
 
 	if (boost::algorithm::ends_with(file_name, ".csv")) {
@@ -90,15 +92,15 @@ shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& co
 		unsigned int person_id = 0U;
 		while (getline(pop_file, line)) {
 			const auto values = StringUtils::Split(line, ",");
-			population.emplace_back(
-			    Person(person_id,
-				   StringUtils::FromString<unsigned int>(values[0]), // age
-				   StringUtils::FromString<unsigned int>(values[1]), // household_id
-				   StringUtils::FromString<unsigned int>(values[2]), // school_id
-				   StringUtils::FromString<unsigned int>(values[3]), // work_id
-				   StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
-				   StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
-				   disease->Sample(rng)));			     // Fate
+			population.emplace_back(Person(
+			    person_id,
+			    StringUtils::FromString<unsigned int>(values[0]), // age
+			    StringUtils::FromString<unsigned int>(values[1]), // household_id
+			    StringUtils::FromString<unsigned int>(values[2]), // school_id
+			    StringUtils::FromString<unsigned int>(values[3]), // work_id
+			    StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
+			    StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
+			    disease->Sample(rng)));			      // Fate
 			++person_id;
 		}
 	} else if (boost::algorithm::ends_with(file_name, ".xml")) {
@@ -113,35 +115,35 @@ shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& co
 		population = generator.Generate();
 
 		if (!generator.FitsModel(population, true)) {
-			throw runtime_error(string(__func__) + "> Generated population doesn't fit model " + file_name);
+			FATAL_ERROR("Generated population doesn't fit model " + file_name);
 		}
 	} else {
-		throw runtime_error(string(__func__) + "> Population file " + file_path.string() +
-				    " must be CSV (population data file) or XML (population model file).");
+		FATAL_ERROR(
+		    "Population file " + file_path.string() +
+		    " must be CSV (population data file) or XML (population model file).");
 	}
 
 	pop_file.close();
 
 	const unsigned int max_population_index = population.size() - 1;
 	if (population.size() <= 2U) {
-		throw runtime_error(string(__func__) + "> Population is too small.");
+		FATAL_ERROR("Population is too small.");
 	}
 
 	// Set participants in social contact survey.
 	const auto log_level = config.log_config->log_level;
-	if ( log_level == LogMode::Contacts ) {
+	if (log_level == LogMode::Contacts) {
 		const unsigned int num_participants = config.common_config->number_of_survey_participants;
 
 		// use a while-loop to obtain 'num_participant' unique participants (default sampling is with
 		// replacement)
 		// A for loop will not do because we might draw the same person twice.
 		unsigned int num_samples = 0;
-		const shared_ptr<spdlog::logger> logger = spdlog::get("contact_logger");
 		while (num_samples < num_participants) {
 			Person& p = population[rng(max_population_index)];
 			if (!p.IsParticipatingInSurvey()) {
 				p.ParticipateInSurvey();
-				logger->info("[PART] {} {} {}", p.GetId(), p.GetAge(), p.GetGender());
+				log->info("[PART] {} {} {}", p.GetId(), p.GetAge(), p.GetGender());
 				num_samples++;
 			}
 		}

@@ -24,6 +24,7 @@
 #include "core/LogMode.h"
 
 #include <memory>
+#include <spdlog/spdlog.h>
 
 namespace stride {
 
@@ -40,7 +41,8 @@ class Infector
 public:
 	///
 	static void Execute(Cluster& cluster, DiseaseProfile disease_profile,
-	        RngHandler& contact_handler, std::shared_ptr<const Calendar> sim_state);
+	        RngHandler& contact_handler, const std::shared_ptr<const Calendar>& sim_state,
+                const std::shared_ptr<spdlog::logger>& log);
 };
 
 /**
@@ -52,7 +54,8 @@ class Infector<LogMode::Contacts, track_index_case>
 public:
         ///
         static void Execute(Cluster& cluster, DiseaseProfile disease_profile,
-                RngHandler& contact_handler, std::shared_ptr<const Calendar> calendar);
+                RngHandler& contact_handler, const std::shared_ptr<const Calendar>& calendar,
+                const std::shared_ptr<spdlog::logger>& log);
 };
 
 /// Explicit instantiation in cpp file.

@@ -28,6 +28,7 @@
 #include "core/LogMode.h"
 #include "pop/Population.h"
 
+#include <spdlog/spdlog.h>
 #include <boost/property_tree/ptree.hpp>
 #include <omp.h>
 #include <memory>
@@ -49,6 +50,11 @@ const shared_ptr<const Population> Simulator::GetPopulation() const
         return m_population;
 }
 
+SingleSimulationConfig Simulator::GetConfiguration() const
+{
+        return m_config;
+}
+
 void Simulator::SetTrackIndexCase(bool track_index_case)
 {
         m_track_index_case = track_index_case;
@@ -57,6 +63,8 @@ void Simulator::SetTrackIndexCase(bool track_index_case)
 template<LogMode log_level, bool track_index_case>
 void Simulator::UpdateClusters()
 {
+        auto log = m_log;
+
         #pragma omp parallel num_threads(m_num_threads)
         {
                 const unsigned int thread = omp_get_thread_num();
@@ -64,27 +72,27 @@ void Simulator::UpdateClusters()
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_households.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_households[i], m_disease_profile, m_rng_handler[thread], m_calendar);
+                                m_households[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_school_clusters.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_school_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar);
+                                m_school_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_work_clusters.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_work_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar);
+                                m_work_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_primary_community.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_primary_community[i], m_disease_profile, m_rng_handler[thread], m_calendar);
+                                m_primary_community[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
                 }
                 #pragma omp for schedule(runtime)
                 for (size_t i = 0; i < m_secondary_community.size(); i++) {
                         Infector<log_level, track_index_case>::Execute(
-                                m_secondary_community[i], m_disease_profile, m_rng_handler[thread], m_calendar);
+                                m_secondary_community[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
                 }
         }
 }

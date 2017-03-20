@@ -10,7 +10,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -43,10 +44,19 @@ int main(int argc, char** argv)
 		cmd.parse(argc, argv);
 
 		// -----------------------------------------------------------------------------------------
+		// Print output to command line.
+		// -----------------------------------------------------------------------------------------
+		print_execution_environment();
+
+		// -----------------------------------------------------------------------------------------
+		// Check execution environment.
+		// -----------------------------------------------------------------------------------------
+		verify_execution_environment();
+
+		// -----------------------------------------------------------------------------------------
 		// Run the Stride simulator.
 		// -----------------------------------------------------------------------------------------
 		run_stride(index_case_Arg.getValue(), config_file_Arg.getValue());
-
 	}
 	catch (exception& e) {
 		exit_status = EXIT_FAILURE;

@@ -63,8 +63,8 @@ template<LogMode log_level = LogMode::None>
 class LOG_POLICY
 {
 public:
-        static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
-                ClusterType cluster_type, shared_ptr<const Calendar> environ)
+        static void Execute(const shared_ptr<spdlog::logger>& logger, Person* p1, Person* p2,
+                ClusterType cluster_type, const shared_ptr<const Calendar>& environ)
         {}
 };
 
@@ -75,8 +75,8 @@ template<>
 class LOG_POLICY<LogMode::Transmissions>
 {
 public:
-        static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
-                ClusterType cluster_type, shared_ptr<const Calendar> environ)
+        static void Execute(const shared_ptr<spdlog::logger>& logger, Person* p1, Person* p2,
+                ClusterType cluster_type, const shared_ptr<const Calendar>& environ)
         {
                 logger->info("[TRAN] {} {} {} {}",
                        p1->GetId(), p2->GetId(), ToString(cluster_type), environ->GetSimulationDay());
@@ -90,8 +90,8 @@ template<>
 class LOG_POLICY<LogMode::Contacts>
 {
 public:
-        static void Execute(shared_ptr<spdlog::logger> logger, Person* p1, Person* p2,
-                ClusterType cluster_type, shared_ptr<const Calendar> calendar)
+        static void Execute(const shared_ptr<spdlog::logger>& logger, Person* p1, Person* p2,
+                ClusterType cluster_type, const shared_ptr<const Calendar>& calendar)
         {
                 unsigned int home                 = (cluster_type == ClusterType::Household);
                 unsigned int work                 = (cluster_type == ClusterType::Work);
@@ -112,7 +112,8 @@ public:
 template<LogMode log_level, bool track_index_case>
 void Infector<log_level, track_index_case>::Execute(
         Cluster& cluster, DiseaseProfile disease_profile,
-        RngHandler& contact_handler, shared_ptr<const Calendar> calendar)
+        RngHandler& contact_handler, const shared_ptr<const Calendar>& calendar,
+        const std::shared_ptr<spdlog::logger>& log)
 {
         // check if the cluster has infected members and sort
         bool infectious_cases;
@@ -123,7 +124,6 @@ void Infector<log_level, track_index_case>::Execute(
                 cluster.UpdateMemberPresence();
 
                 // Set up some stuff
-                auto logger            = spdlog::get("contact_logger");
                 const auto c_type      = cluster.m_cluster_type;
                 const auto c_immune    = cluster.m_index_immune;
                 const auto& c_members  = cluster.m_members;
@@ -141,7 +141,7 @@ void Infector<log_level, track_index_case>::Execute(
                                                 if (c_members[i_contact].second) {
                                                         auto p2 = c_members[i_contact].first;
                                                         if (contact_handler.HasTransmission(contact_rate, transmission_rate)) {
-                                                                LOG_POLICY<log_level>::Execute(logger, p1, p2, c_type, calendar);
+                                                                LOG_POLICY<log_level>::Execute(log, p1, p2, c_type, calendar);
                                                                 p2->GetHealth().StartInfection();
                                                                 R0_POLICY<track_index_case>::Execute(p2);
                                                         }
@@ -160,12 +160,12 @@ void Infector<log_level, track_index_case>::Execute(
 template<bool track_index_case>
 void Infector<LogMode::Contacts, track_index_case>::Execute(
         Cluster& cluster, DiseaseProfile disease_profile,
-        RngHandler& contact_handler, shared_ptr<const Calendar> calendar)
+        RngHandler& contact_handler, const shared_ptr<const Calendar>& calendar,
+        const std::shared_ptr<spdlog::logger>& log)
 {
         cluster.UpdateMemberPresence();
 
         // set up some stuff
-        auto logger            = spdlog::get("contact_logger");
         const auto c_type      = cluster.m_cluster_type;
         const auto& c_members  = cluster.m_members;
         //const auto c_size      = cluster.GetSize();
@@ -199,7 +199,7 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(
                                                                 R0_POLICY<track_index_case>::Execute(p1);
                                                         }
                                                 }*/
-                                                LOG_POLICY<LogMode::Contacts>::Execute(logger, p1, p2, c_type, calendar);
+                                                LOG_POLICY<LogMode::Contacts>::Execute(log, p1, p2, c_type, calendar);
                                         }
                                 }
                         }
