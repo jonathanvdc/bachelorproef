@@ -22,6 +22,7 @@
 #include "Person.h"
 
 #include "core/ClusterType.h"
+#include "util/Errors.h"
 
 #include <stdexcept>
 #include <string>
@@ -39,7 +40,7 @@ unsigned int Person::GetClusterId(ClusterType cluster_type) const
                 case ClusterType::Work:               return m_work_id;
                 case ClusterType::PrimaryCommunity:   return m_primary_community_id;
                 case ClusterType::SecondaryCommunity: return m_secondary_community_id;
-                default: throw runtime_error(string(__func__)  + "> Should not reach default.");
+                default: FATAL_ERROR("Should not reach default.");
         }
 }
 
@@ -51,7 +52,7 @@ bool Person::IsInCluster(ClusterType c) const
                 case ClusterType::Work:                return m_at_work;
                 case ClusterType::PrimaryCommunity:    return m_at_primary_community;
                 case ClusterType::SecondaryCommunity:  return m_at_secondary_community;
-                default: throw runtime_error(string(__func__)  + "> Should not reach default.");
+                default: FATAL_ERROR("Should not reach default.");
         }
 }
 

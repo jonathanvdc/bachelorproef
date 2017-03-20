@@ -29,6 +29,7 @@
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
 #include "util/ConfigInfo.h"
+#include "util/Errors.h"
 #include "util/InstallDirs.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
@@ -114,10 +115,10 @@ void print_execution_environment()
 void verify_execution_environment()
 {
 	if (InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0) {
-		throw runtime_error(string(__func__) + "> Current directory is not install root! Aborting.");
+		FATAL_ERROR("Current directory is not install root! Aborting.");
 	}
 	if (InstallDirs::GetDataDir().empty()) {
-		throw runtime_error(string(__func__) + "> Data directory not present! Aborting.");
+		FATAL_ERROR("Data directory not present! Aborting.");
 	}
 }
 

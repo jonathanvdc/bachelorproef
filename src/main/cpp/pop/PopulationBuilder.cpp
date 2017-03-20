@@ -27,6 +27,7 @@
 #include "pop/Population.h"
 #include "pop/PopulationGenerator.h"
 #include "pop/PopulationModel.h"
+#include "util/Errors.h"
 #include "util/InstallDirs.h"
 #include "util/Random.h"
 #include "util/StringUtils.h"
@@ -68,20 +69,20 @@ shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& co
 	// Check input.
 	bool status = (seeding_rate <= 1) && (immunity_rate <= 1) && ((seeding_rate + immunity_rate) <= 1);
 	if (!status) {
-		throw runtime_error(string(__func__) + "> Bad input data.");
+		FATAL_ERROR("Bad input data.");
 	}
 
 	// Add persons to population.
 	const auto file_name = config.population_file_name;
 	const auto file_path = InstallDirs::GetDataDir() /= file_name;
 	if (!is_regular_file(file_path)) {
-		throw runtime_error(string(__func__) + "> Population file " + file_path.string() + " not present.");
+		FATAL_ERROR("Population file " + file_path.string() + " not present.");
 	}
 
 	boost::filesystem::ifstream pop_file;
 	pop_file.open(file_path.string());
 	if (!pop_file.is_open()) {
-		throw runtime_error(string(__func__) + "> Error opening population file " + file_path.string());
+		FATAL_ERROR("Error opening population file " + file_path.string());
 	}
 
 	if (boost::algorithm::ends_with(file_name, ".csv")) {
@@ -114,10 +115,10 @@ shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& co
 		population = generator.Generate();
 
 		if (!generator.FitsModel(population, true)) {
-			throw runtime_error(string(__func__) + "> Generated population doesn't fit model " + file_name);
+			FATAL_ERROR("Generated population doesn't fit model " + file_name);
 		}
 	} else {
-		throw runtime_error(string(__func__) + "> Population file " + file_path.string() +
+		FATAL_ERROR("Population file " + file_path.string() +
 				    " must be CSV (population data file) or XML (population model file).");
 	}
 
@@ -125,7 +126,7 @@ shared_ptr<Population> PopulationBuilder::Build(const SingleSimulationConfig& co
 
 	const unsigned int max_population_index = population.size() - 1;
 	if (population.size() <= 2U) {
-		throw runtime_error(string(__func__) + "> Population is too small.");
+		FATAL_ERROR("Population is too small.");
 	}
 
 	// Set participants in social contact survey.

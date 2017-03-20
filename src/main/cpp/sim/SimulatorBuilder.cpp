@@ -29,6 +29,7 @@
 #include "core/LogMode.h"
 #include "pop/Population.h"
 #include "pop/PopulationBuilder.h"
+#include "util/Errors.h"
 #include "util/InstallDirs.h"
 #include "sim/SimulationConfig.h"
 
@@ -54,8 +55,7 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const string& config_file_name,
         ptree pt_config;
         const auto file_path = InstallDirs::GetCurrentDir() /= config_file_name;
         if ( !is_regular_file(file_path) ) {
-                throw runtime_error(string(__func__)
-                        + ">Config file " + file_path.string() + " not present. Aborting.");
+                FATAL_ERROR("Config file " + file_path.string() + " not present. Aborting.");
         }
         read_xml(file_path.string(), pt_config);
 
@@ -93,7 +93,7 @@ shared_ptr<Simulator> SimulatorBuilder::Build(
         const auto file_name_c = config.common_config->contact_matrix_file_name;
         const auto file_path_c { InstallDirs::GetDataDir() /= file_name_c };
         if ( !is_regular_file(file_path_c) ) {
-                throw runtime_error(string(__func__)  + "> No file " + file_path_c.string());
+                FATAL_ERROR("No file " + file_path_c.string());
         }
         read_xml(file_path_c.string(), pt_contact);
 
