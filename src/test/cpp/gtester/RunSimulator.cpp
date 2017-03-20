@@ -12,4 +12,9 @@ TEST(RunSimulator, RunSimulatorDefault)
 	stride::run_stride(false, "../config/run_default.xml");
 }
 
+TEST(RunSimulator, RunSimulatorMultiregion)
+{
+	stride::run_stride(false, "../config/run_multiregion.xml");
+}
+
 } // Tests
