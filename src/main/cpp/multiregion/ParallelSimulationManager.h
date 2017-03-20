@@ -1,14 +1,16 @@
-#ifndef MULTIREGION_SEQUENTIAL_SIMULATION_MANAGER_H_INCLUDED
-#define MULTIREGION_SEQUENTIAL_SIMULATION_MANAGER_H_INCLUDED
+#ifndef MULTIREGION_PARALLEL_SIMULATION_MANAGER_H_INCLUDED
+#define MULTIREGION_PARALLEL_SIMULATION_MANAGER_H_INCLUDED
 
 /**
  * @file
- * Sequential multi-region data structures for the simulator.
+ * Parallel multi-region data structures for the simulator.
  */
 
 #include <memory>
+#include <thread>
 #include <omp.h>
 #include <spdlog/spdlog.h>
+#include "multiregion/SequentialSimulationManager.h"
 #include "multiregion/SimulationManager.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
@@ -17,62 +19,58 @@ namespace stride {
 namespace multiregion {
 
 /**
- * A sequential simulation task.
+ * A parallel simulation task.
  */
 template <typename TResult>
-class SequentialSimulationTask final : public SimulationTask<TResult>
+class ParallelSimulationTask final : public SimulationTask<TResult>
 {
     public:
-	SequentialSimulationTask(const std::shared_ptr<Simulator>& sim) : sim(sim), result(), has_started(false)
+	ParallelSimulationTask(const std::shared_ptr<Simulator>& sim) : sequential_task(sim)
 	{
 	}
 
 	/// Fetches this simulation task's result.
 	TResult GetResult() final override
 	{
-		return result;
+		return sequential_task.GetResult();
 	}
 
 	/// Starts this simulation.
 	void Start() final override
 	{
-		if (has_started)
+		if (task_thread != nullptr)
 			return;
 
-		has_started = true;
-		for (unsigned int i = 0; i < sim->GetConfiguration().common_config->number_of_days; i++) {
-			result.BeforeSimulatorStep(*sim->GetPopulation());
-			sim->TimeStep();
-			result.AfterSimulatorStep(*sim->GetPopulation());
-		}
+		task_thread =
+		    std::make_shared<std::thread>(&SequentialSimulationTask<TResult>::Start, &sequential_task);
 	}
 
 	/// Waits for this simulation to complete.
 	void Wait() final override
 	{
 		Start();
+		task_thread->join();
 	}
 
 	/// Applies the given aggregation function to this simulation task's population.
 	boost::any AggregateAny(std::function<boost::any(const Population&)> apply) final override
 	{
-		return apply(*sim->GetPopulation());
+		return sequential_task.AggregateAny(apply);
 	}
 
     private:
-	std::shared_ptr<Simulator> sim;
-	TResult result;
-	bool has_started;
+	std::shared_ptr<std::thread> task_thread;
+	SequentialSimulationTask<TResult> sequential_task;
 };
 
 /**
- * A sequential simulation manager implementation.
+ * A parallel simulation manager implementation.
  */
 template <typename TResult>
-class SequentialSimulationManager final : public SimulationManager<TResult>
+class ParallelSimulationManager final : public SimulationManager<TResult>
 {
     public:
-	SequentialSimulationManager(unsigned int number_of_sim_threads) : number_of_sim_threads(number_of_sim_threads)
+	ParallelSimulationManager(unsigned int number_of_sim_threads) : number_of_sim_threads(number_of_sim_threads)
 	{
 	}
 
@@ -82,7 +80,7 @@ class SequentialSimulationManager final : public SimulationManager<TResult>
 	{
 		// Build a simulator.
 		auto sim = SimulatorBuilder::Build(configuration, log, number_of_sim_threads);
-		return std::make_shared<SequentialSimulationTask<TResult>>(sim);
+		return std::make_shared<ParallelSimulationTask<TResult>>(sim);
 	}
 
     private:

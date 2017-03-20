@@ -21,7 +21,7 @@
 
 #include "run_stride.h"
 
-#include "multiregion/SequentialSimulationManager.h"
+#include "multiregion/ParallelSimulationManager.h"
 #include "multiregion/SimulationManager.h"
 #include "output/CasesFile.h"
 #include "output/PersonFile.h"
@@ -148,7 +148,7 @@ void run_stride(const MultiSimulationConfig& config)
 	// Create simulator.
 	// -----------------------------------------------------------------------------------------
 	Stopwatch<> total_clock("total_clock", true);
-	multiregion::SequentialSimulationManager<StrideSimulatorResult> sim_manager{num_threads};
+	multiregion::ParallelSimulationManager<StrideSimulatorResult> sim_manager{num_threads};
 
 	// Build all the simulations.
 	int config_index = 0;

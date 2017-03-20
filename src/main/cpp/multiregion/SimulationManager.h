@@ -59,7 +59,6 @@ class SimulationTask
 		return Aggregate<Population>([](const Population& pop) -> Population { return pop; });
 	}
 
-    protected:
 	/// Applies the given aggregation function to this simulation task's population.
 	virtual boost::any AggregateAny(std::function<boost::any(const Population&)>) = 0;
 };
