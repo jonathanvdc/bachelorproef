@@ -24,16 +24,15 @@ namespace multiregion {
 template <typename TResult>
 class ParallelSimulationTask final : public SimulationTask<TResult>
 {
-    public:
-	ParallelSimulationTask(const std::shared_ptr<Simulator>& sim) : sequential_task(sim)
+public:
+	template <typename... TInitialResultArgs>
+	ParallelSimulationTask(const std::shared_ptr<Simulator>& sim, TInitialResultArgs... args)
+	    : sequential_task(sim, args...)
 	{
 	}
 
 	/// Fetches this simulation task's result.
-	TResult GetResult() final override
-	{
-		return sequential_task.GetResult();
-	}
+	TResult GetResult() final override { return sequential_task.GetResult(); }
 
 	/// Starts this simulation.
 	void Start() final override
@@ -58,7 +57,7 @@ class ParallelSimulationTask final : public SimulationTask<TResult>
 		return sequential_task.AggregateAny(apply);
 	}
 
-    private:
+private:
 	std::shared_ptr<std::thread> task_thread;
 	SequentialSimulationTask<TResult> sequential_task;
 };
@@ -66,24 +65,23 @@ class ParallelSimulationTask final : public SimulationTask<TResult>
 /**
  * A parallel simulation manager implementation.
  */
-template <typename TResult>
-class ParallelSimulationManager final : public SimulationManager<TResult>
+template <typename TResult, typename... TInitialResultArgs>
+class ParallelSimulationManager final : public SimulationManager<TResult, TInitialResultArgs...>
 {
-    public:
-	ParallelSimulationManager(unsigned int number_of_sim_threads) : number_of_sim_threads(number_of_sim_threads)
-	{
-	}
+public:
+	ParallelSimulationManager(unsigned int number_of_sim_threads) : number_of_sim_threads(number_of_sim_threads) {}
 
 	/// Creates and initiates a new simulation task based on the given configuration.
-	std::shared_ptr<SimulationTask<TResult>> CreateSimulation(
-	    const SingleSimulationConfig& configuration, const std::shared_ptr<spdlog::logger>& log) final override
+	std::shared_ptr<SimulationTask<TResult>> CreateSimulation(const SingleSimulationConfig& configuration,
+								  const std::shared_ptr<spdlog::logger>& log,
+								  TInitialResultArgs... args) final override
 	{
 		// Build a simulator.
 		auto sim = SimulatorBuilder::Build(configuration, log, number_of_sim_threads);
-		return std::make_shared<ParallelSimulationTask<TResult>>(sim);
+		return std::make_shared<ParallelSimulationTask<TResult>>(sim, args...);
 	}
 
-    private:
+private:
 	unsigned int number_of_sim_threads;
 };
 
