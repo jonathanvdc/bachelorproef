@@ -156,6 +156,7 @@ void run_stride(const MultiSimulationConfig& config)
 			       std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>>>
 	    tasks;
 	for (const auto& single_config : config.GetSingleConfigs()) {
+		cout << "Building simulator #" << config_index << endl;
 		auto sim_output_prefix = output_prefix + "_sim" + std::to_string(config_index);
 
 		// -----------------------------------------------------------------------------------------
@@ -170,9 +171,9 @@ void run_stride(const MultiSimulationConfig& config)
 					       std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-		cout << "Building simulator #" << config_index << endl;
 		tasks.push_back(
 		    std::make_tuple(log_name, sim_output_prefix, single_config, sim_manager.StartSimulation(single_config, file_logger)));
+		config_index++;
 	}
 	cout << "Done building simulators. " << endl << endl;
 
