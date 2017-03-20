@@ -20,8 +20,11 @@ struct InclusiveRange
 		maximum = pt.get<T>("maximum");
 	}
 
-	T average() const { return (minimum + maximum) / 2; }
-	bool include(T x) const { return minimum <= x && x <= maximum; }
+	// Return the average (central) value for this range. (The result will be truncated if T is an integral type.)
+	T Average() const { return (minimum + maximum) / 2; }
+
+	// Is the given argument contained in this range?
+	bool Includes(T x) const { return minimum <= x && x <= maximum; }
 
 	T minimum;
 	T maximum;

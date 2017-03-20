@@ -47,9 +47,9 @@ Population Generator::Generate()
 {
 	Population population;
 	const int population_size = random(model.size);
-	num_schools = population_size / model.school.size.average();
-	num_works = population_size / model.work.size.average();
-	num_communities = population_size / model.community.size.average();
+	num_schools = population_size / model.school.size.Average();
+	num_works = population_size / model.work.size.Average();
+	num_communities = population_size / model.community.size.Average();
 	int current_goal = 0;
 	people_generated = 0;
 	household_id = 1;
@@ -141,7 +141,7 @@ unsigned int Generator::SchoolID(int age)
 
 unsigned int Generator::WorkID(int age)
 {
-	if (model.work.age.include(age) && random.NextDouble() < model.work.p_employed) {
+	if (model.work.age.Includes(age) && random.NextDouble() < model.work.p_employed) {
 		return random(num_works) + 1;
 	}
 
