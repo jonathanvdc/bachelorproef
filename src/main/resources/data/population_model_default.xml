@@ -9,15 +9,15 @@
         <maximum>95</maximum>
         <elbow>65</elbow>
     </age>
-    <family>
+    <household>
         <age>
-            <!-- Minimum age for members of families of size <= 2. -->
+            <!-- Minimum age for members of households of size <= 2. -->
             <live_alone_minimum>18</live_alone_minimum>
 
-            <!-- Maximum age for children in families of size >= 3. -->
+            <!-- Maximum age for children in households of size >= 3. -->
             <child_maximum>23</child_maximum>
 
-            <!-- Age range for parents, in families of size >= 3. -->
+            <!-- Age range for parents, in households of size >= 3. -->
             <parent>
                 <minimum>20</minimum>
                 <maximum>50</maximum>
@@ -47,7 +47,7 @@
             <p>10</p> <!-- 5 members -->
             <p>9</p>  <!-- 6 members -->
         </size_distribution>
-    </family>
+    </household>
     <school>
         <age>
             <!-- The age at which people start going to kindergarten. -->

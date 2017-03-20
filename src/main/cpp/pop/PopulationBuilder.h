@@ -22,14 +22,14 @@
  */
 
 #include "Population.h"
-#include "util/Random.h"
 #include "sim/SimulationConfig.h"
+#include "util/Random.h"
 
-#include <spdlog/spdlog.h>
-#include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
 #include <vector>
+#include <boost/property_tree/ptree.hpp>
+#include <spdlog/spdlog.h>
 
 namespace stride {
 
@@ -47,18 +47,9 @@ public:
 	 * @param log             The contact log.
 	 * @return                Pointer to the initialized population.
 	 */
-	static std::shared_ptr<Population> Build(
-	        const SingleSimulationConfig& config,
-	        const boost::property_tree::ptree& pt_disease,
-	        util::Random& rng,
-			const std::shared_ptr<spdlog::logger>& log);
-
-private:
-	/// Get distribution associateed with tag values.
-	static std::vector<double> GetDistribution(const boost::property_tree::ptree& pt_root, const std::string& xml_tag);
-
-	/// Sample from the distribution.
-	static unsigned int Sample(util::Random& rng, const std::vector<double>& distribution);
+	static std::shared_ptr<Population> Build(const SingleSimulationConfig& config,
+						 const boost::property_tree::ptree& pt_disease, util::Random& rng,
+						 const std::shared_ptr<spdlog::logger>& log);
 };
 
 } // end_of_namespace

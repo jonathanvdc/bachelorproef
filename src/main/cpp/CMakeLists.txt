@@ -1,8 +1,8 @@
 #############################################################################
-#  This file is part of the Stride software. 
+#  This file is part of the Stride software.
 #  It is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by 
-#  the Free Software Foundation, either version 3 of the License, or any 
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or any
 #  later version.
 #  The software is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,10 +25,15 @@ set(LIB_SRC
     core/Cluster.cpp
     core/ClusterType.cpp
     core/ContactProfile.cpp
+    core/Disease.cpp
     core/DiseaseProfile.cpp
     core/Health.cpp
     core/Infector.cpp
     core/LogMode.cpp
+#---
+	output/CasesFile.cpp
+	output/PersonFile.cpp
+	output/SummaryFile.cpp
 #---
     output/CasesFile.cpp
     output/PersonFile.cpp
@@ -36,6 +41,7 @@ set(LIB_SRC
 #---	
     pop/Person.cpp
     pop/PopulationBuilder.cpp
+    pop/PopulationGenerator.cpp
     pop/PopulationModel.cpp
 #---
     sim/run_stride.cpp
