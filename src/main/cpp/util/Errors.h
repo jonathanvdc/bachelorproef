@@ -5,6 +5,6 @@
 #include <exception>
 
 #define FATAL_ERROR(message) \
-throw runtime_error(string(__func__)  + "> " + (message))
+throw runtime_error(std::string(__func__)  + "> " + (message))
 
 #endif // end-of-include-guard
