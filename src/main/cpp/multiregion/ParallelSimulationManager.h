@@ -72,9 +72,9 @@ public:
 	ParallelSimulationManager(unsigned int number_of_sim_threads) : number_of_sim_threads(number_of_sim_threads) {}
 
 	/// Creates and initiates a new simulation task based on the given configuration.
-	std::shared_ptr<SimulationTask<TResult>> CreateSimulation(const SingleSimulationConfig& configuration,
-								  const std::shared_ptr<spdlog::logger>& log,
-								  TInitialResultArgs... args) final override
+	std::shared_ptr<SimulationTask<TResult>> CreateSimulation(
+	    const SingleSimulationConfig& configuration, const std::shared_ptr<spdlog::logger>& log,
+	    TInitialResultArgs... args) final override
 	{
 		// Build a simulator.
 		auto sim = SimulatorBuilder::Build(configuration, log, number_of_sim_threads);

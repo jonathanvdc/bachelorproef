@@ -70,9 +70,9 @@ template <typename TResult, typename... TInitialResultArgs>
 struct SimulationManager
 {
 	/// Creates a new simulation task based on the given configuration.
-	virtual std::shared_ptr<SimulationTask<TResult>> CreateSimulation(const SingleSimulationConfig& configuration,
-									  const std::shared_ptr<spdlog::logger>& log,
-									  TInitialResultArgs... args) = 0;
+	virtual std::shared_ptr<SimulationTask<TResult>> CreateSimulation(
+	    const SingleSimulationConfig& configuration, const std::shared_ptr<spdlog::logger>& log,
+	    TInitialResultArgs... args) = 0;
 };
 
 } // namespace

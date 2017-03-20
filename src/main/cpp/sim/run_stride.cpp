@@ -154,8 +154,9 @@ void run_stride(const MultiSimulationConfig& config)
 
 	// Build all the simulations.
 	size_t config_index = 0;
-	std::vector<std::tuple<std::string, std::string, SingleSimulationConfig,
-			       std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>>>
+	std::vector<std::tuple<
+	    std::string, std::string, SingleSimulationConfig,
+	    std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>>>
 	    tasks;
 	for (const auto& single_config : config.GetSingleConfigs()) {
 		cout << "Building simulator #" << config_index << endl;
@@ -168,14 +169,14 @@ void run_stride(const MultiSimulationConfig& config)
 		// <at_other>
 		// -----------------------------------------------------------------------------------------
 		auto log_name = std::string("contact_logger_") + sim_output_prefix;
-		auto file_logger =
-		    spdlog::rotating_logger_mt(log_name, sim_output_prefix + "_logfile",
-					       std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max());
+		auto file_logger = spdlog::rotating_logger_mt(
+		    log_name, sim_output_prefix + "_logfile", std::numeric_limits<size_t>::max(),
+		    std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-		tasks.push_back(
-		    std::make_tuple(log_name, sim_output_prefix, single_config,
-				    sim_manager.CreateSimulation(single_config, file_logger, config_index)));
+		tasks.push_back(std::make_tuple(
+		    log_name, sim_output_prefix, single_config,
+		    sim_manager.CreateSimulation(single_config, file_logger, config_index)));
 		config_index++;
 	}
 	cout << "Done building simulators. " << endl << endl;
@@ -208,9 +209,10 @@ void run_stride(const MultiSimulationConfig& config)
 
 		// Summary
 		SummaryFile summary_file(sim_output_prefix);
-		summary_file.Print(single_config, sim_task->GetPopulationSize(), sim_task->GetInfectedCount(),
-				   duration_cast<milliseconds>(sim_result.GetRuntime()).count(),
-				   duration_cast<milliseconds>(total_clock.Get()).count());
+		summary_file.Print(
+		    single_config, sim_task->GetPopulationSize(), sim_task->GetInfectedCount(),
+		    duration_cast<milliseconds>(sim_result.GetRuntime()).count(),
+		    duration_cast<milliseconds>(total_clock.Get()).count());
 
 		// Persons
 		if (single_config.log_config->generate_person_file) {
@@ -243,8 +245,8 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	ptree pt_config;
 	const auto file_path = canonical(system_complete(config_file_name));
 	if (!is_regular_file(file_path)) {
-		throw runtime_error(string(__func__) + ">Config file " + file_path.string() +
-				    " not present. Aborting.");
+		throw runtime_error(
+		    string(__func__) + ">Config file " + file_path.string() + " not present. Aborting.");
 	}
 	read_xml(file_path.string(), pt_config);
 	cout << "Configuration file:  " << file_path.string() << endl;
