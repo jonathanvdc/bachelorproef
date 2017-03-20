@@ -18,7 +18,7 @@ namespace alias{
 Alias::Alias(std::vector<double> probabilities) : Alias(probabilities,std::random_device()()) {}
 
 Alias::Alias(std::vector<double> probabilities,const unsigned int seed){
-	assert(probabilities.size()!=0);
+	assert(probabilities.size()>0);
 	m_random = util::Random(seed);
 	const unsigned int n = probabilities.size();
 	m_prob.resize(n);
