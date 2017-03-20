@@ -33,8 +33,8 @@ class SequentialSimulationTask final : public SimulationTask<TResult>
 		return result;
 	}
 
-	/// Waits for this simulation to complete.
-	void Wait() final override
+	/// Starts this simulation.
+	void Start() final override
 	{
 		if (has_completed)
 			return;
@@ -45,6 +45,12 @@ class SequentialSimulationTask final : public SimulationTask<TResult>
 			sim->TimeStep();
 			result.AfterSimulatorStep(*sim->GetPopulation());
 		}
+	}
+
+	/// Waits for this simulation to complete.
+	void Wait() final override
+	{
+		Start();
 	}
 
     protected:
@@ -72,7 +78,7 @@ class SequentialSimulationManager final : public SimulationManager<TResult>
 	}
 
 	/// Creates and initiates a new simulation task based on the given configuration.
-	std::shared_ptr<SimulationTask<TResult>> StartSimulation(
+	std::shared_ptr<SimulationTask<TResult>> CreateSimulation(
 	    const SingleSimulationConfig& configuration, const std::shared_ptr<spdlog::logger>& log) final override
 	{
 		// Build a simulator.

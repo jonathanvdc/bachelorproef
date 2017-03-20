@@ -172,10 +172,16 @@ void run_stride(const MultiSimulationConfig& config)
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
 		tasks.push_back(std::make_tuple(log_name, sim_output_prefix, single_config,
-						sim_manager.StartSimulation(single_config, file_logger)));
+						sim_manager.CreateSimulation(single_config, file_logger)));
 		config_index++;
 	}
 	cout << "Done building simulators. " << endl << endl;
+
+	// Start all the simulations.
+	for (const auto& sim_tuple : tasks) {
+		auto sim_task = get<3>(sim_tuple);
+		sim_task->Start();
+	}
 
 	// Wait for the simulations to complete and generate output files for them.
 	for (const auto& sim_tuple : tasks) {

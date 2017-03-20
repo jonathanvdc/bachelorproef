@@ -27,6 +27,9 @@ class SimulationTask
 	/// Fetches this simulation task's result.
 	virtual TResult GetResult() = 0;
 
+	/// Starts this simulation.
+	virtual void Start() = 0;
+
 	/// Waits for this simulation to complete.
 	virtual void Wait() = 0;
 
@@ -67,8 +70,8 @@ class SimulationTask
 template <typename TResult>
 struct SimulationManager
 {
-	/// Creates and initiates a new simulation task based on the given configuration.
-	virtual std::shared_ptr<SimulationTask<TResult>> StartSimulation(
+	/// Creates a new simulation task based on the given configuration.
+	virtual std::shared_ptr<SimulationTask<TResult>> CreateSimulation(
 	    const SingleSimulationConfig& configuration, const std::shared_ptr<spdlog::logger>& log) = 0;
 };
 
