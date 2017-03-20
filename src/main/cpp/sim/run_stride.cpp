@@ -61,10 +61,7 @@ using namespace std::chrono;
 std::mutex StrideSimulatorResult::io_mutex;
 
 /// Performs an action just before a simulator step is performed.
-void StrideSimulatorResult::BeforeSimulatorStep(const Population&)
-{
-	run_clock.Start();
-}
+void StrideSimulatorResult::BeforeSimulatorStep(const Population&) { run_clock.Start(); }
 
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
@@ -75,8 +72,8 @@ void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 	day++;
 
 	lock_guard<mutex> lock(io_mutex);
-	cout << "Simulated day: " << setw(5) << (day - 1) << "     Done, infected count: " << setw(10) << infected_count
-	     << endl;
+	cout << "Simulation " << setw(3) << id << ": simulated day: " << setw(5) << (day - 1)
+	     << "     Done, infected count: " << setw(10) << infected_count << endl;
 }
 
 /// Gets the number of threads provided by OpenMP.
@@ -153,10 +150,10 @@ void run_stride(const MultiSimulationConfig& config)
 	// Create simulator.
 	// -----------------------------------------------------------------------------------------
 	Stopwatch<> total_clock("total_clock", true);
-	multiregion::ParallelSimulationManager<StrideSimulatorResult> sim_manager{num_threads};
+	multiregion::ParallelSimulationManager<StrideSimulatorResult, size_t> sim_manager{num_threads};
 
 	// Build all the simulations.
-	int config_index = 0;
+	size_t config_index = 0;
 	std::vector<std::tuple<std::string, std::string, SingleSimulationConfig,
 			       std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>>>
 	    tasks;
@@ -176,8 +173,9 @@ void run_stride(const MultiSimulationConfig& config)
 					       std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-		tasks.push_back(std::make_tuple(log_name, sim_output_prefix, single_config,
-						sim_manager.CreateSimulation(single_config, file_logger)));
+		tasks.push_back(
+		    std::make_tuple(log_name, sim_output_prefix, single_config,
+				    sim_manager.CreateSimulation(single_config, file_logger, config_index)));
 		config_index++;
 	}
 	cout << "Done building simulators. " << endl << endl;
@@ -236,10 +234,7 @@ void run_stride(const MultiSimulationConfig& config)
 }
 
 /// Run the stride simulator.
-void run_stride(const SingleSimulationConfig& config)
-{
-	run_stride(config.AsMultiConfig());
-}
+void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMultiConfig()); }
 
 /// Run the stride simulator.
 void run_stride(bool track_index_case, const string& config_file_name)

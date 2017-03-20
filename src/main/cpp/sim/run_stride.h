@@ -36,24 +36,17 @@ namespace stride {
  */
 class StrideSimulatorResult final
 {
-    public:
-	StrideSimulatorResult() : run_clock("run_clock", false), day()
-	{
-	}
+public:
+	StrideSimulatorResult(size_t id) : id(id), run_clock("run_clock", false), day() {}
 
+	const size_t id;
 	std::vector<unsigned int> cases;
 
 	/// Gets the total run-time for this simulator result.
-	util::Stopwatch<>::TDuration GetRuntime() const
-	{
-		return run_clock.Get();
-	}
+	util::Stopwatch<>::TDuration GetRuntime() const { return run_clock.Get(); }
 
 	/// Gets the total run-time for this simulator result, as a string.
-	std::string GetRuntimeString() const
-	{
-		return run_clock.ToString();
-	}
+	std::string GetRuntimeString() const { return run_clock.ToString(); }
 
 	/// Performs an action just before a simulator step is performed.
 	void BeforeSimulatorStep(const Population&);
@@ -61,7 +54,7 @@ class StrideSimulatorResult final
 	/// Performs an action just after a simulator step has been performed.
 	void AfterSimulatorStep(const Population& pop);
 
-    private:
+private:
 	util::Stopwatch<> run_clock;
 	int day;
 	static std::mutex io_mutex;
