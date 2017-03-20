@@ -242,7 +242,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	read_xml(file_path.string(), pt_config);
 	cout << "Configuration file:  " << file_path.string() << endl;
 
-	SingleSimulationConfig config;
+	MultiSimulationConfig config;
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
 
