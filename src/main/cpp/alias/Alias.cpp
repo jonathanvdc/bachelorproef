@@ -15,7 +15,7 @@
 namespace stride {
 namespace alias {
 
-Alias& Alias::CreateDistribution(std::vector<double> probabilities, util::Random& rng)
+Alias Alias::CreateDistribution(std::vector<double> probabilities, util::Random& rng)
 {
 	assert(probabilities.size() > 0);
 	if (probabilities.size() <= 0) {
@@ -59,8 +59,8 @@ Alias& Alias::CreateDistribution(std::vector<double> probabilities, util::Random
 	for (auto l : small) {
 		prob[l] = 1;
 	}
-	static Alias a(alias, prob, rng);
-	return a;
+	Alias a(alias, prob, rng);
+	return std::move(a);
 }
 
 unsigned int Alias::Next()

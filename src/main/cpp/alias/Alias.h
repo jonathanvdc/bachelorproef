@@ -25,8 +25,12 @@ class Alias
 	Alias(const Alias&) = delete;
 	/// No assignement operator needed
 	Alias& operator=(const Alias&) = delete;
+	/// Move constructor
+	Alias(const Alias&& other) : m_random{other.m_random}, m_alias{other.m_alias}, m_prob{other.m_prob}
+	{
+	}
 	/// Creates an Alias object.
-	static Alias& CreateDistribution(std::vector<double> probabilities, util::Random& rng);
+	static Alias CreateDistribution(std::vector<double> probabilities, util::Random& rng);
 	/// Generates a new number
 	unsigned int Next();
 
