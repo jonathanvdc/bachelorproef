@@ -36,9 +36,9 @@ class Alias
 	    : m_random{rng}, m_alias{alias}, m_prob{prob}
 	{
 	}
-	util::Random m_random = util::Random(0); ///< The random number generator
-	std::vector<unsigned int> m_alias;       ///< The vector of aliases
-	std::vector<double> m_prob;		 ///< The vector of probabilities
+	util::Random& m_random;		   ///< The random number generator
+	std::vector<unsigned int> m_alias; ///< The vector of aliases
+	std::vector<double> m_prob;	///< The vector of probabilities
 };
 }
 }
