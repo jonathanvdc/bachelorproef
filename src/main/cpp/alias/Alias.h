@@ -25,7 +25,7 @@ class Alias
 	Alias(const Alias&) = delete;
 	/// No assignement operator needed
 	Alias& operator=(const Alias&) = delete;
-	/// Creates an Alias object. The constructor would be way too long.
+	/// Creates an Alias object.
 	static Alias& CreateDistribution(std::vector<double> probabilities, util::Random& rng);
 	/// Generates a new number
 	unsigned int Next();
