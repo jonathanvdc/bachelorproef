@@ -7,27 +7,38 @@
 #ifndef ALIAS_H_INCLUDED
 #define ALIAS_H_INCLUDED
 
-#include <util/Random.h>
 #include <vector>
-namespace stride{
-namespace alias{
+#include <util/Random.h>
+namespace stride {
+namespace alias {
 /**
  * Class used to generate random numbers according to Vose's Alias Method.
  * Used the algorithm on http://keithschwarz.com/darts-dice-coins/
  * It uses an strides Random as random number generator.
  */
-class Alias {
-public:
-	///Constructor. Uses a random seed
-	Alias(std::vector<double> probabilities);
-	///Constructor. Uses a given seed
-	Alias(std::vector<double> probabilities,unsigned int seed);
-	///Generates a new number
+class Alias
+{
+    public:
+	/// No standard constructor needed
+	Alias() = delete;
+	/// No copy constructor needed
+	Alias(const Alias&) = delete;
+	/// No assignement operator needed
+	Alias& operator=(const Alias&) = delete;
+	/// Creates an Alias object. The constructor would be way too long.
+	static Alias& CreateDistribution(std::vector<double> probabilities, util::Random& rng);
+	/// Generates a new number
 	unsigned int Next();
-private:
-	util::Random m_random = util::Random(0);				///< The random number generator
-	std::vector<unsigned int> m_alias;						///< The vector of aliases
-	std::vector<double> m_prob;								///< The vector of probabilities
+
+    private:
+	/// Constructor
+	Alias(std::vector<unsigned int> alias, std::vector<double> prob, util::Random& rng)
+	    : m_random{rng}, m_alias{alias}, m_prob{prob}
+	{
+	}
+	util::Random m_random = util::Random(0); ///< The random number generator
+	std::vector<unsigned int> m_alias;       ///< The vector of aliases
+	std::vector<double> m_prob;		 ///< The vector of probabilities
 };
 }
 }

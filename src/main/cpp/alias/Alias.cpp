@@ -9,78 +9,69 @@
 #include "AliasUtil.h"
 
 #include <exception>
-#include <math.h>
 #include <assert.h>
-#include <random>
+#include <math.h>
 
-namespace stride{
-namespace alias{
+namespace stride {
+namespace alias {
 
-Alias::Alias(std::vector<double> probabilities) : Alias(probabilities,std::random_device()()) {}
-
-Alias::Alias(std::vector<double> probabilities,unsigned int seed){
-	assert(probabilities.size()>0);
-	if(probabilities.size()<=0){
+Alias& Alias::CreateDistribution(std::vector<double> probabilities, util::Random& rng)
+{
+	assert(probabilities.size() > 0);
+	if (probabilities.size() <= 0) {
 		throw EmptyProbabilityException();
 	}
-	m_random = util::Random(seed);
 	unsigned int n = probabilities.size();
-	m_prob.resize(n);
-	m_alias.resize(n);
+	std::vector<double> prob(n);
+	std::vector<unsigned int> alias(n);
 	std::vector<unsigned int> small, large;
-	for(std::vector<double>::iterator i = probabilities.begin(); i< probabilities.end(); i++){
-		*i *= double(n);
+	for (auto& i : probabilities) {
+		i *= n;
 	}
-	for(unsigned int i = 0; i< probabilities.size(); i++){
-		if(probabilities[i] < 1.0){
+	for (unsigned int i = 0; i < probabilities.size(); i++) {
+		if (probabilities[i] < 1.0) {
 			small.push_back(i);
-		}
-		else{
+		} else {
 			large.push_back(i);
 		}
 	}
 
-	while(!(small.empty()||large.empty())){
+	while (!(small.empty() || large.empty())) {
 		unsigned int l = large.front();
 		large.erase(large.begin());
 		unsigned int g = small.front();
 		small.erase(small.begin());
-		m_prob[l] = probabilities[l];
-		m_alias[l] = g;
+		prob[l] = probabilities[l];
+		alias[l] = g;
 
-		probabilities[g] = probabilities[g]+probabilities[l]-1;
-		if(probabilities[g] >= 1){
+		probabilities[g] = probabilities[g] + probabilities[l] - 1;
+		if (probabilities[g] >= 1) {
 			large.push_back(g);
-		}
-		else{
+		} else {
 			small.push_back(g);
 		}
 	}
 
-	while(!large.empty()){
-		unsigned int g = large.front();
-		large.erase(large.begin());
-		m_prob[g] = 1;
+	for (auto g : large) {
+		prob[g] = 1;
 	}
 
-	while(!small.empty()){
-		unsigned int l = small.front();
-		small.erase(small.begin());
-		m_prob[l] = 1;
+	for (auto l : small) {
+		prob[l] = 1;
 	}
+	static Alias a(alias, prob, rng);
+	return a;
 }
 
-unsigned int Alias::Next(){
+unsigned int Alias::Next()
+{
 	unsigned int roll = m_random(m_alias.size());
 	double flip = m_random.NextDouble();
-	if(flip <= m_prob[roll]){
+	if (flip <= m_prob[roll]) {
 		return roll;
-	}
-	else{
+	} else {
 		return m_alias[roll];
 	}
-
-
 }
 }
 }

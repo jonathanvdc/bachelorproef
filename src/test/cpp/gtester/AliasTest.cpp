@@ -1,24 +1,24 @@
 #include <iostream>
 #include <vector>
-#include <gtest/gtest.h>
 #include <alias/Alias.h>
 #include <alias/AliasUtil.h>
+#include <gtest/gtest.h>
+#include <util/Random.h>
 
 using namespace stride::alias;
 
 namespace Tests {
 
 TEST(Alias, Alias)
-{	
-	ASSERT_THROW(Alias({}),EmptyProbabilityException);
-	ASSERT_THROW(Alias({},4),EmptyProbabilityException);
+{
+	stride::util::Random rng(0);
+	ASSERT_THROW(Alias::CreateDistribution({}, rng), EmptyProbabilityException);
 }
 
 TEST(Alias, Next)
 {
-	std::vector<double> probs = {1.0};
-	Alias a = Alias(probs,1);
-	ASSERT_TRUE(true);
+	stride::util::Random rng(0);
+	Alias::CreateDistribution({1.0}, rng).Next();
 }
 
 } // Tests
