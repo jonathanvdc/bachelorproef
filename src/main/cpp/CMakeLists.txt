@@ -49,7 +49,9 @@ set(LIB_SRC
     sim/Simulator.cpp
     sim/SimulatorBuilder.cpp
 #---
-    util/InstallDirs.cpp
+	util/InstallDirs.cpp
+#---
+    alias/Alias.cpp
 )
 
 if( AWESOMIUM_FOUND )
