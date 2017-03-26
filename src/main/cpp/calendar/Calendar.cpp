@@ -21,6 +21,7 @@
 
 #include "Calendar.h"
 
+#include "util/Errors.h"
 #include "util/InstallDirs.h"
 
 #include <boost/filesystem.hpp>
@@ -44,7 +45,7 @@ void Calendar::Initialize(const boost::gregorian::date& start_date, const string
 	boost::property_tree::ptree pt_holidays;
 	const auto file_path { InstallDirs::GetDataDir() /= holidays_file };
 	if (!is_regular_file(file_path)) {
-		throw runtime_error(string(__func__) + "Holidays file " + file_path.string() + " not present.");
+		FATAL_ERROR("Holidays file " + file_path.string() + " not present.");
 	}
 	read_json(file_path.string(), pt_holidays);
 	Initialize(start_date, pt_holidays);

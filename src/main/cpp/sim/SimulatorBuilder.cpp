@@ -29,6 +29,7 @@
 #include "core/LogMode.h"
 #include "pop/Population.h"
 #include "pop/PopulationBuilder.h"
+#include "util/Errors.h"
 #include "util/InstallDirs.h"
 #include "sim/SimulationConfig.h"
 
@@ -47,33 +48,35 @@ using namespace boost::property_tree;
 using namespace stride::util;
 
 shared_ptr<Simulator> SimulatorBuilder::Build(const string& config_file_name,
+        const std::shared_ptr<spdlog::logger>& log,
         unsigned int num_threads, bool track_index_case)
 {
         // Configuration file.
         ptree pt_config;
         const auto file_path = InstallDirs::GetCurrentDir() /= config_file_name;
         if ( !is_regular_file(file_path) ) {
-                throw runtime_error(string(__func__)
-                        + ">Config file " + file_path.string() + " not present. Aborting.");
+                FATAL_ERROR("Config file " + file_path.string() + " not present. Aborting.");
         }
         read_xml(file_path.string(), pt_config);
 
         // Done.
-        return Build(pt_config, num_threads, track_index_case);
+        return Build(pt_config, log, num_threads, track_index_case);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(
         const ptree& pt_config,
+        const std::shared_ptr<spdlog::logger>& log,
         unsigned int num_threads, bool track_index_case)
 {
         SingleSimulationConfig config;
         config.Parse(pt_config.get_child("run"));
         config.common_config->track_index_case = track_index_case;
-        return Build(config, num_threads);
+        return Build(config, log, num_threads);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(
         const SingleSimulationConfig& config,
+        const std::shared_ptr<spdlog::logger>& log,
         unsigned int num_threads)
 {
         // Disease file.
@@ -90,37 +93,42 @@ shared_ptr<Simulator> SimulatorBuilder::Build(
         const auto file_name_c = config.common_config->contact_matrix_file_name;
         const auto file_path_c { InstallDirs::GetDataDir() /= file_name_c };
         if ( !is_regular_file(file_path_c) ) {
-                throw runtime_error(string(__func__)  + "> No file " + file_path_c.string());
+                FATAL_ERROR("No file " + file_path_c.string());
         }
         read_xml(file_path_c.string(), pt_contact);
 
         // Done.
-        return Build(config, pt_disease, pt_contact, num_threads);
+        return Build(config, pt_disease, pt_contact, log, num_threads);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(
         const ptree& pt_config,
         const ptree& pt_disease,
         const ptree& pt_contact,
+        const std::shared_ptr<spdlog::logger>& log,
         unsigned int number_of_threads,
         bool track_index_case)
 {
         SingleSimulationConfig config;
         config.Parse(pt_config.get_child("run"));
         config.common_config->track_index_case = track_index_case;
-        return Build(config, pt_disease, pt_contact, number_of_threads);
+        return Build(config, pt_disease, pt_contact, log, number_of_threads);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(
         const SingleSimulationConfig& config,
         const ptree& pt_disease,
         const ptree& pt_contact,
+        const std::shared_ptr<spdlog::logger>& log,
         unsigned int number_of_threads)
 {
         auto sim = make_shared<Simulator>();
 
-        // Initialize config ptree.
+        // Initialize the simulator's configuration.
         sim->m_config = config;
+
+        // Initialize the simulator's log.
+        sim->m_log = log;
 
         // Initialize track_index_case policy
         sim->m_track_index_case = config.common_config->track_index_case;
@@ -138,7 +146,7 @@ shared_ptr<Simulator> SimulatorBuilder::Build(
         Random rng(config.common_config->rng_seed);
 
         // Build population.
-        sim->m_population = PopulationBuilder::Build(config, pt_disease, rng);
+        sim->m_population = PopulationBuilder::Build(config, pt_disease, rng, log);
 
         // Initialize clusters.
         InitializeClusters(sim);

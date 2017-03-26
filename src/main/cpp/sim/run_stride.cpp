@@ -10,7 +10,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2015, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -18,21 +19,24 @@
  * Actually run the simulator.
  */
 
-# include "run_stride.h"
+#include "run_stride.h"
 
+#include "multiregion/ParallelSimulationManager.h"
+#include "multiregion/SimulationManager.h"
 #include "output/CasesFile.h"
 #include "output/PersonFile.h"
 #include "output/SummaryFile.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
 #include "util/ConfigInfo.h"
+#include "util/Errors.h"
 #include "util/InstallDirs.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
 
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <boost/filesystem.hpp>
 #include <omp.h>
 #include <spdlog/spdlog.h>
 
@@ -41,8 +45,10 @@
 #include <ios>
 #include <iostream>
 #include <limits>
-#include <string>
+#include <mutex>
 #include <stdexcept>
+#include <string>
+#include <utility>
 
 namespace stride {
 
@@ -53,135 +59,203 @@ using namespace boost::property_tree;
 using namespace std;
 using namespace std::chrono;
 
+std::mutex StrideSimulatorResult::io_mutex;
+
+/// Performs an action just before a simulator step is performed.
+void StrideSimulatorResult::BeforeSimulatorStep(const Population&) { run_clock.Start(); }
+
+/// Performs an action just after a simulator step has been performed.
+void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
+{
+	run_clock.Stop();
+	auto infected_count = pop.GetInfectedCount();
+	cases.push_back(infected_count);
+	day++;
+
+	lock_guard<mutex> lock(io_mutex);
+	cout << "Simulation " << setw(3) << id << ": simulated day: " << setw(5) << (day - 1)
+	     << "     Done, infected count: " << setw(10) << infected_count << endl;
+}
+
+/// Gets the number of threads provided by OpenMP.
+unsigned int get_number_of_omp_threads()
+{
+	unsigned int num_threads;
+#pragma omp parallel
+	{
+		num_threads = omp_get_num_threads();
+	}
+	return num_threads;
+}
+
+/// Prints and returns the number of threads provided by OpenMP.
+unsigned int print_number_of_omp_threads()
+{
+	unsigned int num_threads = get_number_of_omp_threads();
+	if (ConfigInfo::HaveOpenMP()) {
+		cout << "Using OpenMP threads:  " << num_threads << endl;
+	} else {
+		cout << "Not using OpenMP threads." << endl;
+	}
+	return num_threads;
+}
+
+/// Prints information about the current execution environment.
+void print_execution_environment()
+{
+	cout << "\n*************************************************************" << endl;
+	cout << "Starting up at:      " << TimeStamp().ToString() << endl;
+	cout << "Executing:           " << InstallDirs::GetExecPath().string() << endl;
+	cout << "Current directory:   " << InstallDirs::GetCurrentDir().string() << endl;
+	cout << "Install directory:   " << InstallDirs::GetRootDir().string() << endl;
+	cout << "Data    directory:   " << InstallDirs::GetDataDir().string() << endl;
+}
+
+/// Verifies that Stride is being run in the right execution environment.
+void verify_execution_environment()
+{
+	if (InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0) {
+		FATAL_ERROR("Current directory is not install root! Aborting.");
+	}
+	if (InstallDirs::GetDataDir().empty()) {
+		FATAL_ERROR("Data directory not present! Aborting.");
+	}
+}
+
+/// Run the stride simulator.
+void run_stride(const MultiSimulationConfig& config)
+{
+	// -----------------------------------------------------------------------------------------
+	// OpenMP.
+	// -----------------------------------------------------------------------------------------
+	unsigned int num_threads = print_number_of_omp_threads();
+
+	// -----------------------------------------------------------------------------------------
+	// Set output path prefix.
+	// -----------------------------------------------------------------------------------------
+	auto output_prefix = config.log_config->output_prefix;
+	if (output_prefix.length() == 0) {
+		output_prefix = TimeStamp().ToTag();
+	}
+	cout << "Project output tag:  " << output_prefix << endl << endl;
+
+	// -----------------------------------------------------------------------------------------
+	// Track index case setting.
+	// -----------------------------------------------------------------------------------------
+	cout << "Setting for track_index_case:  " << boolalpha << config.common_config->track_index_case << endl;
+
+	// Set the log queue size.
+	spdlog::set_async_mode(1048576);
+
+	// -----------------------------------------------------------------------------------------
+	// Create simulator.
+	// -----------------------------------------------------------------------------------------
+	Stopwatch<> total_clock("total_clock", true);
+	multiregion::ParallelSimulationManager<StrideSimulatorResult, size_t> sim_manager{num_threads};
+
+	// Build all the simulations.
+	size_t config_index = 0;
+	struct SimulationTuple
+	{
+		std::string log_name;
+		std::string sim_output_prefix;
+		SingleSimulationConfig sim_config;
+		std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>> sim_task;
+	};
+	std::vector<SimulationTuple> tasks;
+	for (const auto& single_config : config.GetSingleConfigs()) {
+		cout << "Building simulator #" << config_index << endl;
+		auto sim_output_prefix = output_prefix + "_sim" + std::to_string(config_index);
+
+		// -----------------------------------------------------------------------------------------
+		// Create logger
+		// Transmissions:     [TRANSMISSION] <infecterID> <infectedID> <clusterID> <day>
+		// General contacts:  [CNT] <person1ID> <person1AGE> <person2AGE>  <at_home> <at_work> <at_school>
+		// <at_other>
+		// -----------------------------------------------------------------------------------------
+		auto log_name = std::string("contact_logger_") + sim_output_prefix;
+		auto file_logger = spdlog::rotating_logger_mt(
+		    log_name, sim_output_prefix + "_logfile", std::numeric_limits<size_t>::max(),
+		    std::numeric_limits<size_t>::max());
+		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
+
+		tasks.push_back({log_name, sim_output_prefix, single_config,
+				 sim_manager.CreateSimulation(single_config, file_logger, config_index)});
+		config_index++;
+	}
+	cout << "Done building simulators. " << endl << endl;
+
+	// Start all the simulations.
+	for (const auto& sim_tuple : tasks) {
+		sim_tuple.sim_task->Start();
+	}
+
+	// Wait for the simulations to complete and generate output files for them.
+	for (const auto& sim_tuple : tasks) {
+		// -----------------------------------------------------------------------------------------
+		// Run the simulation.
+		// -----------------------------------------------------------------------------------------
+		sim_tuple.sim_task->Wait();
+
+		// -----------------------------------------------------------------------------------------
+		// Generate output files
+		// -----------------------------------------------------------------------------------------
+		// Cases
+		auto sim_result = sim_tuple.sim_task->GetResult();
+		CasesFile cases_file(sim_tuple.sim_output_prefix);
+		cases_file.Print(sim_result.cases);
+
+		// Summary
+		SummaryFile summary_file(sim_tuple.sim_output_prefix);
+		summary_file.Print(
+		    sim_tuple.sim_config, sim_tuple.sim_task->GetPopulationSize(),
+		    sim_tuple.sim_task->GetInfectedCount(),
+		    duration_cast<milliseconds>(sim_result.GetRuntime()).count(),
+		    duration_cast<milliseconds>(total_clock.Get()).count());
+
+		// Persons
+		if (sim_tuple.sim_config.log_config->generate_person_file) {
+			auto pop = std::make_shared<Population>(sim_tuple.sim_task->GetPopulation());
+			PersonFile person_file(sim_tuple.sim_output_prefix);
+			person_file.Print(pop);
+		}
+
+		cout << endl << endl;
+		cout << "  run_time: " << sim_result.GetRuntimeString() << "  -- total time: " << total_clock.ToString()
+		     << endl
+		     << endl;
+
+		spdlog::drop(sim_tuple.log_name);
+	}
+
+	// -----------------------------------------------------------------------------------------
+	// Print final message to command line.
+	// -----------------------------------------------------------------------------------------
+	cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
+}
+
+/// Run the stride simulator.
+void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMultiConfig()); }
+
 /// Run the stride simulator.
 void run_stride(bool track_index_case, const string& config_file_name)
 {
-        // -----------------------------------------------------------------------------------------
-        // Print output to command line.
-        // -----------------------------------------------------------------------------------------
-        cout << "\n*************************************************************" << endl;
-        cout << "Starting up at:      " << TimeStamp().ToString() << endl;
-        cout << "Executing:           " << InstallDirs::GetExecPath().string() << endl;
-        cout << "Current directory:   " << InstallDirs::GetCurrentDir().string() << endl;
-        cout << "Install directory:   " << InstallDirs::GetRootDir().string() << endl;
-        cout << "Data    directory:   " << InstallDirs::GetDataDir().string() << endl;
+	// Parse the configuration.
+	ptree pt_config;
+	const auto file_path = canonical(system_complete(config_file_name));
+	if (!is_regular_file(file_path)) {
+		throw runtime_error(
+		    string(__func__) + ">Config file " + file_path.string() + " not present. Aborting.");
+	}
+	read_xml(file_path.string(), pt_config);
+	cout << "Configuration file:  " << file_path.string() << endl;
 
+	MultiSimulationConfig config;
+	config.Parse(pt_config.get_child("run"));
+	config.common_config->track_index_case = track_index_case;
 
-        // -----------------------------------------------------------------------------------------
-        // Check execution environment.
-        // -----------------------------------------------------------------------------------------
-        if ( InstallDirs::GetCurrentDir().compare(InstallDirs::GetRootDir()) != 0 ) {
-                throw runtime_error(string(__func__) + "> Current directory is not install root! Aborting.");
-        }
-        if ( InstallDirs::GetDataDir().empty() ) {
-                throw runtime_error(string(__func__) + "> Data directory not present! Aborting.");
-        }
-
-        // -----------------------------------------------------------------------------------------
-        // Configuration.
-        // -----------------------------------------------------------------------------------------
-        ptree pt_config;
-        const auto file_path = canonical(system_complete(config_file_name));
-        if ( !is_regular_file(file_path) ) {
-                throw runtime_error(string(__func__)
-                        + ">Config file " + file_path.string() + " not present. Aborting.");
-        }
-        read_xml(file_path.string(), pt_config);
-        cout << "Configuration file:  " << file_path.string() << endl;
-
-        SingleSimulationConfig config;
-        config.Parse(pt_config);
-        config.common_config->track_index_case = track_index_case;
-
-        // -----------------------------------------------------------------------------------------
-        // OpenMP.
-        // -----------------------------------------------------------------------------------------
-        unsigned int num_threads;
-        #pragma omp parallel
-        {
-                num_threads = omp_get_num_threads();
-        }
-        if (ConfigInfo::HaveOpenMP()) {
-                cout << "Using OpenMP threads:  " << num_threads << endl;
-        } else {
-                cout << "Not using OpenMP threads." << endl;
-        }
-        // -----------------------------------------------------------------------------------------
-        // Set output path prefix.
-        // -----------------------------------------------------------------------------------------
-        auto output_prefix = config.log_config->output_prefix;
-        if (output_prefix.length() == 0) {
-                output_prefix = TimeStamp().ToTag();
-        }
-        cout << "Project output tag:  " << output_prefix << endl << endl;
-
-        // -----------------------------------------------------------------------------------------
-        // Track index case setting.
-        // -----------------------------------------------------------------------------------------
-        cout << "Setting for track_index_case:  " << boolalpha << track_index_case << endl;
-
-        // -----------------------------------------------------------------------------------------
-        // Create logger
-        // Transmissions:     [TRANSMISSION] <infecterID> <infectedID> <clusterID> <day>
-        // General contacts:  [CNT] <person1ID> <person1AGE> <person2AGE>  <at_home> <at_work> <at_school> <at_other>
-        // -----------------------------------------------------------------------------------------
-        spdlog::set_async_mode(1048576);
-        auto file_logger = spdlog::rotating_logger_mt("contact_logger", output_prefix + "_logfile",
-                std::numeric_limits<size_t>::max(),  std::numeric_limits<size_t>::max());
-        file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
-
-        // -----------------------------------------------------------------------------------------
-        // Create simulator.
-        // -----------------------------------------------------------------------------------------
-        Stopwatch<> total_clock("total_clock", true);
-        cout << "Building the simulator. "<< endl;
-        auto sim = SimulatorBuilder::Build(config, num_threads);
-        cout << "Done building the simulator. "<< endl <<endl;
-
-        // -----------------------------------------------------------------------------------------
-        // Run the simulation.
-        // -----------------------------------------------------------------------------------------
-        Stopwatch<> run_clock("run_clock");
-        const unsigned int num_days = config.common_config->number_of_days;
-        vector<unsigned int> cases(num_days);
-        for (unsigned int i = 0; i < num_days; i++) {
-                cout << "Simulating day: " << setw(5) << i;
-                run_clock.Start();
-                sim->TimeStep();
-                run_clock.Stop();
-                cout << "     Done, infected count: ";
-                cases[i] = sim->GetPopulation()->GetInfectedCount();
-                cout << setw(10) << cases[i] << endl;
-        }
-
-        // -----------------------------------------------------------------------------------------
-        // Generate output files
-        // -----------------------------------------------------------------------------------------
-        // Cases
-        CasesFile    cases_file(output_prefix);
-        cases_file.Print(cases);
-
-        // Summary
-        SummaryFile  summary_file(output_prefix);
-        summary_file.Print(
-                config,
-                sim->GetPopulation()->size(), sim->GetPopulation()->GetInfectedCount(),
-                duration_cast<milliseconds>(run_clock.Get()).count(),
-                duration_cast<milliseconds>(total_clock.Get()).count());
-
-        // Persons
-        if (config.log_config->generate_person_file) {
-                PersonFile	 person_file(output_prefix);
-                person_file.Print(sim->GetPopulation());
-        }
-
-        // -----------------------------------------------------------------------------------------
-        // Print final message to command line.
-        // -----------------------------------------------------------------------------------------
-        cout << endl << endl;
-        cout << "  run_time: " << run_clock.ToString()
-                                << "  -- total time: " << total_clock.ToString() << endl << endl;
-        cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
+	// Run Stride.
+	run_stride(config);
 }
 
 } // end_of_namespace

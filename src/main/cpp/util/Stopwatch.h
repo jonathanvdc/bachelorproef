@@ -12,7 +12,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -35,6 +36,7 @@ class Stopwatch
 {
 public:
 	typedef T TClock;
+	typedef typename T::duration TDuration;
 
 	/// Constructor initializes stopwatch.
 	Stopwatch(std::string name = "stopwatch", bool running = false)
@@ -86,7 +88,7 @@ public:
 	}
 
 	/// Returns the accumulated value without altering the stopwatch state.
-	typename T::duration Get() const
+	TDuration Get() const
 	{
 		auto fTemp = m_accumulated;
 		if (m_running) {
@@ -98,26 +100,24 @@ public:
 	/// Returns string representation of readout
 	std::string ToString() const
 	{
-		using namespace std;
-		using namespace std::chrono;
+		return DurationToString(Get());
+	}
 
-		string colon_string;
+	/// Converts the given duration to a string. The string's formatting is defined by the clock period.
+	static std::string DurationToString(TDuration duration)
+	{
 		typedef typename TClock::period TPeriod;
-		if (ratio_less_equal<TPeriod, micro>::value) {
-			microseconds d = duration_cast < microseconds > (Get());
-			colon_string = TimeToString::ToColonString(d);
-		} else if (ratio_less_equal<TPeriod, milli>::value) {
-			milliseconds d = duration_cast < milliseconds > (Get());
-			colon_string = TimeToString::ToColonString(d);
+		if (std::ratio_less_equal<TPeriod, std::micro>::value) {
+			return TimeToString::ToColonString(std::chrono::duration_cast<std::chrono::microseconds>(duration));
+		} else if (std::ratio_less_equal<TPeriod, std::milli>::value) {
+			return TimeToString::ToColonString(std::chrono::duration_cast<std::chrono::milliseconds>(duration));
 		} else {
-			seconds d = duration_cast < seconds > (Get());
-			colon_string = TimeToString::ToColonString(d);
+			return TimeToString::ToColonString(std::chrono::duration_cast<std::chrono::seconds>(duration));
 		}
-		return colon_string;
 	}
 
 private:
-	typename T::duration       m_accumulated;
+	TDuration                  m_accumulated;
 	typename T::time_point     m_last_start;
 	std::string                m_name;
 	bool                       m_running;

@@ -62,6 +62,11 @@ void SingleSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 	*this = multi_config.AsSingleConfig();
 }
 
+MultiSimulationConfig SingleSimulationConfig::AsMultiConfig() const
+{
+	return {common_config, log_config, {population_file_name}};
+}
+
 void MultiSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 {
 	common_config = std::make_shared<CommonSimulationConfig>();

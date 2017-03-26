@@ -26,6 +26,7 @@
 #include "core/RngHandler.h"
 #include "sim/SimulationConfig.h"
 
+#include <spdlog/spdlog.h>
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <string>
@@ -48,6 +49,9 @@ public:
         /// Get the population.
         const std::shared_ptr<const Population> GetPopulation() const;
 
+        /// Gets the simulator's configuration.
+        SingleSimulationConfig GetConfiguration() const;
+
         /// Change track_index_case setting.
         void SetTrackIndexCase(bool track_index_case);
 
@@ -61,6 +65,7 @@ private:
 
 private:
 	SingleSimulationConfig              m_config;               ///< Configuration for this simulator.
+	std::shared_ptr<spdlog::logger>     m_log;                  ///< Log for this simulator.
 
 private:
 	unsigned int                        m_num_threads;          ///< The number of (OpenMP) threads.
