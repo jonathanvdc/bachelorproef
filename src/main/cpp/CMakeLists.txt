@@ -52,6 +52,8 @@ set(LIB_SRC
 	util/InstallDirs.cpp
 #---
     alias/Alias.cpp
+#---
+    checkpoint/CheckPoint.cpp
 )
 
 if( AWESOMIUM_FOUND )
