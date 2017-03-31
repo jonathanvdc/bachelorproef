@@ -38,6 +38,7 @@ struct Airport final
 	/// The id of the region where this airport is located.
 	RegionId region_id;
 
+	/// Gets the list of all outgoing routes that start at this airport.
 	std::vector<AirRoute> routes;
 };
 
