@@ -31,6 +31,8 @@ set(LIB_SRC
     core/Infector.cpp
     core/LogMode.cpp
 #---
+    multiregion/TravelModel.cpp
+#---
 	output/CasesFile.cpp
 	output/PersonFile.cpp
 	output/SummaryFile.cpp
