@@ -9,6 +9,7 @@
 #include <memory>
 #include <unordered_set>
 #include <vector>
+#include <boost/property_tree/ptree.hpp>
 
 namespace stride {
 namespace multiregion {
@@ -53,14 +54,14 @@ class RegionTravel final
 {
 public:
 	RegionTravel(
-	    RegionId region_id, double passenger_fraction,
+	    RegionId region_id, double population_fraction,
 	    const std::shared_ptr<const std::vector<AirportRef>>& all_airports);
 
 	/// Gets the region id for the region this data structure represents.
 	RegionId GetRegionId() const { return region_id; }
 
 	/// Gets the fraction of people in the region who travel by plane on any given day.
-	double GetPassengerFraction() const { return passenger_fraction; }
+	double GetPopulationFraction() const { return population_fraction; }
 
 	/// Gets a list of all airports.
 	const std::vector<AirportRef>& GetAllAirports() const { return *all_airports; }
@@ -75,9 +76,12 @@ public:
 		return regions_with_incoming_routes;
 	}
 
+	/// Parses a ptree that contains a vector of travel information for regions.
+	static std::vector<RegionTravel> ParseRegionTravel(boost::property_tree::ptree& ptree);
+
 private:
 	RegionId region_id;
-	double passenger_fraction;
+	double population_fraction;
 	std::shared_ptr<const std::vector<AirportRef>> all_airports;
 	std::vector<AirportRef> local_airports;
 	std::unordered_set<RegionId> regions_with_incoming_routes;
