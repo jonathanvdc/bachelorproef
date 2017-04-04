@@ -89,7 +89,7 @@ public:
 	/// unique identifiers in the [first_region_id, first_region_id + number_of_regions)
 	/// range.
 	static std::vector<RegionTravel> ParseRegionTravel(
-	    boost::property_tree::ptree& ptree, size_t first_region_id = 0);
+	    boost::property_tree::ptree& ptree, RegionId first_region_id = 0);
 
 private:
 	RegionId region_id;

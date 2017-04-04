@@ -34,7 +34,7 @@ RegionTravel::RegionTravel(
 	}
 }
 
-std::vector<RegionTravel> RegionTravel::ParseRegionTravel(boost::property_tree::ptree& ptree, size_t first_region_id)
+std::vector<RegionTravel> RegionTravel::ParseRegionTravel(boost::property_tree::ptree& ptree, RegionId first_region_id)
 {
 	// A region travel model contains:
 	//   * regions, which contain
