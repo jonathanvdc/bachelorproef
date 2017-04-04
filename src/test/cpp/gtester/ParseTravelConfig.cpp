@@ -9,6 +9,26 @@
 
 namespace Tests {
 
+void assert_default_travel_config(
+	const std::vector<stride::multiregion::RegionTravelRef>& regions)
+{
+	ASSERT_EQ(regions.size(), 2u);
+	ASSERT_EQ(regions[0]->GetRegionPopulationPath(), "pop_nassau.csv");
+	ASSERT_EQ(regions[1]->GetRegionPopulationPath(), "pop_oklahoma.csv");
+	ASSERT_DOUBLE_EQ(regions[0]->GetTravelFraction(), 0.01);
+	ASSERT_DOUBLE_EQ(regions[1]->GetTravelFraction(), 0.01);
+	ASSERT_EQ(regions[0]->GetLocalAirports().size(), 1u);
+	ASSERT_EQ(regions[1]->GetLocalAirports().size(), 1u);
+	ASSERT_DOUBLE_EQ(regions[0]->GetLocalAirports()[0]->passenger_fraction, 2);
+	ASSERT_DOUBLE_EQ(regions[1]->GetLocalAirports()[0]->passenger_fraction, 1);
+	ASSERT_EQ(regions[0]->GetLocalAirports()[0]->routes.size(), 1u);
+	ASSERT_EQ(regions[1]->GetLocalAirports()[0]->routes.size(), 1u);
+	ASSERT_DOUBLE_EQ(regions[0]->GetLocalAirports()[0]->routes[0].passenger_fraction, 3.0);
+	ASSERT_EQ(regions[0]->GetLocalAirports()[0]->routes[0].target, regions[1]->GetLocalAirports()[0]);
+	ASSERT_DOUBLE_EQ(regions[1]->GetLocalAirports()[0]->routes[0].passenger_fraction, 1.0);
+	ASSERT_EQ(regions[1]->GetLocalAirports()[0]->routes[0].target, regions[0]->GetLocalAirports()[0]);
+}
+
 TEST(ParseTravelModel, ParseDefaultTravelModel)
 {
 	// <travel_model>
@@ -29,21 +49,7 @@ TEST(ParseTravelModel, ParseDefaultTravelModel)
 	boost::property_tree::read_xml(pop_file, pt);
 	auto travel_model = stride::multiregion::RegionTravel::ParseRegionTravel(pt.get_child("travel_model"));
 
-	ASSERT_EQ(travel_model.size(), 2u);
-	ASSERT_EQ(travel_model[0]->GetRegionPopulationPath(), "pop_nassau.csv");
-	ASSERT_EQ(travel_model[1]->GetRegionPopulationPath(), "pop_oklahoma.csv");
-	ASSERT_DOUBLE_EQ(travel_model[0]->GetTravelFraction(), 0.01);
-	ASSERT_DOUBLE_EQ(travel_model[1]->GetTravelFraction(), 0.01);
-	ASSERT_EQ(travel_model[0]->GetLocalAirports().size(), 1u);
-	ASSERT_EQ(travel_model[1]->GetLocalAirports().size(), 1u);
-	ASSERT_DOUBLE_EQ(travel_model[0]->GetLocalAirports()[0]->passenger_fraction, 2);
-	ASSERT_DOUBLE_EQ(travel_model[1]->GetLocalAirports()[0]->passenger_fraction, 1);
-	ASSERT_EQ(travel_model[0]->GetLocalAirports()[0]->routes.size(), 1u);
-	ASSERT_EQ(travel_model[1]->GetLocalAirports()[0]->routes.size(), 1u);
-	ASSERT_DOUBLE_EQ(travel_model[0]->GetLocalAirports()[0]->routes[0].passenger_fraction, 3.0);
-	ASSERT_EQ(travel_model[0]->GetLocalAirports()[0]->routes[0].target, travel_model[1]->GetLocalAirports()[0]);
-	ASSERT_DOUBLE_EQ(travel_model[1]->GetLocalAirports()[0]->routes[0].passenger_fraction, 1.0);
-	ASSERT_EQ(travel_model[1]->GetLocalAirports()[0]->routes[0].target, travel_model[0]->GetLocalAirports()[0]);
+	assert_default_travel_config(travel_model);
 }
 
 } // Tests
