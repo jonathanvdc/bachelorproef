@@ -90,8 +90,8 @@ void MultiSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 			const auto file_name = item.second.get_value<std::string>();
 			boost::property_tree::ptree pt;
 			InstallDirs::ReadXmlFile(file_name, InstallDirs::GetDataDir(), pt);
-			auto parsed_region_models =
-			    stride::multiregion::RegionTravel::ParseRegionTravel(pt, region_models.size());
+			auto parsed_region_models = stride::multiregion::RegionTravel::ParseRegionTravel(
+			    pt.get_child("travel_model"), region_models.size());
 			region_models.insert(
 			    region_models.end(), parsed_region_models.begin(), parsed_region_models.end());
 		}
