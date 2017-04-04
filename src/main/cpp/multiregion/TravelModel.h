@@ -53,6 +53,11 @@ struct Airport final
 class RegionTravel final
 {
 public:
+	/// Creates a travel model for a single region. This constructor will build
+	/// a model where no inter-region travel whatsoever occurs.
+	RegionTravel(RegionId region_id, const std::string& region_population_path);
+
+	/// Creates a travel model for a single region.
 	RegionTravel(
 	    RegionId region_id, const std::string& region_population_path, double travel_fraction,
 	    const std::shared_ptr<const std::vector<AirportRef>>& all_airports);

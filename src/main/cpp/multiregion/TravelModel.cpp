@@ -10,6 +10,12 @@
 namespace stride {
 namespace multiregion {
 
+RegionTravel::RegionTravel(RegionId region_id, const std::string& region_population_path)
+    : region_id(region_id), region_population_path(region_population_path), travel_fraction(0.0),
+      all_airports(std::make_shared<std::vector<AirportRef>>())
+{
+}
+
 RegionTravel::RegionTravel(
     RegionId region_id, const std::string& region_population_path, double travel_fraction,
     const std::shared_ptr<const std::vector<AirportRef>>& all_airports)
