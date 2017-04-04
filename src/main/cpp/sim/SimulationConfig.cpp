@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include "calendar/Calendar.h"
