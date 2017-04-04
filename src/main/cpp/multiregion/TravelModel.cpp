@@ -11,8 +11,10 @@ namespace stride {
 namespace multiregion {
 
 RegionTravel::RegionTravel(
-    RegionId region_id, double population_fraction, const std::shared_ptr<const std::vector<AirportRef>>& all_airports)
-    : region_id(region_id), population_fraction(population_fraction), all_airports(all_airports)
+    RegionId region_id, std::string region_population_path, double travel_fraction,
+    const std::shared_ptr<const std::vector<AirportRef>>& all_airports)
+    : region_id(region_id), region_population_path(region_population_path), travel_fraction(travel_fraction),
+      all_airports(all_airports)
 {
 	for (const auto& airport : *all_airports) {
 		if (airport->region_id == region_id) {
@@ -109,8 +111,10 @@ std::vector<RegionTravel> RegionTravel::ParseRegionTravel(boost::property_tree::
 			continue;
 
 		const auto& region = region_pair.second;
-		auto region_population_fraction = region.get<double>("<xmlattr>.population_fraction");
-		results.push_back(RegionTravel(region_id, region_population_fraction, airport_list));
+		auto region_population_path = region.get<std::string>("<xmlattr>.population_file");
+		auto region_travel_fraction = region.get<double>("<xmlattr>.travel_fraction");
+		results.push_back(
+		    RegionTravel(region_id, region_population_path, region_travel_fraction, airport_list));
 		region_id++;
 	}
 	return std::move(results);

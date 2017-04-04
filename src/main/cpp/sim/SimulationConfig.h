@@ -12,6 +12,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include "calendar/Calendar.h"
 #include "core/LogMode.h"
+#include "multiregion/TravelModel.h"
 
 namespace stride {
 

@@ -54,14 +54,17 @@ class RegionTravel final
 {
 public:
 	RegionTravel(
-	    RegionId region_id, double population_fraction,
+	    RegionId region_id, std::string region_population_path, double travel_fraction,
 	    const std::shared_ptr<const std::vector<AirportRef>>& all_airports);
 
 	/// Gets the region id for the region this data structure represents.
 	RegionId GetRegionId() const { return region_id; }
 
+	/// Gets the path of the population file for this region.
+	std::string GetRegionPopulationPath() const { return region_population_path; }
+
 	/// Gets the fraction of people in the region who travel by plane on any given day.
-	double GetPopulationFraction() const { return population_fraction; }
+	double GetTravelFraction() const { return travel_fraction; }
 
 	/// Gets a list of all airports.
 	const std::vector<AirportRef>& GetAllAirports() const { return *all_airports; }
@@ -81,7 +84,8 @@ public:
 
 private:
 	RegionId region_id;
-	double population_fraction;
+	std::string region_population_path;
+	double travel_fraction;
 	std::shared_ptr<const std::vector<AirportRef>> all_airports;
 	std::vector<AirportRef> local_airports;
 	std::unordered_set<RegionId> regions_with_incoming_routes;
