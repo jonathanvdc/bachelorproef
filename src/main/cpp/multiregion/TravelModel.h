@@ -54,7 +54,7 @@ class RegionTravel final
 {
 public:
 	RegionTravel(
-	    RegionId region_id, std::string region_population_path, double travel_fraction,
+	    RegionId region_id, const std::string& region_population_path, double travel_fraction,
 	    const std::shared_ptr<const std::vector<AirportRef>>& all_airports);
 
 	/// Gets the region id for the region this data structure represents.
