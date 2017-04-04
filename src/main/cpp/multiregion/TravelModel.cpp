@@ -34,7 +34,7 @@ RegionTravel::RegionTravel(
 	}
 }
 
-std::vector<RegionTravel> RegionTravel::ParseRegionTravel(boost::property_tree::ptree& ptree)
+std::vector<RegionTravel> RegionTravel::ParseRegionTravel(boost::property_tree::ptree& ptree, size_t first_region_id)
 {
 	// A region travel model contains:
 	//   * regions, which contain
@@ -56,7 +56,7 @@ std::vector<RegionTravel> RegionTravel::ParseRegionTravel(boost::property_tree::
 
 	// Our first order of business is to parse the airports. and the routes that
 	// connect them.
-	RegionId region_id = 0;
+	RegionId region_id = first_region_id;
 	for (const auto& region_pair : ptree) {
 		if (region_pair.first != "region")
 			continue;
@@ -111,7 +111,7 @@ std::vector<RegionTravel> RegionTravel::ParseRegionTravel(boost::property_tree::
 	std::vector<RegionTravel> results;
 
 	// Finally, we'll create data structures for the regions.
-	region_id = 0;
+	region_id = first_region_id;
 	for (const auto& region_pair : ptree) {
 		if (region_pair.first != "region")
 			continue;
