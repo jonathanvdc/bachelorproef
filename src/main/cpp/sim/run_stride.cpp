@@ -23,6 +23,7 @@
 
 #include "multiregion/ParallelSimulationManager.h"
 #include "multiregion/SimulationManager.h"
+#include "multiregion/TravelModel.h"
 #include "output/CasesFile.h"
 #include "output/PersonFile.h"
 #include "output/SummaryFile.h"
