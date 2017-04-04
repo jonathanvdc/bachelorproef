@@ -20,9 +20,12 @@
 
 #include "InstallDirs.h"
 
+#include "util/Errors.h"
 #include "util/StringUtils.h"
 
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include <string>
 
 #if defined(WIN32)
@@ -165,6 +168,30 @@ path InstallDirs::GetRootDir()
 {
 	Check();
 	return g_root_dir;
+}
+
+/// Reads the XML file at the given path, relative to some other path.
+void InstallDirs::ReadXmlFile(
+	const boost::filesystem::path& relative_path,
+	const boost::filesystem::path& anchor_path,
+	boost::property_tree::ptree& result)
+{
+	auto file_path = InstallDirs::GetDataDir() /= relative_path;
+	if (!is_regular_file(file_path)) {
+		FATAL_ERROR(
+			"File " + relative_path.string() +
+			" not present. (anchor path: " + anchor_path.string() + ")");
+	}
+
+	boost::filesystem::ifstream file_stream;
+	file_stream.open(relative_path.string());
+	if (!file_stream.is_open()) {
+		FATAL_ERROR(
+			"Error opening file " + relative_path.string() +
+			" (anchor path: " + anchor_path.string() + ")");
+	}
+
+	boost::property_tree::read_xml(file_stream, result);
 }
 
 } // namespace

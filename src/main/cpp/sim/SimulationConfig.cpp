@@ -6,13 +6,16 @@
 #include "sim/SimulationConfig.h"
 
 #include <exception>
+#include <iostream>
 #include <memory>
 #include <string>
-#include <vector>
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include "calendar/Calendar.h"
 #include "core/LogMode.h"
 #include "multiregion/TravelModel.h"
+#include "util/Errors.h"
+#include "util/InstallDirs.h"
 #include "util/TimeStamp.h"
 
 using namespace stride::util;
@@ -81,6 +84,14 @@ void MultiSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 		} else if (item.first == "travel_model") {
 			auto parsed_region_models =
 			    stride::multiregion::RegionTravel::ParseRegionTravel(item.second, region_models.size());
+			region_models.insert(
+			    region_models.end(), parsed_region_models.begin(), parsed_region_models.end());
+		} else if (item.first == "travel_file") {
+			const auto file_name = item.second.get_value<std::string>();
+			boost::property_tree::ptree pt;
+			InstallDirs::ReadXmlFile(file_name, InstallDirs::GetDataDir(), pt);
+			auto parsed_region_models =
+			    stride::multiregion::RegionTravel::ParseRegionTravel(pt, region_models.size());
 			region_models.insert(
 			    region_models.end(), parsed_region_models.begin(), parsed_region_models.end());
 		}
