@@ -170,7 +170,6 @@ path InstallDirs::GetRootDir()
 	return g_root_dir;
 }
 
-/// Reads the XML file at the given path, relative to some other path.
 void InstallDirs::ReadXmlFile(
 	const boost::filesystem::path& relative_path,
 	const boost::filesystem::path& anchor_path,
