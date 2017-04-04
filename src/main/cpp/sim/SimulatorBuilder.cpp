@@ -53,11 +53,9 @@ shared_ptr<Simulator> SimulatorBuilder::Build(const string& config_file_name,
 {
         // Configuration file.
         ptree pt_config;
-        const auto file_path = InstallDirs::GetCurrentDir() /= config_file_name;
-        if ( !is_regular_file(file_path) ) {
-                FATAL_ERROR("Config file " + file_path.string() + " not present. Aborting.");
-        }
-        read_xml(file_path.string(), pt_config);
+        InstallDirs::ReadXmlFile(
+                config_file_name,
+                InstallDirs::GetCurrentDir(), pt_config);
 
         // Done.
         return Build(pt_config, log, num_threads, track_index_case);
@@ -81,21 +79,15 @@ shared_ptr<Simulator> SimulatorBuilder::Build(
 {
         // Disease file.
         ptree pt_disease;
-        const auto file_name_d = config.common_config->disease_config_file_name;
-        const auto file_path_d { InstallDirs::GetDataDir() /= file_name_d };
-        if ( !is_regular_file(file_path_d) ) {
-                throw runtime_error(std::string(__func__)  + "> No file " + file_path_d.string());
-        }
-        read_xml(file_path_d.string(), pt_disease);
+        InstallDirs::ReadXmlFile(
+                config.common_config->disease_config_file_name,
+                InstallDirs::GetDataDir(), pt_disease);
 
         // Contact file.
         ptree pt_contact;
-        const auto file_name_c = config.common_config->contact_matrix_file_name;
-        const auto file_path_c { InstallDirs::GetDataDir() /= file_name_c };
-        if ( !is_regular_file(file_path_c) ) {
-                FATAL_ERROR("No file " + file_path_c.string());
-        }
-        read_xml(file_path_c.string(), pt_contact);
+        InstallDirs::ReadXmlFile(
+                config.common_config->contact_matrix_file_name,
+                InstallDirs::GetDataDir(), pt_contact);
 
         // Done.
         return Build(config, pt_disease, pt_contact, log, num_threads);

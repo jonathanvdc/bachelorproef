@@ -180,18 +180,10 @@ void InstallDirs::ReadXmlFile(
 	if (!is_regular_file(file_path)) {
 		FATAL_ERROR(
 			"File " + relative_path.string() +
-			" not present. (anchor path: " + anchor_path.string() + ")");
+			" not present. (full path: " + file_path.string() + ")");
 	}
 
-	boost::filesystem::ifstream file_stream;
-	file_stream.open(relative_path.string());
-	if (!file_stream.is_open()) {
-		FATAL_ERROR(
-			"Error opening file " + relative_path.string() +
-			" (anchor path: " + anchor_path.string() + ")");
-	}
-
-	boost::property_tree::read_xml(file_stream, result);
+	boost::property_tree::read_xml(file_path.string(), result);
 }
 
 } // namespace
