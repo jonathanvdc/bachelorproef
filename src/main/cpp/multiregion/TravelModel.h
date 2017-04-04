@@ -19,6 +19,9 @@ using RegionId = size_t;
 struct Airport;
 using AirportRef = std::shared_ptr<const Airport>;
 
+class RegionTravel;
+using RegionTravelRef = std::shared_ptr<const RegionTravel>;
+
 /**
  * Represents a single route in the airport network.
  */
@@ -88,7 +91,7 @@ public:
 	/// The identifier for the first region can be specified. All regions are assigned
 	/// unique identifiers in the [first_region_id, first_region_id + number_of_regions)
 	/// range.
-	static std::vector<RegionTravel> ParseRegionTravel(
+	static std::vector<RegionTravelRef> ParseRegionTravel(
 	    const boost::property_tree::ptree& ptree, RegionId first_region_id = 0);
 
 private:

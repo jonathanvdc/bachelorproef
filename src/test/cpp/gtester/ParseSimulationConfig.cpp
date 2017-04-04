@@ -36,8 +36,9 @@ TEST(ParseSimulationConfig, ParseDefaultSimulationConfig)
 	EXPECT_DOUBLE_EQ(config.common_config->r0, 11);
 	EXPECT_DOUBLE_EQ(config.common_config->seeding_rate, 0.002);
 	EXPECT_DOUBLE_EQ(config.common_config->immunity_rate, 0.8);
-	EXPECT_EQ(config.population_file_names.size(), 1u);
-	EXPECT_EQ(config.population_file_names[0], "pop_nassau.csv");
+	EXPECT_EQ(config.region_models.size(), 1u);
+	EXPECT_EQ(config.region_models[0]->GetRegionId(), 0u);
+	EXPECT_EQ(config.region_models[0]->GetRegionPopulationPath(), "pop_nassau.csv");
 	EXPECT_EQ(config.common_config->number_of_days, 50u);
 	EXPECT_EQ(config.log_config->output_prefix, "");
 	EXPECT_EQ(config.common_config->disease_config_file_name, "disease_measles.xml");

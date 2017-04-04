@@ -34,7 +34,8 @@ RegionTravel::RegionTravel(
 	}
 }
 
-std::vector<RegionTravel> RegionTravel::ParseRegionTravel(const boost::property_tree::ptree& ptree, RegionId first_region_id)
+std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
+    const boost::property_tree::ptree& ptree, RegionId first_region_id)
 {
 	// A region travel model contains:
 	//   * regions, which contain
@@ -108,7 +109,7 @@ std::vector<RegionTravel> RegionTravel::ParseRegionTravel(const boost::property_
 	}
 
 	// Create the list of results.
-	std::vector<RegionTravel> results;
+	std::vector<RegionTravelRef> results;
 
 	// Finally, we'll create data structures for the regions.
 	region_id = first_region_id;
@@ -119,8 +120,8 @@ std::vector<RegionTravel> RegionTravel::ParseRegionTravel(const boost::property_
 		const auto& region = region_pair.second;
 		auto region_population_path = region.get<std::string>("<xmlattr>.population_file");
 		auto region_travel_fraction = region.get<double>("<xmlattr>.travel_fraction");
-		results.push_back(
-		    RegionTravel(region_id, region_population_path, region_travel_fraction, airport_list));
+		results.push_back(std::make_shared<RegionTravel>(
+		    region_id, region_population_path, region_travel_fraction, airport_list));
 		region_id++;
 	}
 	return std::move(results);
