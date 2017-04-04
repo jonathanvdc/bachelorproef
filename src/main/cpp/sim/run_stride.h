@@ -25,6 +25,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include "multiregion/TravelModel.h"
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
 #include "util/Stopwatch.h"
@@ -37,9 +38,9 @@ namespace stride {
 class StrideSimulatorResult final
 {
 public:
-	StrideSimulatorResult(size_t id) : id(id), run_clock("run_clock", false), day() {}
+	StrideSimulatorResult(multiregion::RegionId id) : id(id), run_clock("run_clock", false), day() {}
 
-	const size_t id;
+	const multiregion::RegionId id;
 	std::vector<unsigned int> cases;
 
 	/// Gets the total run-time for this simulator result.
