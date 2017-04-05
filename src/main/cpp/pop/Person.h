@@ -29,6 +29,8 @@
 
 namespace stride {
 
+using PersonId = unsigned int;
+
 class Calendar;
 enum class ClusterType;
 
@@ -39,8 +41,9 @@ class Person
 {
 public:
 	/// Constructor: set the person data.
-	Person(unsigned int id, double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
-	       unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
+	Person(
+	    PersonId id, double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
+	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
 	    : m_id(id), m_age(age), m_gender('M'), m_household_id(household_id), m_school_id(school_id),
 	      m_work_id(work_id), m_primary_community_id(primary_community_id),
 	      m_secondary_community_id(secondary_community_id), m_at_household(true), m_at_school(true),
@@ -68,7 +71,7 @@ public:
 	const Health& GetHealth() const { return m_health; }
 
 	/// Get the id.
-	unsigned int GetId() const { return m_id; }
+	PersonId GetId() const { return m_id; }
 
 	/// Check if a person is present today in a given cluster
 	bool IsInCluster(ClusterType c) const;
@@ -83,7 +86,7 @@ public:
 	void Update(bool is_work_off, bool is_school_off);
 
 private:
-	unsigned int m_id;
+	PersonId m_id;
 	double m_age;
 	char m_gender;
 
