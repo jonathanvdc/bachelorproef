@@ -21,6 +21,8 @@
  */
 
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <string>
 
 namespace stride {
 namespace util {
@@ -44,6 +46,12 @@ public:
 
 	/// Utility method: get application installation root directory.
 	static boost::filesystem::path GetRootDir();
+
+	/// Reads the XML file at the given path, relative to some anchor path.
+	static void ReadXmlFile(
+		const boost::filesystem::path& relative_path,
+		const boost::filesystem::path& anchor_path,
+		boost::property_tree::ptree& result);
 
 private:
 	/// Check initialization.

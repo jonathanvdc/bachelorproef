@@ -12,6 +12,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include "calendar/Calendar.h"
 #include "core/LogMode.h"
+#include "multiregion/TravelModel.h"
 
 namespace stride {
 
@@ -89,8 +90,14 @@ struct SingleSimulationConfig final
 	/// The log configuration.
 	std::shared_ptr<LogConfig> log_config;
 
-	/// The population file for this simulation.
-	std::string population_file_name;
+	/// The travel model for this region.
+	stride::multiregion::RegionTravelRef travel_model;
+
+	/// Gets the unique id for the region used by this config.
+	stride::multiregion::RegionId GetId() const { return travel_model->GetRegionId(); }
+
+	/// Gets a path to the population file for this simulation.
+	std::string GetPopulationPath() const { return travel_model->GetRegionPopulationPath(); };
 
 	/// Returns this single-simulation configuration as a multi-simulation
 	/// configuration that contains a single sub-simulation.
@@ -111,8 +118,8 @@ struct MultiSimulationConfig final
 	/// The log configuration.
 	std::shared_ptr<LogConfig> log_config;
 
-	/// The list of population files for populations to simulate.
-	std::vector<std::string> population_file_names;
+	/// The list of models for the regions to simulate.
+	std::vector<stride::multiregion::RegionTravelRef> region_models;
 
 	/// Creates a vector that contains all single-simulation configurations.
 	std::vector<SingleSimulationConfig> GetSingleConfigs() const;

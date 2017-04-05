@@ -25,6 +25,7 @@ set( SRC
 		ParsePopulationModel.cpp
 		AliasTest.cpp
 		ParseSimulationConfig.cpp
+		ParseTravelConfig.cpp
 		MpiTests.cpp
 		RunSimulator.cpp
 )
