@@ -24,6 +24,7 @@
 #include "core/DiseaseProfile.h"
 #include "core/LogMode.h"
 #include "core/RngHandler.h"
+#include "multiregion/VisitorJournal.h"
 #include "sim/SimulationConfig.h"
 
 #include <spdlog/spdlog.h>
@@ -75,6 +76,8 @@ private:
 
 private:
     std::shared_ptr<Population>         m_population;           ///< Pointer to the Population.
+    stride::multiregion::VisitorJournal m_visitors;             ///< Visitor journal.
+    stride::multiregion::ExpatriateJournal m_expatriates;       ///< Expatriate journal.
 
 	std::vector<Cluster>                m_households;           ///< Container with household Clusters.
     std::vector<Cluster>                m_school_clusters;      ///< Container with school Clusters.
