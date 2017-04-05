@@ -10,16 +10,21 @@
 namespace stride {
 namespace multiregion {
 
-RegionTravel::RegionTravel(RegionId region_id, const std::string& region_population_path)
-    : region_id(region_id), region_population_path(region_population_path), travel_fraction(0.0),
+RegionTravel::RegionTravel(
+    RegionId region_id, const std::string& region_population_path,
+    const std::string& region_geodistribution_profile_path)
+    : region_id(region_id), region_population_path(region_population_path),
+      region_geodistribution_profile_path(region_geodistribution_profile_path), travel_fraction(0.0),
       all_airports(std::make_shared<std::vector<AirportRef>>())
 {
 }
 
 RegionTravel::RegionTravel(
-    RegionId region_id, const std::string& region_population_path, double travel_fraction,
+    RegionId region_id, const std::string& region_population_path,
+    const std::string& region_geodistribution_profile_path, double travel_fraction,
     const std::shared_ptr<const std::vector<AirportRef>>& all_airports)
-    : region_id(region_id), region_population_path(region_population_path), travel_fraction(travel_fraction),
+    : region_id(region_id), region_population_path(region_population_path),
+      region_geodistribution_profile_path(region_geodistribution_profile_path), travel_fraction(travel_fraction),
       all_airports(all_airports)
 {
 	for (const auto& airport : *all_airports) {
@@ -119,12 +124,16 @@ std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
 
 		const auto& region = region_pair.second;
 		auto region_population_path = region.get<std::string>("<xmlattr>.population_file");
+		auto region_geodistribution_profile_path = region.get<std::string>("<xmlattr>.geodistribution_profile");
 		auto region_travel_fraction = region.get<double>("<xmlattr>.travel_fraction");
-		results.push_back(std::make_shared<RegionTravel>(
-		    region_id, region_population_path, region_travel_fraction, airport_list));
+		results.push_back(
+		    std::make_shared<RegionTravel>(
+			region_id, region_population_path, region_geodistribution_profile_path, region_travel_fraction,
+			airport_list));
 		region_id++;
 	}
 	return std::move(results);
 }
-}
-}
+
+} // namespace
+} // namespace
