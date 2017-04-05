@@ -8,6 +8,10 @@
 #include "CheckPoint.h"
 #include "hdf5.h"
 
+#include <pop/Person.h>
+#include <core/ClusterType.h>
+#include <core/Health.h>
+
 #include <sstream>
 #include <string>
 
@@ -147,10 +151,10 @@ void CheckPoint::WritePopulation(const Population& pop)
 		dset[i][3] = p.IsParticipatingInSurvey();
 
 		// Health data
-		dset[i][4] = p.GetHealth().GetHealthStatus();
+		dset[i][4] = (unsigned int) p.GetHealth().GetHealthStatus();
 
 		// Cluster data
-		for (unsigned int j = 0; j < NumOfClusterTypes(); j++) {
+		for (auto j = ClusterType::first; j <= ClusterType::last; j++) {
 			if (ToString(j) == "Null") {
 				continue;
 			}
