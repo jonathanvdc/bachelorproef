@@ -23,6 +23,7 @@
 
 #include "multiregion/ParallelSimulationManager.h"
 #include "multiregion/SimulationManager.h"
+#include "multiregion/TravelModel.h"
 #include "output/CasesFile.h"
 #include "output/PersonFile.h"
 #include "output/SummaryFile.h"
@@ -151,10 +152,9 @@ void run_stride(const MultiSimulationConfig& config)
 	// Create simulator.
 	// -----------------------------------------------------------------------------------------
 	Stopwatch<> total_clock("total_clock", true);
-	multiregion::ParallelSimulationManager<StrideSimulatorResult, size_t> sim_manager{num_threads};
+	multiregion::ParallelSimulationManager<StrideSimulatorResult, multiregion::RegionId> sim_manager{num_threads};
 
 	// Build all the simulations.
-	size_t config_index = 0;
 	struct SimulationTuple
 	{
 		std::string log_name;
@@ -164,8 +164,9 @@ void run_stride(const MultiSimulationConfig& config)
 	};
 	std::vector<SimulationTuple> tasks;
 	for (const auto& single_config : config.GetSingleConfigs()) {
-		cout << "Building simulator #" << config_index << endl;
-		auto sim_output_prefix = output_prefix + "_sim" + std::to_string(config_index);
+		multiregion::RegionId region_id = single_config.GetId();
+		cout << "Building simulator #" << region_id << endl;
+		auto sim_output_prefix = output_prefix + "_sim" + std::to_string(region_id);
 
 		// -----------------------------------------------------------------------------------------
 		// Create logger
@@ -180,8 +181,7 @@ void run_stride(const MultiSimulationConfig& config)
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
 		tasks.push_back({log_name, sim_output_prefix, single_config,
-				 sim_manager.CreateSimulation(single_config, file_logger, config_index)});
-		config_index++;
+				 sim_manager.CreateSimulation(single_config, file_logger, region_id)});
 	}
 	cout << "Done building simulators. " << endl << endl;
 

@@ -73,7 +73,7 @@ shared_ptr<Population> PopulationBuilder::Build(
 	}
 
 	// Add persons to population.
-	const auto file_name = config.population_file_name;
+	const auto file_name = config.GetPopulationPath();
 	const auto file_path = InstallDirs::GetDataDir() /= file_name;
 	if (!is_regular_file(file_path)) {
 		FATAL_ERROR("Population file " + file_path.string() + " not present.");

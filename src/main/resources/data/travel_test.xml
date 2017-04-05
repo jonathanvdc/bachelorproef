@@ -1,0 +1,12 @@
+<travel_model>
+    <region population_file="pop_nassau.csv" travel_fraction="0.01">
+        <airport name="JFK" passenger_fraction="2">
+            <route passenger_fraction="3">FDR</route>
+        </airport>
+    </region>
+    <region population_file="pop_oklahoma.csv" travel_fraction="0.01">
+        <airport name="FDR">
+            <route>JFK</route>
+        </airport>
+    </region>
+</travel_model>

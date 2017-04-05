@@ -61,7 +61,7 @@ void SummaryFile::Print(
 	}
 
 	m_fstream
-		<< config.population_file_name << ","
+		<< config.GetPopulationPath() << ","
 		<< config.common_config->number_of_days << ","
 		<< population_size << ","
 		<< config.common_config->seeding_rate << ","

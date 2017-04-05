@@ -3,14 +3,20 @@
  * Configuration data structures for the simulator, built with multi-region in mind.
  */
 
+#include "sim/SimulationConfig.h"
+
 #include <exception>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include "calendar/Calendar.h"
 #include "core/LogMode.h"
-#include "sim/SimulationConfig.h"
+#include "multiregion/TravelModel.h"
+#include "util/Errors.h"
+#include "util/InstallDirs.h"
 #include "util/TimeStamp.h"
 
 using namespace stride::util;
@@ -41,9 +47,7 @@ void CommonSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 	contact_matrix_file_name = pt.get<std::string>("age_contact_matrix_file", "contact_matrix.xml");
 }
 
-LogConfig::LogConfig() : output_prefix(), generate_person_file(), log_level()
-{
-}
+LogConfig::LogConfig() : output_prefix(), generate_person_file(), log_level() {}
 
 void LogConfig::Parse(const boost::property_tree::ptree& pt)
 {
@@ -64,7 +68,7 @@ void SingleSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 
 MultiSimulationConfig SingleSimulationConfig::AsMultiConfig() const
 {
-	return {common_config, log_config, {population_file_name}};
+	return {common_config, log_config, {travel_model}};
 }
 
 void MultiSimulationConfig::Parse(const boost::property_tree::ptree& pt)
@@ -73,10 +77,24 @@ void MultiSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 	common_config->Parse(pt);
 	log_config = std::make_shared<LogConfig>();
 	log_config->Parse(pt);
-	population_file_names.clear();
+	region_models.clear();
 	for (const auto& item : pt) {
 		if (item.first == "population_file") {
-			population_file_names.push_back(item.second.get_value<std::string>());
+			region_models.push_back(std::make_shared<stride::multiregion::RegionTravel>(
+			    region_models.size(), item.second.get_value<std::string>()));
+		} else if (item.first == "travel_model") {
+			auto parsed_region_models =
+			    stride::multiregion::RegionTravel::ParseRegionTravel(item.second, region_models.size());
+			region_models.insert(
+			    region_models.end(), parsed_region_models.begin(), parsed_region_models.end());
+		} else if (item.first == "travel_file") {
+			const auto file_name = item.second.get_value<std::string>();
+			boost::property_tree::ptree pt;
+			InstallDirs::ReadXmlFile(file_name, InstallDirs::GetDataDir(), pt);
+			auto parsed_region_models = stride::multiregion::RegionTravel::ParseRegionTravel(
+			    pt.get_child("travel_model"), region_models.size());
+			region_models.insert(
+			    region_models.end(), parsed_region_models.begin(), parsed_region_models.end());
 		}
 	}
 }
@@ -84,11 +102,11 @@ void MultiSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 std::vector<SingleSimulationConfig> MultiSimulationConfig::GetSingleConfigs() const
 {
 	std::vector<SingleSimulationConfig> results;
-	for (const auto& file_name : population_file_names) {
+	for (const auto& travel_model : region_models) {
 		SingleSimulationConfig config;
 		config.common_config = common_config;
 		config.log_config = log_config;
-		config.population_file_name = file_name;
+		config.travel_model = travel_model;
 		results.push_back(config);
 	}
 	return results;
@@ -96,13 +114,13 @@ std::vector<SingleSimulationConfig> MultiSimulationConfig::GetSingleConfigs() co
 
 SingleSimulationConfig MultiSimulationConfig::AsSingleConfig() const
 {
-	if (population_file_names.size() != 1) {
+	if (region_models.size() != 1) {
 		throw std::runtime_error(
 		    std::string(__func__) +
 		    "> Could not reduce a multi-simulation configuration to a single-region simulation configuration.");
 	}
 
-	return {common_config, log_config, population_file_names[0]};
+	return {common_config, log_config, region_models[0]};
 }
 
 } // namespace

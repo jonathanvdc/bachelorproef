@@ -20,9 +20,12 @@
 
 #include "InstallDirs.h"
 
+#include "util/Errors.h"
 #include "util/StringUtils.h"
 
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include <string>
 
 #if defined(WIN32)
@@ -165,6 +168,21 @@ path InstallDirs::GetRootDir()
 {
 	Check();
 	return g_root_dir;
+}
+
+void InstallDirs::ReadXmlFile(
+	const boost::filesystem::path& relative_path,
+	const boost::filesystem::path& anchor_path,
+	boost::property_tree::ptree& result)
+{
+	auto file_path = InstallDirs::GetDataDir() /= relative_path;
+	if (!is_regular_file(file_path)) {
+		FATAL_ERROR(
+			"File " + relative_path.string() +
+			" not present. (full path: " + file_path.string() + ")");
+	}
+
+	boost::property_tree::read_xml(file_path.string(), result);
 }
 
 } // namespace
