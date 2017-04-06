@@ -52,8 +52,11 @@ public:
 	{
 	}
 
-	/// Is this person not equal to the given person?
-	bool operator!=(const Person& p) const { return p.m_id != m_id; }
+	/// Checks if this person is equal to the given person.
+	bool operator==(const Person& p) const { return m_id == p.m_id; }
+
+	/// Checks if this person is not equal to the given person.
+	bool operator!=(const Person& p) const { return !(*this == p); }
 
 	/// Get the age.
 	double GetAge() const { return m_age; }
@@ -112,5 +115,19 @@ private:
 };
 
 } // end_of_namespace
+
+namespace std {
+/// An std::hash<T> implementation for Person.
+template <>
+struct hash<stride::Person>
+{
+	typedef stride::Person argument_type;
+	typedef std::size_t result_type;
+	result_type operator()(const argument_type& person) const
+	{
+		return std::hash<stride::PersonId>()(person.GetId());
+	}
+};
+}
 
 #endif // end of include guard
