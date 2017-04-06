@@ -52,7 +52,7 @@ public:
 	}
 
 	/// Applies the given aggregation function to this simulation task's population.
-	boost::any AggregateAny(std::function<boost::any(const Population&)> apply) final override
+	boost::any AggregateAny(std::function<boost::any(const PopulationRef&)> apply) final override
 	{
 		return sequential_task.AggregateAny(apply);
 	}

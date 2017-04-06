@@ -24,6 +24,7 @@
 #include "core/Health.h"
 
 #include <numeric>
+#include <memory>
 #include <vector>
 
 namespace stride {
@@ -46,6 +47,8 @@ public:
 	}
 
 };
+
+using PopulationRef = std::shared_ptr<const Population>;
 
 } // end_of_namespace
 

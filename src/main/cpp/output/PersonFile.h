@@ -43,7 +43,7 @@ public:
 	~PersonFile();
 
 	/// Print the given cases with corresponding tag.
-	void Print(const std::shared_ptr<const Population> population);
+	void Print(const PopulationRef& population);
 
 private:
 	/// Generate file name and open the file stream.

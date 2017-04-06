@@ -215,7 +215,7 @@ void run_stride(const MultiSimulationConfig& config)
 
 		// Persons
 		if (sim_tuple.sim_config.log_config->generate_person_file) {
-			auto pop = std::make_shared<Population>(sim_tuple.sim_task->GetPopulation());
+			auto pop = sim_tuple.sim_task->GetPopulation();
 			PersonFile person_file(sim_tuple.sim_output_prefix);
 			person_file.Print(pop);
 		}

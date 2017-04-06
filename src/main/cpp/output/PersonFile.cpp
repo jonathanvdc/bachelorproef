@@ -52,7 +52,7 @@ void PersonFile::Initialize(const std::string& file)
 			<< "end_infectiousness,start_symptomatic,end_symptomatic" << endl;
 }
 
-void PersonFile::Print(const std::shared_ptr<const Population> population)
+void PersonFile::Print(const PopulationRef& population)
 {
 	for(const auto& p : *population) {
 	        const auto& h = p.GetHealth();
