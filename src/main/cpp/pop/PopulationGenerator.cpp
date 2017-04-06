@@ -152,8 +152,8 @@ unsigned int Generator::CommunityID() { return random(num_communities) + 1; }
 
 void Generator::GeneratePerson(Population& population, int age)
 {
-	population.emplace_back(Person(people_generated++, age, household_id, SchoolID(age), WorkID(age), CommunityID(),
-				       CommunityID(), disease.Sample(random)));
+	population.emplace(people_generated++, age, household_id, SchoolID(age), WorkID(age), CommunityID(),
+				       CommunityID(), disease.Sample(random));
 }
 
 bool Generator::FitsModel(const Population& population, bool verbose)
