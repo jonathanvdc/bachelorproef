@@ -21,14 +21,14 @@
  * Header file for the core Population class
  */
 
+#include <functional>
+#include <map>
+#include <memory>
+#include <numeric>
+#include <vector>
 #include "Person.h"
 #include "core/Health.h"
 #include "util/Random.h"
-
-#include <memory>
-#include <numeric>
-#include <unordered_map>
-#include <unordered_set>
 
 namespace stride {
 
@@ -38,7 +38,7 @@ namespace stride {
 class Population
 {
 private:
-	std::unordered_map<PersonId, Person> people;
+	std::map<PersonId, Person> people;
 	PersonId max_person_id;
 
 	template <typename TMapIterator>
@@ -129,40 +129,15 @@ public:
 	const_iterator end() const { return const_iterator(people.end()); }
 
 	/// Gets a list of pointers to 'count' unique, randomly chosen participants in the population.
-	std::vector<Person*> get_random_persons(util::Random& rng, size_t count)
-	{
-		auto max_population_index = size() - 1;
-		std::unordered_set<size_t> random_pick_indices;
-		for (size_t i = 0; i < count; i++) {
-			size_t pick_index;
-			do {
-				pick_index = rng(max_population_index);
-			} while (random_pick_indices.find(pick_index) != random_pick_indices.end());
-			random_pick_indices.insert(pick_index);
-		}
+	std::vector<Person*> get_random_persons(util::Random& rng, size_t count);
 
-		std::vector<Person*> random_picks;
-		size_t i = 0;
-		for (auto& item : people) {
-			if (random_pick_indices.find(i) != random_pick_indices.end()) {
-				random_picks.push_back(&item.second);
-			}
-			i++;
-		}
-
-		return std::move(random_picks);
-	}
+	/// Gets a list of pointers to 'count' unique, randomly chosen participants in the population
+	/// which satisfy the given predicate.
+	std::vector<Person*> get_random_persons(
+	    util::Random& rng, size_t count, std::function<bool(const Person&)> matches);
 
 	/// Get the cumulative number of cases.
-	unsigned int GetInfectedCount() const
-	{
-		unsigned int total{0U};
-		for (const auto& p : *this) {
-			const auto& h = p.GetHealth();
-			total += h.IsInfected() || h.IsRecovered();
-		}
-		return total;
-	}
+	unsigned int GetInfectedCount() const;
 };
 
 /// Swaps two population iterators.
