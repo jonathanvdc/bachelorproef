@@ -44,10 +44,6 @@ private:
 	template <typename TMapIterator>
 	class PopulationIterator;
 
-public:
-	template <typename TMapIterator>
-	friend void swap(PopulationIterator<TMapIterator>& lhs, PopulationIterator<TMapIterator>& rhs);
-
 private:
 	/// An iterator implementation for Population containers.
 	template <typename TMapIterator>
