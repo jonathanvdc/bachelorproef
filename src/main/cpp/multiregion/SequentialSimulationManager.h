@@ -36,13 +36,8 @@ public:
 	/// Fetches this simulation task's result.
 	TResult GetResult() final override { return result; }
 
-	/// Starts this simulation.
-	void Start() final override
-	{
-		while (!sim->IsDone()) {
-			Step();
-		}
-	}
+	/// Tells if this simulation is done.
+	bool IsDone() const { return sim->IsDone(); }
 
 	/// Performs a single step in the simulation.
 	void Step()
@@ -53,9 +48,6 @@ public:
 		result.AfterSimulatorStep(*sim->GetPopulation());
 		communicator.Push({}, {});
 	}
-
-	/// Waits for this simulation to complete.
-	void Wait() final override { Start(); }
 
 	/// Applies the given aggregation function to this simulation task's population.
 	boost::any AggregateAny(std::function<boost::any(const PopulationRef&)> apply) final override
@@ -75,10 +67,108 @@ private:
 	TResult result;
 };
 
-struct PullResult
+/// The result of a pull operation.
+struct PullResult final
 {
+	/// The list of all incoming visitors.
 	std::vector<IncomingVisitor> visitors;
+
+	/// The list of all returning expatriates.
 	std::vector<Person> expatriates;
+};
+
+/// Defines a communication buffer for a single task.
+class TaskCommunicationBuffer final
+{
+public:
+	/// Tells if this communication buffer is ready for a pull operation
+	/// by checking if all of its dependencies have been satisfied.
+	bool IsReady() const { return unsatisfied_dependencies.size() == 0; }
+
+	/// Satisfied the given dependency.
+	void SatisfyDependency(RegionId dependency) { unsatisfied_dependencies.erase(dependency); }
+
+	/// Pulls the data from this buffer.
+	PullResult Pull()
+	{
+		PullResult result = std::move(pull_buffer);
+		pull_buffer.visitors.clear();
+		pull_buffer.expatriates.clear();
+		return std::move(result);
+	}
+
+	/// Pushes a visitor from the given region into this buffer.
+	void PushVisitor(RegionId source_region_id, const OutgoingVisitor& visitor)
+	{
+		pull_buffer.visitors.emplace_back(visitor.person, source_region_id, visitor.return_day);
+	}
+
+	/// Pushes an expatriate from the given region into.
+	void PushExpatriate(const Person& expatriate) { pull_buffer.expatriates.emplace_back(expatriate); }
+
+	/// Sets this buffer's dependencies to the given set of dependencies.
+	void ResetDependencies(const std::unordered_set<RegionId>& new_unsatisfied_dependencies)
+	{
+		unsatisfied_dependencies = new_unsatisfied_dependencies;
+	}
+
+private:
+	/// The task's next pull result, which is mutable.
+	PullResult pull_buffer;
+
+	/// The set of all task dependencies that have not been satisfied yet.
+	std::unordered_set<RegionId> unsatisfied_dependencies;
+};
+
+/// Contains common data for a graph of communicating tasks.
+class TaskCommunicationData final
+{
+public:
+	/// Tries to find a task that's ready.
+	bool TryPopReady(RegionId& id)
+	{
+		if (ready_tasks.empty()) {
+			return false;
+		}
+
+		id = *ready_tasks.begin();
+		ready_tasks.erase(id);
+		return true;
+	}
+
+	/// Marks the task with the given id as ready.
+	void MarkReady(RegionId id) { ready_tasks.insert(id); }
+
+	/// Pulls input data for the task with the given id.
+	PullResult Pull(RegionId id) { return buffers[id].Pull(); }
+
+	/// Pushes output data for the task with the given id and dependencies.
+	void Push(
+	    RegionId id, const std::unordered_set<RegionId>& dependencies, const std::vector<OutgoingVisitor>& visitors,
+	    const std::vector<OutgoingVisitor>& expatriates)
+	{
+		for (const auto& outgoing_visitor : visitors) {
+			buffers[outgoing_visitor.visited_region].PushVisitor(id, outgoing_visitor);
+		}
+		for (const auto& returning_expatriate : expatriates) {
+			buffers[returning_expatriate.visited_region].PushExpatriate(returning_expatriate.person);
+		}
+		buffers[id].ResetDependencies(dependencies);
+		for (const auto& dep : dependencies) {
+			auto& buf = buffers[dep];
+			buf.SatisfyDependency(id);
+			if (buf.IsReady()) {
+				ready_tasks.insert(dep);
+			}
+		}
+		if (buffers[id].IsReady()) {
+			MarkReady(id);
+		}
+	}
+
+private:
+	std::unordered_set<RegionId> ready_tasks;
+	std::unordered_map<RegionId, TaskCommunicationBuffer> buffers;
 };
 
 /**
@@ -97,51 +187,19 @@ private:
 		{
 		}
 
-		PullResult Pull()
+		PullResult Pull() { return manager->comm_data.Pull(id); }
+
+		void Push(const std::vector<OutgoingVisitor>& visitors, const std::vector<OutgoingVisitor>& expatriates)
 		{
-			while (!CanPull()) {
-				auto first_task = *manager->ready_tasks.begin();
-				manager->tasks[first_task]->Step();
-			}
-
-			auto visitors = std::move(manager->visitor_queues[id]);
-			auto expats = std::move(manager->expat_queues[id]);
-			manager->visitor_queues[id].clear();
-			manager->expat_queues[id].clear();
-			manager->ready_tasks.erase(id);
-			return { visitors, expats };
-		}
-
-		void Push(const std::vector<OutgoingVisitor>& visitors, const std::vector<Person>& expatriates)
-		{
-			for (const auto& outgoing_visitor : visitors) {
-				manager->visitor_queues[outgoing_visitor.visited_region].emplace_back(
-				    outgoing_visitor.person, id, outgoing_visitor.return_day);
-			}
-			manager->task_unsatisfied_dependencies[id] = manager->tasks[id]->GetConnectedRegions();
-			manager->task_unsatisfied_dependencies[id].erase(id);
-			if (manager->task_unsatisfied_dependencies[id].size() == 0) {
-				manager->ready_tasks.insert(id);
-			}
-
-			for (auto region_id : manager->tasks[id]->GetConnectedRegions()) {
-				manager->task_unsatisfied_dependencies[region_id].erase(id);
-				if (manager->task_unsatisfied_dependencies[region_id].size() == 0) {
-					manager->ready_tasks.insert(region_id);
-				}
-			}
+			manager->comm_data.Push(id, manager->tasks[id]->GetConnectedRegions(), visitors, expatriates);
 		}
 
 	private:
-		bool CanPull() const { return manager->ready_tasks.find(id) != manager->ready_tasks.end(); }
 		RegionId id;
 		SequentialSimulationManager<TResult, TInitialResultArgs...>* manager;
 	};
 
-	std::unordered_set<RegionId> ready_tasks;
-	std::unordered_map<RegionId, std::vector<IncomingVisitor>> visitor_queues;
-	std::unordered_map<RegionId, std::vector<Person>> expat_queues;
-	std::unordered_map<RegionId, std::unordered_set<RegionId>> task_unsatisfied_dependencies;
+	TaskCommunicationData comm_data;
 	std::unordered_map<RegionId, std::shared_ptr<SequentialSimulationTask<TResult, SequentialTaskCommunicator>>>
 	    tasks;
 	unsigned int number_of_sim_threads;
@@ -162,8 +220,20 @@ public:
 		auto task = std::make_shared<SequentialSimulationTask<TResult, SequentialTaskCommunicator>>(
 		    sim, SequentialTaskCommunicator(id, this), args...);
 		tasks[id] = task;
-		ready_tasks.insert(id);
+		comm_data.MarkReady(id);
 		return task;
+	}
+
+	/// Waits for all tasks to complete.
+	void WaitAll() final override
+	{
+		RegionId ready_id;
+		while (comm_data.TryPopReady(ready_id)) {
+			auto task = tasks[ready_id];
+			if (!task->IsDone()) {
+				task->Step();
+			}
+		}
 	}
 };
 

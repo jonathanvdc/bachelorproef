@@ -185,18 +185,13 @@ void run_stride(const MultiSimulationConfig& config)
 	}
 	cout << "Done building simulators. " << endl << endl;
 
-	// Start all the simulations.
-	for (const auto& sim_tuple : tasks) {
-		sim_tuple.sim_task->Start();
-	}
+	// -----------------------------------------------------------------------------------------
+	// Run the simulation.
+	// -----------------------------------------------------------------------------------------
+	sim_manager.WaitAll();
 
-	// Wait for the simulations to complete and generate output files for them.
+	// Generate output files for the simulations.
 	for (const auto& sim_tuple : tasks) {
-		// -----------------------------------------------------------------------------------------
-		// Run the simulation.
-		// -----------------------------------------------------------------------------------------
-		sim_tuple.sim_task->Wait();
-
 		// -----------------------------------------------------------------------------------------
 		// Generate output files
 		// -----------------------------------------------------------------------------------------
