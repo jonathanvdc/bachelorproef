@@ -80,11 +80,11 @@ public:
 	/// Gets a list of airports in the current region.
 	const std::vector<AirportRef>& GetLocalAirports() const { return local_airports; }
 
-	/// Gets the set of region ids for regions that have at least one air
-	/// route which targets a local airport.
-	const std::unordered_set<RegionId>& GetRegionsWithIncomingRoutes() const
+	/// Gets the set of region ids for regions that are connected with this region
+	/// by an air route.
+	const std::unordered_set<RegionId>& GetConnectedRegions() const
 	{
-		return regions_with_incoming_routes;
+		return connected_regions;
 	}
 
 	/// Parses a ptree that contains a vector of travel information for regions.
@@ -100,7 +100,7 @@ private:
 	double travel_fraction;
 	std::shared_ptr<const std::vector<AirportRef>> all_airports;
 	std::vector<AirportRef> local_airports;
-	std::unordered_set<RegionId> regions_with_incoming_routes;
+	std::unordered_set<RegionId> connected_regions;
 };
 
 } // namespace

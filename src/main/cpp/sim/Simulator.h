@@ -59,6 +59,9 @@ public:
         /// Run one time step, computing full simulation (default) or only index case.
         void TimeStep();
 
+        /// Tests if this simulation has run to completion.
+        bool IsDone() const { return m_calendar->GetSimulationDay() >= m_config.common_config->number_of_days; }
+
 private:
         /// Update the contacts in the given clusters.
 	template<LogMode log_level, bool track_index_case = false>

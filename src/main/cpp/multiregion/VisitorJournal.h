@@ -17,7 +17,7 @@ namespace multiregion {
  * person's id in their home region and the second is their id in the region they're
  * visiting.
  */
-struct Visitor final
+struct VisitorId final
 {
 	/// The visitor's id in their home region.
 	PersonId home_id;
@@ -54,13 +54,13 @@ class VisitorJournal final
 {
 public:
 	/// Adds the given visitor to this journal.
-	void add_visitor(Visitor visitor, RegionId home_region_id, std::size_t return_day)
+	void add_visitor(VisitorId visitor, RegionId home_region_id, std::size_t return_day)
 	{
 		visitors[return_day][home_region_id].push_back(visitor);
 	}
 
 	/// Extracts all visitors that were scheduled to return on the given day.
-	std::unordered_map<RegionId, std::vector<Visitor>> extract_visitors(std::size_t return_day)
+	std::unordered_map<RegionId, std::vector<VisitorId>> extract_visitors(std::size_t return_day)
 	{
 		auto result = std::move(visitors[return_day]);
 		visitors.erase(return_day);
@@ -70,7 +70,7 @@ public:
 private:
 	/// A dictionary of visitors, grouped by the day of their return trip and the region
 	/// that sent them.
-	std::unordered_map<std::size_t, std::unordered_map<RegionId, std::vector<Visitor>>> visitors;
+	std::unordered_map<std::size_t, std::unordered_map<RegionId, std::vector<VisitorId>>> visitors;
 };
 }
 }
