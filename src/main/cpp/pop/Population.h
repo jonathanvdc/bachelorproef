@@ -41,9 +41,6 @@ private:
 	std::map<PersonId, Person> people;
 	PersonId max_person_id;
 
-	template <typename TMapIterator>
-	class PopulationIterator;
-
 private:
 	/// An iterator implementation for Population containers.
 	template <typename TMapIterator>
