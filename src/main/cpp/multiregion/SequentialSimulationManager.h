@@ -158,7 +158,7 @@ public:
 			auto& buf = buffers[dep];
 			buf.SatisfyDependency(id);
 			if (buf.IsReady()) {
-				ready_tasks.insert(dep);
+				MarkReady(dep);
 			}
 		}
 		if (buffers[id].IsReady()) {
