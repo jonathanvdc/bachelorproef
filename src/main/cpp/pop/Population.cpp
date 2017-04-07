@@ -84,7 +84,7 @@ std::vector<Person*> Population::get_random_persons(
 }
 
 /// Get the cumulative number of cases.
-unsigned int Population::GetInfectedCount() const
+unsigned int Population::get_infected_count() const
 {
 	unsigned int total{0U};
 	for (const auto& p : *this) {

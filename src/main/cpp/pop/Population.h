@@ -137,7 +137,7 @@ public:
 	    util::Random& rng, size_t count, std::function<bool(const Person&)> matches);
 
 	/// Get the cumulative number of cases.
-	unsigned int GetInfectedCount() const;
+	unsigned int get_infected_count() const;
 };
 
 /// Swaps two population iterators.

@@ -69,7 +69,7 @@ void StrideSimulatorResult::BeforeSimulatorStep(const Population&) { run_clock.S
 void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 {
 	run_clock.Stop();
-	auto infected_count = pop.GetInfectedCount();
+	auto infected_count = pop.get_infected_count();
 	cases.push_back(infected_count);
 	day++;
 

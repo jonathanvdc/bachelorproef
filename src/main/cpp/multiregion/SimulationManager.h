@@ -50,7 +50,7 @@ public:
 	/// Gets the number of people that are infected in the simulation task's population.
 	size_t GetInfectedCount()
 	{
-		return Aggregate<size_t>([](const PopulationRef& pop) -> size_t { return pop->GetInfectedCount(); });
+		return Aggregate<size_t>([](const PopulationRef& pop) -> size_t { return pop->get_infected_count(); });
 	}
 
 	/// Gets this simulation task's population.
