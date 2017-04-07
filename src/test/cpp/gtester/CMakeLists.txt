@@ -23,6 +23,7 @@ set( SRC
 		main.cpp
 		BatchRuns.cpp
 		ParsePopulationModel.cpp
+		AliasTest.cpp
 		ParseSimulationConfig.cpp
 		ParseTravelConfig.cpp
 		MpiTests.cpp
