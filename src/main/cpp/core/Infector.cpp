@@ -117,7 +117,7 @@ void Infector<log_level, track_index_case>::Execute(
 {
         // check if the cluster has infected members and sort
         bool infectious_cases;
-        size_t num_cases;
+        std::size_t num_cases;
         tie(infectious_cases, num_cases) = cluster.SortMembers();
 
         if (infectious_cases) {

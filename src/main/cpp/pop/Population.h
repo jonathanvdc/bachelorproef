@@ -129,12 +129,12 @@ public:
 	const_iterator end() const { return const_iterator(people.end()); }
 
 	/// Gets a list of pointers to 'count' unique, randomly chosen participants in the population.
-	std::vector<Person*> get_random_persons(util::Random& rng, size_t count);
+	std::vector<Person*> get_random_persons(util::Random& rng, std::size_t count);
 
 	/// Gets a list of pointers to 'count' unique, randomly chosen participants in the population
 	/// which satisfy the given predicate.
 	std::vector<Person*> get_random_persons(
-	    util::Random& rng, size_t count, std::function<bool(const Person&)> matches);
+	    util::Random& rng, std::size_t count, std::function<bool(const Person&)> matches);
 
 	/// Get the cumulative number of cases.
 	unsigned int get_infected_count() const;

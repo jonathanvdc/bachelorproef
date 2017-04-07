@@ -14,10 +14,10 @@
 
 namespace stride {
 /// Gets a list of pointers to 'count' unique, randomly chosen participants in the population.
-std::vector<Person*> Population::get_random_persons(util::Random& rng, size_t count)
+std::vector<Person*> Population::get_random_persons(util::Random& rng, std::size_t count)
 {
 	auto max_population_index = size() - 1;
-	std::unordered_map<size_t, size_t> random_pick_indices;
+	std::unordered_map<size_t, std::size_t> random_pick_indices;
 	for (size_t i = 0; i < count; i++) {
 		size_t pick_index;
 		do {
@@ -41,7 +41,7 @@ std::vector<Person*> Population::get_random_persons(util::Random& rng, size_t co
 /// Gets a list of pointers to 'count' unique, randomly chosen participants in the population
 /// which satisfy the given predicate.
 std::vector<Person*> Population::get_random_persons(
-    util::Random& rng, size_t count, std::function<bool(const Person&)> matches)
+    util::Random& rng, std::size_t count, std::function<bool(const Person&)> matches)
 {
 	// This function tries to search as efficiently as possible for people who match
 	// the given predicate without skewing the distribution too much.

@@ -54,16 +54,16 @@ void Cluster::AddPerson(Person* p)
         m_index_immune++;
 }
 
-tuple<bool, size_t> Cluster::SortMembers()
+tuple<bool, std::size_t> Cluster::SortMembers()
 {
         bool infectious_cases = false;
-        size_t num_cases = 0;
+        std::size_t num_cases = 0;
 
         for (size_t i_member = 0; i_member < m_index_immune; i_member++) {
                 // if immune, move to back
                 if (m_members[i_member].first->GetHealth().IsImmune()) {
                         bool swapped = false;
-                        size_t new_place = m_index_immune - 1;
+                        std::size_t new_place = m_index_immune - 1;
                         m_index_immune--;
                         while(! swapped && new_place > i_member) {
                                 if (m_members[new_place].first->GetHealth().IsImmune()) {

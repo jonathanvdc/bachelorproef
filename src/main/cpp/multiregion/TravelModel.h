@@ -14,7 +14,7 @@
 namespace stride {
 namespace multiregion {
 
-using RegionId = size_t;
+using RegionId = std::size_t;
 
 struct Airport;
 using AirportRef = std::shared_ptr<const Airport>;

@@ -68,7 +68,7 @@ public:
 
 private:
 	/// Sort members w.r.t. health status (order: exposed/infected/recovered, susceptible, immune).
-	std::tuple<bool, size_t> SortMembers();
+	std::tuple<bool, std::size_t> SortMembers();
 
 	/// Infector calculates contacts and transmissions.
         template<LogMode log_level, bool track_index_case>
