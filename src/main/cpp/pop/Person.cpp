@@ -32,6 +32,18 @@ namespace stride {
 
 using namespace std;
 
+unsigned int& Person::GetClusterId(ClusterType cluster_type)
+{
+        switch (cluster_type) {
+                case ClusterType::Household:          return m_household_id;
+                case ClusterType::School:             return m_school_id;
+                case ClusterType::Work:               return m_work_id;
+                case ClusterType::PrimaryCommunity:   return m_primary_community_id;
+                case ClusterType::SecondaryCommunity: return m_secondary_community_id;
+                default: FATAL_ERROR("Should not reach default.");
+        }
+}
+
 unsigned int Person::GetClusterId(ClusterType cluster_type) const
 {
         switch (cluster_type) {

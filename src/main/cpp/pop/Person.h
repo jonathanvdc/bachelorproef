@@ -64,6 +64,9 @@ public:
 	/// Get cluster ID of cluster_type
 	unsigned int GetClusterId(ClusterType cluster_type) const;
 
+	/// Get cluster ID of cluster_type
+	unsigned int& GetClusterId(ClusterType cluster_type);
+
 	/// Return person's gender.
 	char GetGender() const { return m_gender; }
 
