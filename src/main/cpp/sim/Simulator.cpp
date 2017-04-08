@@ -98,8 +98,19 @@ void Simulator::UpdateClusters()
         }
 }
 
+void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
+{
+
+}
+
+multiregion::SimulationStepOutput Simulator::ReturnVisitors()
+{
+        return multiregion::SimulationStepOutput();
+}
+
 multiregion::SimulationStepOutput Simulator::TimeStep(const multiregion::SimulationStepInput& input)
 {
+        AcceptVisitors(input);
         shared_ptr<DaysOffInterface> days_off {nullptr};
 
         // Logic where you compute (on the basis of input/config for initial day
@@ -139,6 +150,6 @@ multiregion::SimulationStepOutput Simulator::TimeStep(const multiregion::Simulat
         }
 
         m_calendar->AdvanceDay();
-        return multiregion::SimulationStepOutput();
+        return ReturnVisitors();
 }
 } // end_of_namespace

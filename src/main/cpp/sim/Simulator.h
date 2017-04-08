@@ -64,6 +64,13 @@ public:
         bool IsDone() const { return m_calendar->GetSimulationDay() >= m_config.common_config->number_of_days; }
 
 private:
+	/// Accepts visitors from other regions.
+	void AcceptVisitors(const multiregion::SimulationStepInput& input);
+
+	/// Returns visitors whose return trip is scheduled today and returns them to their
+	/// home regions.
+	multiregion::SimulationStepOutput ReturnVisitors();
+
         /// Update the contacts in the given clusters.
 	template<LogMode log_level, bool track_index_case = false>
         void UpdateClusters();
