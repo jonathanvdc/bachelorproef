@@ -51,6 +51,29 @@ struct IncomingVisitor final
 	/// The index of the day on which this visitor's return trip is scheduled.
 	std::size_t return_day;
 };
+
+/// The input for a single step in the simulation and the result
+/// of a pull operation.
+struct SimulationStepInput final
+{
+	/// The list of all incoming visitors.
+	std::vector<IncomingVisitor> visitors;
+
+	/// The list of all returning expatriates.
+	std::vector<Person> expatriates;
+};
+
+/// The output for a single step in the simulation and the result
+/// of a push operation.
+struct SimulationStepOutput final
+{
+	/// The list of all outgoing visitors.
+	std::vector<OutgoingVisitor> visitors;
+
+	/// The list of all returning expatriates.
+	std::vector<OutgoingVisitor> expatriates;
+};
+
 }
 }
 

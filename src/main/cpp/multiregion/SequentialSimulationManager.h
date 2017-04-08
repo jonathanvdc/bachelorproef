@@ -9,8 +9,8 @@
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
-#include <omp.h>
 #include <spdlog/spdlog.h>
+#include "multiregion/LocalSimulationTask.h"
 #include "multiregion/SimulationManager.h"
 #include "multiregion/Visitor.h"
 #include "sim/Simulator.h"
@@ -19,63 +19,8 @@
 namespace stride {
 namespace multiregion {
 
-/**
- * A sequential simulation task.
- */
-template <typename TResult, typename TCommunicator>
-class SequentialSimulationTask final : public SimulationTask<TResult>
-{
-public:
-	template <typename... TInitialResultArgs>
-	SequentialSimulationTask(
-	    const std::shared_ptr<Simulator>& sim, const TCommunicator& communicator, TInitialResultArgs... args)
-	    : sim(sim), communicator(communicator), result(args...)
-	{
-	}
-
-	/// Fetches this simulation task's result.
-	TResult GetResult() final override { return result; }
-
-	/// Tells if this simulation is done.
-	bool IsDone() const { return sim->IsDone(); }
-
-	/// Performs a single step in the simulation.
-	void Step()
-	{
-		auto pull = communicator.Pull();
-		result.BeforeSimulatorStep(*sim->GetPopulation());
-		sim->TimeStep();
-		result.AfterSimulatorStep(*sim->GetPopulation());
-		communicator.Push({}, {});
-	}
-
-	/// Applies the given aggregation function to this simulation task's population.
-	boost::any AggregateAny(std::function<boost::any(const PopulationRef&)> apply) final override
-	{
-		return apply(sim->GetPopulation());
-	}
-
-	/// Gets the set of all regions that are connected to this region by an air route.
-	const std::unordered_set<RegionId>& GetConnectedRegions() const
-	{
-		return sim->GetConfiguration().travel_model->GetConnectedRegions();
-	}
-
-private:
-	std::shared_ptr<Simulator> sim;
-	TCommunicator communicator;
-	TResult result;
-};
-
-/// The result of a pull operation.
-struct PullResult final
-{
-	/// The list of all incoming visitors.
-	std::vector<IncomingVisitor> visitors;
-
-	/// The list of all returning expatriates.
-	std::vector<Person> expatriates;
-};
+using PullResult = SimulationStepInput;
+using PushResult = SimulationStepOutput;
 
 /// Defines a communication buffer for a single task.
 class TaskCommunicationBuffer final
@@ -200,7 +145,7 @@ private:
 	};
 
 	TaskCommunicationData comm_data;
-	std::unordered_map<RegionId, std::shared_ptr<SequentialSimulationTask<TResult, SequentialTaskCommunicator>>>
+	std::unordered_map<RegionId, std::shared_ptr<LocalSimulationTask<TResult, SequentialTaskCommunicator>>>
 	    tasks;
 	unsigned int number_of_sim_threads;
 
@@ -217,7 +162,7 @@ public:
 		// Build a simulator.
 		auto sim = SimulatorBuilder::Build(configuration, log, number_of_sim_threads);
 		auto id = configuration.travel_model->GetRegionId();
-		auto task = std::make_shared<SequentialSimulationTask<TResult, SequentialTaskCommunicator>>(
+		auto task = std::make_shared<LocalSimulationTask<TResult, SequentialTaskCommunicator>>(
 		    sim, SequentialTaskCommunicator(id, this), args...);
 		tasks[id] = task;
 		comm_data.MarkReady(id);

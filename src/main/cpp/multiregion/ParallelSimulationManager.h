@@ -9,8 +9,8 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include <omp.h>
 #include <spdlog/spdlog.h>
+#include "multiregion/LocalSimulationTask.h"
 #include "multiregion/SequentialSimulationManager.h"
 #include "multiregion/SimulationManager.h"
 #include "sim/Simulator.h"
@@ -59,8 +59,7 @@ private:
 	}
 
 	TaskCommunicationData comm_data;
-	std::unordered_map<RegionId, std::shared_ptr<SequentialSimulationTask<TResult, ParallelTaskCommunicator>>>
-	    tasks;
+	std::unordered_map<RegionId, std::shared_ptr<LocalSimulationTask<TResult, ParallelTaskCommunicator>>> tasks;
 	std::mutex comm_mutex;
 	std::size_t number_of_task_threads;
 	unsigned int number_of_sim_threads;
@@ -79,7 +78,7 @@ public:
 		// Build a simulator.
 		auto sim = SimulatorBuilder::Build(configuration, log, number_of_sim_threads);
 		auto id = configuration.travel_model->GetRegionId();
-		auto task = std::make_shared<SequentialSimulationTask<TResult, ParallelTaskCommunicator>>(
+		auto task = std::make_shared<LocalSimulationTask<TResult, ParallelTaskCommunicator>>(
 		    sim, ParallelTaskCommunicator(id, this), args...);
 		tasks[id] = task;
 		comm_data.MarkReady(id);
