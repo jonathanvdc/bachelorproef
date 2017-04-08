@@ -75,10 +75,10 @@ public:
 	/// Gets the fraction of people in the region who travel by plane on any given day.
 	double GetTravelFraction() const { return travel_fraction; }
 
-	/// Gets the minimal duration of a trip abroad.
+	/// Gets the minimal duration of a trip abroad, in days.
 	std::size_t GetMinTravelDuration() const { return min_travel_duration; }
 
-	/// Gets the maximal duration of a trip abroad.
+	/// Gets the maximal duration of a trip abroad, in days.
 	std::size_t GetMaxTravelDuration() const { return max_travel_duration; }
 
 	/// Gets a list of all airports.
