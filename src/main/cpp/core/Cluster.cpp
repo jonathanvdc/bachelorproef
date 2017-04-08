@@ -65,6 +65,7 @@ void Cluster::RemovePerson(Person* p)
                         }
                         return;
                 }
+                index++;
         }
 }
 
