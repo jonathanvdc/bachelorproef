@@ -2,6 +2,8 @@
 #define VISITOR_JOURNAL_H_INCLUDED
 
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 #include "multiregion/TravelModel.h"
 #include "pop/Person.h"
 
@@ -54,10 +56,14 @@ private:
 class VisitorJournal final
 {
 public:
+	/// Tests if the person with the given id is a visitor.
+	bool is_visitor(PersonId id) const { return visitor_ids.find(id) != visitor_ids.end(); }
+
 	/// Adds the given visitor to this journal.
 	void add_visitor(VisitorId visitor, RegionId home_region_id, std::size_t return_day)
 	{
 		visitors[return_day][home_region_id].push_back(visitor);
+		visitor_ids.insert(visitor.visitor_id);
 	}
 
 	/// Extracts all visitors that were scheduled to return on the given day.
@@ -65,6 +71,11 @@ public:
 	{
 		auto result = std::move(visitors[return_day]);
 		visitors.erase(return_day);
+		for (const auto& pair : result) {
+			for (auto visitor : pair.second) {
+				visitor_ids.erase(visitor.visitor_id);
+			}
+		}
 		return std::move(result);
 	}
 
@@ -72,6 +83,7 @@ private:
 	/// A dictionary of visitors, grouped by the day of their return trip and the region
 	/// that sent them.
 	std::unordered_map<std::size_t, std::unordered_map<RegionId, std::vector<VisitorId>>> visitors;
+	std::unordered_set<PersonId> visitor_ids;
 };
 }
 }
