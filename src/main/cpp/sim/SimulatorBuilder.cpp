@@ -134,11 +134,12 @@ shared_ptr<Simulator> SimulatorBuilder::Build(
         // Get log level.
         sim->m_log_level = config.log_config->log_level;
 
-        // Rng's.
-        Random rng(config.common_config->rng_seed);
+        // Create a random number generator for the simulator.
+        auto rng = std::make_shared<Random>(config.common_config->rng_seed);
 
         // Build population.
-        sim->m_population = PopulationBuilder::Build(config, pt_disease, rng, log);
+        sim->m_travel_rng = rng;
+        sim->m_population = PopulationBuilder::Build(config, pt_disease, *rng, log);
 
         // Initialize clusters.
         InitializeClusters(sim);
@@ -147,7 +148,7 @@ shared_ptr<Simulator> SimulatorBuilder::Build(
         sim->m_disease_profile.Initialize(config, pt_disease);
 
         // Initialize Rng handlers
-        unsigned int new_seed = rng(numeric_limits<unsigned int>::max());
+        unsigned int new_seed = (*rng)(numeric_limits<unsigned int>::max());
         for (size_t i = 0; i < sim->m_num_threads; i++) {
                 sim->m_rng_handler.emplace_back(RngHandler(new_seed, sim->m_num_threads, i));
         }

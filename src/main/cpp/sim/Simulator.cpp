@@ -123,6 +123,11 @@ void Simulator::AddPersonToClusters(Person& person)
         }
 }
 
+PersonId Simulator::GeneratePersonId()
+{
+        return m_population->get_max_id() + 1;
+}
+
 void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 {
         for (const auto& returning_expat : input.expatriates) {
@@ -138,6 +143,37 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 
                 // Add the returning expatriate to their clusters.
                 AddPersonToClusters(returned_expat);
+        }
+
+        for (const auto& visitor : input.visitors) {
+                // Generate local ids and create a household cluster for the visitor.
+                auto id = GeneratePersonId();
+                auto household_id = m_households.size();
+                m_households.emplace_back(household_id, ClusterType::Household);
+                auto work_id = (*m_travel_rng)(m_work_clusters.size());
+                auto primary_community_id = (*m_travel_rng)(m_primary_community.size());
+                auto secondary_community_id = (*m_travel_rng)(m_secondary_community.size());
+
+                // Insert the visitor in the population.
+                Person& local_visitor = *m_population->emplace(
+                        id, visitor.person.GetAge(), household_id, 0, work_id,
+                        primary_community_id, secondary_community_id, disease::Fate());
+
+                // Set the visitor's health.
+                local_visitor.GetHealth() = visitor.person.GetHealth();
+
+                // Clear the visitor's clusters.
+                for (std::size_t i = 0; i < NumOfClusterTypes(); i++) {
+                        auto cluster_type = static_cast<ClusterType>(i);
+                        local_visitor.GetClusterId(cluster_type) = 0;
+                }
+
+                // Add the visitor to their assigned clusters.
+                AddPersonToClusters(local_visitor);
+
+                // Add an entry to the visitor log.
+                multiregion::VisitorId visitor_desc = {visitor.person.GetId(), id};
+                m_visitors.add_visitor(visitor_desc, visitor.home_region, visitor.return_day);
         }
 }
 
