@@ -21,14 +21,14 @@ Alias Alias::CreateDistribution(std::vector<double> probabilities, util::Random&
 	if (probabilities.size() <= 0) {
 		throw EmptyProbabilityException();
 	}
-	unsigned int n = probabilities.size();
+	std::size_t n = probabilities.size();
 	std::vector<double> prob(n);
-	std::vector<unsigned int> alias(n);
-	std::vector<unsigned int> small, large;
+	std::vector<std::size_t> alias(n);
+	std::vector<std::size_t> small, large;
 	for (auto& i : probabilities) {
 		i *= n;
 	}
-	for (unsigned int i = 0; i < probabilities.size(); i++) {
+	for (std::size_t i = 0; i < probabilities.size(); i++) {
 		if (probabilities[i] < 1.0) {
 			small.push_back(i);
 		} else {
@@ -37,9 +37,9 @@ Alias Alias::CreateDistribution(std::vector<double> probabilities, util::Random&
 	}
 
 	while (!(small.empty() || large.empty())) {
-		unsigned int l = large.front();
+		std::size_t l = large.front();
 		large.erase(large.begin());
-		unsigned int g = small.front();
+		std::size_t g = small.front();
 		small.erase(small.begin());
 		prob[l] = probabilities[l];
 		alias[l] = g;
@@ -75,9 +75,9 @@ void Alias::NormalizeProbabilities(std::vector<double>& probabilities)
 	}
 }
 
-unsigned int Alias::Next()
+std::size_t Alias::Next()
 {
-	unsigned int roll = m_random(m_alias.size());
+	std::size_t roll = m_random(m_alias.size());
 	double flip = m_random.NextDouble();
 	if (flip <= m_prob[roll]) {
 		return roll;

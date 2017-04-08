@@ -41,11 +41,11 @@ public:
 	static void NormalizeProbabilities(std::vector<double>& probabilities);
 
 	/// Generates a new number.
-	unsigned int Next();
+	std::size_t Next();
 
 private:
 	/// Constructor
-	Alias(std::vector<unsigned int>&& alias, std::vector<double>&& prob, util::Random& rng)
+	Alias(std::vector<std::size_t>&& alias, std::vector<double>&& prob, util::Random& rng)
 	    : m_random{rng}, m_alias{alias}, m_prob{prob}
 	{
 	}
@@ -54,7 +54,7 @@ private:
 	util::Random& m_random;
 
 	/// The vector of aliases
-	std::vector<unsigned int> m_alias;
+	std::vector<std::size_t> m_alias;
 
 	/// The vector of probabilities
 	std::vector<double> m_prob;
