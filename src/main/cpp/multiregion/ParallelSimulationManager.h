@@ -55,7 +55,11 @@ private:
 	bool TryPopReadyAtomic(RegionId& id)
 	{
 		std::lock_guard<std::mutex> lock(comm_mutex);
-		return comm_data.TryPopReady(id);
+		auto success = comm_data.TryPopReady(id);
+		if (success) {
+			comm_data.ResetDependencies(id, tasks[id]->GetConnectedRegions());
+		}
+		return success;
 	}
 
 	TaskCommunicationData comm_data;

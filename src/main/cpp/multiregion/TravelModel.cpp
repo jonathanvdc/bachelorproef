@@ -30,7 +30,7 @@ RegionTravel::RegionTravel(
 
 		for (const auto& route : airport->routes) {
 			if (route.target->region_id == region_id || airport->region_id == region_id) {
-				connected_regions.insert(airport->region_id);
+				connected_regions.insert(route.target->region_id);
 			}
 		}
 	}

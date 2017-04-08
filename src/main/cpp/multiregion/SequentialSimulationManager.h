@@ -85,8 +85,7 @@ public:
 	SimulationStepInput Pull(RegionId id) { return buffers[id].Pull(); }
 
 	/// Pushes output data for the task with the given id and dependencies.
-	void Push(
-	    RegionId id, const std::unordered_set<RegionId>& dependencies, const SimulationStepOutput& data)
+	void Push(RegionId id, const std::unordered_set<RegionId>& dependencies, const SimulationStepOutput& data)
 	{
 		for (const auto& outgoing_visitor : data.visitors) {
 			buffers[outgoing_visitor.visited_region].PushVisitor(id, outgoing_visitor);
@@ -94,7 +93,6 @@ public:
 		for (const auto& returning_expatriate : data.expatriates) {
 			buffers[returning_expatriate.visited_region].PushExpatriate(returning_expatriate.person);
 		}
-		buffers[id].ResetDependencies(dependencies);
 		for (const auto& dep : dependencies) {
 			auto& buf = buffers[dep];
 			buf.SatisfyDependency(id);
@@ -105,6 +103,12 @@ public:
 		if (buffers[id].IsReady()) {
 			MarkReady(id);
 		}
+	}
+
+	/// Resets the dependencies of the region with the given id.
+	void ResetDependencies(RegionId id, const std::unordered_set<RegionId>& dependencies)
+	{
+		buffers[id].ResetDependencies(dependencies);
 	}
 
 private:
@@ -141,8 +145,7 @@ private:
 	};
 
 	TaskCommunicationData comm_data;
-	std::unordered_map<RegionId, std::shared_ptr<LocalSimulationTask<TResult, SequentialTaskCommunicator>>>
-	    tasks;
+	std::unordered_map<RegionId, std::shared_ptr<LocalSimulationTask<TResult, SequentialTaskCommunicator>>> tasks;
 	unsigned int number_of_sim_threads;
 
 public:
@@ -170,6 +173,7 @@ public:
 	{
 		RegionId ready_id;
 		while (comm_data.TryPopReady(ready_id)) {
+			comm_data.ResetDependencies(ready_id, tasks[ready_id]->GetConnectedRegions());
 			auto task = tasks[ready_id];
 			if (!task->IsDone()) {
 				task->Step();
