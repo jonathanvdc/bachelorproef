@@ -18,6 +18,7 @@
  * Implementation of scenario tests running in batch mode.
  */
 
+#include "multiregion/Visitor.h"
 #include "pop/Population.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
@@ -34,6 +35,7 @@
 
 using namespace std;
 using namespace stride;
+using namespace stride::multiregion;
 using namespace ::testing;
 
 namespace Tests {
@@ -179,7 +181,7 @@ TEST_P( BatchDemos, Run )
 	// -----------------------------------------------------------------------------------------
 	const unsigned int num_days = pt_config.get<unsigned int>("run.num_days");
 	for (unsigned int i = 0; i < num_days; i++) {
-			sim->TimeStep();
+			sim->TimeStep(SimulationStepInput());
 	}
 
 	// -----------------------------------------------------------------------------------------

@@ -39,11 +39,11 @@ public:
 	/// Performs a single step in the simulation.
 	void Step()
 	{
-		auto pull = communicator.Pull();
+		auto pull_data = communicator.Pull();
 		result.BeforeSimulatorStep(*sim->GetPopulation());
-		sim->TimeStep();
+		auto push_data = sim->TimeStep(pull_data);
 		result.AfterSimulatorStep(*sim->GetPopulation());
-		communicator.Push(SimulationStepOutput());
+		communicator.Push(push_data);
 	}
 
 	/// Applies the given aggregation function to this simulation task's population.

@@ -24,6 +24,7 @@
 #include "core/DiseaseProfile.h"
 #include "core/LogMode.h"
 #include "core/RngHandler.h"
+#include "multiregion/Visitor.h"
 #include "multiregion/VisitorJournal.h"
 #include "sim/SimulationConfig.h"
 
@@ -57,7 +58,7 @@ public:
         void SetTrackIndexCase(bool track_index_case);
 
         /// Run one time step, computing full simulation (default) or only index case.
-        void TimeStep();
+        multiregion::SimulationStepOutput TimeStep(const multiregion::SimulationStepInput& input);
 
         /// Tests if this simulation has run to completion.
         bool IsDone() const { return m_calendar->GetSimulationDay() >= m_config.common_config->number_of_days; }

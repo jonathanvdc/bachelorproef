@@ -27,6 +27,7 @@
 #include "core/Infector.h"
 #include "core/LogMode.h"
 #include "pop/Population.h"
+#include "multiregion/Visitor.h"
 
 #include <spdlog/spdlog.h>
 #include <boost/property_tree/ptree.hpp>
@@ -97,7 +98,7 @@ void Simulator::UpdateClusters()
         }
 }
 
-void Simulator::TimeStep()
+multiregion::SimulationStepOutput Simulator::TimeStep(const multiregion::SimulationStepInput& input)
 {
         shared_ptr<DaysOffInterface> days_off {nullptr};
 
@@ -138,5 +139,6 @@ void Simulator::TimeStep()
         }
 
         m_calendar->AdvanceDay();
+        return multiregion::SimulationStepOutput();
 }
 } // end_of_namespace
