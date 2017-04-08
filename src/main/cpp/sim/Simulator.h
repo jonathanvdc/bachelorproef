@@ -77,6 +77,15 @@ private:
 	/// Generates an id for a person that is not in use.
 	PersonId GeneratePersonId();
 
+	/// Generates a new household cluster and returns its id.
+	std::size_t GenerateHousehold();
+
+	/// Recycles the given person id.
+	void RecyclePersonId(PersonId id);
+
+	/// Recycles the household with the given id.
+	void RecycleHousehold(std::size_t household_id);
+
         /// Update the contacts in the given clusters.
 	template<LogMode log_level, bool track_index_case = false>
         void UpdateClusters();

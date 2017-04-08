@@ -105,6 +105,13 @@ public:
 		return iterator(people.emplace(value.GetId(), std::move(value)).first);
 	}
 
+	/// Extracts the person with the given id from this population.
+	Person extract(PersonId id) {
+		auto result = std::move(people.find(id)->second);
+		people.erase(id);
+		return std::move(result);
+	}
+
 	/// Gets the number of people in this population.
 	auto size() const -> decltype(people.size()) { return people.size(); }
 
