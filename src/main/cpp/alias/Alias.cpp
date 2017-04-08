@@ -8,12 +8,25 @@
 namespace stride {
 namespace alias {
 
+void NormalizeProbabilities(std::vector<double>& probabilities)
+{
+	double sum = 0.0;
+	for (auto item : probabilities) {
+		sum += item;
+	}
+
+	for (auto& item : probabilities) {
+		item /= sum;
+	}
+}
+
 Alias Alias::CreateDistribution(std::vector<double> probabilities, util::Random& rng)
 {
 	assert(probabilities.size() > 0);
 	if (probabilities.size() <= 0) {
 		throw EmptyProbabilityException();
 	}
+	NormalizeProbabilities(probabilities);
 	std::size_t n = probabilities.size();
 	std::vector<double> prob(n);
 	std::vector<std::size_t> alias(n);
@@ -56,22 +69,10 @@ Alias Alias::CreateDistribution(std::vector<double> probabilities, util::Random&
 	return std::move(a);
 }
 
-void Alias::NormalizeProbabilities(std::vector<double>& probabilities)
-{
-	double sum = 0.0;
-	for (auto item : probabilities) {
-		sum += item;
-	}
-
-	for (auto& item : probabilities) {
-		item /= sum;
-	}
-}
-
 std::size_t Alias::Next()
 {
-	std::size_t roll = m_random(m_alias.size());
-	double flip = m_random.NextDouble();
+	std::size_t roll = (*m_random)(m_alias.size());
+	double flip = m_random->NextDouble();
 	if (flip <= m_prob[roll]) {
 		return roll;
 	} else {
