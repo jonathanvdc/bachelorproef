@@ -50,6 +50,9 @@ public:
 	/// Add the given Person to the Cluster.
 	void AddPerson(Person* p);
 
+	/// Removes the given person from this cluster.
+	void RemovePerson(Person* p);
+
 	/// Return number of persons in this cluster.
 	std::size_t GetSize() const { return m_members.size(); }
 

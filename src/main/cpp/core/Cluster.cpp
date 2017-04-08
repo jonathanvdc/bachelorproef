@@ -54,6 +54,20 @@ void Cluster::AddPerson(Person* p)
         m_index_immune++;
 }
 
+void Cluster::RemovePerson(Person* p)
+{
+        std::size_t index = 0;
+        while (index < m_members.size()) {
+                if (m_members[index].first == p) {
+                        m_members.erase(m_members.begin() + index);
+                        if (m_index_immune == index) {
+                                m_index_immune++;
+                        }
+                        return;
+                }
+        }
+}
+
 tuple<bool, std::size_t> Cluster::SortMembers()
 {
         bool infectious_cases = false;

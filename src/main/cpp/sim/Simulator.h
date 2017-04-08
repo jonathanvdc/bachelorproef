@@ -74,6 +74,9 @@ private:
 	/// Adds the given person to the clusters they've been assigned to.
 	void AddPersonToClusters(Person& person);
 
+	/// Removes the given person from the clusters they've been assigned to.
+	void RemovePersonFromClusters(Person& person);
+
 	/// Generates an id for a person that is not in use.
 	PersonId GeneratePersonId();
 

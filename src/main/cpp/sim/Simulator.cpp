@@ -20,6 +20,7 @@
 
 #include "Simulator.h"
 
+#include "alias/Alias.h"
 #include "calendar/Calendar.h"
 #include "calendar/DaysOffStandard.h"
 #include "core/Cluster.h"
@@ -123,6 +124,31 @@ void Simulator::AddPersonToClusters(Person& person)
         }
 }
 
+void Simulator::RemovePersonFromClusters(Person& person)
+{
+        // Cluster id '0' means "not present in any cluster of that type".
+        auto hh_id = person.GetClusterId(ClusterType::Household);
+        if (hh_id > 0) {
+                m_households[hh_id].RemovePerson(&person);
+        }
+        auto sc_id = person.GetClusterId(ClusterType::School);
+        if (sc_id > 0) {
+                m_school_clusters[sc_id].RemovePerson(&person);
+        }
+        auto wo_id = person.GetClusterId(ClusterType::Work);
+        if (wo_id > 0) {
+                m_work_clusters[wo_id].RemovePerson(&person);
+        }
+        auto primCom_id = person.GetClusterId(ClusterType::PrimaryCommunity);
+        if (primCom_id > 0) {
+                m_primary_community[primCom_id].RemovePerson(&person);
+        }
+        auto secCom_id = person.GetClusterId(ClusterType::SecondaryCommunity);
+        if (secCom_id > 0) {
+                m_secondary_community[secCom_id].RemovePerson(&person);
+        }
+}
+
 PersonId Simulator::GeneratePersonId()
 {
         // TODO: recycle ids
@@ -210,8 +236,53 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
                 }
         }
 
-        // Only then create a list of people which we'd like to send elsewhere.
+        // Next, create a list of people which we'd like to send elsewhere.
         std::vector<multiregion::OutgoingVisitor> outgoing_visitors;
+        auto travel_model = m_config.travel_model;
+
+        // Build a model of where we want to send people.
+        std::unordered_map<multiregion::RegionId, double> probabilities;
+        for (const auto& airport : travel_model->GetLocalAirports()) {
+                double route_probability_sum = 0.0;
+                for (const auto& route : airport->routes) {
+                        route_probability_sum += route.passenger_fraction;
+                }
+                for (const auto& route : airport->routes) {
+                        probabilities[route.target->region_id] += route.passenger_fraction *
+                                airport->passenger_fraction / route_probability_sum;
+                }
+        }
+
+        if (probabilities.size() == 0) {
+                // Looks like we won't be sending people anywhere anytime soon.
+                return {std::move(outgoing_visitors), std::move(returning_expatriates)};
+        }
+
+        auto target_region_generator = alias::BiasedRandomValueGenerator<multiregion::RegionId>::CreateDistribution(
+                probabilities, *m_travel_rng);
+
+        // Gather the people we're going to ship off to another region.
+        auto number_of_visitors = static_cast<std::size_t>(
+                static_cast<double>(m_population->size()) * travel_model->GetTravelFraction());
+
+        for (auto visitor_ptr : m_population->get_random_persons(
+                *m_travel_rng, number_of_visitors,
+                [this](const Person& p) -> bool { return !m_visitors.is_visitor(p.GetId()); })) {
+                // Pick a region to which we'll send this person.
+                auto target_region_id = target_region_generator.Next();
+
+                // Remove the person from their clusters.
+                RemovePersonFromClusters(*visitor_ptr);
+
+                auto return_date = today + (*m_travel_rng)(
+                        (int)travel_model->GetMinTravelDuration(), (int)travel_model->GetMaxTravelDuration());
+                outgoing_visitors.emplace_back(*visitor_ptr, target_region_id, return_date);
+        }
+
+        for (const auto& visitor : outgoing_visitors) {
+                // Remove the person from the population and add them to the expatriate journal.
+                m_expatriates.add_expatriate(m_population->extract(visitor.person.GetId()));
+        }
 
         return {std::move(outgoing_visitors), std::move(returning_expatriates)};
 }
