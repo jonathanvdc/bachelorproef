@@ -120,6 +120,9 @@ public:
 	/// Creates a constant iterator positioned just past the last person in this population.
 	const_iterator end() const { return const_iterator(people.end()); }
 
+	/// Gets the largest id for any person that has ever been in this population.
+	PersonId get_max_id() const { return max_person_id; }
+
 	/// Gets a list of pointers to 'count' unique, randomly chosen participants in the population.
 	std::vector<Person*> get_random_persons(util::Random& rng, std::size_t count);
 
