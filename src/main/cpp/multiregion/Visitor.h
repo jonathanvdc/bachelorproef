@@ -1,7 +1,7 @@
 #ifndef VISITOR_H_INCLUDED
 #define VISITOR_H_INCLUDED
 
-#include <unordered_map>
+#include <vector>
 #include "multiregion/TravelModel.h"
 #include "pop/Person.h"
 
@@ -73,7 +73,6 @@ struct SimulationStepOutput final
 	/// The list of all returning expatriates.
 	std::vector<OutgoingVisitor> expatriates;
 };
-
 }
 }
 
