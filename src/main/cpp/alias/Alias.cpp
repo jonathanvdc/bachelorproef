@@ -59,8 +59,20 @@ Alias Alias::CreateDistribution(std::vector<double> probabilities, util::Random&
 	for (auto l : small) {
 		prob[l] = 1;
 	}
-	Alias a(alias, prob, rng);
+	Alias a(std::move(alias), std::move(prob), rng);
 	return std::move(a);
+}
+
+void Alias::NormalizeProbabilities(std::vector<double>& probabilities)
+{
+	double sum = 0.0;
+	for (auto item : probabilities) {
+		sum += item;
+	}
+
+	for (auto& item : probabilities) {
+		item /= sum;
+	}
 }
 
 unsigned int Alias::Next()

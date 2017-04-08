@@ -9,8 +9,10 @@
 
 #include <vector>
 #include <util/Random.h>
+
 namespace stride {
 namespace alias {
+
 /**
  * Class used to generate random numbers according to Vose's Alias Method.
  * Used the algorithm on http://keithschwarz.com/darts-dice-coins/
@@ -18,31 +20,44 @@ namespace alias {
  */
 class Alias
 {
-    public:
+public:
 	/// No standard constructor needed
 	Alias() = delete;
+
 	/// No copy constructor needed
 	Alias(const Alias&) = delete;
-	/// No assignement operator needed
+
+	/// No assignment operator needed
 	Alias& operator=(const Alias&) = delete;
+
 	/// Move constructor
-	Alias(const Alias&& other) : m_random{other.m_random}, m_alias{other.m_alias}, m_prob{other.m_prob}
-	{
-	}
+	Alias(Alias&& other) = default;
+
 	/// Creates an Alias object.
 	static Alias CreateDistribution(std::vector<double> probabilities, util::Random& rng);
-	/// Generates a new number
+
+	/// Normalizes the given list of probabilities: every element is
+	/// divided by the sum of the elements in the list.
+	static void NormalizeProbabilities(std::vector<double>& probabilities);
+
+	/// Generates a new number.
 	unsigned int Next();
 
-    private:
+private:
 	/// Constructor
-	Alias(std::vector<unsigned int> alias, std::vector<double> prob, util::Random& rng)
+	Alias(std::vector<unsigned int>&& alias, std::vector<double>&& prob, util::Random& rng)
 	    : m_random{rng}, m_alias{alias}, m_prob{prob}
 	{
 	}
-	util::Random& m_random;		   ///< The random number generator
-	std::vector<unsigned int> m_alias; ///< The vector of aliases
-	std::vector<double> m_prob;	///< The vector of probabilities
+
+	/// The random number generator
+	util::Random& m_random;
+
+	/// The vector of aliases
+	std::vector<unsigned int> m_alias;
+
+	/// The vector of probabilities
+	std::vector<double> m_prob;
 };
 }
 }
