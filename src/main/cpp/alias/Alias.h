@@ -1,14 +1,8 @@
-/*
- * Alias.h
- *
- *  Created on: Mar 11, 2017
- *      Author: cedric
- */
 #ifndef ALIAS_H_INCLUDED
 #define ALIAS_H_INCLUDED
 
 #include <vector>
-#include <util/Random.h>
+#include "util/Random.h"
 
 namespace stride {
 namespace alias {

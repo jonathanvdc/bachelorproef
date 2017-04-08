@@ -1,16 +1,9 @@
-/*
- * Alias.cpp
- *
- *  Created on: Mar 11, 2017
- *      Author: cedric
- */
-
 #include "Alias.h"
-#include "AliasUtil.h"
 
 #include <exception>
 #include <assert.h>
 #include <math.h>
+#include "AliasUtil.h"
 
 namespace stride {
 namespace alias {
