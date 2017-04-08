@@ -63,6 +63,9 @@ void Cluster::RemovePerson(Person* p)
                         if (m_index_immune == index) {
                                 m_index_immune++;
                         }
+                        if (m_index_immune > m_members.size()) {
+                                m_index_immune = m_members.size();
+                        }
                         return;
                 }
                 index++;
