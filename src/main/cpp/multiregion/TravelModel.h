@@ -63,6 +63,7 @@ public:
 	/// Creates a travel model for a single region.
 	RegionTravel(
 	    RegionId region_id, const std::string& region_population_path, double travel_fraction,
+	    std::size_t min_travel_duration, std::size_t max_travel_duration,
 	    const std::shared_ptr<const std::vector<AirportRef>>& all_airports);
 
 	/// Gets the region id for the region this data structure represents.
@@ -74,6 +75,12 @@ public:
 	/// Gets the fraction of people in the region who travel by plane on any given day.
 	double GetTravelFraction() const { return travel_fraction; }
 
+	/// Gets the minimal duration of a trip abroad.
+	std::size_t GetMinTravelDuration() const { return min_travel_duration; }
+
+	/// Gets the maximal duration of a trip abroad.
+	std::size_t GetMaxTravelDuration() const { return max_travel_duration; }
+
 	/// Gets a list of all airports.
 	const std::vector<AirportRef>& GetAllAirports() const { return *all_airports; }
 
@@ -82,10 +89,7 @@ public:
 
 	/// Gets the set of region ids for regions that are connected with this region
 	/// by an air route.
-	const std::unordered_set<RegionId>& GetConnectedRegions() const
-	{
-		return connected_regions;
-	}
+	const std::unordered_set<RegionId>& GetConnectedRegions() const { return connected_regions; }
 
 	/// Parses a ptree that contains a vector of travel information for regions.
 	/// The identifier for the first region can be specified. All regions are assigned
@@ -98,6 +102,8 @@ private:
 	RegionId region_id;
 	std::string region_population_path;
 	double travel_fraction;
+	std::size_t min_travel_duration;
+	std::size_t max_travel_duration;
 	std::shared_ptr<const std::vector<AirportRef>> all_airports;
 	std::vector<AirportRef> local_airports;
 	std::unordered_set<RegionId> connected_regions;

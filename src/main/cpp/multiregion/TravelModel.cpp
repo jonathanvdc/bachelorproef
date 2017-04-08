@@ -18,9 +18,10 @@ RegionTravel::RegionTravel(RegionId region_id, const std::string& region_populat
 
 RegionTravel::RegionTravel(
     RegionId region_id, const std::string& region_population_path, double travel_fraction,
+    std::size_t min_travel_duration, std::size_t max_travel_duration,
     const std::shared_ptr<const std::vector<AirportRef>>& all_airports)
     : region_id(region_id), region_population_path(region_population_path), travel_fraction(travel_fraction),
-      all_airports(all_airports)
+      min_travel_duration(min_travel_duration), max_travel_duration(max_travel_duration), all_airports(all_airports)
 {
 	for (const auto& airport : *all_airports) {
 		if (airport->region_id == region_id) {
@@ -39,6 +40,8 @@ std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
     const boost::property_tree::ptree& ptree, RegionId first_region_id)
 {
 	// A region travel model contains:
+	//   * the minimal duration of a trip abroad,
+	//   * the maximal duration of a trip abroad, and
 	//   * regions, which contain
 	//     - a fraction of the region's population, and
 	//     - airports, which contain
@@ -49,6 +52,9 @@ std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
 	//         * the name of the target airport.
 	//
 	// This function parses lists of regions.
+
+	auto min_trip_duration = ptree.get<std::size_t>("<xmlattr>.min_trip_duration", 1);
+	auto max_trip_duration = ptree.get<std::size_t>("<xmlattr>.max_trip_duration", 4);
 
 	// Create a dictionary that maps airport names to strings.
 	std::unordered_map<std::string, std::shared_ptr<Airport>> airport_map;
@@ -122,7 +128,8 @@ std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
 		auto region_population_path = region.get<std::string>("<xmlattr>.population_file");
 		auto region_travel_fraction = region.get<double>("<xmlattr>.travel_fraction");
 		results.push_back(std::make_shared<RegionTravel>(
-		    region_id, region_population_path, region_travel_fraction, airport_list));
+		    region_id, region_population_path, region_travel_fraction, min_trip_duration, max_trip_duration,
+		    airport_list));
 		region_id++;
 	}
 	return std::move(results);
