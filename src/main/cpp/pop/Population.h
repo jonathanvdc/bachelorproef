@@ -96,13 +96,13 @@ public:
 
 	/// Inserts a new element into the container constructed in-place with the given args.
 	template <typename... TArgs>
-	auto emplace(TArgs&&... args)
+	iterator emplace(TArgs&&... args)
 	{
 		Person value(args...);
 		if (value.GetId() > max_person_id)
 			max_person_id = value.GetId();
 
-		return people.emplace(value.GetId(), std::move(value));
+		return iterator(people.emplace(value.GetId(), std::move(value)).first);
 	}
 
 	/// Gets the number of people in this population.
