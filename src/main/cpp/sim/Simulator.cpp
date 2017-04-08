@@ -162,12 +162,6 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
                 // Set the visitor's health.
                 local_visitor.GetHealth() = visitor.person.GetHealth();
 
-                // Clear the visitor's clusters.
-                for (std::size_t i = 0; i < NumOfClusterTypes(); i++) {
-                        auto cluster_type = static_cast<ClusterType>(i);
-                        local_visitor.GetClusterId(cluster_type) = 0;
-                }
-
                 // Add the visitor to their assigned clusters.
                 AddPersonToClusters(local_visitor);
 
