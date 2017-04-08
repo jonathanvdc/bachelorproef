@@ -19,9 +19,6 @@
 namespace stride {
 namespace multiregion {
 
-using PullResult = SimulationStepInput;
-using PushResult = SimulationStepOutput;
-
 /// Defines a communication buffer for a single task.
 class TaskCommunicationBuffer final
 {
@@ -34,9 +31,9 @@ public:
 	void SatisfyDependency(RegionId dependency) { unsatisfied_dependencies.erase(dependency); }
 
 	/// Pulls the data from this buffer.
-	PullResult Pull()
+	SimulationStepInput Pull()
 	{
-		PullResult result = std::move(pull_buffer);
+		SimulationStepInput result = std::move(pull_buffer);
 		pull_buffer.visitors.clear();
 		pull_buffer.expatriates.clear();
 		return std::move(result);
@@ -59,7 +56,7 @@ public:
 
 private:
 	/// The task's next pull result, which is mutable.
-	PullResult pull_buffer;
+	SimulationStepInput pull_buffer;
 
 	/// The set of all task dependencies that have not been satisfied yet.
 	std::unordered_set<RegionId> unsatisfied_dependencies;
@@ -85,17 +82,16 @@ public:
 	void MarkReady(RegionId id) { ready_tasks.insert(id); }
 
 	/// Pulls input data for the task with the given id.
-	PullResult Pull(RegionId id) { return buffers[id].Pull(); }
+	SimulationStepInput Pull(RegionId id) { return buffers[id].Pull(); }
 
 	/// Pushes output data for the task with the given id and dependencies.
 	void Push(
-	    RegionId id, const std::unordered_set<RegionId>& dependencies, const std::vector<OutgoingVisitor>& visitors,
-	    const std::vector<OutgoingVisitor>& expatriates)
+	    RegionId id, const std::unordered_set<RegionId>& dependencies, const SimulationStepOutput& data)
 	{
-		for (const auto& outgoing_visitor : visitors) {
+		for (const auto& outgoing_visitor : data.visitors) {
 			buffers[outgoing_visitor.visited_region].PushVisitor(id, outgoing_visitor);
 		}
-		for (const auto& returning_expatriate : expatriates) {
+		for (const auto& returning_expatriate : data.expatriates) {
 			buffers[returning_expatriate.visited_region].PushExpatriate(returning_expatriate.person);
 		}
 		buffers[id].ResetDependencies(dependencies);
@@ -132,11 +128,11 @@ private:
 		{
 		}
 
-		PullResult Pull() { return manager->comm_data.Pull(id); }
+		SimulationStepInput Pull() { return manager->comm_data.Pull(id); }
 
-		void Push(const std::vector<OutgoingVisitor>& visitors, const std::vector<OutgoingVisitor>& expatriates)
+		void Push(const SimulationStepOutput& data)
 		{
-			manager->comm_data.Push(id, manager->tasks[id]->GetConnectedRegions(), visitors, expatriates);
+			manager->comm_data.Push(id, manager->tasks[id]->GetConnectedRegions(), data);
 		}
 
 	private:

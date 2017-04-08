@@ -35,16 +35,16 @@ private:
 		{
 		}
 
-		PullResult Pull()
+		SimulationStepInput Pull()
 		{
 			std::lock_guard<std::mutex> lock(manager->comm_mutex);
 			return manager->comm_data.Pull(id);
 		}
 
-		void Push(const std::vector<OutgoingVisitor>& visitors, const std::vector<OutgoingVisitor>& expatriates)
+		void Push(const SimulationStepOutput& data)
 		{
 			std::lock_guard<std::mutex> lock(manager->comm_mutex);
-			manager->comm_data.Push(id, manager->tasks[id]->GetConnectedRegions(), visitors, expatriates);
+			manager->comm_data.Push(id, manager->tasks[id]->GetConnectedRegions(), data);
 		}
 
 	private:

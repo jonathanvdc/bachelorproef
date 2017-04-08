@@ -43,7 +43,7 @@ public:
 		result.BeforeSimulatorStep(*sim->GetPopulation());
 		sim->TimeStep();
 		result.AfterSimulatorStep(*sim->GetPopulation());
-		communicator.Push({}, {});
+		communicator.Push(SimulationStepOutput());
 	}
 
 	/// Applies the given aggregation function to this simulation task's population.
