@@ -31,6 +31,7 @@ struct VisitorId final
  */
 class ExpatriateJournal final
 {
+public:
 	/// Adds an expatriate to this journal.
 	void add_expatriate(Person&& person) { expatriates.emplace(person.GetId(), person); }
 
