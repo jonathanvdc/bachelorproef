@@ -178,6 +178,7 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
         for (const auto& returning_expat : input.expatriates) {
                 // Return the expatriate to this region's population.
                 auto& returned_expat = *m_population->emplace(returning_expat);
+
                 auto home_expat = m_expatriates.extract_expatriate(returning_expat.GetId());
 
                 // Update the returning expatriate's clusters.
@@ -194,9 +195,9 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
                 // Generate local ids and create a household cluster for the visitor.
                 auto id = GeneratePersonId();
                 auto household_id = GenerateHousehold();
-                auto work_id = (*m_travel_rng)(m_work_clusters.size());
-                auto primary_community_id = (*m_travel_rng)(m_primary_community.size());
-                auto secondary_community_id = (*m_travel_rng)(m_secondary_community.size());
+                auto work_id = (*m_travel_rng)(m_work_clusters.size() - 1);
+                auto primary_community_id = (*m_travel_rng)(m_primary_community.size() - 1);
+                auto secondary_community_id = (*m_travel_rng)(m_secondary_community.size() - 1);
 
                 // Insert the visitor in the population.
                 Person& local_visitor = *m_population->emplace(
@@ -210,7 +211,9 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
                 AddPersonToClusters(local_visitor);
 
                 // Add an entry to the visitor log.
-                multiregion::VisitorId visitor_desc = {visitor.person.GetId(), id};
+                multiregion::VisitorId visitor_desc;
+                visitor_desc.home_id = visitor.person.GetId();
+                visitor_desc.visitor_id = id;
                 m_visitors.add_visitor(visitor_desc, visitor.home_region, visitor.return_day);
         }
 }
@@ -222,16 +225,14 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
         auto today = m_calendar->GetSimulationDay();
         for (const auto& expatriate_pair : m_visitors.extract_visitors(today)) {
                 for (const auto& expatriate : expatriate_pair.second) {
-                        auto local_id = expatriate.visitor_id;
-                        auto home_id = expatriate.home_id;
-                        auto person = m_population->extract(local_id);
+                        auto person = m_population->extract(expatriate.visitor_id);
 
                         // Recycle the person's id and their household.
                         RecyclePersonId(person.GetId());
                         RecycleHousehold(person.GetClusterId(ClusterType::Household));
 
                         // Restore the person's id to their home id.
-                        person.GetId() = home_id;
+                        person.GetId() = expatriate.home_id;
                         returning_expatriates.emplace_back(person, expatriate_pair.first, today);
                 }
         }
@@ -276,12 +277,11 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
 
                 auto return_date = today + (*m_travel_rng)(
                         (int)travel_model->GetMinTravelDuration(), (int)travel_model->GetMaxTravelDuration());
-                outgoing_visitors.emplace_back(*visitor_ptr, target_region_id, return_date);
-        }
 
-        for (const auto& visitor : outgoing_visitors) {
+                outgoing_visitors.emplace_back(*visitor_ptr, target_region_id, return_date);
+
                 // Remove the person from the population and add them to the expatriate journal.
-                m_expatriates.add_expatriate(m_population->extract(visitor.person.GetId()));
+                m_expatriates.add_expatriate(m_population->extract(visitor_ptr->GetId()));
         }
 
         return {std::move(outgoing_visitors), std::move(returning_expatriates)};
