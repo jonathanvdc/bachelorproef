@@ -71,6 +71,9 @@ private:
 	/// home regions.
 	multiregion::SimulationStepOutput ReturnVisitors();
 
+	/// Adds the given person to the clusters they've been assigned to.
+	void AddPersonToClusters(Person& person);
+
         /// Update the contacts in the given clusters.
 	template<LogMode log_level, bool track_index_case = false>
         void UpdateClusters();

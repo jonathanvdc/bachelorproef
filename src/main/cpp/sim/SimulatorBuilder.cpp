@@ -206,28 +206,8 @@ void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 		cluster_id++;
 	}
 
-	// Cluster id '0' means "not present in any cluster of that type".
 	for (auto& p: population) {
-	        const auto hh_id = p.GetClusterId(ClusterType::Household);
-		if (hh_id > 0) {
-		        sim->m_households[hh_id].AddPerson(&p);
-		}
-		const auto sc_id = p.GetClusterId(ClusterType::School);
-		if (sc_id > 0) {
-				sim->m_school_clusters[sc_id].AddPerson(&p);
-		}
-		const auto wo_id = p.GetClusterId(ClusterType::Work);
-		if (wo_id > 0) {
-				sim->m_work_clusters[wo_id].AddPerson(&p);
-		}
-		const auto primCom_id = p.GetClusterId(ClusterType::PrimaryCommunity);
-		if (primCom_id > 0) {
-		        sim->m_primary_community[primCom_id].AddPerson(&p);
-		}
-		const auto secCom_id = p.GetClusterId(ClusterType::SecondaryCommunity);
-		if (secCom_id > 0) {
-		        sim->m_secondary_community[secCom_id].AddPerson(&p);
-		}
+		sim->AddPersonToClusters(p);
 	}
 }
 

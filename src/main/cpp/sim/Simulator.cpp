@@ -98,6 +98,31 @@ void Simulator::UpdateClusters()
         }
 }
 
+void Simulator::AddPersonToClusters(Person& person)
+{
+        // Cluster id '0' means "not present in any cluster of that type".
+        auto hh_id = person.GetClusterId(ClusterType::Household);
+        if (hh_id > 0) {
+                m_households[hh_id].AddPerson(&person);
+        }
+        auto sc_id = person.GetClusterId(ClusterType::School);
+        if (sc_id > 0) {
+                m_school_clusters[sc_id].AddPerson(&person);
+        }
+        auto wo_id = person.GetClusterId(ClusterType::Work);
+        if (wo_id > 0) {
+                m_work_clusters[wo_id].AddPerson(&person);
+        }
+        auto primCom_id = person.GetClusterId(ClusterType::PrimaryCommunity);
+        if (primCom_id > 0) {
+                m_primary_community[primCom_id].AddPerson(&person);
+        }
+        auto secCom_id = person.GetClusterId(ClusterType::SecondaryCommunity);
+        if (secCom_id > 0) {
+                m_secondary_community[secCom_id].AddPerson(&person);
+        }
+}
+
 void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 {
 
