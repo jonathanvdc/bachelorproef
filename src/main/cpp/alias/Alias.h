@@ -66,7 +66,7 @@ public:
 	/// Creates a biased random value generator from the given value-to-probability map and
 	/// random number generator.
 	template <typename TProbabilityMap>
-	static BiasedRandomValueGenerator<T> CreateDistribution(TProbabilityMap probabilities, util::Random& rng)
+	static BiasedRandomValueGenerator<T> CreateDistribution(const TProbabilityMap& probabilities, util::Random& rng)
 	{
 		std::vector<T> value_map;
 		std::vector<double> prob_vector;
