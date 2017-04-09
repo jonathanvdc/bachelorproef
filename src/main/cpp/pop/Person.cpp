@@ -25,9 +25,9 @@
 #include "core/ClusterType.h"
 #include "util/Errors.h"
 
+#include <memory>
 #include <stdexcept>
 #include <string>
-#include <memory>
 
 namespace stride {
 
@@ -35,64 +35,82 @@ using namespace std;
 
 unsigned int& PersonData::GetClusterId(ClusterType cluster_type)
 {
-        switch (cluster_type) {
-                case ClusterType::Household:          return m_household_id;
-                case ClusterType::School:             return m_school_id;
-                case ClusterType::Work:               return m_work_id;
-                case ClusterType::PrimaryCommunity:   return m_primary_community_id;
-                case ClusterType::SecondaryCommunity: return m_secondary_community_id;
-                default: FATAL_ERROR("Should not reach default.");
-        }
+	switch (cluster_type) {
+	case ClusterType::Household:
+		return m_household_id;
+	case ClusterType::School:
+		return m_school_id;
+	case ClusterType::Work:
+		return m_work_id;
+	case ClusterType::PrimaryCommunity:
+		return m_primary_community_id;
+	case ClusterType::SecondaryCommunity:
+		return m_secondary_community_id;
+	default:
+		FATAL_ERROR("Should not reach default.");
+	}
 }
 
 unsigned int PersonData::GetClusterId(ClusterType cluster_type) const
 {
-        switch (cluster_type) {
-                case ClusterType::Household:          return m_household_id;
-                case ClusterType::School:             return m_school_id;
-                case ClusterType::Work:               return m_work_id;
-                case ClusterType::PrimaryCommunity:   return m_primary_community_id;
-                case ClusterType::SecondaryCommunity: return m_secondary_community_id;
-                default: FATAL_ERROR("Should not reach default.");
-        }
+	switch (cluster_type) {
+	case ClusterType::Household:
+		return m_household_id;
+	case ClusterType::School:
+		return m_school_id;
+	case ClusterType::Work:
+		return m_work_id;
+	case ClusterType::PrimaryCommunity:
+		return m_primary_community_id;
+	case ClusterType::SecondaryCommunity:
+		return m_secondary_community_id;
+	default:
+		FATAL_ERROR("Should not reach default.");
+	}
 }
 
 bool PersonData::IsInCluster(ClusterType c) const
 {
-        switch(c) {
-                case ClusterType::Household:           return m_at_household;
-                case ClusterType::School:              return m_at_school;
-                case ClusterType::Work:                return m_at_work;
-                case ClusterType::PrimaryCommunity:    return m_at_primary_community;
-                case ClusterType::SecondaryCommunity:  return m_at_secondary_community;
-                default: FATAL_ERROR("Should not reach default.");
-        }
+	switch (c) {
+	case ClusterType::Household:
+		return m_at_household;
+	case ClusterType::School:
+		return m_at_school;
+	case ClusterType::Work:
+		return m_at_work;
+	case ClusterType::PrimaryCommunity:
+		return m_at_primary_community;
+	case ClusterType::SecondaryCommunity:
+		return m_at_secondary_community;
+	default:
+		FATAL_ERROR("Should not reach default.");
+	}
 }
 
 void PersonData::Update(bool is_work_off, bool is_school_off)
 {
-        m_health.Update();
+	m_health.Update();
 
-        // Update presence in clusters.
-        if (is_work_off || (m_age <= MinAdultAge() && is_school_off)) {
-        		m_at_school             = false;
-                m_at_work               = false;
-                m_at_secondary_community = false;
-                m_at_primary_community  = true;
-        } else {
-        		m_at_school             = true;
-        		m_at_work               = true;
-                m_at_secondary_community = true;
-                m_at_primary_community  = false;
-        }
+	// Update presence in clusters.
+	if (is_work_off || (m_age <= MinAdultAge() && is_school_off)) {
+		m_at_school = false;
+		m_at_work = false;
+		m_at_secondary_community = false;
+		m_at_primary_community = true;
+	} else {
+		m_at_school = true;
+		m_at_work = true;
+		m_at_secondary_community = true;
+		m_at_primary_community = false;
+	}
 }
 
 /// Creates a copy of this person and gives it the given id.
 Person Person::WithId(PersonId new_id) const
 {
-        auto result = Clone();
-        result.m_id = new_id;
-        return result;
+	auto result = Clone();
+	result.m_id = new_id;
+	return result;
 }
 
 } // end_of_namespace
