@@ -37,26 +37,19 @@ enum class ClusterType;
 /**
  * Store and handle person data.
  */
-class Person
+class PersonData
 {
 public:
-	/// Constructor: set the person data.
-	Person(
-	    PersonId id, double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
+	/// Creates a person from the given data.
+	PersonData(
+	    double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
 	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
-	    : m_id(id), m_age(age), m_gender('M'), m_household_id(household_id), m_school_id(school_id),
-	      m_work_id(work_id), m_primary_community_id(primary_community_id),
-	      m_secondary_community_id(secondary_community_id), m_at_household(true), m_at_school(true),
-	      m_at_work(true), m_at_primary_community(true), m_at_secondary_community(true), m_health(fate),
-	      m_is_participant(false)
+	    : m_age(age), m_gender('M'), m_household_id(household_id), m_school_id(school_id), m_work_id(work_id),
+	      m_primary_community_id(primary_community_id), m_secondary_community_id(secondary_community_id),
+	      m_at_household(true), m_at_school(true), m_at_work(true), m_at_primary_community(true),
+	      m_at_secondary_community(true), m_health(fate), m_is_participant(false)
 	{
 	}
-
-	/// Checks if this person is equal to the given person.
-	bool operator==(const Person& p) const { return m_id == p.m_id; }
-
-	/// Checks if this person is not equal to the given person.
-	bool operator!=(const Person& p) const { return !(*this == p); }
 
 	/// Get the age.
 	double GetAge() const { return m_age; }
@@ -76,12 +69,6 @@ public:
 	/// Return person's health status.
 	const Health& GetHealth() const { return m_health; }
 
-	/// Get the id.
-	PersonId GetId() const { return m_id; }
-
-	/// Creates a copy of this person and gives it the given id.
-	Person WithId(PersonId new_id) const;
-
 	/// Check if a person is present today in a given cluster
 	bool IsInCluster(ClusterType c) const;
 
@@ -95,7 +82,6 @@ public:
 	void Update(bool is_work_off, bool is_school_off);
 
 private:
-	PersonId m_id;
 	double m_age;
 	char m_gender;
 
@@ -118,6 +104,80 @@ private:
 
 	/// Is this person participating in the social contact study?
 	bool m_is_participant;
+};
+
+/**
+ * Describes a person: personal data tagged by an id.
+ */
+class Person
+{
+public:
+	/// Creates a person from the given information.
+	Person(
+	    PersonId id, double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
+	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
+	    : m_id(id), m_data(std::make_unique<PersonData>(
+			    age, household_id, school_id, work_id, primary_community_id, secondary_community_id, fate))
+	{
+	}
+
+	Person(const Person& other) : m_id(other.m_id), m_data(std::make_unique<PersonData>(*other.m_data)) {}
+	Person& operator=(const Person& other)
+	{
+		if (this == &other) {
+			return *this;
+		}
+
+		m_id = other.m_id;
+		m_data = std::make_unique<PersonData>(*other.m_data);
+		return *this;
+	}
+
+	Person(Person&& other) = default;
+	Person& operator=(Person&& other) = default;
+
+	/// Checks if this person is equal to the given person.
+	bool operator==(const Person& p) const { return m_id == p.m_id; }
+
+	/// Checks if this person is not equal to the given person.
+	bool operator!=(const Person& p) const { return !(*this == p); }
+
+	/// Get the age.
+	double GetAge() const { return m_data->GetAge(); }
+
+	/// Get cluster ID of cluster_type
+	unsigned int& GetClusterId(ClusterType cluster_type) const { return m_data->GetClusterId(cluster_type); }
+
+	/// Return person's gender.
+	char GetGender() const { return m_data->GetGender(); }
+
+	/// Return person's health status.
+	Health& GetHealth() const { return m_data->GetHealth(); }
+
+	/// Get the id.
+	PersonId GetId() const { return m_id; }
+
+	/// Creates a copy of this person and gives it the given id.
+	Person WithId(PersonId new_id) const;
+
+	/// Check if a person is present today in a given cluster
+	bool IsInCluster(ClusterType c) const { return m_data->IsInCluster(c); }
+
+	/// Does this person participates in the social contact study?
+	bool IsParticipatingInSurvey() const { return m_data->IsParticipatingInSurvey(); }
+
+	/// Participate in social contact study and log person details
+	void ParticipateInSurvey() const { m_data->ParticipateInSurvey(); }
+
+	/// Update the health status and presence in clusters.
+	void Update(bool is_work_off, bool is_school_off) const { m_data->Update(is_work_off, is_school_off); }
+
+	/// Gets the data that backs this person.
+	PersonData& GetData() const { return *m_data; }
+
+private:
+	PersonId m_id;
+	std::unique_ptr<PersonData> m_data;
 };
 
 } // end_of_namespace
