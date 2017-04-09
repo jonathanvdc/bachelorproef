@@ -86,4 +86,12 @@ void Person::Update(bool is_work_off, bool is_school_off)
         }
 }
 
+/// Creates a copy of this person and gives it the given id.
+Person Person::WithId(PersonId new_id) const
+{
+        auto result = *this;
+        result.m_id = new_id;
+        return result;
+}
+
 } // end_of_namespace

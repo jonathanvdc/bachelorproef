@@ -232,8 +232,7 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
                         RecycleHousehold(person.GetClusterId(ClusterType::Household));
 
                         // Restore the person's id to their home id.
-                        person.GetId() = expatriate.home_id;
-                        returning_expatriates.emplace_back(person, expatriate_pair.first, today);
+                        returning_expatriates.emplace_back(person.WithId(expatriate.home_id), expatriate_pair.first, today);
                 }
         }
 

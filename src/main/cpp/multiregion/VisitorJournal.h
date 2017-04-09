@@ -37,7 +37,7 @@ class ExpatriateJournal final
 {
 public:
 	/// Adds an expatriate to this journal.
-	void add_expatriate(Person&& person)
+	void add_expatriate(const Person& person)
 	{
 		if (expatriates.find(person.GetId()) != expatriates.end()) {
 			FATAL_ERROR(
@@ -53,9 +53,9 @@ public:
 		if (expatriates.find(id) == expatriates.end()) {
 			FATAL_ERROR("no expatriate with id " + std::to_string(id) + ".");
 		}
-		auto result = std::move(expatriates.find(id)->second);
+		auto result = expatriates.find(id)->second;
 		expatriates.erase(id);
-		return std::move(result);
+		return result;
 	}
 
 private:

@@ -29,6 +29,7 @@
 #include "Person.h"
 #include "core/Health.h"
 #include "util/Random.h"
+#include "util/Errors.h"
 
 namespace stride {
 
@@ -102,14 +103,14 @@ public:
 		if (value.GetId() > max_person_id)
 			max_person_id = value.GetId();
 
-		return iterator(people.emplace(value.GetId(), std::move(value)).first);
+		return iterator(people.emplace(value.GetId(), value).first);
 	}
 
 	/// Extracts the person with the given id from this population.
 	Person extract(PersonId id) {
-		auto result = std::move(people.find(id)->second);
+		auto result = people.find(id)->second;
 		people.erase(id);
-		return std::move(result);
+		return result;
 	}
 
 	/// Gets the number of people in this population.

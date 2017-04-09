@@ -77,10 +77,10 @@ public:
 	const Health& GetHealth() const { return m_health; }
 
 	/// Get the id.
-	PersonId& GetId() { return m_id; }
-
-	/// Get the id.
 	PersonId GetId() const { return m_id; }
+
+	/// Creates a copy of this person and gives it the given id.
+	Person WithId(PersonId new_id) const;
 
 	/// Check if a person is present today in a given cluster
 	bool IsInCluster(ClusterType c) const;
