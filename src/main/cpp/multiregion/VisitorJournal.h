@@ -1,11 +1,13 @@
 #ifndef VISITOR_JOURNAL_H_INCLUDED
 #define VISITOR_JOURNAL_H_INCLUDED
 
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 #include "multiregion/TravelModel.h"
 #include "pop/Person.h"
+#include "util/Errors.h"
 
 /**
  * @file Defines data structures that keep track of a region's visitors and expatriates.
@@ -35,11 +37,22 @@ class ExpatriateJournal final
 {
 public:
 	/// Adds an expatriate to this journal.
-	void add_expatriate(Person&& person) { expatriates.emplace(person.GetId(), person); }
+	void add_expatriate(Person&& person)
+	{
+		if (expatriates.find(person.GetId()) != expatriates.end()) {
+			FATAL_ERROR(
+			    "person with id " + std::to_string(person.GetId()) +
+			    " cannot be added as an expatriate twice.");
+		}
+		expatriates.emplace(person.GetId(), person);
+	}
 
 	/// Extracts the expatriate with the given id.
 	Person extract_expatriate(PersonId id)
 	{
+		if (expatriates.find(id) == expatriates.end()) {
+			FATAL_ERROR("no expatriate with id " + std::to_string(id) + ".");
+		}
 		auto result = std::move(expatriates.find(id)->second);
 		expatriates.erase(id);
 		return std::move(result);
@@ -62,6 +75,11 @@ public:
 	/// Adds the given visitor to this journal.
 	void add_visitor(VisitorId visitor, RegionId home_region_id, std::size_t return_day)
 	{
+		if (visitor_ids.find(visitor.visitor_id) != visitor_ids.end()) {
+			FATAL_ERROR(
+			    "the same visitor id (" + std::to_string(visitor.visitor_id) + ") cannot be added twice.");
+		}
+
 		visitors[return_day][home_region_id].push_back(visitor);
 		visitor_ids.insert(visitor.visitor_id);
 	}
