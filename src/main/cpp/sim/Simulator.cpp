@@ -99,53 +99,53 @@ void Simulator::UpdateClusters()
         }
 }
 
-void Simulator::AddPersonToClusters(Person& person)
+void Simulator::AddPersonToClusters(const Person& person)
 {
         // Cluster id '0' means "not present in any cluster of that type".
         auto hh_id = person.GetClusterId(ClusterType::Household);
         if (hh_id > 0) {
-                m_households[hh_id].AddPerson(&person);
+                m_households[hh_id].AddPerson(person);
         }
         auto sc_id = person.GetClusterId(ClusterType::School);
         if (sc_id > 0) {
-                m_school_clusters[sc_id].AddPerson(&person);
+                m_school_clusters[sc_id].AddPerson(person);
         }
         auto wo_id = person.GetClusterId(ClusterType::Work);
         if (wo_id > 0) {
-                m_work_clusters[wo_id].AddPerson(&person);
+                m_work_clusters[wo_id].AddPerson(person);
         }
         auto primCom_id = person.GetClusterId(ClusterType::PrimaryCommunity);
         if (primCom_id > 0) {
-                m_primary_community[primCom_id].AddPerson(&person);
+                m_primary_community[primCom_id].AddPerson(person);
         }
         auto secCom_id = person.GetClusterId(ClusterType::SecondaryCommunity);
         if (secCom_id > 0) {
-                m_secondary_community[secCom_id].AddPerson(&person);
+                m_secondary_community[secCom_id].AddPerson(person);
         }
 }
 
-void Simulator::RemovePersonFromClusters(Person& person)
+void Simulator::RemovePersonFromClusters(const Person& person)
 {
         // Cluster id '0' means "not present in any cluster of that type".
         auto hh_id = person.GetClusterId(ClusterType::Household);
         if (hh_id > 0) {
-                m_households[hh_id].RemovePerson(&person);
+                m_households[hh_id].RemovePerson(person);
         }
         auto sc_id = person.GetClusterId(ClusterType::School);
         if (sc_id > 0) {
-                m_school_clusters[sc_id].RemovePerson(&person);
+                m_school_clusters[sc_id].RemovePerson(person);
         }
         auto wo_id = person.GetClusterId(ClusterType::Work);
         if (wo_id > 0) {
-                m_work_clusters[wo_id].RemovePerson(&person);
+                m_work_clusters[wo_id].RemovePerson(person);
         }
         auto primCom_id = person.GetClusterId(ClusterType::PrimaryCommunity);
         if (primCom_id > 0) {
-                m_primary_community[primCom_id].RemovePerson(&person);
+                m_primary_community[primCom_id].RemovePerson(person);
         }
         auto secCom_id = person.GetClusterId(ClusterType::SecondaryCommunity);
         if (secCom_id > 0) {
-                m_secondary_community[secCom_id].RemovePerson(&person);
+                m_secondary_community[secCom_id].RemovePerson(person);
         }
 }
 
@@ -177,7 +177,7 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 {
         for (const auto& returning_expat : input.expatriates) {
                 // Return the expatriate to this region's population.
-                auto& returned_expat = *m_population->emplace(returning_expat);
+                auto returned_expat = *m_population->emplace(returning_expat);
 
                 auto home_expat = m_expatriates.extract_expatriate(returning_expat.GetId());
 
@@ -200,7 +200,7 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
                 auto secondary_community_id = (*m_travel_rng)(m_secondary_community.size() - 1);
 
                 // Insert the visitor in the population.
-                Person& local_visitor = *m_population->emplace(
+                Person local_visitor = *m_population->emplace(
                         id, visitor.person.GetAge(), household_id, 0, work_id,
                         primary_community_id, secondary_community_id, disease::Fate());
 
@@ -265,22 +265,22 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
         auto number_of_visitors = static_cast<std::size_t>(
                 static_cast<double>(m_population->size()) * travel_model->GetTravelFraction());
 
-        for (auto visitor_ptr : m_population->get_random_persons(
+        for (auto visitor : m_population->get_random_persons(
                 *m_travel_rng, number_of_visitors,
                 [this](const Person& p) -> bool { return !m_visitors.is_visitor(p.GetId()); })) {
                 // Pick a region to which we'll send this person.
                 auto target_region_id = target_region_generator.Next();
 
                 // Remove the person from their clusters.
-                RemovePersonFromClusters(*visitor_ptr);
+                RemovePersonFromClusters(visitor);
 
                 auto return_date = today + (*m_travel_rng)(
                         (int)travel_model->GetMinTravelDuration(), (int)travel_model->GetMaxTravelDuration());
 
-                outgoing_visitors.emplace_back(*visitor_ptr, target_region_id, return_date);
+                outgoing_visitors.emplace_back(visitor, target_region_id, return_date);
 
                 // Remove the person from the population and add them to the expatriate journal.
-                m_expatriates.add_expatriate(m_population->extract(visitor_ptr->GetId()));
+                m_expatriates.add_expatriate(m_population->extract(visitor.GetId()));
         }
 
         return {std::move(outgoing_visitors), std::move(returning_expatriates)};
@@ -299,7 +299,7 @@ multiregion::SimulationStepOutput Simulator::TimeStep(const multiregion::Simulat
         const bool is_work_off {days_off->IsWorkOff() };
         const bool is_school_off { days_off->IsSchoolOff() };
 
-        for (auto& p : *m_population) {
+        for (const auto& p : *m_population) {
                 p.Update(is_work_off, is_school_off);
         }
 

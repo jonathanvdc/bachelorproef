@@ -12,7 +12,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -116,25 +117,13 @@ public:
 	Person(
 	    PersonId id, double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
 	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
-	    : m_id(id), m_data(std::make_unique<PersonData>(
+	    : m_id(id), m_data(std::make_shared<PersonData>(
 			    age, household_id, school_id, work_id, primary_community_id, secondary_community_id, fate))
 	{
 	}
 
-	Person(const Person& other) : m_id(other.m_id), m_data(std::make_unique<PersonData>(*other.m_data)) {}
-	Person& operator=(const Person& other)
-	{
-		if (this == &other) {
-			return *this;
-		}
-
-		m_id = other.m_id;
-		m_data = std::make_unique<PersonData>(*other.m_data);
-		return *this;
-	}
-
-	Person(Person&& other) = default;
-	Person& operator=(Person&& other) = default;
+	/// Creates a person from the given id and data.
+	Person(PersonId id, const std::shared_ptr<PersonData>& data) : m_id(id), m_data(data) {}
 
 	/// Checks if this person is equal to the given person.
 	bool operator==(const Person& p) const { return m_id == p.m_id; }
@@ -157,7 +146,10 @@ public:
 	/// Get the id.
 	PersonId GetId() const { return m_id; }
 
-	/// Creates a copy of this person and gives it the given id.
+	/// Creates a deep copy of this person, including its data.
+	Person Clone() const { return Person(m_id, std::make_shared<PersonData>(*m_data)); }
+
+	/// Creates a deep copy of this person and gives it the given id.
 	Person WithId(PersonId new_id) const;
 
 	/// Check if a person is present today in a given cluster
@@ -173,11 +165,11 @@ public:
 	void Update(bool is_work_off, bool is_school_off) const { m_data->Update(is_work_off, is_school_off); }
 
 	/// Gets the data that backs this person.
-	PersonData& GetData() const { return *m_data; }
+	std::shared_ptr<PersonData> GetData() const { return m_data; }
 
 private:
 	PersonId m_id;
-	std::unique_ptr<PersonData> m_data;
+	std::shared_ptr<PersonData> m_data;
 };
 
 } // end_of_namespace

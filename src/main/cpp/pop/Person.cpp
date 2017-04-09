@@ -10,7 +10,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -89,7 +90,7 @@ void PersonData::Update(bool is_work_off, bool is_school_off)
 /// Creates a copy of this person and gives it the given id.
 Person Person::WithId(PersonId new_id) const
 {
-        auto result = *this;
+        auto result = Clone();
         result.m_id = new_id;
         return result;
 }

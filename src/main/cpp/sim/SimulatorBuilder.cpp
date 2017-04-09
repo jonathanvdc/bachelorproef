@@ -207,7 +207,7 @@ void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 		cluster_id++;
 	}
 
-	for (auto& p: population) {
+	for (const auto& p : population) {
 		sim->AddPersonToClusters(p);
 	}
 }

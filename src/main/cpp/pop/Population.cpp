@@ -14,7 +14,7 @@
 
 namespace stride {
 /// Gets a list of pointers to 'count' unique, randomly chosen participants in the population.
-std::vector<Person*> Population::get_random_persons(util::Random& rng, std::size_t count)
+std::vector<Person> Population::get_random_persons(util::Random& rng, std::size_t count)
 {
 	auto max_population_index = size() - 1;
 	std::unordered_map<size_t, std::size_t> random_pick_indices;
@@ -26,11 +26,11 @@ std::vector<Person*> Population::get_random_persons(util::Random& rng, std::size
 		random_pick_indices[pick_index] = i;
 	}
 
-	std::vector<Person*> random_picks(count, nullptr);
+	std::vector<Person> random_picks(count, Person(0, nullptr));
 	size_t i = 0;
-	for (auto& item : people) {
+	for (const auto& pair : people) {
 		if (random_pick_indices.find(i) != random_pick_indices.end()) {
-			random_picks[random_pick_indices[i]] = &item.second;
+			random_picks[random_pick_indices[i]] = Person(pair.first, pair.second);
 		}
 		i++;
 	}
@@ -40,7 +40,7 @@ std::vector<Person*> Population::get_random_persons(util::Random& rng, std::size
 
 /// Gets a list of pointers to 'count' unique, randomly chosen participants in the population
 /// which satisfy the given predicate.
-std::vector<Person*> Population::get_random_persons(
+std::vector<Person> Population::get_random_persons(
     util::Random& rng, std::size_t count, std::function<bool(const Person&)> matches)
 {
 	// This function tries to search as efficiently as possible for people who match
@@ -55,13 +55,13 @@ std::vector<Person*> Population::get_random_persons(
 	// iteration does not find any suitable persons until either the entire population is
 	// sampled and we throw an exception or we find enough matching candidates.
 
-	std::vector<Person*> results;
+	std::vector<Person> results;
 	size_t sample_size = count;
 	while (count > 0) {
 		size_t found = 0;
-		for (auto ptr : get_random_persons(rng, sample_size)) {
-			if (matches(*ptr)) {
-				results.push_back(ptr);
+		for (auto person : get_random_persons(rng, sample_size)) {
+			if (matches(person)) {
+				results.push_back(person);
 				count--;
 				found++;
 			}

@@ -39,7 +39,7 @@ namespace stride {
 class Population
 {
 private:
-	std::map<PersonId, Person> people;
+	std::map<PersonId, std::shared_ptr<PersonData>> people;
 	PersonId max_person_id;
 
 	/// An iterator implementation for Population containers.
@@ -71,10 +71,7 @@ private:
 			map_iterator_val--;
 			return *this;
 		}
-		auto& operator*() { return map_iterator_val->second; }
-		auto& operator*() const { return map_iterator_val->second; }
-		auto operator-> () { return &map_iterator_val->second; }
-		auto operator-> () const { return &map_iterator_val->second; }
+		Person operator*() const { return Person(map_iterator_val->first, map_iterator_val->second); }
 		bool operator==(const PopulationIterator<TMapIterator>& other) const
 		{
 			return map_iterator_val == other.map_iterator_val;
@@ -92,23 +89,23 @@ private:
 	};
 
 public:
-	typedef PopulationIterator<decltype(people)::iterator> iterator;
 	typedef PopulationIterator<decltype(people)::const_iterator> const_iterator;
+	typedef const_iterator iterator;
 
 	/// Inserts a new element into the container constructed in-place with the given args.
 	template <typename... TArgs>
-	iterator emplace(TArgs&&... args)
+	const_iterator emplace(TArgs&&... args)
 	{
 		Person value(args...);
 		if (value.GetId() > max_person_id)
 			max_person_id = value.GetId();
 
-		return iterator(people.emplace(value.GetId(), value).first);
+		return const_iterator(people.emplace(value.GetId(), value.GetData()).first);
 	}
 
 	/// Extracts the person with the given id from this population.
 	Person extract(PersonId id) {
-		auto result = people.find(id)->second;
+		Person result(id, people.find(id)->second);
 		people.erase(id);
 		return result;
 	}
@@ -116,14 +113,8 @@ public:
 	/// Gets the number of people in this population.
 	auto size() const -> decltype(people.size()) { return people.size(); }
 
-	/// Creates a mutable iterator positioned at the first person in this population.
-	iterator begin() { return iterator(people.begin()); }
-
 	/// Creates a constant iterator positioned at the first person in this population.
 	const_iterator begin() const { return const_iterator(people.begin()); }
-
-	/// Creates a mutable iterator positioned just past the last person in this population.
-	iterator end() { return iterator(people.end()); }
 
 	/// Creates a constant iterator positioned just past the last person in this population.
 	const_iterator end() const { return const_iterator(people.end()); }
@@ -132,11 +123,11 @@ public:
 	PersonId get_max_id() const { return max_person_id; }
 
 	/// Gets a list of pointers to 'count' unique, randomly chosen participants in the population.
-	std::vector<Person*> get_random_persons(util::Random& rng, std::size_t count);
+	std::vector<Person> get_random_persons(util::Random& rng, std::size_t count);
 
 	/// Gets a list of pointers to 'count' unique, randomly chosen participants in the population
 	/// which satisfy the given predicate.
-	std::vector<Person*> get_random_persons(
+	std::vector<Person> get_random_persons(
 	    util::Random& rng, std::size_t count, std::function<bool(const Person&)> matches);
 
 	/// Get the cumulative number of cases.
@@ -157,13 +148,6 @@ using PopulationRef = std::shared_ptr<const Population>;
 } // end_of_namespace
 
 namespace std {
-template <>
-struct iterator_traits<stride::Population::iterator>
-{
-	typedef stride::Person value_type;
-	typedef value_type& reference;
-	typedef value_type* pointer;
-};
 template <>
 struct iterator_traits<stride::Population::const_iterator>
 {

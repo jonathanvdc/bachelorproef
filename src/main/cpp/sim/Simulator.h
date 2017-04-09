@@ -72,10 +72,10 @@ private:
 	multiregion::SimulationStepOutput ReturnVisitors();
 
 	/// Adds the given person to the clusters they've been assigned to.
-	void AddPersonToClusters(Person& person);
+	void AddPersonToClusters(const Person& person);
 
 	/// Removes the given person from the clusters they've been assigned to.
-	void RemovePersonFromClusters(Person& person);
+	void RemovePersonFromClusters(const Person& person);
 
 	/// Generates an id for a person that is not in use.
 	PersonId GeneratePersonId();
