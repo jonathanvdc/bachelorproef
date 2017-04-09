@@ -152,6 +152,8 @@ void run_stride(const MultiSimulationConfig& config)
 	// Create simulator.
 	// -----------------------------------------------------------------------------------------
 	Stopwatch<> total_clock("total_clock", true);
+	// multiregion::SequentialSimulationManager<StrideSimulatorResult, multiregion::RegionId> sim_manager{
+	//     num_threads};
 	multiregion::ParallelSimulationManager<StrideSimulatorResult, multiregion::RegionId> sim_manager{
 	    config.region_models.size(), num_threads};
 

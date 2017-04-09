@@ -29,7 +29,6 @@
 #include "Person.h"
 #include "core/Health.h"
 #include "util/Random.h"
-#include "util/Errors.h"
 
 namespace stride {
 

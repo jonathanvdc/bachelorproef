@@ -72,6 +72,9 @@ public:
 	/// Tests if the person with the given id is a visitor.
 	bool is_visitor(PersonId id) const { return visitor_ids.find(id) != visitor_ids.end(); }
 
+	/// Gets the number of visitors in the journal.
+	std::size_t get_visitor_count() const { return visitor_ids.size(); }
+
 	/// Adds the given visitor to this journal.
 	void add_visitor(VisitorId visitor, RegionId home_region_id, std::size_t return_day)
 	{
@@ -90,7 +93,7 @@ public:
 		auto result = std::move(visitors[return_day]);
 		visitors.erase(return_day);
 		for (const auto& pair : result) {
-			for (auto visitor : pair.second) {
+			for (const auto& visitor : pair.second) {
 				visitor_ids.erase(visitor.visitor_id);
 			}
 		}

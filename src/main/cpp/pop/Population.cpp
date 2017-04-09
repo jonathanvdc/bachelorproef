@@ -6,6 +6,7 @@
 #include <numeric>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include "Person.h"
 #include "core/Health.h"
@@ -16,6 +17,12 @@ namespace stride {
 /// Gets a list of pointers to 'count' unique, randomly chosen participants in the population.
 std::vector<Person> Population::get_random_persons(util::Random& rng, std::size_t count)
 {
+	if (count > size()) {
+		FATAL_ERROR(
+		    "Cannot pick " + std::to_string(count) + " random people from a population of " +
+		    std::to_string(size()) + ".");
+	}
+
 	auto max_population_index = size() - 1;
 	std::unordered_map<size_t, std::size_t> random_pick_indices;
 	for (size_t i = 0; i < count; i++) {
@@ -56,14 +63,20 @@ std::vector<Person> Population::get_random_persons(
 	// sampled and we throw an exception or we find enough matching candidates.
 
 	std::vector<Person> results;
+	std::unordered_set<PersonId> result_ids;
 	size_t sample_size = count;
 	while (count > 0) {
 		size_t found = 0;
 		for (auto person : get_random_persons(rng, sample_size)) {
-			if (matches(person)) {
+			if (result_ids.find(person.GetId()) == result_ids.end() && matches(person)) {
 				results.push_back(person);
+				result_ids.insert(person.GetId());
 				count--;
 				found++;
+
+				if (count == 0) {
+					return results;
+				}
 			}
 		}
 

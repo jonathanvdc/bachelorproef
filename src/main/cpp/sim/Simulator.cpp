@@ -262,8 +262,8 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
                 probabilities, *m_travel_rng);
 
         // Gather the people we're going to ship off to another region.
-        auto number_of_visitors = static_cast<std::size_t>(
-                static_cast<double>(m_population->size()) * travel_model->GetTravelFraction());
+        auto number_of_visitors = static_cast<std::size_t>(std::max(0.0, std::floor(
+                static_cast<double>(m_population->size() - m_visitors.get_visitor_count()) * travel_model->GetTravelFraction())));
 
         for (auto visitor : m_population->get_random_persons(
                 *m_travel_rng, number_of_visitors,
