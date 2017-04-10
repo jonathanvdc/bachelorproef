@@ -23,9 +23,12 @@ namespace multiregion {
 class TaskCommunicationBuffer final
 {
 public:
-	/// Tells if this communication buffer is ready for a pull operation
-	/// by checking if all of its dependencies have been satisfied.
+	/// Tells if this communication buffer is ready for a pull operation by checking if all of its dependencies have
+	/// been satisfied.
 	bool IsReady() const { return unsatisfied_dependencies.size() == 0; }
+
+	/// Gets the communication buffer's phase, i.e., the simulation day that will be pulled next.
+	std::size_t GetPhase() const { return phase; }
 
 	/// Satisfied the given dependency.
 	void SatisfyDependency(RegionId dependency) { unsatisfied_dependencies.erase(dependency); }
@@ -33,20 +36,24 @@ public:
 	/// Pulls the data from this buffer.
 	SimulationStepInput Pull()
 	{
-		SimulationStepInput result = std::move(pull_buffer);
-		pull_buffer.visitors.clear();
-		pull_buffer.expatriates.clear();
+		SimulationStepInput result = std::move(pull_buffers[phase]);
+		pull_buffers.erase(phase);
+		phase++;
 		return std::move(result);
 	}
 
 	/// Pushes a visitor from the given region into this buffer.
-	void PushVisitor(RegionId source_region_id, const OutgoingVisitor& visitor)
+	void PushVisitor(std::size_t source_region_phase, RegionId source_region_id, const OutgoingVisitor& visitor)
 	{
-		pull_buffer.visitors.emplace_back(visitor.person, source_region_id, visitor.return_day);
+		pull_buffers[source_region_phase].visitors.emplace_back(
+		    visitor.person, source_region_id, visitor.return_day);
 	}
 
-	/// Pushes an expatriate from the given region into.
-	void PushExpatriate(const Person& expatriate) { pull_buffer.expatriates.emplace_back(expatriate); }
+	/// Pushes an expatriate from the given region into this buffer.
+	void PushExpatriate(std::size_t source_region_phase, const Person& expatriate)
+	{
+		pull_buffers[source_region_phase].expatriates.emplace_back(expatriate);
+	}
 
 	/// Sets this buffer's dependencies to the given set of dependencies.
 	void ResetDependencies(const std::unordered_set<RegionId>& new_unsatisfied_dependencies)
@@ -56,7 +63,10 @@ public:
 
 private:
 	/// The task's next pull result, which is mutable.
-	SimulationStepInput pull_buffer;
+	std::unordered_map<std::size_t, SimulationStepInput> pull_buffers;
+
+	/// The task's current phase, i.e., the simulation day that will be pulled next.
+	std::size_t phase;
 
 	/// The set of all task dependencies that have not been satisfied yet.
 	std::unordered_set<RegionId> unsatisfied_dependencies;
@@ -87,11 +97,12 @@ public:
 	/// Pushes output data for the task with the given id and dependencies.
 	void Push(RegionId id, const std::unordered_set<RegionId>& dependencies, const SimulationStepOutput& data)
 	{
+		auto phase = buffers[id].GetPhase();
 		for (const auto& outgoing_visitor : data.visitors) {
-			buffers[outgoing_visitor.visited_region].PushVisitor(id, outgoing_visitor);
+			buffers[outgoing_visitor.visited_region].PushVisitor(phase, id, outgoing_visitor);
 		}
 		for (const auto& returning_expatriate : data.expatriates) {
-			buffers[returning_expatriate.visited_region].PushExpatriate(returning_expatriate.person);
+			buffers[returning_expatriate.visited_region].PushExpatriate(phase, returning_expatriate.person);
 		}
 		for (const auto& dep : dependencies) {
 			auto& buf = buffers[dep];
