@@ -37,7 +37,7 @@ class ExpatriateJournal final
 {
 public:
 	/// Adds an expatriate to this journal.
-	void add_expatriate(const Person& person)
+	void AddExpatriate(const Person& person)
 	{
 		if (expatriates.find(person.GetId()) != expatriates.end()) {
 			FATAL_ERROR(
@@ -48,7 +48,7 @@ public:
 	}
 
 	/// Extracts the expatriate with the given id.
-	Person extract_expatriate(PersonId id)
+	Person ExtractExpatriate(PersonId id)
 	{
 		if (expatriates.find(id) == expatriates.end()) {
 			FATAL_ERROR("no expatriate with id " + std::to_string(id) + ".");
@@ -70,13 +70,13 @@ class VisitorJournal final
 {
 public:
 	/// Tests if the person with the given id is a visitor.
-	bool is_visitor(PersonId id) const { return visitor_ids.find(id) != visitor_ids.end(); }
+	bool IsVisitor(PersonId id) const { return visitor_ids.find(id) != visitor_ids.end(); }
 
 	/// Gets the number of visitors in the journal.
-	std::size_t get_visitor_count() const { return visitor_ids.size(); }
+	std::size_t GetVisitorCount() const { return visitor_ids.size(); }
 
 	/// Adds the given visitor to this journal.
-	void add_visitor(VisitorId visitor, RegionId home_region_id, std::size_t return_day)
+	void AddVisitor(VisitorId visitor, RegionId home_region_id, std::size_t return_day)
 	{
 		if (visitor_ids.find(visitor.visitor_id) != visitor_ids.end()) {
 			FATAL_ERROR(
@@ -88,7 +88,7 @@ public:
 	}
 
 	/// Extracts all visitors that were scheduled to return on the given day.
-	std::unordered_map<RegionId, std::vector<VisitorId>> extract_visitors(std::size_t return_day)
+	std::unordered_map<RegionId, std::vector<VisitorId>> ExtractVisitors(std::size_t return_day)
 	{
 		auto result = std::move(visitors[return_day]);
 		visitors.erase(return_day);

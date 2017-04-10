@@ -171,7 +171,7 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 		// Return the expatriate to this region's population.
 		auto returned_expat = *m_population->emplace(returning_expat);
 
-		auto home_expat = m_expatriates.extract_expatriate(returning_expat.GetId());
+		auto home_expat = m_expatriates.ExtractExpatriate(returning_expat.GetId());
 
 		// Update the returning expatriate's clusters.
 		for (std::size_t i = 0; i < NumOfClusterTypes(); i++) {
@@ -206,7 +206,7 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 		multiregion::VisitorId visitor_desc;
 		visitor_desc.home_id = visitor.person.GetId();
 		visitor_desc.visitor_id = id;
-		m_visitors.add_visitor(visitor_desc, visitor.home_region, visitor.return_day);
+		m_visitors.AddVisitor(visitor_desc, visitor.home_region, visitor.return_day);
 	}
 }
 
@@ -215,7 +215,7 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
 	// First, find visitors which we can return.
 	std::vector<multiregion::OutgoingVisitor> returning_expatriates;
 	auto today = m_calendar->GetSimulationDay();
-	for (const auto& expatriate_pair : m_visitors.extract_visitors(today)) {
+	for (const auto& expatriate_pair : m_visitors.ExtractVisitors(today)) {
 		for (const auto& expatriate : expatriate_pair.second) {
 			auto person = m_population->extract(expatriate.visitor_id);
 
@@ -257,12 +257,12 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
 	// Gather the people we're going to ship off to another region.
 	auto number_of_visitors = static_cast<std::size_t>(std::max(
 	    0.0, std::floor(
-		     static_cast<double>(m_population->size() - m_visitors.get_visitor_count()) *
+		     static_cast<double>(m_population->size() - m_visitors.GetVisitorCount()) *
 		     travel_model->GetTravelFraction())));
 
 	for (auto visitor :
 	     m_population->get_random_persons(*m_travel_rng, number_of_visitors, [this](const Person& p) -> bool {
-		     return !m_visitors.is_visitor(p.GetId());
+		     return !m_visitors.IsVisitor(p.GetId());
 	     })) {
 		// Pick a region to which we'll send this person.
 		auto target_region_id = target_region_generator.Next();
@@ -277,7 +277,7 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
 		outgoing_visitors.emplace_back(visitor, target_region_id, return_date);
 
 		// Remove the person from the population and add them to the expatriate journal.
-		m_expatriates.add_expatriate(m_population->extract(visitor.GetId()));
+		m_expatriates.AddExpatriate(m_population->extract(visitor.GetId()));
 	}
 
 	return {std::move(outgoing_visitors), std::move(returning_expatriates)};
