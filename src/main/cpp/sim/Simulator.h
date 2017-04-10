@@ -26,17 +26,16 @@
 #include "core/RngHandler.h"
 #include "multiregion/Visitor.h"
 #include "multiregion/VisitorJournal.h"
+#include "pop/Population.h"
 #include "sim/SimulationConfig.h"
 
-#include <spdlog/spdlog.h>
-#include <boost/property_tree/ptree.hpp>
 #include <memory>
-#include <string>
 #include <vector>
+#include <boost/property_tree/ptree.hpp>
+#include <spdlog/spdlog.h>
 
 namespace stride {
 
-class Population;
 class Calendar;
 
 /**
@@ -45,23 +44,23 @@ class Calendar;
 class Simulator
 {
 public:
-        // Default constructor for empty Simulator.
-        Simulator();
+	// Default constructor for empty Simulator.
+	Simulator();
 
-        /// Get the population.
-        const std::shared_ptr<const Population> GetPopulation() const;
+	/// Get the population.
+	const PopulationRef GetPopulation() const;
 
-        /// Gets the simulator's configuration.
-        SingleSimulationConfig GetConfiguration() const;
+	/// Gets the simulator's configuration.
+	SingleSimulationConfig GetConfiguration() const;
 
-        /// Change track_index_case setting.
-        void SetTrackIndexCase(bool track_index_case);
+	/// Change track_index_case setting.
+	void SetTrackIndexCase(bool track_index_case);
 
-        /// Run one time step, computing full simulation (default) or only index case.
-        multiregion::SimulationStepOutput TimeStep(const multiregion::SimulationStepInput& input);
+	/// Run one time step, computing full simulation (default) or only index case.
+	multiregion::SimulationStepOutput TimeStep(const multiregion::SimulationStepInput& input);
 
-        /// Tests if this simulation has run to completion.
-        bool IsDone() const { return m_calendar->GetSimulationDay() >= m_config.common_config->number_of_days; }
+	/// Tests if this simulation has run to completion.
+	bool IsDone() const { return m_calendar->GetSimulationDay() >= m_config.common_config->number_of_days; }
 
 private:
 	/// Accepts visitors from other regions.
@@ -89,35 +88,35 @@ private:
 	/// Recycles the household with the given id.
 	void RecycleHousehold(std::size_t household_id);
 
-        /// Update the contacts in the given clusters.
-	template<LogMode log_level, bool track_index_case = false>
-        void UpdateClusters();
+	/// Update the contacts in the given clusters.
+	template <LogMode log_level, bool track_index_case = false>
+	void UpdateClusters();
 
 private:
-	SingleSimulationConfig              m_config;               ///< Configuration for this simulator.
-	std::shared_ptr<spdlog::logger>     m_log;                  ///< Log for this simulator.
+	SingleSimulationConfig m_config;       ///< Configuration for this simulator.
+	std::shared_ptr<spdlog::logger> m_log; ///< Log for this simulator.
 
 private:
-	unsigned int                        m_num_threads;          ///< The number of (OpenMP) threads.
-    std::vector<RngHandler>             m_rng_handler;          ///< Pointer to the RngHandlers.
-    std::shared_ptr<util::Random>       m_travel_rng;           ///< A random number generator for travel.
-    LogMode                             m_log_level;            ///< Specifies logging mode.
-    std::shared_ptr<Calendar>           m_calendar;             ///< Management of calendar.
+	unsigned int m_num_threads;		    ///< The number of (OpenMP) threads.
+	std::vector<RngHandler> m_rng_handler;      ///< Pointer to the RngHandlers.
+	std::shared_ptr<util::Random> m_travel_rng; ///< A random number generator for travel.
+	LogMode m_log_level;			    ///< Specifies logging mode.
+	std::shared_ptr<Calendar> m_calendar;       ///< Management of calendar.
 
 private:
-    std::shared_ptr<Population>         m_population;           ///< Pointer to the Population.
-    stride::multiregion::VisitorJournal m_visitors;             ///< Visitor journal.
-    stride::multiregion::ExpatriateJournal m_expatriates;       ///< Expatriate journal.
+	std::shared_ptr<Population> m_population;	     ///< Pointer to the Population.
+	stride::multiregion::VisitorJournal m_visitors;       ///< Visitor journal.
+	stride::multiregion::ExpatriateJournal m_expatriates; ///< Expatriate journal.
 
-	std::vector<Cluster>                m_households;           ///< Container with household Clusters.
-    std::vector<Cluster>                m_school_clusters;      ///< Container with school Clusters.
-    std::vector<Cluster>                m_work_clusters;        ///< Container with work Clusters.
-	std::vector<Cluster>                m_primary_community;    ///< Container with primary community Clusters.
-	std::vector<Cluster>                m_secondary_community;  ///< Container with secondary community  Clusters.
+	std::vector<Cluster> m_households;	  ///< Container with household Clusters.
+	std::vector<Cluster> m_school_clusters;     ///< Container with school Clusters.
+	std::vector<Cluster> m_work_clusters;       ///< Container with work Clusters.
+	std::vector<Cluster> m_primary_community;   ///< Container with primary community Clusters.
+	std::vector<Cluster> m_secondary_community; ///< Container with secondary community  Clusters.
 
-	DiseaseProfile                      m_disease_profile;      ///< Profile of disease.
+	DiseaseProfile m_disease_profile; ///< Profile of disease.
 
-	bool                                m_track_index_case;     ///< General simulation or tracking index case.
+	bool m_track_index_case; ///< General simulation or tracking index case.
 
 private:
 	friend class SimulatorBuilder;
