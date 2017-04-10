@@ -52,9 +52,8 @@ private:
 		ParallelSimulationManager<TResult, TInitialResultArgs...>* manager;
 	};
 
-	bool TryPopReadyAtomic(RegionId& id)
+	bool TryPopReady(RegionId& id)
 	{
-		std::lock_guard<std::mutex> lock(comm_mutex);
 		auto success = comm_data.TryPopReady(id);
 		if (success) {
 			comm_data.ResetDependencies(id, tasks[id]->GetConnectedRegions());
@@ -67,10 +66,12 @@ private:
 	std::mutex comm_mutex;
 	std::size_t number_of_task_threads;
 	unsigned int number_of_sim_threads;
+	volatile std::size_t active_task_count;
 
 public:
 	ParallelSimulationManager(std::size_t number_of_task_threads, unsigned int number_of_sim_threads)
-	    : number_of_task_threads(number_of_task_threads), number_of_sim_threads(number_of_sim_threads)
+	    : number_of_task_threads(number_of_task_threads), number_of_sim_threads(number_of_sim_threads),
+	      active_task_count(0)
 	{
 	}
 
@@ -86,6 +87,7 @@ public:
 		    sim, ParallelTaskCommunicator(id, this), args...);
 		tasks[id] = task;
 		comm_data.MarkReady(id);
+		active_task_count++;
 		return task;
 	}
 
@@ -96,11 +98,35 @@ public:
 		std::vector<std::thread> threads;
 		for (std::size_t i = 0; i < number_of_task_threads; i++) {
 			threads.emplace_back([this]() {
-				RegionId ready_id;
-				while (TryPopReadyAtomic(ready_id)) {
-					auto task = tasks[ready_id];
-					if (!task->IsDone()) {
-						task->Step();
+				// We will leave at least one thread running until the number of
+				// active tasks reaches zero.
+				while (active_task_count > 0) {
+					// Acquire a lock, so we don't get weird race conditions like popping
+					// the same task twice.
+					comm_mutex.lock();
+
+					// Try to pop a task that's ready to perform a time step.
+					RegionId ready_id;
+					if (TryPopReady(ready_id)) {
+						auto task = tasks[ready_id];
+						if (task->IsDone()) {
+							// This task's done. We ought to decrement the active task counter
+							// and we can also consider ending this thread.
+							auto count = --active_task_count;
+							comm_mutex.unlock();
+							if (count < number_of_task_threads) {
+								// End this thread of execution. We don't need it anymore.
+								break;
+							}
+						} else {
+							// Have the task perform a single step.
+							comm_mutex.unlock();
+							task->Step();
+						}
+					} else {
+						// No task was ready. Free the lock to give the other tasks the
+						// opportunity to push their outputs and try again.
+						comm_mutex.unlock();
 					}
 				}
 			});
