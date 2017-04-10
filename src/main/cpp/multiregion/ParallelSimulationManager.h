@@ -98,11 +98,11 @@ public:
 		std::vector<std::thread> threads;
 		for (std::size_t i = 0; i < number_of_task_threads; i++) {
 			threads.emplace_back([this]() {
-				// We will leave at least one thread running until the number of
-				// active tasks reaches zero.
+				// We will leave at least one thread running until the number of active tasks reaches
+				// zero.
 				while (active_task_count > 0) {
-					// Acquire a lock, so we don't get weird race conditions like popping
-					// the same task twice.
+					// Acquire a lock, so we don't get weird race conditions like popping the same
+					// task twice.
 					comm_mutex.lock();
 
 					// Try to pop a task that's ready to perform a time step.
@@ -110,16 +110,18 @@ public:
 					if (TryPopReady(ready_id)) {
 						auto task = tasks[ready_id];
 						if (task->IsDone()) {
-							// This task's done. We ought to decrement the active task counter
-							// and we can also consider ending this thread.
+							// This task's done. We ought to decrement the active task
+							// counter and we can also consider ending this thread.
 							auto count = --active_task_count;
 							comm_mutex.unlock();
 							if (count < number_of_task_threads) {
-								// End this thread of execution. We don't need it anymore.
+								// End this thread of execution. We don't need it
+								// anymore.
 								break;
 							}
 						} else {
-							// Have the task perform a single step.
+							// Have the task perform a single step. Release the
+							// communication lock early so other threads can proceed.
 							comm_mutex.unlock();
 							task->Step();
 						}
