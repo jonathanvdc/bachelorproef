@@ -4,6 +4,6 @@
 #include <exception>
 #include <string>
 
-#define FATAL_ERROR(message) throw runtime_error(std::string(__func__) + "> " + (message))
+#define FATAL_ERROR(message) throw std::runtime_error(std::string(__func__) + "> " + (message))
 
 #endif // end-of-include-guard

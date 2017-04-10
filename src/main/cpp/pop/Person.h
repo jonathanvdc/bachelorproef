@@ -12,7 +12,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -29,34 +30,36 @@
 
 namespace stride {
 
+using PersonId = unsigned int;
+
 class Calendar;
 enum class ClusterType;
 
 /**
  * Store and handle person data.
  */
-class Person
+class PersonData
 {
 public:
-	/// Constructor: set the person data.
-	Person(unsigned int id, double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
-	       unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
-	    : m_id(id), m_age(age), m_gender('M'), m_household_id(household_id), m_school_id(school_id),
-	      m_work_id(work_id), m_primary_community_id(primary_community_id),
-	      m_secondary_community_id(secondary_community_id), m_at_household(true), m_at_school(true),
-	      m_at_work(true), m_at_primary_community(true), m_at_secondary_community(true), m_health(fate),
-	      m_is_participant(false)
+	/// Creates a person from the given data.
+	PersonData(
+	    double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
+	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
+	    : m_age(age), m_gender('M'), m_household_id(household_id), m_school_id(school_id), m_work_id(work_id),
+	      m_primary_community_id(primary_community_id), m_secondary_community_id(secondary_community_id),
+	      m_at_household(true), m_at_school(true), m_at_work(true), m_at_primary_community(true),
+	      m_at_secondary_community(true), m_health(fate), m_is_participant(false)
 	{
 	}
-
-	/// Is this person not equal to the given person?
-	bool operator!=(const Person& p) const { return p.m_id != m_id; }
 
 	/// Get the age.
 	double GetAge() const { return m_age; }
 
 	/// Get cluster ID of cluster_type
 	unsigned int GetClusterId(ClusterType cluster_type) const;
+
+	/// Get cluster ID of cluster_type
+	unsigned int& GetClusterId(ClusterType cluster_type);
 
 	/// Return person's gender.
 	char GetGender() const { return m_gender; }
@@ -66,9 +69,6 @@ public:
 
 	/// Return person's health status.
 	const Health& GetHealth() const { return m_health; }
-
-	/// Get the id.
-	unsigned int GetId() const { return m_id; }
 
 	/// Check if a person is present today in a given cluster
 	bool IsInCluster(ClusterType c) const;
@@ -83,7 +83,6 @@ public:
 	void Update(bool is_work_off, bool is_school_off);
 
 private:
-	unsigned int m_id;
 	double m_age;
 	char m_gender;
 
@@ -108,6 +107,85 @@ private:
 	bool m_is_participant;
 };
 
+/**
+ * Describes a person: personal data tagged by an id.
+ */
+class Person
+{
+public:
+	/// Creates a person from the given information.
+	Person(
+	    PersonId id, double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
+	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
+	    : m_id(id), m_data(std::make_shared<PersonData>(
+			    age, household_id, school_id, work_id, primary_community_id, secondary_community_id, fate))
+	{
+	}
+
+	/// Creates a person from the given id and data.
+	Person(PersonId id, const std::shared_ptr<PersonData>& data) : m_id(id), m_data(data) {}
+
+	/// Checks if this person is equal to the given person.
+	bool operator==(const Person& p) const { return m_id == p.m_id; }
+
+	/// Checks if this person is not equal to the given person.
+	bool operator!=(const Person& p) const { return !(*this == p); }
+
+	/// Get the age.
+	double GetAge() const { return m_data->GetAge(); }
+
+	/// Get cluster ID of cluster_type
+	unsigned int& GetClusterId(ClusterType cluster_type) const { return m_data->GetClusterId(cluster_type); }
+
+	/// Return person's gender.
+	char GetGender() const { return m_data->GetGender(); }
+
+	/// Return person's health status.
+	Health& GetHealth() const { return m_data->GetHealth(); }
+
+	/// Get the id.
+	PersonId GetId() const { return m_id; }
+
+	/// Creates a deep copy of this person, including its data.
+	Person Clone() const { return Person(m_id, std::make_shared<PersonData>(*m_data)); }
+
+	/// Creates a deep copy of this person and gives it the given id.
+	Person WithId(PersonId new_id) const;
+
+	/// Check if a person is present today in a given cluster
+	bool IsInCluster(ClusterType c) const { return m_data->IsInCluster(c); }
+
+	/// Does this person participates in the social contact study?
+	bool IsParticipatingInSurvey() const { return m_data->IsParticipatingInSurvey(); }
+
+	/// Participate in social contact study and log person details
+	void ParticipateInSurvey() const { m_data->ParticipateInSurvey(); }
+
+	/// Update the health status and presence in clusters.
+	void Update(bool is_work_off, bool is_school_off) const { m_data->Update(is_work_off, is_school_off); }
+
+	/// Gets the data that backs this person.
+	std::shared_ptr<PersonData> GetData() const { return m_data; }
+
+private:
+	PersonId m_id;
+	std::shared_ptr<PersonData> m_data;
+};
+
 } // end_of_namespace
+
+namespace std {
+/// An std::hash<T> implementation for Person.
+template <>
+struct hash<stride::Person>
+{
+	typedef stride::Person argument_type;
+	typedef std::size_t result_type;
+	result_type operator()(const argument_type& person) const
+	{
+		return std::hash<stride::PersonId>()(person.GetId());
+	}
+};
+}
 
 #endif // end of include guard

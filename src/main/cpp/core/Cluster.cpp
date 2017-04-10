@@ -10,7 +10,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -48,25 +49,51 @@ void Cluster::AddContactProfile(ClusterType cluster_type, const ContactProfile& 
 }
 
 
-void Cluster::AddPerson(Person* p)
+void Cluster::AddPerson(const Person& p)
 {
-        m_members.emplace_back(std::make_pair(p, true));
-        m_index_immune++;
+        if (p.GetHealth().IsImmune()) {
+                m_members.emplace_back(
+                        std::make_pair(p, p.IsInCluster(m_cluster_type)));
+        }
+        else {
+                m_members.emplace(
+                        m_members.begin() + m_index_immune,
+                        std::make_pair(p, p.IsInCluster(m_cluster_type)));
+                m_index_immune++;
+        }
 }
 
-tuple<bool, size_t> Cluster::SortMembers()
+void Cluster::RemovePerson(const Person& p)
+{
+        std::size_t index = 0;
+        while (index < m_members.size()) {
+                if (m_members[index].first == p) {
+                        m_members.erase(m_members.begin() + index);
+                        if (m_index_immune == index) {
+                                m_index_immune++;
+                        }
+                        if (m_index_immune > m_members.size()) {
+                                m_index_immune = m_members.size();
+                        }
+                        return;
+                }
+                index++;
+        }
+}
+
+tuple<bool, std::size_t> Cluster::SortMembers()
 {
         bool infectious_cases = false;
-        size_t num_cases = 0;
+        std::size_t num_cases = 0;
 
         for (size_t i_member = 0; i_member < m_index_immune; i_member++) {
                 // if immune, move to back
-                if (m_members[i_member].first->GetHealth().IsImmune()) {
+                if (m_members[i_member].first.GetHealth().IsImmune()) {
                         bool swapped = false;
-                        size_t new_place = m_index_immune - 1;
+                        std::size_t new_place = m_index_immune - 1;
                         m_index_immune--;
                         while(! swapped && new_place > i_member) {
-                                if (m_members[new_place].first->GetHealth().IsImmune()) {
+                                if (m_members[new_place].first.GetHealth().IsImmune()) {
                                         m_index_immune--;
                                         new_place--;
                                 } else {
@@ -76,8 +103,8 @@ tuple<bool, size_t> Cluster::SortMembers()
                         }
                 }
                 // else, if not susceptible, move to front
-                else if (!m_members[i_member].first->GetHealth().IsSusceptible()) {
-                        if (!infectious_cases && m_members[i_member].first->GetHealth().IsInfectious()) {
+                else if (!m_members[i_member].first.GetHealth().IsSusceptible()) {
+                        if (!infectious_cases && m_members[i_member].first.GetHealth().IsInfectious()) {
                                 infectious_cases = true;
                         }
                         if (i_member > num_cases) {
@@ -93,7 +120,7 @@ tuple<bool, size_t> Cluster::SortMembers()
 void Cluster::UpdateMemberPresence()
 {
         for (auto& member: m_members) {
-                member.second = member.first->IsInCluster(m_cluster_type);
+                member.second = member.first.IsInCluster(m_cluster_type);
         }
 }
 

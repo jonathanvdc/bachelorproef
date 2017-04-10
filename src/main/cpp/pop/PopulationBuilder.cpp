@@ -92,7 +92,7 @@ shared_ptr<Population> PopulationBuilder::Build(
 		unsigned int person_id = 0U;
 		while (getline(pop_file, line)) {
 			const auto values = StringUtils::Split(line, ",");
-			population.emplace_back(Person(
+			population.emplace(
 			    person_id,
 			    StringUtils::FromString<unsigned int>(values[0]), // age
 			    StringUtils::FromString<unsigned int>(values[1]), // household_id
@@ -100,7 +100,7 @@ shared_ptr<Population> PopulationBuilder::Build(
 			    StringUtils::FromString<unsigned int>(values[3]), // work_id
 			    StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
 			    StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
-			    disease->Sample(rng)));			      // Fate
+			    disease->Sample(rng));			      // Fate
 			++person_id;
 		}
 	} else if (boost::algorithm::ends_with(file_name, ".xml")) {
@@ -125,7 +125,6 @@ shared_ptr<Population> PopulationBuilder::Build(
 
 	pop_file.close();
 
-	const unsigned int max_population_index = population.size() - 1;
 	if (population.size() <= 2U) {
 		FATAL_ERROR("Population is too small.");
 	}
@@ -133,40 +132,27 @@ shared_ptr<Population> PopulationBuilder::Build(
 	// Set participants in social contact survey.
 	const auto log_level = config.log_config->log_level;
 	if (log_level == LogMode::Contacts) {
-		const unsigned int num_participants = config.common_config->number_of_survey_participants;
+		unsigned int num_participants = config.common_config->number_of_survey_participants;
 
-		// use a while-loop to obtain 'num_participant' unique participants (default sampling is with
-		// replacement)
-		// A for loop will not do because we might draw the same person twice.
-		unsigned int num_samples = 0;
-		while (num_samples < num_participants) {
-			Person& p = population[rng(max_population_index)];
-			if (!p.IsParticipatingInSurvey()) {
-				p.ParticipateInSurvey();
-				log->info("[PART] {} {} {}", p.GetId(), p.GetAge(), p.GetGender());
-				num_samples++;
-			}
+		// Obtain 'num_participant' unique participants.
+		auto is_not_participating = [](const Person& p) -> bool { return !p.IsParticipatingInSurvey(); };
+		for (auto pers : population.get_random_persons(rng, num_participants, is_not_participating)) {
+			pers.ParticipateInSurvey();
+			log->info("[PART] {} {} {}", pers.GetId(), pers.GetAge(), pers.GetGender());
 		}
 	}
 
 	// Set population immunity.
 	unsigned int num_immune = floor(static_cast<double>(population.size()) * immunity_rate);
-	while (num_immune > 0) {
-		Person& p = population[rng(max_population_index)];
-		if (p.GetHealth().IsSusceptible()) {
-			p.GetHealth().SetImmune();
-			num_immune--;
-		}
+	auto is_susceptible = [](const Person& p) -> bool { return p.GetHealth().IsSusceptible(); };
+	for (auto pers : population.get_random_persons(rng, num_immune, is_susceptible)) {
+		pers.GetHealth().SetImmune();
 	}
 
 	// Seed infected persons.
 	unsigned int num_infected = floor(static_cast<double>(population.size()) * seeding_rate);
-	while (num_infected > 0) {
-		Person& p = population[rng(max_population_index)];
-		if (p.GetHealth().IsSusceptible()) {
-			p.GetHealth().StartInfection();
-			num_infected--;
-		}
+	for (auto pers : population.get_random_persons(rng, num_infected, is_susceptible)) {
+		pers.GetHealth().StartInfection();
 	}
 
 	// Done

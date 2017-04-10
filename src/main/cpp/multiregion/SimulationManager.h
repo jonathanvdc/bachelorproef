@@ -27,40 +27,34 @@ public:
 	/// Fetches this simulation task's result.
 	virtual TResult GetResult() = 0;
 
-	/// Starts this simulation.
-	virtual void Start() = 0;
-
-	/// Waits for this simulation to complete.
-	virtual void Wait() = 0;
-
 	/// Applies the given aggregation function to this simulation task's population.
 	template <typename TAggregate>
-	TAggregate Aggregate(TAggregate apply(const Population&))
+	TAggregate Aggregate(TAggregate apply(const PopulationRef&))
 	{
 		return boost::any_cast<TAggregate>(
-		    AggregateAny([apply](const Population& pop) -> boost::any { return boost::any(apply(pop)); }));
+		    AggregateAny([apply](const PopulationRef& pop) -> boost::any { return boost::any(apply(pop)); }));
 	}
 
 	/// Gets the simulation task's population.
 	size_t GetPopulationSize()
 	{
-		return Aggregate<size_t>([](const Population& pop) -> size_t { return pop.size(); });
+		return Aggregate<size_t>([](const PopulationRef& pop) -> std::size_t { return pop->size(); });
 	}
 
 	/// Gets the number of people that are infected in the simulation task's population.
 	size_t GetInfectedCount()
 	{
-		return Aggregate<size_t>([](const Population& pop) -> size_t { return pop.GetInfectedCount(); });
+		return Aggregate<size_t>([](const PopulationRef& pop) -> std::size_t { return pop->get_infected_count(); });
 	}
 
 	/// Gets this simulation task's population.
-	Population GetPopulation()
+	PopulationRef GetPopulation()
 	{
-		return Aggregate<Population>([](const Population& pop) -> Population { return pop; });
+		return Aggregate<PopulationRef>([](const PopulationRef& pop) -> PopulationRef { return pop; });
 	}
 
 	/// Applies the given aggregation function to this simulation task's population.
-	virtual boost::any AggregateAny(std::function<boost::any(const Population&)>) = 0;
+	virtual boost::any AggregateAny(std::function<boost::any(const PopulationRef&)>) = 0;
 };
 
 /**
@@ -73,6 +67,9 @@ struct SimulationManager
 	virtual std::shared_ptr<SimulationTask<TResult>> CreateSimulation(
 	    const SingleSimulationConfig& configuration, const std::shared_ptr<spdlog::logger>& log,
 	    TInitialResultArgs... args) = 0;
+
+	/// Waits for all simulation tasks to complete.
+	virtual void WaitAll() = 0;
 };
 
 } // namespace
