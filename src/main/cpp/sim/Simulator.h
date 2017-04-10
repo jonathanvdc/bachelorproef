@@ -49,10 +49,10 @@ public:
 	Simulator();
 
 	/// Get the population.
-	const PopulationRef GetPopulation() const;
+	PopulationRef GetPopulation() const { return m_population; }
 
 	/// Gets the simulator's configuration.
-	SingleSimulationConfig GetConfiguration() const;
+	SingleSimulationConfig GetConfiguration() const { return m_config; }
 
 	/// Change track_index_case setting.
 	void SetTrackIndexCase(bool track_index_case);
