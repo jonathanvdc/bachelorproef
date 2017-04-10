@@ -41,54 +41,51 @@ private:
 	std::map<PersonId, std::shared_ptr<PersonData>> people;
 	PersonId max_person_id;
 
+public:
 	/// An iterator implementation for Population containers.
-	template <typename TMapIterator>
-	class PopulationIterator
+	class const_iterator final
 	{
 	public:
-		typedef TMapIterator map_iterator;
+		typedef decltype(people)::const_iterator map_iterator;
 
-		PopulationIterator(const TMapIterator& map_iterator_val) : map_iterator_val(map_iterator_val) {}
-		PopulationIterator(const PopulationIterator<TMapIterator>&) = default;
-		PopulationIterator<TMapIterator>& operator++()
+		const_iterator(const map_iterator& map_iterator_val) : map_iterator_val(map_iterator_val) {}
+		const_iterator(const const_iterator&) = default;
+		const_iterator& operator++()
 		{
 			++map_iterator_val;
 			return *this;
 		}
-		PopulationIterator<TMapIterator>& operator++(int)
+		const_iterator& operator++(int)
 		{
 			map_iterator_val++;
 			return *this;
 		}
-		PopulationIterator<TMapIterator>& operator--()
+		const_iterator& operator--()
 		{
 			--map_iterator_val;
 			return *this;
 		}
-		PopulationIterator<TMapIterator>& operator--(int)
+		const_iterator& operator--(int)
 		{
 			map_iterator_val--;
 			return *this;
 		}
 		Person operator*() const { return Person(map_iterator_val->first, map_iterator_val->second); }
-		bool operator==(const PopulationIterator<TMapIterator>& other) const
+		bool operator==(const const_iterator& other) const
 		{
 			return map_iterator_val == other.map_iterator_val;
 		}
-		bool operator!=(const PopulationIterator<TMapIterator>& other) const
+		bool operator!=(const const_iterator& other) const
 		{
 			return map_iterator_val != other.map_iterator_val;
 		}
 
-		template <typename T>
-		friend void swap(PopulationIterator<T>& lhs, PopulationIterator<T>& rhs);
+		friend void swap(const_iterator& lhs, const_iterator& rhs);
 
 	private:
-		TMapIterator map_iterator_val;
+		map_iterator map_iterator_val;
 	};
 
-public:
-	typedef PopulationIterator<decltype(people)::const_iterator> const_iterator;
 	typedef const_iterator iterator;
 
 	/// Inserts a new element into the container constructed in-place with the given args.
@@ -103,7 +100,8 @@ public:
 	}
 
 	/// Extracts the person with the given id from this population.
-	Person extract(PersonId id) {
+	Person extract(PersonId id)
+	{
 		Person result(id, people.find(id)->second);
 		people.erase(id);
 		return result;
@@ -134,12 +132,9 @@ public:
 };
 
 /// Swaps two population iterators.
-template <typename TMapIterator>
-void swap(
-    typename Population::PopulationIterator<TMapIterator>& lhs,
-    typename Population::PopulationIterator<TMapIterator>& rhs)
+inline void swap(typename Population::const_iterator& lhs, typename Population::const_iterator& rhs)
 {
-	std::swap(lhs.map_iterator, rhs.map_iterator);
+	std::swap(lhs.map_iterator_val, rhs.map_iterator_val);
 }
 
 using PopulationRef = std::shared_ptr<const Population>;
