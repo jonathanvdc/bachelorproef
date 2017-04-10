@@ -51,8 +51,16 @@ void Cluster::AddContactProfile(ClusterType cluster_type, const ContactProfile& 
 
 void Cluster::AddPerson(const Person& p)
 {
-        m_members.emplace_back(std::make_pair(p, true));
-        m_index_immune++;
+        if (p.GetHealth().IsImmune()) {
+                m_members.emplace_back(
+                        std::make_pair(p, p.IsInCluster(m_cluster_type)));
+        }
+        else {
+                m_members.emplace(
+                        m_members.begin() + m_index_immune,
+                        std::make_pair(p, p.IsInCluster(m_cluster_type)));
+                m_index_immune++;
+        }
 }
 
 void Cluster::RemovePerson(const Person& p)
