@@ -5,12 +5,22 @@
 #include <numeric>
 #include <vector>
 #include <spdlog/spdlog.h>
-#include "core/ClusterType.h"
 #include "Population.h"
 #include "PopulationGenerator.h"
+#include "core/ClusterType.h"
 
 namespace stride {
 namespace population_model {
+
+Population Generator::Generate()
+{
+	Population population;
+	return population;
+}
+
+bool Generator::FitsModel(const Population& population, bool verbose) { return true; }
+
+/*
 
 // Return a random sorted range of `count` values inside `range`, where all the
 // absolute differences between values are inside `gap`.
@@ -41,33 +51,6 @@ std::vector<int> Generator::SampleApart(InclusiveRange<int> range, InclusiveRang
 	}
 
 	throw std::runtime_error("FATAL: SampleApart couldn't satisfy gap constraint.");
-}
-
-Population Generator::Generate()
-{
-	Population population;
-	const int population_size = random(model.size);
-	num_schools = population_size / model.school.size.Average();
-	num_works = population_size / model.work.size.Average();
-	num_communities = population_size / model.community.size.Average();
-	int current_goal = 0;
-	people_generated = 0;
-	household_id = 1;
-
-	const auto& hsd = model.household.size_distribution;
-	const int hsd_total = std::accumulate(hsd.begin(), hsd.end(), 0);
-
-	// If the size distribution consists of n integers, start generating
-	// households of size n and work our way down to 1.
-	for (int h = hsd.size(); h >= 1; h--) {
-		current_goal += population_size * hsd[h - 1] / hsd_total;
-		while (people_generated < current_goal) {
-			// Add a household of size h.
-			GenerateHousehold(population, h);
-		}
-	}
-
-	return population;
 }
 
 void Generator::GenerateHousehold(Population& population, int size)
@@ -200,6 +183,8 @@ bool Generator::FitsModel(const Population& population, bool verbose)
 	// We can do more model testing here later.
 	return true;
 }
+
+*/
 
 } // namespace population_model
 } // namespace stride

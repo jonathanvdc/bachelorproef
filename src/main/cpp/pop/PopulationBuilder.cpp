@@ -118,8 +118,7 @@ shared_ptr<Population> PopulationBuilder::Build(
 			FATAL_ERROR("Error opening geodistribution profile " + geo_file_path.string());
 		}
 
-		geo::ProfileRef geo_profile = geo::Profile::Parse(geo_file);
-
+		const geo::ProfileRef geo_profile = geo::Profile::Parse(geo_file);
 		geo_file.close();
 
 		// Read population model file.
@@ -129,7 +128,7 @@ shared_ptr<Population> PopulationBuilder::Build(
 		model.parse(pt);
 
 		// Generate population.
-		population_model::Generator generator(model, *disease, rng);
+		population_model::Generator generator(model, geo_profile, *disease, rng);
 		population = generator.Generate();
 
 		if (!generator.FitsModel(population, true)) {

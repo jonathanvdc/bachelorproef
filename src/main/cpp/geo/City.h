@@ -21,8 +21,8 @@ struct City final
 	/// The ID of the province this city is in.
 	ProvinceID province_id;
 
-	/// The *model* population count of this city.
-	int population;
+	/// The relative population count of this city. Profile-wide, these add up to 1.
+	double relative_population;
 
 	/// The Cartesian x-coordinate of this city.
 	double x_coord;

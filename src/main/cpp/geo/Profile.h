@@ -19,16 +19,6 @@ public:
 	/// Return a list of cities in this geodistribution profile.
 	const std::vector<City>& GetCities() const { return cities; }
 
-	/// Find the sum of the population of all cities in the profile.
-	int TotalCityPopulation() const
-	{
-		int sum = 0;
-		for (const auto& c : cities) {
-			sum += c.population;
-		}
-		return sum;
-	}
-
 	static ProfileRef Parse(std::ifstream& csv_file);
 
 private:

@@ -23,7 +23,7 @@ ProfileRef Profile::Parse(std::ifstream& csv_file)
             util::StringUtils::FromString<CityID>(tokens[0]), // city_id
             util::StringUtils::Trim(tokens[1]), // city_name
             util::StringUtils::FromString<ProvinceID>(tokens[2]), // province
-            util::StringUtils::FromString<int>(tokens[3]), // population
+            util::StringUtils::FromString<double>(tokens[3]), // population
             util::StringUtils::FromString<double>(tokens[4]), // x_coord
             util::StringUtils::FromString<double>(tokens[5]), // y_coord
             util::StringUtils::FromString<double>(tokens[6]), // latitude
