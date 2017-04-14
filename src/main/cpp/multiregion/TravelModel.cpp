@@ -124,7 +124,7 @@ std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
 
 		const auto& region = region_pair.second;
 		auto region_population_path = region.get<std::string>("<xmlattr>.population_file");
-		auto region_geodistribution_profile_path = region.get<std::string>("<xmlattr>.geodistribution_profile");
+		auto region_geodistribution_profile_path = region.get<std::string>("<xmlattr>.geodistribution_profile", "");
 		auto region_travel_fraction = region.get<double>("<xmlattr>.travel_fraction");
 		results.push_back(
 		    std::make_shared<RegionTravel>(
