@@ -124,8 +124,7 @@ shared_ptr<Population> PopulationBuilder::Build(
 		// Read population model file.
 		boost::property_tree::ptree pt;
 		read_xml(pop_file, pt);
-		population_model::Model model;
-		model.parse(pt);
+		const population_model::ModelRef model = population_model::Model::Parse(pt);
 
 		// Generate population.
 		population_model::Generator generator(model, geo_profile, *disease, rng);

@@ -21,7 +21,7 @@ namespace population_model {
 class Generator
 {
 public:
-	Generator(const Model& m, const geo::ProfileRef g, const disease::Disease& d, util::Random& r)
+	Generator(const ModelRef m, const geo::ProfileRef g, const disease::Disease& d, util::Random& r)
 	    : model(m), geo_profile(g), disease(d), random(r)
 	{
 	}
@@ -34,7 +34,7 @@ public:
 	bool FitsModel(const Population& population, bool verbose = false);
 
 private:
-	const Model& model;
+	const ModelRef model;
 	const geo::ProfileRef geo_profile;
 	const disease::Disease& disease;
 	util::Random& random;
