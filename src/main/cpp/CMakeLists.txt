@@ -45,8 +45,9 @@ set(LIB_SRC
 #---
     pop/Person.cpp
     pop/PopulationBuilder.cpp
-    pop/PopulationGenerator.cpp
-    pop/PopulationModel.cpp
+    pop/Generator.cpp
+    pop/Household.cpp
+    pop/Model.cpp
 #---
     sim/run_stride.cpp
     sim/SimulationConfig.cpp

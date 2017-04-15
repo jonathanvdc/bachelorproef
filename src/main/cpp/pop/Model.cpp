@@ -1,8 +1,8 @@
 #include <iostream>
-#include "PopulationModel.h"
+#include "Model.h"
 
 namespace stride {
-namespace population_model {
+namespace population {
 
 ModelRef Model::Parse(const boost::property_tree::ptree& pt)
 {
@@ -33,5 +33,5 @@ ModelRef Model::Parse(const boost::property_tree::ptree& pt)
 	);
 }
 
-} // namespace population_model
+} // namespace population
 } // namespace stride

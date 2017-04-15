@@ -60,13 +60,14 @@ public:
 	/// a model where no inter-region travel whatsoever occurs.
 	RegionTravel(
 	    RegionId region_id, const std::string& region_population_path,
-	    const std::string& region_geodistribution_profile_path);
+	    const std::string& region_geodistribution_profile_path,
+	    const std::string& region_reference_households_path);
 
 	/// Creates a travel model for a single region.
 	RegionTravel(
 	    RegionId region_id, const std::string& region_population_path,
-	    const std::string& region_geodistribution_profile_path, double travel_fraction,
-	    const std::shared_ptr<const std::vector<AirportRef>>& all_airports);
+	    const std::string& region_geodistribution_profile_path, const std::string& region_reference_households_path,
+	    double travel_fraction, const std::shared_ptr<const std::vector<AirportRef>>& all_airports);
 
 	/// Gets the region id for the region this data structure represents.
 	RegionId GetRegionId() const { return region_id; }
@@ -76,6 +77,9 @@ public:
 
 	/// Gets the path of the geodistribution profile file for this region.
 	std::string GetRegionGeodistributionProfilePath() const { return region_geodistribution_profile_path; }
+
+	/// Gets the path of the geodistribution profile file for this region.
+	std::string GetRegionReferenceHouseholdsPath() const { return region_reference_households_path; }
 
 	/// Gets the fraction of people in the region who travel by plane on any given day.
 	double GetTravelFraction() const { return travel_fraction; }
@@ -104,6 +108,7 @@ private:
 	RegionId region_id;
 	std::string region_population_path;
 	std::string region_geodistribution_profile_path;
+	std::string region_reference_households_path;
 	double travel_fraction;
 	std::shared_ptr<const std::vector<AirportRef>> all_airports;
 	std::vector<AirportRef> local_airports;

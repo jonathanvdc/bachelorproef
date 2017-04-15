@@ -9,20 +9,23 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
+#include "Household.h"
 #include "Person.h"
-#include "PopulationModel.h"
+#include "Model.h"
 #include "core/Disease.h"
 #include "geo/Profile.h"
 #include "util/Random.h"
 
 namespace stride {
-namespace population_model {
+namespace population {
 
 class Generator
 {
 public:
-	Generator(const ModelRef m, const geo::ProfileRef g, const disease::Disease& d, util::Random& r)
-	    : model(m), geo_profile(g), disease(d), random(r)
+	Generator(
+	    const stride::population::ModelRef m, const geo::ProfileRef g, const std::vector<Household>& h, const disease::Disease& d,
+	    util::Random& r)
+	    : model(m), geo_profile(g), reference_households(h), disease(d), random(r)
 	{
 	}
 
@@ -34,8 +37,9 @@ public:
 	bool FitsModel(const Population& population, bool verbose = false);
 
 private:
-	const ModelRef model;
-	const geo::ProfileRef geo_profile;
+	const ModelRef& model;
+	const geo::ProfileRef& geo_profile;
+	const std::vector<Household>& reference_households;
 	const disease::Disease& disease;
 	util::Random& random;
 
@@ -56,7 +60,7 @@ private:
 	*/
 };
 
-} // namespace population_model
+} // namespace population
 } // namespace stride
 
 #endif

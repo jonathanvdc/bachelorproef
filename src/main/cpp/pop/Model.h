@@ -12,7 +12,7 @@
 #include "util/InclusiveRange.h"
 
 namespace stride {
-namespace population_model {
+namespace population {
 
 struct TownPivot final
 {
@@ -48,31 +48,66 @@ struct Model final
 	{
 	}
 
-	// Generation parameters
+	// The size of a (non-college) school.
 	int school_size;
+
+	// The size of a (non-college) school cluster.
 	int school_cluster_size;
+
+	// The size of a college ("hogeschool").
 	int college_size;
+
+	// The size of a college cluster.
 	int college_cluster_size;
+
+	// The size of a workplace. Workplaces are their own clusters, so there's
+	// no separate cluster size field.
 	int workplace_size;
+
+	// The size of a primary or secondary community.
 	int community_size;
+
+	// The radius to look for (non-college) schools in. (When no schools are
+	// found in this radius, it is doubled repeatedly until one is found.)
 	double school_radius;
 
-	// Population/city/town parameters
+	// The size of the entire population.
 	int population_size;
-	int city_ratio;
+
+	// The proportion of people who live in cities. (The remaining portion
+	// lives in randomly-generated towns.)
+	double city_ratio;
+
+	// The pivots for town generation. Their `probability` fields should add
+	// up to 1.
 	std::vector<TownPivot> town_pivots;
 
-	// School-work profile
+	// The age range for compulsory lower education.
 	util::InclusiveRange<int> school_age;
+
+	// The age range for college education.
 	util::InclusiveRange<int> college_age;
+
+	// The proportion of students in the above age range that actually goes
+	// to college, instead of getting a job.
 	double college_ratio;
+
+	// The proportion of actual college students that commutes to a distant
+	// college campus.
 	double college_commute_ratio;
+
+	// The age range for employable citizens.
 	util::InclusiveRange<int> employable_age;
+
+	// The proportion of citizens in the above age range that is actually
+	// employed.
 	double employed_ratio;
+
+	// The proportion of actual employees that commutes to a distant workplace.
 	double work_commute_ratio;
 };
 
-} // namespace population_model
+} // namespace population
 } // namespace stride
 
 #endif

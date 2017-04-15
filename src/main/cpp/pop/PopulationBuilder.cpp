@@ -24,10 +24,11 @@
 #include "core/Disease.h"
 #include "core/Health.h"
 #include "geo/Profile.h"
+#include "pop/Generator.h"
+#include "pop/Household.h"
+#include "pop/Model.h"
 #include "pop/Person.h"
 #include "pop/Population.h"
-#include "pop/PopulationGenerator.h"
-#include "pop/PopulationModel.h"
 #include "util/Errors.h"
 #include "util/InstallDirs.h"
 #include "util/Random.h"
@@ -37,6 +38,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <spdlog/spdlog.h>
 
@@ -93,15 +95,16 @@ shared_ptr<Population> PopulationBuilder::Build(
 		unsigned int person_id = 0U;
 		while (getline(pop_file, line)) {
 			const auto values = StringUtils::Split(line, ",");
-			population.emplace_back(Person(
-			    person_id,
-			    StringUtils::FromString<unsigned int>(values[0]), // age
-			    StringUtils::FromString<unsigned int>(values[1]), // household_id
-			    StringUtils::FromString<unsigned int>(values[2]), // school_id
-			    StringUtils::FromString<unsigned int>(values[3]), // work_id
-			    StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
-			    StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
-			    disease->Sample(rng)));			      // Fate
+			population.emplace_back(
+			    Person(
+				person_id,
+				StringUtils::FromString<unsigned int>(values[0]), // age
+				StringUtils::FromString<unsigned int>(values[1]), // household_id
+				StringUtils::FromString<unsigned int>(values[2]), // school_id
+				StringUtils::FromString<unsigned int>(values[3]), // work_id
+				StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
+				StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
+				disease->Sample(rng)));				  // Fate
 			++person_id;
 		}
 	} else if (boost::algorithm::ends_with(pop_file_name, ".xml")) {
@@ -121,13 +124,31 @@ shared_ptr<Population> PopulationBuilder::Build(
 		const geo::ProfileRef geo_profile = geo::Profile::Parse(geo_file);
 		geo_file.close();
 
+		// Read reference households.
+		const auto households_file_name = config.GetReferenceHouseholdsPath();
+		const auto households_file_path = InstallDirs::GetDataDir() /= households_file_name;
+		if (!is_regular_file(households_file_path)) {
+			FATAL_ERROR("Reference households file " + households_file_path.string() + " not present.");
+		}
+
+		boost::filesystem::ifstream households_file;
+		households_file.open(households_file_path.string());
+		if (!households_file.is_open()) {
+			FATAL_ERROR("Error opening reference households file " + households_file_path.string());
+		}
+
+		boost::property_tree::ptree hpt;
+		read_json(households_file, hpt);
+		const auto reference_households = population::ParseReferenceHouseholds(hpt);
+		households_file.close();
+
 		// Read population model file.
 		boost::property_tree::ptree pt;
 		read_xml(pop_file, pt);
-		const population_model::ModelRef model = population_model::Model::Parse(pt);
+		const population::ModelRef model = population::Model::Parse(pt);
 
 		// Generate population.
-		population_model::Generator generator(model, geo_profile, *disease, rng);
+		population::Generator generator(model, geo_profile, reference_households, *disease, rng);
 		population = generator.Generate();
 
 		if (!generator.FitsModel(population, true)) {

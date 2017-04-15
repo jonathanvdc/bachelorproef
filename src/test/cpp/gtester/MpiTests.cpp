@@ -6,7 +6,7 @@
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
 #include <gtest/gtest.h>
-#include "pop/PopulationModel.h"
+#include "pop/Model.h"
 
 namespace mpi = boost::mpi;
 

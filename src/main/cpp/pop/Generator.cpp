@@ -6,15 +6,16 @@
 #include <vector>
 #include <spdlog/spdlog.h>
 #include "Population.h"
-#include "PopulationGenerator.h"
+#include "Generator.h"
 #include "core/ClusterType.h"
 
 namespace stride {
-namespace population_model {
+namespace population {
 
 Population Generator::Generate()
 {
 	Population population;
+
 	return population;
 }
 
@@ -186,5 +187,5 @@ bool Generator::FitsModel(const Population& population, bool verbose)
 
 */
 
-} // namespace population_model
+} // namespace population
 } // namespace stride
