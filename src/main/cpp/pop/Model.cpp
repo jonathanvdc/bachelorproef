@@ -7,7 +7,7 @@ namespace population {
 ModelRef Model::Parse(const boost::property_tree::ptree& pt)
 {
 	auto root = pt.get_child("population_model");
-	std::vector<TownRanges> town_ranges;
+	std::vector<TownRange> town_ranges;
 	for (const auto& p : root.get_child("town_ranges")) {
 		town_ranges.push_back({util::InclusiveRange<int>::Parse(p.second), p.second.get<double>("probability")});
 	}
