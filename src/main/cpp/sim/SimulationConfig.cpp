@@ -80,8 +80,11 @@ void MultiSimulationConfig::Parse(const boost::property_tree::ptree& pt)
 	region_models.clear();
 	for (const auto& item : pt) {
 		if (item.first == "population_file") {
-			region_models.push_back(std::make_shared<stride::multiregion::RegionTravel>(
-			    region_models.size(), item.second.get_value<std::string>()));
+			region_models.push_back(
+			    std::make_shared<stride::multiregion::RegionTravel>(
+				region_models.size(), item.second.get_value<std::string>(),
+				pt.get<std::string>("geodistribution_profile", ""),
+				pt.get<std::string>("reference_households", "")));
 		} else if (item.first == "travel_model") {
 			auto parsed_region_models =
 			    stride::multiregion::RegionTravel::ParseRegionTravel(item.second, region_models.size());

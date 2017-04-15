@@ -9,32 +9,41 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
+#include "Household.h"
 #include "Person.h"
-#include "PopulationModel.h"
+#include "Model.h"
 #include "core/Disease.h"
+#include "geo/Profile.h"
 #include "util/Random.h"
 
 namespace stride {
-namespace population_model {
+namespace population {
 
 class Generator
 {
 public:
-	Generator(const Model& m, const disease::Disease& d, util::Random& r) : model(m), disease(d), random(r) {}
+	Generator(
+	    const stride::population::ModelRef m, const geo::ProfileRef g, const std::vector<Household>& h, const disease::Disease& d,
+	    util::Random& r)
+	    : model(m), geo_profile(g), reference_households(h), disease(d), random(r)
+	{
+	}
 
 	/// Generate a random population.
 	Population Generate();
 
 	/// Check if a population fits the model.
 	/// If verbose is true, log the checks performed.
-	bool FitsModel(const Population& population, bool verbose=false);
+	bool FitsModel(const Population& population, bool verbose = false);
 
 private:
-	const Model& model;
+	const ModelRef& model;
+	const geo::ProfileRef& geo_profile;
+	const std::vector<Household>& reference_households;
 	const disease::Disease& disease;
 	util::Random& random;
 
-	/// Used internally:
+	/*
 	int num_schools;
 	int num_works;
 	int num_communities;
@@ -48,9 +57,10 @@ private:
 	unsigned int CommunityID();
 
 	std::vector<int> SampleApart(InclusiveRange<int> range, InclusiveRange<int> gap, std::size_t count);
+	*/
 };
 
-} // namespace population_model
+} // namespace population
 } // namespace stride
 
 #endif
