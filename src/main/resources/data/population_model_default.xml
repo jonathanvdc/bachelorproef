@@ -12,18 +12,18 @@
     <!-- Population/city/town parameters -->
     <population_size>100000</population_size>
     <city_ratio>0.6</city_ratio>
-    <town_pivots>
-        <town_pivot>
+    <town_ranges>
+        <town_range>
             <minimum>100</minimum>
             <maximum>1000</maximum>
             <probability>0.6</probability>
-        </town_pivot>
-        <town_pivot>
+        </town_range>
+        <town_range>
             <minimum>1000</minimum>
             <maximum>10000</maximum>
             <probability>0.4</probability>
-        </town_pivot>
-    </town_pivots>
+        </town_range>
+    </town_ranges>
 
     <!-- School-work profile -->
     <school_age><minimum>3</minimum><maximum>18</maximum></school_age>

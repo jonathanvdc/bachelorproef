@@ -14,7 +14,18 @@
 namespace stride {
 namespace population {
 
-struct TownPivot final
+// The proportion of the generated population that *doesn't* get placed in a
+// city is randomly allocated among a set of randomly-placed towns. The number
+// of inhabitants such a town should have is determined by a list of "town
+// ranges". For example, such a list might describe that
+//
+//     * 30% of the generated towns have 100-1000 inhabitants; and
+//     * 70% of the generated towns have 1000-5000 inhabitants.
+//
+// A TownRange represents one entry in this list: a population range, paired
+// with a probability of this range being picked when generating a town.
+//
+struct TownRange final
 {
 	util::InclusiveRange<int> population;
 	double probability;
@@ -36,13 +47,13 @@ struct Model final
 	Model(
 	    int school_size, int school_cluster_size, int college_size, int college_cluster_size, int workplace_size,
 	    int community_size, double school_radius, int population_size, int city_ratio,
-	    std::vector<TownPivot> town_pivots, util::InclusiveRange<int> school_age,
+	    std::vector<TownRange> town_ranges, util::InclusiveRange<int> school_age,
 	    util::InclusiveRange<int> college_age, double college_ratio, double college_commute_ratio,
 	    util::InclusiveRange<int> employable_age, double employed_ratio, double work_commute_ratio)
 	    : school_size(school_size), school_cluster_size(school_cluster_size), college_size(college_size),
 	      college_cluster_size(college_cluster_size), workplace_size(workplace_size),
 	      community_size(community_size), school_radius(school_radius), population_size(population_size),
-	      city_ratio(city_ratio), town_pivots(town_pivots), school_age(school_age), college_age(college_age),
+	      city_ratio(city_ratio), town_ranges(town_ranges), school_age(school_age), college_age(college_age),
 	      college_ratio(college_ratio), college_commute_ratio(college_commute_ratio),
 	      employable_age(employable_age), employed_ratio(employed_ratio), work_commute_ratio(work_commute_ratio)
 	{
@@ -78,9 +89,8 @@ struct Model final
 	// lives in randomly-generated towns.)
 	double city_ratio;
 
-	// The pivots for town generation. Their `probability` fields should add
-	// up to 1.
-	std::vector<TownPivot> town_pivots;
+	// The ranges for town generation.
+	std::vector<TownRange> town_ranges;
 
 	// The age range for compulsory lower education.
 	util::InclusiveRange<int> school_age;
