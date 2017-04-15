@@ -23,12 +23,10 @@
 
 #include "core/Disease.h"
 #include "core/Health.h"
-#include "geo/Profile.h"
-#include "pop/Generator.h"
-#include "pop/Household.h"
-#include "pop/Model.h"
 #include "pop/Person.h"
 #include "pop/Population.h"
+#include "pop/PopulationGenerator.h"
+#include "pop/PopulationModel.h"
 #include "util/Errors.h"
 #include "util/InstallDirs.h"
 #include "util/Random.h"
@@ -38,7 +36,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <spdlog/spdlog.h>
 
@@ -76,93 +73,58 @@ shared_ptr<Population> PopulationBuilder::Build(
 	}
 
 	// Add persons to population.
-	const auto pop_file_name = config.GetPopulationPath();
-	const auto pop_file_path = InstallDirs::GetDataDir() /= pop_file_name;
-	if (!is_regular_file(pop_file_path)) {
-		FATAL_ERROR("Population file " + pop_file_path.string() + " not present.");
+	const auto file_name = config.GetPopulationPath();
+	const auto file_path = InstallDirs::GetDataDir() /= file_name;
+	if (!is_regular_file(file_path)) {
+		FATAL_ERROR("Population file " + file_path.string() + " not present.");
 	}
 
 	boost::filesystem::ifstream pop_file;
-	pop_file.open(pop_file_path.string());
+	pop_file.open(file_path.string());
 	if (!pop_file.is_open()) {
-		FATAL_ERROR("Error opening population file " + pop_file_path.string());
+		FATAL_ERROR("Error opening population file " + file_path.string());
 	}
 
-	if (boost::algorithm::ends_with(pop_file_name, ".csv")) {
+	if (boost::algorithm::ends_with(file_name, ".csv")) {
 		// Read population data file.
 		string line;
 		getline(pop_file, line); // step over file header
 		unsigned int person_id = 0U;
 		while (getline(pop_file, line)) {
 			const auto values = StringUtils::Split(line, ",");
-			population.emplace_back(
-			    Person(
-				person_id,
-				StringUtils::FromString<unsigned int>(values[0]), // age
-				StringUtils::FromString<unsigned int>(values[1]), // household_id
-				StringUtils::FromString<unsigned int>(values[2]), // school_id
-				StringUtils::FromString<unsigned int>(values[3]), // work_id
-				StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
-				StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
-				disease->Sample(rng)));				  // Fate
+			population.emplace(
+			    person_id,
+			    StringUtils::FromString<unsigned int>(values[0]), // age
+			    StringUtils::FromString<unsigned int>(values[1]), // household_id
+			    StringUtils::FromString<unsigned int>(values[2]), // school_id
+			    StringUtils::FromString<unsigned int>(values[3]), // work_id
+			    StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
+			    StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
+			    disease->Sample(rng));			      // Fate
 			++person_id;
 		}
-	} else if (boost::algorithm::ends_with(pop_file_name, ".xml")) {
-		// Read geodistribution profile.
-		const auto geo_file_name = config.GetGeodistributionProfilePath();
-		const auto geo_file_path = InstallDirs::GetDataDir() /= geo_file_name;
-		if (!is_regular_file(geo_file_path)) {
-			FATAL_ERROR("Geodistribution profile " + geo_file_path.string() + " not present.");
-		}
-
-		boost::filesystem::ifstream geo_file;
-		geo_file.open(geo_file_path.string());
-		if (!geo_file.is_open()) {
-			FATAL_ERROR("Error opening geodistribution profile " + geo_file_path.string());
-		}
-
-		const geo::ProfileRef geo_profile = geo::Profile::Parse(geo_file);
-		geo_file.close();
-
-		// Read reference households.
-		const auto households_file_name = config.GetReferenceHouseholdsPath();
-		const auto households_file_path = InstallDirs::GetDataDir() /= households_file_name;
-		if (!is_regular_file(households_file_path)) {
-			FATAL_ERROR("Reference households file " + households_file_path.string() + " not present.");
-		}
-
-		boost::filesystem::ifstream households_file;
-		households_file.open(households_file_path.string());
-		if (!households_file.is_open()) {
-			FATAL_ERROR("Error opening reference households file " + households_file_path.string());
-		}
-
-		boost::property_tree::ptree hpt;
-		read_json(households_file, hpt);
-		const auto reference_households = population::ParseReferenceHouseholds(hpt);
-		households_file.close();
-
+	} else if (boost::algorithm::ends_with(file_name, ".xml")) {
 		// Read population model file.
 		boost::property_tree::ptree pt;
 		read_xml(pop_file, pt);
-		const population::ModelRef model = population::Model::Parse(pt);
+		population_model::Model model;
+		model.parse(pt);
 
 		// Generate population.
-		population::Generator generator(model, geo_profile, reference_households, *disease, rng);
+		population_model::Generator generator(model, *disease, rng);
 		population = generator.Generate();
 
 		if (!generator.FitsModel(population, true)) {
-			FATAL_ERROR("Generated population doesn't fit model " + pop_file_name);
+			FATAL_ERROR("Generated population doesn't fit model " + file_name);
 		}
 	} else {
 		FATAL_ERROR(
-		    "Population file " + pop_file_path.string() +
+		    "Population file " + file_path.string() +
 		    " must be CSV (population data file) or XML (population model file).");
 	}
 
 	pop_file.close();
 
-	const unsigned int max_population_index = population.size() - 1;
 	if (population.size() <= 2U) {
 		FATAL_ERROR("Population is too small.");
 	}
@@ -170,40 +132,27 @@ shared_ptr<Population> PopulationBuilder::Build(
 	// Set participants in social contact survey.
 	const auto log_level = config.log_config->log_level;
 	if (log_level == LogMode::Contacts) {
-		const unsigned int num_participants = config.common_config->number_of_survey_participants;
+		unsigned int num_participants = config.common_config->number_of_survey_participants;
 
-		// use a while-loop to obtain 'num_participant' unique participants (default sampling is with
-		// replacement)
-		// A for loop will not do because we might draw the same person twice.
-		unsigned int num_samples = 0;
-		while (num_samples < num_participants) {
-			Person& p = population[rng(max_population_index)];
-			if (!p.IsParticipatingInSurvey()) {
-				p.ParticipateInSurvey();
-				log->info("[PART] {} {} {}", p.GetId(), p.GetAge(), p.GetGender());
-				num_samples++;
-			}
+		// Obtain 'num_participant' unique participants.
+		auto is_not_participating = [](const Person& p) -> bool { return !p.IsParticipatingInSurvey(); };
+		for (auto pers : population.get_random_persons(rng, num_participants, is_not_participating)) {
+			pers.ParticipateInSurvey();
+			log->info("[PART] {} {} {}", pers.GetId(), pers.GetAge(), pers.GetGender());
 		}
 	}
 
 	// Set population immunity.
 	unsigned int num_immune = floor(static_cast<double>(population.size()) * immunity_rate);
-	while (num_immune > 0) {
-		Person& p = population[rng(max_population_index)];
-		if (p.GetHealth().IsSusceptible()) {
-			p.GetHealth().SetImmune();
-			num_immune--;
-		}
+	auto is_susceptible = [](const Person& p) -> bool { return p.GetHealth().IsSusceptible(); };
+	for (auto pers : population.get_random_persons(rng, num_immune, is_susceptible)) {
+		pers.GetHealth().SetImmune();
 	}
 
 	// Seed infected persons.
 	unsigned int num_infected = floor(static_cast<double>(population.size()) * seeding_rate);
-	while (num_infected > 0) {
-		Person& p = population[rng(max_population_index)];
-		if (p.GetHealth().IsSusceptible()) {
-			p.GetHealth().StartInfection();
-			num_infected--;
-		}
+	for (auto pers : population.get_random_persons(rng, num_infected, is_susceptible)) {
+		pers.GetHealth().StartInfection();
 	}
 
 	// Done

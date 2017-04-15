@@ -119,7 +119,7 @@ private:
 	HealthStatus m_status;
 
 	/// Times after infection at which the disease will act.
-	const disease::Fate m_fate;
+	disease::Fate m_fate;
 };
 
 } // end of namespace

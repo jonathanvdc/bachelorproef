@@ -44,6 +44,7 @@ set(LIB_SRC
     output/SummaryFile.cpp
 #---
     pop/Person.cpp
+    pop/Population.cpp
     pop/PopulationBuilder.cpp
     pop/Generator.cpp
     pop/Household.cpp
