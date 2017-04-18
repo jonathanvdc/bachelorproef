@@ -50,4 +50,4 @@ before_install:
 script:
     # `make all; make test`, but fancier.
     - make all
-    - ./run-tests.sh
+    - ./ci/run-tests.sh
