@@ -38,7 +38,7 @@ before_install:
     - cmake --version
     # Grab the gtest report pretty printer.
     - wget https://github.com/jonathanvdc/gtest-report-tools/releases/download/v0.1.0-retry/gtest-report-tools.zip
-    - unzip gtest-report-tools.zip
+    - unzip gtest-report-tools.zip -d gtest-report-tools
     # Build and install boost.
     - echo "using mpi ;" > ~/site-config.jam
     - wget https://raw.githubusercontent.com/WrinklyNinja/ci-scripts/1.0.0/install_boost.py
