@@ -23,6 +23,7 @@ addons:
         packages:
             - gcc-5
             - g++-5
+            - mono-complete
             - cmake
             - mpich
             - libmpich-dev
@@ -35,6 +36,9 @@ before_install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
     # Print the CMake version.
     - cmake --version
+    - Grab the gtest report pretty printer.
+    - wget https://github.com/jonathanvdc/gtest-report-tools/releases/download/v0.1.0-retry/gtest-report-tools.zip
+    - unzip gtest-report-tools.zip
     # Build and install boost.
     - echo "using mpi ;" > ~/site-config.jam
     - wget https://raw.githubusercontent.com/WrinklyNinja/ci-scripts/1.0.0/install_boost.py
@@ -44,7 +48,6 @@ before_install:
     - export LD_LIBRARY_PATH=$HOME/boost_1_61_0/stage/lib:$LD_LIBRARY_PATH
 
 script:
-    # `make all; make test`, as per the build instructions.
+    # `make all; make test`, but fancier.
     - make all
-    # Don't make tests that rely on X to work/render things.
-    - make test_all_no_x
+    - ./run-tests.sh
