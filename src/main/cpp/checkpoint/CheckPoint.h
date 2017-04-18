@@ -10,6 +10,7 @@
 
 #include <memory>
 #include "calendar/Calendar.h"
+#include "sim/SimulationConfig.h"
 #include "hdf5.h"
 #include "pop/Population.h"
 
@@ -43,12 +44,12 @@ private:
 	std::unique_ptr<boost::property_tree::ptree> LoadHolidays();
 
 	/// Writes Contact Matrices.
-	void WriteMatrices();
+	void WriteMatrices(std::string&);
 
 	/// Loads Contact Matrices.
 
-	/// Writes the disease.
-	void WriteDisease(const boost::property_tree::ptree&);
+	/// Writes the disease file.
+	void WriteDisease(const std::string&);
 
 	/// Loads the disease into a boost::property_tree::ptree.
 	std::unique_ptr<boost::property_tree::ptree> LoadDisease();
@@ -64,6 +65,12 @@ private:
 
 	/// Loads the asked population from the given checkpoint.
 	Population LoadPopulation(unsigned int);
+
+	//Writes the ContactMatrix from the file
+	void WriteContactMatrix(const std::string&);
+
+	//Writes the SingleSimulationConfig.
+	void WriteConfig(const SingleSimulationConfig&);
 
 	hid_t m_file;
 };
