@@ -30,9 +30,9 @@ set( SRC
 		RunSimulator.cpp
 )
 
-#if( AWESOMIUM_FOUND )
-#	set( SRC ${SRC} AwesomiumTests.cpp)
-#endif()
+if( Qt5Widgets_FOUND )
+	set( SRC ${SRC} VizProtoTest.cpp)
+endif()
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
 target_link_libraries( ${EXEC}    ${LIBS} gtest pthread)
@@ -57,6 +57,12 @@ add_test( NAME  ${EXEC}_all_no_x
         WORKING_DIRECTORY  ${TESTS_DIR}
 		COMMAND   ${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_LOCATION}/${EXEC}
 		    --gtest_filter=-*_x  --gtest_output=xml:gtester_all_no_x.xml
+)
+
+add_test( NAME  ${EXEC}_all_x
+        WORKING_DIRECTORY  ${TESTS_DIR}
+		COMMAND   ${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_LOCATION}/${EXEC}
+		    --gtest_filter=*_x  --gtest_output=xml:gtester_all_x.xml
 )
 
 #============================================================================

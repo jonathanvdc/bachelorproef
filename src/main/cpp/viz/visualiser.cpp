@@ -5,6 +5,9 @@
 
 #include "visualiser.h"
 
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+
 using namespace std;
 
 namespace Stride {
@@ -12,7 +15,15 @@ namespace Stride {
 Visualiser::Visualiser(){}
 
 void Visualiser::run(){
-    return;
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QGuiApplication app(argc, argv);
+
+    QtWebEngine::initialize();
+
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/viz.qml")));
+
+    return app.exec();
 }
 
 }

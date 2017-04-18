@@ -59,7 +59,7 @@ set(LIB_SRC
 #---
     alias/Alias.cpp
 #---
-    viz/visualiser.cpp
+    #viz/visualiser.cpp
 )
 
 set(MAIN_SRC
