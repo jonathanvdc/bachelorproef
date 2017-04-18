@@ -26,7 +26,6 @@ addons:
             - cmake
             - mpich
             - libmpich-dev
-            - libsdl1.2-dev
             # Don't grab the APT boost package, because that package is stale.
             # We'll need to build boost ourselves.
             # - libboost-all-dev
@@ -43,17 +42,6 @@ before_install:
     # Set the BOOST_ROOT environment variable.
     - export BOOST_ROOT=$HOME/boost_1_61_0
     - export LD_LIBRARY_PATH=$HOME/boost_1_61_0/stage/lib:$LD_LIBRARY_PATH
-    
-    # Download, build and install Awesomium and its dependencies
-    - wget -O libgcrypt.deb http://security.ubuntu.com/ubuntu/pool/main/libg/libgcrypt11/libgcrypt11_1.5.0-3ubuntu0.6_amd64.deb
-    - sudo dpkg -i libgcrypt.deb
-    
-    - wget -O libudev.deb http://mirrors.kernel.org/ubuntu/pool/main/u/udev/libudev0_175-0ubuntu9_amd64.deb
-    - sudo dpkg -i libudev.deb
-    
-    - wget -O awesomium.tar.gz http://www.awesomium.com/downloads/awesomium_1_7_5_sdk_linux64.tar.gz
-    - tar -xvzf awesomium.tar.gz 
-    - sudo make -C awesomium_v1.7.5_sdk_linux64 install
 
 script:
     # `make all; make test`, as per the build instructions.

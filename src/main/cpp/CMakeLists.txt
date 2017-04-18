@@ -58,11 +58,9 @@ set(LIB_SRC
 	util/InstallDirs.cpp
 #---
     alias/Alias.cpp
+#---
+    viz/visualiser.cpp
 )
-
-if( AWESOMIUM_FOUND )
-    set(LIB_SRC ${LIB_SRC} viz/prototype.cpp)
-endif()
 
 set(MAIN_SRC
     sim/main.cpp
