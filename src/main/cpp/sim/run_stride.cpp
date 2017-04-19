@@ -29,7 +29,6 @@
 #include "output/SummaryFile.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
-// #include "viz/visualiser.h"
 #include "util/ConfigInfo.h"
 #include "util/Errors.h"
 #include "util/InstallDirs.h"
@@ -127,11 +126,6 @@ void verify_execution_environment()
 /// Run the stride simulator.
 void run_stride(const MultiSimulationConfig& config)
 {
-
-	// i put this here for now......
-	// Stride::Visualiser viz = Stride::Visualiser();
-	// viz.run();
-
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------

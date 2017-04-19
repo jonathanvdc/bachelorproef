@@ -74,17 +74,6 @@ include_directories( SYSTEM ${CMAKE_HOME_DIRECTORY}/main/resources/lib/trng-4.15
 #set( LIBS ${LIBS} trng )
 
 #----------------------------------------------------------------------------
-# Qt (QT5) library and paths
-#----------------------------------------------------------------------------
-find_package(Qt5Widgets)
-if ( Qt5Widgets_FOUND )
-    include_directories( SYSTEM ${Qt5Widgets_INCLUDE_DIRS})
-    set( LIBS ${LIBS} ${Qt5Widgets_LIBRARIES})
-else()
-    echo (AINT FOUND IT)    
-endif()
-
-#----------------------------------------------------------------------------
 # MPI compile flags
 #----------------------------------------------------------------------------
 find_package( MPI )
