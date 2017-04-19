@@ -14,6 +14,20 @@ cache:
     - $HOME/boost_1_63_0/boost
     - $HOME/boost_1_63_0/stage/lib
 
+# We're going to need cmake, MPI and the mono runtime.
+addons:
+  apt:
+    packages: &default_packages
+      - mono-runtime
+      - libmono-system-xml4.0-cil
+      - libmono-system-core4.0-cil
+      - cmake
+      - mpich
+      - libmpich-dev
+      # Don't grab the APT boost package, because that package is stale.
+      # We'll need to build boost ourselves.
+      # - libboost-all-dev
+
 matrix:
   include:
     - compiler: gcc
@@ -39,20 +53,6 @@ matrix:
             - clang-3.8
             - clang++-3.8
             - libstdc++-6-dev
-
-# We're going to need cmake, MPI and the mono runtime.
-addons:
-  apt:
-    packages: &default_packages
-      - mono-runtime
-      - libmono-system-xml4.0-cil
-      - libmono-system-core4.0-cil
-      - cmake
-      - mpich
-      - libmpich-dev
-      # Don't grab the APT boost package, because that package is stale.
-      # We'll need to build boost ourselves.
-      # - libboost-all-dev
 
 before_install:
   - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
