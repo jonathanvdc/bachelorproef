@@ -25,6 +25,7 @@ addons:
             - g++-6
             - mono-runtime
             - libmono-system-xml4.0-cil
+            - libmono-system-core4.0-cil
             - cmake
             - mpich
             - libmpich-dev
