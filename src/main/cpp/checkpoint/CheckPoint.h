@@ -30,6 +30,12 @@ public:
 	/// Saves the current simulation to a checkpoint.
 	void SaveCheckPoint();
 
+	//Writes the SingleSimulationConfig.
+	void WriteConfig(const SingleSimulationConfig&);
+
+	//Writes the MultiSimulationConfig.
+	void WriteConfig(const MultiSimulationConfig&);
+
 private:
 	/// Creates the wanted file
 	void CreateFile(std::string);
@@ -68,9 +74,6 @@ private:
 
 	//Writes the ContactMatrix from the file
 	void WriteContactMatrix(const std::string&);
-
-	//Writes the SingleSimulationConfig.
-	void WriteConfig(const SingleSimulationConfig&);
 
 	hid_t m_file;
 };

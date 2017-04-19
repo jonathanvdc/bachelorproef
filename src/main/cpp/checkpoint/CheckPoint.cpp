@@ -33,10 +33,7 @@ CheckPoint::CheckPoint(std::string filename, bool create_mode)
 void CheckPoint::CreateFile(std::string filename)
 {
 	m_file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-	hid_t group = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Gclose(group);
-	group = H5Gcreate2(m_file, "Population", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Gclose(group);
+
 	// TODO: add a lot of preknown data such as Holidays, info about disease,...
 }
 
@@ -44,11 +41,18 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 {
 	std::shared_ptr<CommonSimulationConfig> common_config = conf.common_config;
 	std::shared_ptr<LogConfig> log_config = conf.log_config;
+	
+	hid_t group = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Gclose(group);
 
-	WriteDisease(common_config->disease_config_file_name);
-	WriteContactMatrix(common_config->contact_matrix_file_name);
-
-	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
+	group = H5Gcreate2(m_file, "Population", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Gclose(group);
+	
+	
+	//WriteDisease(common_config->disease_config_file_name);
+	//WriteContactMatrix(common_config->contact_matrix_file_name);
+	
+	group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims = 2;
 	hid_t dataspace = H5Screate_simple(1, &dims, NULL);
 	bool bools[2];
@@ -62,7 +66,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	dims = 4;
 	dataspace = H5Screate_simple(1, &dims, NULL);
 	attr = H5Acreate2(group, "uints", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
-	unsigned int uints [4];
+	unsigned int uints[4];
 	uints[0] = common_config->rng_seed;
 	uints[1] = common_config->number_of_days;
 	uints[2] = common_config->number_of_survey_participants;
@@ -81,18 +85,37 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	H5Awrite(attr, H5T_NATIVE_DOUBLE, doubles);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
-
+	/*
 	dims = log_config->output_prefix.size();
 	dataspace = H5Screate_simple(1, &dims, NULL);
 	attr = H5Acreate2(group, "prefix", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	char prefix[log_config->output_prefix.size()];
-	strncpy(prefix,log_config->output_prefix.c_str(),sizeof(prefix));
-	prefix[sizeof(prefix)-1] = 0;
+	strncpy(prefix, log_config->output_prefix.c_str(), sizeof(prefix));
+	prefix[sizeof(prefix) - 1] = 0;
 	H5Awrite(attr, H5T_NATIVE_CHAR, prefix);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
+	*/
 
 	H5Gclose(group);
+}
+
+void CheckPoint::WriteConfig(const MultiSimulationConfig& conf)
+{
+	hid_t f = m_file;
+	auto singles = conf.GetSingleConfigs();
+	if (singles.size() == 1) {
+		WriteConfig(singles[0]);
+	}
+	for (unsigned int i = 0; i < singles.size(); i++) {
+		std::stringstream ss;
+		ss << "Simulation " << i;
+
+		m_file = H5Gcreate2(m_file, ss.str().c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		WriteConfig(singles[i]);
+		H5Gclose(m_file);
+	}
+	m_file = f;
 }
 
 void CheckPoint::OpenFile(std::string filename) { m_file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT); }

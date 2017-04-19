@@ -34,6 +34,7 @@
 #include "util/InstallDirs.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
+#include "checkpoint/CheckPoint.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -59,6 +60,7 @@ using namespace boost::filesystem;
 using namespace boost::property_tree;
 using namespace std;
 using namespace std::chrono;
+using namespace checkpoint;
 
 std::mutex StrideSimulatorResult::io_mutex;
 
@@ -125,7 +127,9 @@ void verify_execution_environment()
 
 /// Run the stride simulator.
 void run_stride(const MultiSimulationConfig& config)
-{
+{	
+	CheckPoint cp("foo.h5",true);
+	cp.WriteConfig(config);
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
