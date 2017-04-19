@@ -42,7 +42,7 @@ std::vector<Person> Population::get_random_persons(util::Random& rng, std::size_
 		i++;
 	}
 
-	return std::move(random_picks);
+	return random_picks;
 }
 
 /// Gets a list of pointers to 'count' unique, randomly chosen participants in the population

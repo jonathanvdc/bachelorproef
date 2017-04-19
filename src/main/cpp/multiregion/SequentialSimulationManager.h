@@ -39,7 +39,7 @@ public:
 		SimulationStepInput result = std::move(pull_buffers[phase]);
 		pull_buffers.erase(phase);
 		phase++;
-		return std::move(result);
+		return result;
 	}
 
 	/// Pushes a visitor from the given region into this buffer.
