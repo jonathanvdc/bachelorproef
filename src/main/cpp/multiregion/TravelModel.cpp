@@ -144,7 +144,7 @@ std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
 			airport_list));
 		region_id++;
 	}
-	return std::move(results);
+	return results;
 }
 }
 }

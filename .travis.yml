@@ -4,47 +4,74 @@
 
 # We are (unfortunately) dealing with a C++ project.
 language: cpp
-compiler: gcc
 
 # Use Ubuntu 14.04.5 LTS (Trusty Tahr) instead of Ubuntu 12.04.5 LTS (Precise Pangolin)
 dist: trusty
 
 cache:
-    directories:
-        # Cache the boost install
-        - $HOME/boost_1_61_0/boost
-        - $HOME/boost_1_61_0/stage/lib
+  directories:
+    # Cache the boost install
+    - $HOME/boost_1_63_0/boost
+    - $HOME/boost_1_63_0/stage/lib
 
-# We're going to need cmake and boost.
+# We're going to need cmake, MPI and the mono runtime.
 addons:
-    apt:
-        sources:
+  apt:
+    packages: &default_packages
+      - mono-runtime
+      - libmono-system-xml4.0-cil
+      - libmono-system-core4.0-cil
+      - cmake
+      - mpich
+      - libmpich-dev
+      # Don't grab the APT boost package, because that package is stale.
+      # We'll need to build boost ourselves.
+      # - libboost-all-dev
+
+matrix:
+  include:
+    - compiler: gcc
+      env: CC_COMPILER_NAME='gcc-6' CXX_COMPILER_NAME='g++-6'
+      addons:
+        apt:
+          sources:
             - ubuntu-toolchain-r-test
-        packages:
-            - gcc-5
-            - g++-5
-            - cmake
-            - mpich
-            - libmpich-dev
-            # Don't grab the APT boost package, because that package is stale.
-            # We'll need to build boost ourselves.
-            # - libboost-all-dev
+          packages:
+            - *default_packages
+            - gcc-6
+            - g++-6
+
+    - compiler: clang
+      env: CC_COMPILER_NAME='clang-3.8' CXX_COMPILER_NAME='clang++-3.8'
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty
+          packages:
+            - *default_packages
+            - clang-3.8
+            - clang++-3.8
+            - libstdc++-6-dev
 
 before_install:
-    # Use GCC 5.
-    - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
-    # Print the CMake version.
-    - cmake --version
-    # Build and install boost.
-    - echo "using mpi ;" > ~/site-config.jam
-    - wget https://raw.githubusercontent.com/WrinklyNinja/ci-scripts/1.0.0/install_boost.py
-    - python install_boost.py --directory ~ --boost-version 1.61.0 atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
-    # Set the BOOST_ROOT environment variable.
-    - export BOOST_ROOT=$HOME/boost_1_61_0
-    - export LD_LIBRARY_PATH=$HOME/boost_1_61_0/stage/lib:$LD_LIBRARY_PATH
+  - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
+  # Print the CMake version.
+  - cmake --version
+  # Grab the gtest report pretty printer.
+  - wget https://github.com/jonathanvdc/gtest-report-tools/releases/download/v0.1.1/gtest-report-tools.zip
+  - unzip gtest-report-tools.zip -d gtest-report-tools
+  # Build and install boost.
+  - echo "using mpi ;" > ~/site-config.jam
+  - wget https://raw.githubusercontent.com/flu-plus-plus/ci-scripts/master/install_boost.py
+  - python install_boost.py --directory ~ --boost-version 1.63.0 --address-model 64 --toolchain=$CC_COMPILER_NAME --stagedir stage atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
+  # Set the BOOST_ROOT environment variable.
+  - export BOOST_ROOT=$HOME/boost_1_63_0
+  - export LD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/lib:$LD_LIBRARY_PATH
 
 script:
-    # `make all; make test`, as per the build instructions.
-    - make all
-    # Don't make tests that rely on X to work/render things.
-    - make test_all_no_x
+  # `make all; make test`, but fancier.
+  - make all
+  - make test_all_no_x
+  # Pretty-print the test results.
+  - mono gtest-report-tools/gtest-report-print.exe --ansi build/installed/bin/gtester_all_no_x.xml

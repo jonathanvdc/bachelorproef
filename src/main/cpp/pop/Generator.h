@@ -23,7 +23,7 @@ class Generator
 {
 public:
 	Generator(
-	    const stride::population::ModelRef m, const geo::ProfileRef g, const std::vector<Household>& h, const disease::Disease& d,
+	    const stride::population::ModelRef& m, const geo::ProfileRef& g, const std::vector<Household>& h, const disease::Disease& d,
 	    util::Random& r)
 	    : model(m), geo_profile(g), reference_households(h), disease(d), random(r)
 	{
@@ -37,8 +37,8 @@ public:
 	bool FitsModel(const Population& population, bool verbose = false);
 
 private:
-	const ModelRef& model;
-	const geo::ProfileRef& geo_profile;
+	ModelRef model;
+	geo::ProfileRef geo_profile;
 	const std::vector<Household>& reference_households;
 	const disease::Disease& disease;
 	util::Random& random;

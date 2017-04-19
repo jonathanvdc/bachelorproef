@@ -65,8 +65,7 @@ Alias Alias::CreateDistribution(std::vector<double> probabilities, util::Random&
 	for (auto l : small) {
 		prob[l] = 1;
 	}
-	Alias a(std::move(alias), std::move(prob), rng);
-	return std::move(a);
+	return Alias(std::move(alias), std::move(prob), rng);
 }
 
 std::size_t Alias::Next()
