@@ -10,8 +10,8 @@
 #include <memory>
 #include <vector>
 #include "Household.h"
-#include "Person.h"
 #include "Model.h"
+#include "Person.h"
 #include "core/Disease.h"
 #include "geo/Profile.h"
 #include "util/Random.h"
@@ -23,11 +23,14 @@ class Generator
 {
 public:
 	Generator(
-	    const stride::population::ModelRef& m, const geo::ProfileRef& g, const std::vector<Household>& h, const disease::Disease& d,
-	    util::Random& r)
+	    const stride::population::ModelRef& m, const geo::ProfileRef& g, const std::vector<ReferenceHousehold>& h,
+	    const disease::Disease& d, util::Random& r)
 	    : model(m), geo_profile(g), reference_households(h), disease(d), random(r)
 	{
 	}
+
+	/// Get a random reference household.
+	const ReferenceHousehold& GetRandomReferenceHousehold() { return random.Sample(reference_households); }
 
 	/// Generate a random population.
 	Population Generate();
@@ -39,7 +42,7 @@ public:
 private:
 	ModelRef model;
 	geo::ProfileRef geo_profile;
-	const std::vector<Household>& reference_households;
+	const std::vector<ReferenceHousehold>& reference_households;
 	const disease::Disease& disease;
 	util::Random& random;
 

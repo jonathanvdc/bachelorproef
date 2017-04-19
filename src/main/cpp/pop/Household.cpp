@@ -4,13 +4,13 @@
 namespace stride {
 namespace population {
 
-std::vector<Household> ParseReferenceHouseholds(const boost::property_tree::ptree& pt)
+std::vector<ReferenceHousehold> ParseReferenceHouseholds(const boost::property_tree::ptree& pt)
 {
-	std::vector<Household> households;
+	std::vector<ReferenceHousehold> households;
 	for (const auto& h : pt) {
-		households.push_back(Household{});
+		households.push_back(ReferenceHousehold());
 		for (const auto& age : h.second) {
-			households.back().push_back(age.second.get_value<int>());
+			households.back().ages.push_back(age.second.get_value<int>());
 		}
 	}
 	return households;

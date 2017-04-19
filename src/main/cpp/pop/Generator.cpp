@@ -15,6 +15,19 @@ namespace population {
 Population Generator::Generate()
 {
 	Population population;
+	using Household = std::vector<Person>;
+	std::vector<Household> households;
+	int persons_generated = 0;
+	const int goal_population = model->population_size;
+
+/*
+	while (persons_generated < goal_population) {
+		households.push_back(Household());
+
+		for (int age : GetRandomReferenceHousehold().ages) {
+			households.back().push_back(GeneratePerson())
+		}
+*/
 
 	return population;
 }

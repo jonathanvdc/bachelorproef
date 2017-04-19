@@ -2,6 +2,7 @@
 #define GEO_CITY_H_INCLUDED
 
 #include <string>
+#include "GeoPosition.h"
 
 namespace stride {
 namespace geo {
@@ -30,11 +31,8 @@ struct City final
 	/// The Cartesian y-coordinate of this city.
 	double y_coord;
 
-	/// The geographic latitude of this city.
-	double latitude;
-
-	/// The geographic longitude of this city.
-	double longitude;
+	/// The geographic position of this city.
+	GeoPosition geo_position;
 };
 
 } // namespace

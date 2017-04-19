@@ -64,6 +64,13 @@ public:
 	/// Get random double from [a, b].
 	double operator()(InclusiveRange<double> r) { return (*this)(r.minimum, r.maximum); }
 
+	/// Sample a random element from a vector with a uniform distribution.
+	template <typename T>
+	const T& Sample(const std::vector<T>& vec)
+	{
+		return vec[(*this)(vec.size())];
+	}
+
 	/**
 	 * Split random engines
 	 * E. g. stream 0 1 2 3 4 5...

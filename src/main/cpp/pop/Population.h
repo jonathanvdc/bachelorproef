@@ -27,19 +27,22 @@
 #include <numeric>
 #include <vector>
 #include "Person.h"
+#include "core/Atlas.h"
 #include "core/Health.h"
+#include "geo/GeoPosition.h"
 #include "util/Random.h"
 
 namespace stride {
 
 /**
- * Container for persons in population.
+ * Stores Persons, along with an Atlas mapping their clusters to GeoPositions.
  */
 class Population
 {
 private:
 	std::map<PersonId, std::shared_ptr<PersonData>> people;
 	PersonId max_person_id;
+	Atlas atlas;
 
 public:
 	/// An iterator implementation for Population containers.
@@ -129,6 +132,12 @@ public:
 
 	/// Get the cumulative number of cases.
 	unsigned int get_infected_count() const;
+
+	/// Store a GeoPosition in the population's atlas.
+	auto AtlasEmplace(const Atlas::Key& key, const geo::GeoPosition& pos) -> decltype(atlas.Emplace(key, pos))
+	{
+		return atlas.Emplace(key, pos);
+	}
 };
 
 /// Swaps two population iterators.
