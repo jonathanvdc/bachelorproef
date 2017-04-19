@@ -12,7 +12,7 @@ cache:
   directories:
     # Cache the boost install
     - $HOME/boost_1_63_0/boost
-    - $HOME/boost_1_63_0/stage/64/lib
+    - $HOME/boost_1_63_0/stage/lib
 
 # We're going to need cmake, MPI and the mono runtime.
 addons:
@@ -64,10 +64,10 @@ before_install:
   # Build and install boost.
   - echo "using mpi ;" > ~/site-config.jam
   - wget https://raw.githubusercontent.com/flu-plus-plus/ci-scripts/master/install_boost.py
-  - python install_boost.py --directory ~ --boost-version 1.63.0 --address-model 64 --toolchain=$CC_COMPILER_NAME atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
+  - python install_boost.py --directory ~ --boost-version 1.63.0 --address-model 64 --toolchain=$CC_COMPILER_NAME --stagedir stage atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
   # Set the BOOST_ROOT environment variable.
   - export BOOST_ROOT=$HOME/boost_1_63_0
-  - export LD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/64/lib:$LD_LIBRARY_PATH
+  - export LD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/lib:$LD_LIBRARY_PATH
 
 script:
   # `make all; make test`, but fancier.
