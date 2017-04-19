@@ -26,6 +26,17 @@ matrix:
             - *default_packages
             - gcc-6
             - g++-6
+  include:
+    - compiler: clang
+      env: CC_COMPILER_NAME='clang-3.8' CXX_COMPILER_NAME='clang++-3.8'
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty
+          packages:
+            - *default_packages
+            - clang-3.8
+            - clang++-3.8
 
 # We're going to need cmake, MPI and the mono runtime.
 addons:
