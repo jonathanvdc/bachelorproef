@@ -1,9 +1,6 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include "viz/prototype.h"
-#include "pop/Population.h"
-#include "sim/Simulator.h"
-
 
 using namespace Stride;
 

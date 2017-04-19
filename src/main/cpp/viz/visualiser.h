@@ -4,12 +4,14 @@
 #include <unistd.h>
 #include <iostream>
 
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include <qtwebengineglobal.h>
 
 namespace Stride {
 
 class Visualiser{
     public:
-    Visualiser();
     void run();
 };
 

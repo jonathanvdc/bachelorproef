@@ -58,9 +58,12 @@ set(LIB_SRC
 	util/InstallDirs.cpp
 #---
     alias/Alias.cpp
-#---
-    #viz/visualiser.cpp
 )
+
+if( Qt5Widgets_FOUND )		
+    set(LIB_SRC ${LIB_SRC} viz/prototype.cpp viz/visualiser.cpp)		
+endif()
+
 
 set(MAIN_SRC
     sim/main.cpp
