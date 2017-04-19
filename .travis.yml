@@ -32,11 +32,13 @@ matrix:
       addons:
         apt:
           sources:
+            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty
           packages:
             - *default_packages
             - clang-3.8
             - clang++-3.8
+            - libstdc++-6-dev
 
 # We're going to need cmake, MPI and the mono runtime.
 addons:
