@@ -61,8 +61,8 @@ before_install:
   - unzip gtest-report-tools.zip -d gtest-report-tools
   # Build and install boost.
   - echo "using mpi ;" > ~/site-config.jam
-  - wget https://raw.githubusercontent.com/WrinklyNinja/ci-scripts/1.0.0/install_boost.py
-  - python install_boost.py --directory ~ --boost-version 1.63.0 atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
+  - wget https://raw.githubusercontent.com/flu-plus-plus/ci-scripts/master/install_boost.py
+  - python install_boost.py --directory ~ --boost-version 1.63.0 --address-model 64 --toolchain=$CXX_COMPILER_NAME atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
   # Set the BOOST_ROOT environment variable.
   - export BOOST_ROOT=$HOME/boost_1_63_0
   - export LD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/lib:$LD_LIBRARY_PATH
