@@ -15,14 +15,24 @@ cache:
         - $HOME/boost_1_61_0/boost
         - $HOME/boost_1_61_0/stage/lib
 
-# We're going to need cmake and boost.
+matrix:
+    include:
+        - compiler: gcc
+          env: CC_COMPILER_NAME="gcc-6"
+          env: CXX_COMPILER_NAME="g++-6"
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                  packages:
+                      - *default_packages
+                      - gcc-6
+                      - g++-6
+
+# We're going to need cmake, MPI and the mono runtime.
 addons:
     apt:
-        sources:
-            - ubuntu-toolchain-r-test
-        packages:
-            - gcc-6
-            - g++-6
+        packages: &default_packages
             - mono-runtime
             - libmono-system-xml4.0-cil
             - libmono-system-core4.0-cil
