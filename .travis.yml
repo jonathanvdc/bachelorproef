@@ -18,8 +18,7 @@ cache:
 matrix:
   include:
     - compiler: gcc
-      env: CC_COMPILER_NAME="gcc-6"
-      env: CXX_COMPILER_NAME="g++-6"
+      env: CC_COMPILER_NAME='gcc-6' CXX_COMPILER_NAME='g++-6'
       addons:
         apt:
           sources:
