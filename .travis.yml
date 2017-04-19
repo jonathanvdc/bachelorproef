@@ -26,7 +26,6 @@ addons:
             - cmake
             - mpich
             - libmpich-dev
-            - qtbase5-dev
             # Don't grab the APT boost package, because that package is stale.
             # We'll need to build boost ourselves.
             # - libboost-all-dev
