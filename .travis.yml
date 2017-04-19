@@ -4,7 +4,6 @@
 
 # We are (unfortunately) dealing with a C++ project.
 language: cpp
-compiler: gcc
 
 # Use Ubuntu 14.04.5 LTS (Trusty Tahr) instead of Ubuntu 12.04.5 LTS (Precise Pangolin)
 dist: trusty
