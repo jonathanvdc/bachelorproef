@@ -19,6 +19,7 @@
 #include <sstream>
 #include <streambuf>
 #include <string>
+#include <vector>
 #include <boost/filesystem.hpp>
 
 using namespace std;
@@ -52,9 +53,15 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 
 	group = H5Gcreate2(m_file, "Population", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Gclose(group);
-
-	WriteDisease(common_config->disease_config_file_name);
-	WriteContactMatrix(common_config->contact_matrix_file_name);
+	WriteFileDSet(common_config->disease_config_file_name, "disease");
+	WriteFileDSet(common_config->contact_matrix_file_name, "contact");
+	WriteFileDSet(conf.GetPopulationPath(), "popconfig");
+	if (conf.GetGeodistributionProfilePath().size() != 0) {
+		WriteFileDSet(conf.GetGeodistributionProfilePath(), "geoconfig");
+	}
+	if (conf.GetReferenceHouseholdsPath().size() != 0) {
+		WriteFileDSet(conf.GetReferenceHouseholdsPath(), "contact");
+	}
 
 	group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims = 2;
@@ -198,58 +205,11 @@ void CheckPoint::WriteHolidays(const boost::property_tree::ptree& holidays_ptree
 	H5Dclose(dataset);
 }
 
-void CheckPoint::WriteDisease(const std::string& filename)
-{
-	boost::filesystem::path path = util::InstallDirs::GetDataDir();
-	boost::filesystem::path filep(filename);
-	boost::filesystem::path fullpath = path / filep;
-	if (!is_regular_file(fullpath)) {
-		FATAL_ERROR("Unable to find file: " + fullpath.string());
-	}
-	std::ifstream f(fullpath.string());
-	std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-	char dataset[str.size()];
-	strncpy(dataset, str.c_str(), sizeof(dataset));
-	dataset[sizeof(dataset) - 1] = 0;
-	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
-	hsize_t dims[1] = {sizeof(dataset) - 1};
-	hid_t dataspace = H5Screate_simple(1, dims, NULL);
-	hid_t dset = H5Dcreate2(group, "Disease", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset);
-	H5Dclose(dset);
-	H5Sclose(dataspace);
-
-	/*
-	std::vector<std::string> fields = {"start_infectiousness", "start_symptomatic", "time_infectious",
-					   "time_symptomatic"};
-
-	for (auto field : fields) {
-		boost::property_tree::ptree pt_probability_list = ptree.get_child("disease." + field);
-		std::vector<double> probabilities;
-
-		for (const auto& i : pt_probability_list) {
-			probabilities.push_back(i.second.get_value<double>());
-		}
-
-		double dset[probabilities.size() - 1];
-		std::copy(probabilities.begin(), probabilities.end(), dset);
-		hsize_t dims[1] = {probabilities.size() - 1};
-		hid_t dataspace = H5Screate_simple(1, dims, NULL);
-		hid_t dataset =
-		    H5Dcreate2(group, field.c_str(), H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-		H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dset);
-		H5Dclose(dataset);
-		H5Sclose(dataspace);
-	}
-	*/
-	H5Gclose(group);
-}
-
 void CheckPoint::WritePopulation(const Population& pop)
 {
 	unsigned int dset[pop.size() - 1][5 + NumOfClusterTypes() - 1];
-	for (unsigned int i = 0; i < pop.size(); i++) {
-		Person p = pop[i];
+	unsigned int i = 0;
+	for (const auto& p : pop) {
 
 		// Basic Data
 		dset[i][0] = p.GetId();
@@ -268,6 +228,7 @@ void CheckPoint::WritePopulation(const Population& pop)
 			}
 			dset[i][5 + j] = p.GetClusterId(temp);
 		}
+		i++;
 	}
 	hsize_t dims[2] = {pop.size() - 1, 5 + NumOfClusterTypes() - 1};
 	hid_t dataspace = H5Screate_simple(2, dims, NULL);
@@ -279,7 +240,7 @@ void CheckPoint::WritePopulation(const Population& pop)
 	H5Sclose(dataspace);
 }
 
-void CheckPoint::WriteContactMatrix(const std::string& filename)
+void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& setname)
 {
 	boost::filesystem::path path = util::InstallDirs::GetDataDir();
 	boost::filesystem::path filep(filename);
@@ -288,15 +249,17 @@ void CheckPoint::WriteContactMatrix(const std::string& filename)
 		FATAL_ERROR("Unable to find file: " + fullpath.string());
 	}
 	std::ifstream f(fullpath.string());
+
 	std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-	char dataset[str.size()];
-	strncpy(dataset, str.c_str(), sizeof(dataset));
-	dataset[sizeof(dataset) - 1] = 0;
+	std::vector<char> dataset;
+	std::copy(str.begin(), str.end(), std::back_inserter(dataset));
+
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
-	hsize_t dims[1] = {sizeof(dataset) - 1};
+	hsize_t dims[1] = {dataset.size() - 1};
 	hid_t dataspace = H5Screate_simple(1, dims, NULL);
-	hid_t dset = H5Dcreate2(group, "Matrix", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset);
+	hid_t dset =
+	    H5Dcreate2(group, setname.c_str(), H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(*dataset.begin()));
 	H5Dclose(dset);
 	H5Sclose(dataspace);
 	H5Gclose(group);

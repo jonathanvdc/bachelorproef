@@ -49,9 +49,6 @@ private:
 	/// Loads the holidays into a boost::property_tree::ptree.
 	std::unique_ptr<boost::property_tree::ptree> LoadHolidays();
 
-	/// Writes the disease file.
-	void WriteDisease(const std::string&);
-
 	/// Loads the disease into a boost::property_tree::ptree.
 	std::unique_ptr<boost::property_tree::ptree> LoadDisease();
 
@@ -67,8 +64,10 @@ private:
 	/// Loads the asked population from the given checkpoint.
 	Population LoadPopulation(unsigned int);
 
-	//Writes the ContactMatrix from the file
-	void WriteContactMatrix(const std::string&);
+	//Writes the PopulationMatrix
+	void WritePopulationConfig(const std::string&);
+
+	void WriteFileDSet(const std::string&, const std::string&);
 
 	hid_t m_file;
 };
