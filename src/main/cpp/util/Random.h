@@ -24,6 +24,7 @@
 #include <trng/uniform01_dist.hpp>
 #include <trng/uniform_dist.hpp>
 #include <trng/uniform_int_dist.hpp>
+#include "Errors.h"
 #include "InclusiveRange.h"
 
 namespace stride {
@@ -44,6 +45,9 @@ public:
 
 	/// Get random double.
 	double NextDouble() { return m_uniform_dist(m_engine); }
+
+	/// Return true with chance p, and false with chance 1-p.
+	double Chance(double p) { return NextDouble() < p; }
 
 	/// Get random unsigned int from [0, max[.
 	unsigned int operator()(unsigned int max)
@@ -68,6 +72,8 @@ public:
 	template <typename T>
 	const T& Sample(const std::vector<T>& vec)
 	{
+		if (vec.empty())
+			FATAL_ERROR("Random::Sample called on empty vector.");
 		return vec[(*this)(vec.size())];
 	}
 

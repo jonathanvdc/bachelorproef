@@ -105,7 +105,7 @@ Population Generator::Generate()
 	const int clusters_per_school = model->school_size / model->school_cluster_size;
 
 	while (n > 0) {
-		auto vec = schools[school_geo_brng.Next()];
+		auto& vec = schools[school_geo_brng.Next()];
 		vec.emplace_back(School());
 		for (int i = 0; i < clusters_per_school; i++)
 			vec.back().emplace_back(school_cluster_id++);
@@ -131,6 +131,7 @@ Population Generator::Generate()
 	console->debug("Generating colleges...");
 	using College = School;
 	std::map<geo::GeoPosition, College> colleges;
+	std::map<geo::GeoPosition, double> college_distribution;
 	n = num_college_students;
 	const int clusters_per_college = model->college_size / model->college_cluster_size;
 
@@ -139,12 +140,16 @@ Population Generator::Generate()
 		if (n <= 0)
 			break;
 
-		College& college = colleges[city.geo_position] = College();
+		College& college = colleges[city.geo_position];
 		for (int i = 0; i < clusters_per_college; i++)
 			college.emplace_back(school_cluster_id++);
 
+		college_distribution[city.geo_position] = city.relative_population;
+
 		n -= model->college_size;
 	}
+
+	auto college_brng = GeoBRNG::CreateDistribution(college_distribution, random);
 
 	// Generate communities.
 	console->debug("Generating communities...");
@@ -172,14 +177,19 @@ Population Generator::Generate()
 			for (const int age : rh.ages) {
 				int school_id = 0;
 				int work_id = 0;
-				int primary_community_id = 0;
-				int secondary_community_id = 0;
-
 				if (model->IsSchoolAge(age)) {
-					school_id = FindLocal(geo_position, schools);
+					school_id = random.Sample(random.Sample(FindLocal(geo_position, schools)));
 				} else if (model->IsCollegeAge(age)) {
+					bool commutes = random.Chance(model->college_commute_ratio);
+					school_id = random.Sample(
+					    commutes ? colleges[college_brng.Next()]
+						     : FindLocal(geo_position, colleges));
 				} else if (model->IsEmployableAge(age) && random.Chance(model->employed_ratio)) {
+					work_id = random.Sample(FindLocal(geo_position, workplaces));
 				}
+
+				int primary_community_id = random.Sample(FindLocal(geo_position, communities));
+				int secondary_community_id = random.Sample(FindLocal(geo_position, communities));
 
 				population.emplace(
 				    person_id++, age, household_id, school_id, work_id, primary_community_id,

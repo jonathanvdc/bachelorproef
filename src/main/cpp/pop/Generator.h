@@ -35,6 +35,22 @@ public:
 	{
 	}
 
+	/// Generate a random population.
+	Population Generate();
+
+	/// Check if a population fits the model.
+	/// If verbose is true, log the checks performed.
+	bool FitsModel(const Population& population, bool verbose = false);
+
+private:
+	ModelRef model;
+	geo::ProfileRef geo_profile;
+	const std::vector<ReferenceHousehold>& reference_households;
+	const disease::Disease& disease;
+	util::Random& random;
+
+	TownBRNG town_brng;
+
 	/// Get a random reference household.
 	const ReferenceHousehold& GetRandomReferenceHousehold() { return random.Sample(reference_households); }
 
@@ -51,23 +67,29 @@ public:
 
 	/// Find a random GeoPosition map value close to the given origin point.
 	template <typename T>
-	T& FindLocal(const geo::GeoPosition& origin, const std::map<geo::GeoPosition, T>& map);
+	T& FindLocal(const geo::GeoPosition& origin, std::map<geo::GeoPosition, T>& map)
+	{
+		if (map.empty()) {
+			FATAL_ERROR("Generator::FindLocal called on empty map.");
+		}
 
-	/// Generate a random population.
-	Population Generate();
+		double r = model->search_radius;
+		std::vector<std::reference_wrapper<T>> hits;
+		for (int i = 0; i < 5; i++, r *= 2.0) {
+			for (auto& p : map) {
+				if (p.first.Distance(origin) < r) {
+					hits.emplace_back(p.second);
+				}
+			}
+			if (!hits.empty()) {
+				return random.Sample(hits).get();
+			}
+		}
 
-	/// Check if a population fits the model.
-	/// If verbose is true, log the checks performed.
-	bool FitsModel(const Population& population, bool verbose = false);
-
-private:
-	ModelRef model;
-	geo::ProfileRef geo_profile;
-	const std::vector<ReferenceHousehold>& reference_households;
-	const disease::Disease& disease;
-	util::Random& random;
-
-	TownBRNG town_brng;
+		auto it = map.begin();
+		std::advance(it, random(map.size()));
+		return it->second;
+	}
 
 	/*
 	int num_schools;
