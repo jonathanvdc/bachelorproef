@@ -129,12 +129,11 @@ Population Generator::Generate()
 	// Generate workplaces.
 	console->debug("Generating workplaces...");
 	using WorkClusterID = std::size_t;
-	using Workplace = WorkClusterID;
 	WorkClusterID work_cluster_id = 1;
 	int workplaces_created = 0;
 
 	auto work_geo_brng = GeoBRNG::CreateDistribution(work_population_distribution, random);
-	std::map<geo::GeoPosition, std::vector<Workplace>> workplaces;
+	std::map<geo::GeoPosition, std::vector<WorkClusterID>> workplaces;
 	n = SumValues(work_population_distribution);
 
 	while (n > 0) {
@@ -175,11 +174,10 @@ Population Generator::Generate()
 	// Generate communities.
 	console->debug("Generating communities...");
 	using CommunityClusterID = std::size_t;
-	using Community = CommunityClusterID;
 	CommunityClusterID community_cluster_id = 1;
 	int communities_created = 0;
 
-	std::map<geo::GeoPosition, std::vector<Community>> communities;
+	std::map<geo::GeoPosition, std::vector<CommunityClusterID>> communities;
 	n = SumValues(work_population_distribution);
 
 	while (n > 0) {
@@ -231,6 +229,34 @@ Population Generator::Generate()
 	}
 	console->debug("Generated {} people.", person_id - 1);
 
+	// Store all the cluster's locations in the population's atlas.
+	console->debug("Creating atlas of cluster locations...");
+	household_id = 1;
+	for (const auto& p : households)
+		for (auto it = p.second.begin(); it != p.second.end(); ++it)
+			population.AtlasEmplace({household_id++, ClusterType::Household}, p.first);
+
+	for (const auto& p : schools)
+		for (const auto& school : p.second)
+			for (SchoolClusterID id : school)
+				population.AtlasEmplace({id, ClusterType::School}, p.first);
+
+	for (const auto& p : workplaces)
+		for (WorkClusterID id : p.second)
+			population.AtlasEmplace({id, ClusterType::Work}, p.first);
+
+	for (const auto& p : colleges)
+		for (SchoolClusterID id : p.second)
+			population.AtlasEmplace({id, ClusterType::School}, p.first);
+
+	for (const auto& p : communities) {
+		for (CommunityClusterID id : p.second) {
+			population.AtlasEmplace({id, ClusterType::PrimaryCommunity}, p.first);
+			population.AtlasEmplace({id, ClusterType::SecondaryCommunity}, p.first);
+		}
+	}
+
+	console->debug("Done!");
 	return population;
 }
 
