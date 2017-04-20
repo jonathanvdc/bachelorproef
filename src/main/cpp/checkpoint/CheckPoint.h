@@ -10,9 +10,9 @@
 
 #include <memory>
 #include "calendar/Calendar.h"
-#include "sim/SimulationConfig.h"
 #include "hdf5.h"
 #include "pop/Population.h"
+#include "sim/SimulationConfig.h"
 
 namespace stride {
 namespace checkpoint {
@@ -20,37 +20,43 @@ namespace checkpoint {
 class CheckPoint
 {
 public:
-	/// Constructor The string is the file for the checkpoints. The boolean is false if the file needs to be
-	/// created.
-	CheckPoint(std::string, bool create_mode = false);
+	/// Constructor The string is the file for the checkpoints.
+	CheckPoint(const std::string&);
 
 	/// Loads a checkpoint from the file in the constructor. The unsigned int tells which checkpoint to use.
 	void LoadCheckPoint(unsigned int);
 
 	/// Saves the current simulation to a checkpoint.
-	void SaveCheckPoint();
+	void SaveCheckPoint(const Population&, unsigned int);
 
-	//Writes the SingleSimulationConfig.
-	void WriteConfig(const SingleSimulationConfig&);
-
-	//Writes the MultiSimulationConfig.
+	/// Writes the MultiSimulationConfig.
 	void WriteConfig(const MultiSimulationConfig&);
 
-private:
-	/// Creates the wanted file
-	void CreateFile(std::string);
+	/// Loads the MultiSimulationConfig.
+	MultiSimulationConfig LoadConfig();
+
+	/// Writes the SingleSimulationConfig.
+	void WriteConfig(const SingleSimulationConfig&);
+
+	/// Writes the holidays from a file. The second string represents the groupname.
+	void WriteHolidays(const std::string&, const std::string& groupname = "");
+
+	/// Loads the holidays into a std::string.
+	std::string LoadHolidays();
+
+	/// Creates the wanted file and immediately closes it. It will overwrite a file if one of the same name already
+	/// exists.
+	void CreateFile();
 
 	/// Opens the wanted file
-	void OpenFile(std::string);
+	void OpenFile();
 
-	/// Writes the holidays.
-	void WriteHolidays(const boost::property_tree::ptree&);
+	/// Closes the wanted file
+	void CloseFile();
 
-	/// Loads the holidays into a boost::property_tree::ptree.
-	std::unique_ptr<boost::property_tree::ptree> LoadHolidays();
-
+private:
 	/// Loads the disease into a boost::property_tree::ptree.
-	std::unique_ptr<boost::property_tree::ptree> LoadDisease();
+	std::string LoadDisease();
 
 	/// Writes the current date to the checkpoint.
 	void WriteDate(const Calendar&);
@@ -59,17 +65,23 @@ private:
 	boost::gregorian::date LoadDate();
 
 	/// Writes the current population to a checkpoint.
-	void WritePopulation(const Population&);
+	void WritePopulation(const Population&, unsigned int);
 
 	/// Loads the asked population from the given checkpoint.
 	Population LoadPopulation(unsigned int);
 
-	//Writes the PopulationMatrix
+	/// Writes the PopulationMatrix
 	void WritePopulationConfig(const std::string&);
 
+	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
+	/// name of the dataset
 	void WriteFileDSet(const std::string&, const std::string&);
 
-	hid_t m_file;
+	/// Returns a file in the form of a string. The argument is the name of dataset
+	std::string LoadFileDSet(const std::string&);
+
+	hid_t m_file;		      //< current hdf5 workspace
+	const std::string m_filename; //< filename
 };
 
 } /* namespace checkpoint */

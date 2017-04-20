@@ -64,12 +64,17 @@ using namespace checkpoint;
 
 std::mutex StrideSimulatorResult::io_mutex;
 
+CheckPoint *cp;
+
 /// Performs an action just before a simulator step is performed.
 void StrideSimulatorResult::BeforeSimulatorStep(const Population&) { run_clock.Start(); }
 
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
-{
+{	
+	cp->OpenFile();
+	cp->SaveCheckPoint(pop,day);
+	cp->CloseFile();
 	run_clock.Stop();
 	auto infected_count = pop.get_infected_count();
 	cases.push_back(infected_count);
@@ -128,8 +133,6 @@ void verify_execution_environment()
 /// Run the stride simulator.
 void run_stride(const MultiSimulationConfig& config)
 {	
-	CheckPoint cp("foo.h5",true);
-	cp.WriteConfig(config);
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
@@ -255,6 +258,13 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	MultiSimulationConfig config;
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
+
+	cp = new CheckPoint("foo.h5");
+	cp->CreateFile();
+	cp->OpenFile();
+	cp->WriteConfig(config);
+	cp->WriteHolidays(pt_config.get_child("run").get<std::string>("holidays_file", "holidays_flanders_2016.json"));
+	cp->CloseFile();
 
 	// Run Stride.
 	run_stride(config);

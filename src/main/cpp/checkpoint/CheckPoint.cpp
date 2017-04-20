@@ -27,32 +27,27 @@ using namespace std;
 namespace stride {
 namespace checkpoint {
 
-CheckPoint::CheckPoint(std::string filename, bool create_mode)
+CheckPoint::CheckPoint(const std::string& filename) : m_filename(filename) {}
+
+void CheckPoint::CreateFile()
 {
-	if (create_mode) {
-		CreateFile(filename);
-	} else {
-		OpenFile(filename);
-	}
+	m_file = H5Fcreate(m_filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+	H5Fclose(m_file);
 }
 
-void CheckPoint::CreateFile(std::string filename)
-{
-	m_file = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-
-	// TODO: add a lot of preknown data such as Holidays, info about disease,...
-}
+void CheckPoint::CloseFile() { H5Fclose(m_file); }
 
 void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 {
+	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
+	}
+
 	std::shared_ptr<CommonSimulationConfig> common_config = conf.common_config;
 	std::shared_ptr<LogConfig> log_config = conf.log_config;
 
-	hid_t group = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Gclose(group);
-
-	group = H5Gcreate2(m_file, "Population", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Gclose(group);
 	WriteFileDSet(common_config->disease_config_file_name, "disease");
 	WriteFileDSet(common_config->contact_matrix_file_name, "contact");
 	WriteFileDSet(conf.GetPopulationPath(), "popconfig");
@@ -63,7 +58,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 		WriteFileDSet(conf.GetReferenceHouseholdsPath(), "contact");
 	}
 
-	group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
+	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims = 2;
 	hid_t dataspace = H5Screate_simple(1, &dims, NULL);
 	bool bools[2];
@@ -129,7 +124,7 @@ void CheckPoint::WriteConfig(const MultiSimulationConfig& conf)
 	m_file = f;
 }
 
-void CheckPoint::OpenFile(std::string filename) { m_file = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT); }
+void CheckPoint::OpenFile() { m_file = H5Fopen(m_filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT); }
 
 void CheckPoint::WriteDate(const Calendar& cal)
 {
@@ -151,91 +146,72 @@ void CheckPoint::WriteDate(const Calendar& cal)
 	// TODO: write as attribute to dataset
 }
 
-void CheckPoint::WriteHolidays(const boost::property_tree::ptree& holidays_ptree)
+void CheckPoint::WriteHolidays(const std::string& filename, const std::string& groupname)
 {
-	std::vector<boost::gregorian::date> holidays;
-	std::vector<boost::gregorian::date> school_holidays;
-	// Read in holidays.
-	for (int i = 1; i < 13; i++) {
-		const std::string month = std::to_string(i);
-		const std::string year = holidays_ptree.get<std::string>("year", "2016");
-
-		// Read in general holidays.
-		const std::string general_key = "general." + month;
-		for (auto& date : holidays_ptree.get_child(general_key)) {
-			const std::string date_string = year + "-" + month + "-" + date.second.get_value<std::string>();
-			const auto new_holiday = boost::gregorian::from_simple_string(date_string);
-			holidays.push_back(new_holiday);
-		}
-
-		// Read in school holidays.
-		const std::string school_key = "school." + month;
-		for (auto& date : holidays_ptree.get_child(school_key)) {
-			const std::string date_string = year + "-" + month + "-" + date.second.get_value<std::string>();
-			const auto new_holiday = boost::gregorian::from_simple_string(date_string);
-			school_holidays.push_back(new_holiday);
-		}
+	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
 	}
-	unsigned int school_dset[school_holidays.size()];
-	unsigned int holi_dset[holidays.size()];
+	hid_t temp = m_file;
 
-	for (unsigned int i = 0; i < holidays.size(); i++) {
-		holi_dset[i] = std::stoi(to_iso_string(holidays[i]));
+	if (groupname.size() != 0) {
+		m_file = H5Gopen2(m_file, groupname.c_str(), H5P_DEFAULT);
 	}
-
-	for (unsigned int i = 0; i < school_holidays.size(); i++) {
-		school_dset[i] = std::stoi(to_iso_string(school_holidays[i]));
+	WriteFileDSet(filename, "holidays");
+	if (groupname.size() != 0) {
+		H5Gclose(m_file);
+		m_file = temp;
 	}
-
-	// write the general holidays
-	hsize_t dims[1] = {holidays.size() - 1};
-	hid_t dataspace = H5Screate_simple(1, dims, NULL);
-	hid_t dataset = H5Dcreate2(m_file, "holidays", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(dataset, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, holi_dset);
-	H5Sclose(dataspace);
-	H5Dclose(dataset);
-
-	// write the school holidays
-	dims[1] = school_holidays.size() - 1;
-	dataspace = H5Screate_simple(1, dims, NULL);
-	dataset =
-	    H5Dcreate2(m_file, "school_holidays", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(dataset, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, school_dset);
-	H5Sclose(dataspace);
-	H5Dclose(dataset);
 }
 
-void CheckPoint::WritePopulation(const Population& pop)
-{
-	unsigned int dset[pop.size() - 1][5 + NumOfClusterTypes() - 1];
+void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
+{	
+	htri_t exist = H5Lexists(m_file, "Population", H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, "Population", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
+	}
+	unsigned int ** dset;
+	dset = new unsigned int * [pop.size()];
 	unsigned int i = 0;
 	for (const auto& p : pop) {
-
+		unsigned int *data;
+		data = new unsigned int [5+NumOfClusterTypes() - 1];
 		// Basic Data
-		dset[i][0] = p.GetId();
-		dset[i][1] = p.GetAge();
-		dset[i][2] = p.GetGender();
-		dset[i][3] = p.IsParticipatingInSurvey();
+		data[0] = p.GetId();
+		data[1] = p.GetAge();
+		data[2] = p.GetGender();
+		data[3] = p.IsParticipatingInSurvey();
 
 		// Health data
-		dset[i][4] = (unsigned int)p.GetHealth().GetHealthStatus();
+		data[4] = (unsigned int) p.GetHealth().GetHealthStatus();
 
 		// Cluster data
+		unsigned int k = 5;
 		for (unsigned int j = 0; j < NumOfClusterTypes(); j++) {
 			ClusterType temp = (ClusterType)j;
 			if (ToString(temp) == "Null") {
 				continue;
 			}
-			dset[i][5 + j] = p.GetClusterId(temp);
+			data[k] = p.GetClusterId(temp);
+			k++;
 		}
+		dset[i] = data;
 		i++;
 	}
-	hsize_t dims[2] = {pop.size() - 1, 5 + NumOfClusterTypes() - 1};
+
+	hsize_t dims[2] = {pop.size(), 5 + NumOfClusterTypes()};
 	hid_t dataspace = H5Screate_simple(2, dims, NULL);
-	// TODO : Get name to  be the date
+	std::string spot = "Population/"+std::to_string(date);
 	hid_t dataset =
-	    H5Dcreate2(m_file, "Population/", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	    H5Dcreate2(m_file, spot.c_str(), H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dset);
+	std::cout<<"written"<<std::endl;
+	for(unsigned int i = 0; i < pop.size(); i++){
+		delete [] dset[i];
+	}
+	delete [] dset;
 	H5Dclose(dataset);
 	H5Sclose(dataspace);
 }
@@ -263,6 +239,10 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 	H5Dclose(dset);
 	H5Sclose(dataspace);
 	H5Gclose(group);
+}
+
+void CheckPoint::SaveCheckPoint(const Population& pop, unsigned int time){
+	WritePopulation(pop,time);
 }
 
 } /* namespace checkpoint */
