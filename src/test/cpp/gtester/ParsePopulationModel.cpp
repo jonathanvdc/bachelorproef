@@ -16,7 +16,7 @@ TEST(ParsePopulationModel, ParseDefaultPopulationModel)
 	auto model = stride::population::Model::Parse(pt);
 
 	EXPECT_EQ(model->school_size, 500);
-	EXPECT_DOUBLE_EQ(model->school_radius, 10.0);
+	EXPECT_DOUBLE_EQ(model->search_radius, 10.0);
 }
 
 TEST(ParsePopulationModel, ExceptionOnInvalidFile)

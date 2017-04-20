@@ -15,6 +15,7 @@
 #include "alias/Alias.h"
 #include "core/Disease.h"
 #include "geo/Profile.h"
+#include "pop/Population.h"
 #include "util/InclusiveRange.h"
 #include "util/Random.h"
 
@@ -47,6 +48,10 @@ public:
 		return geo::GeoPosition{random(area.min_latitude, area.max_latitude),
 					random(area.min_longitude, area.max_longitude)};
 	}
+
+	/// Find a random GeoPosition map value close to the given origin point.
+	template <typename T>
+	T& FindLocal(const geo::GeoPosition& origin, const std::map<geo::GeoPosition, T>& map);
 
 	/// Generate a random population.
 	Population Generate();

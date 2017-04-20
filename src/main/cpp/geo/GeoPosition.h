@@ -14,6 +14,13 @@ struct GeoPosition final
 
 	/// The geographic longitude of this position.
 	double longitude;
+
+    // Lexicographic ordering.
+	bool operator<(const GeoPosition& rhs) const
+	{
+		return latitude < rhs.latitude || (latitude == rhs.latitude && longitude < rhs.longitude);
+	}
+
 };
 
 /// A geodesic "rectangle" (latitude range x longitude range.)

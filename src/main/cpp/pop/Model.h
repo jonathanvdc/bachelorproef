@@ -30,18 +30,27 @@ struct Model final
 
 	Model(
 	    int school_size, int school_cluster_size, int college_size, int college_cluster_size, int workplace_size,
-	    int community_size, double school_radius, int population_size, int city_ratio,
+	    int community_size, double search_radius, int population_size, int city_ratio,
 	    std::map<util::InclusiveRange<int>, double> town_distribution, util::InclusiveRange<int> school_age,
 	    util::InclusiveRange<int> college_age, double college_ratio, double college_commute_ratio,
 	    util::InclusiveRange<int> employable_age, double employed_ratio, double work_commute_ratio)
 	    : school_size(school_size), school_cluster_size(school_cluster_size), college_size(college_size),
 	      college_cluster_size(college_cluster_size), workplace_size(workplace_size),
-	      community_size(community_size), school_radius(school_radius), population_size(population_size),
+	      community_size(community_size), search_radius(search_radius), population_size(population_size),
 	      city_ratio(city_ratio), town_distribution(town_distribution), school_age(school_age),
 	      college_age(college_age), college_ratio(college_ratio), college_commute_ratio(college_commute_ratio),
 	      employable_age(employable_age), employed_ratio(employed_ratio), work_commute_ratio(work_commute_ratio)
 	{
 	}
+
+	// Is the given age in the mandatory education age range?
+	bool IsSchoolAge(int age) const { return school_age.Includes(age); }
+
+	// Is the given age in the college age range?
+	bool IsCollegeAge(int age) const { return college_age.Includes(age); }
+
+	// Is the given age in the employable age range?
+	bool IsEmployableAge(int age) const { return employable_age.Includes(age); }
 
 	// The size of a (non-college) school.
 	int school_size;
@@ -62,9 +71,10 @@ struct Model final
 	// The size of a primary or secondary community.
 	int community_size;
 
-	// The radius to look for (non-college) schools in. (When no schools are
-	// found in this radius, it is doubled repeatedly until one is found.)
-	double school_radius;
+	// The radius to look for geopositions in when allocating a Person to one.
+	// (When no geopositions are found in this radius, it is doubled
+	// repeatedly until one is found.)
+	double search_radius;
 
 	// The size of the entire population.
 	int population_size;

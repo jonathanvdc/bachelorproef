@@ -7,7 +7,7 @@
     <college_cluster_size>50</college_cluster_size>
     <workplace_size>50</workplace_size>
     <community_size>2000</community_size>
-    <school_radius>10.0</school_radius> <!-- in kilometers -->
+    <search_radius>10.0</search_radius> <!-- in kilometers -->
 
     <!-- Population/city/town parameters -->
     <population_size>100000</population_size>

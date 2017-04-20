@@ -19,7 +19,7 @@ ModelRef Model::Parse(const boost::property_tree::ptree& pt)
 		root.get<int>("college_cluster_size"),
 		root.get<int>("workplace_size"),
 		root.get<int>("community_size"),
-		root.get<double>("school_radius"),
+		root.get<double>("search_radius"),
 		root.get<int>("population_size"),
 		root.get<double>("city_ratio"),
 		town_distribution,
