@@ -30,9 +30,9 @@ set( SRC
 		RunSimulator.cpp
 )
 
-if( AWESOMIUM_FOUND )
-	set( SRC ${SRC} AwesomiumTests.cpp)
-endif()
+#if( AWESOMIUM_FOUND )
+#	set( SRC ${SRC} AwesomiumTests.cpp)
+#endif()
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
 target_link_libraries( ${EXEC}    ${LIBS} gtest pthread)

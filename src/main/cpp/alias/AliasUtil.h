@@ -1,25 +1,16 @@
-/*
- * AliasUtil.h
- *
- *  Created on: Mar 12, 2017
- *      Author: cedric
- */
-#include <exception>
+#ifndef ALIAS_UTIL_H_INCLUDED
+#define ALIAS_UTIL_H_INCLUDED
 
-#ifndef ALIASUTIL_H_INCLUDED
-#define ALIASUTIL_H_INCLUDED
+#include <exception>
 
 /**
  * An exception to throw when an empty vector is given to the Alias constructor
  */
 class EmptyProbabilityException : public std::exception
 {
-    public:
+public:
 	/// Returns the problem
-	virtual const char* what() const throw()
-	{
-		return "Tried to do Alias without chances.";
-	}
+	virtual const char* what() const throw() { return "Tried to do Alias without chances."; }
 };
 
-#endif /* ALIASUTIL_H_ */
+#endif

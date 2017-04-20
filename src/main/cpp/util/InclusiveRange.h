@@ -14,10 +14,9 @@ struct InclusiveRange
 
 	// Parse an inclusive range from a ptree with "minimum" and "maximum" keys.
 	// Throws `boost::property_tree::ptree_error` on invalid inputs.
-	void parse(const boost::property_tree::ptree& pt)
+	static InclusiveRange Parse(const boost::property_tree::ptree& pt)
 	{
-		minimum = pt.get<T>("minimum");
-		maximum = pt.get<T>("maximum");
+		return InclusiveRange(pt.get<T>("minimum"), pt.get<T>("maximum"));
 	}
 
 	// Return the average (central) value for this range. (The result will be truncated if T is an integral type.)

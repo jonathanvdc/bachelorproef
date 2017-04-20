@@ -12,7 +12,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with the software. If not, see <http://www.gnu.org/licenses/>.
  *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
+ *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
+ *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
  */
 
 /**
@@ -20,33 +21,134 @@
  * Header file for the core Population class
  */
 
-#include "Person.h"
-#include "core/Health.h"
-
+#include <functional>
+#include <map>
+#include <memory>
 #include <numeric>
 #include <vector>
+#include "Person.h"
+#include "core/Health.h"
+#include "util/Random.h"
 
 namespace stride {
 
 /**
  * Container for persons in population.
  */
-class Population : public std::vector<Person>
+class Population
 {
+private:
+	std::map<PersonId, std::shared_ptr<PersonData>> people;
+	PersonId max_person_id;
+
 public:
-	/// Get the cumulative number of cases.
-	unsigned int GetInfectedCount() const
+	/// An iterator implementation for Population containers.
+	class const_iterator final
 	{
-	        unsigned int total {0U};
-		for (const auto& p : *this) {
-		        const auto& h = p.GetHealth();
-		        total += h.IsInfected() || h.IsRecovered();
+	public:
+		typedef decltype(people)::const_iterator map_iterator;
+
+		const_iterator(const map_iterator& map_iterator_val) : map_iterator_val(map_iterator_val) {}
+		const_iterator(const const_iterator&) = default;
+		const_iterator& operator++()
+		{
+			++map_iterator_val;
+			return *this;
 		}
-		return total;
+		const_iterator& operator++(int)
+		{
+			map_iterator_val++;
+			return *this;
+		}
+		const_iterator& operator--()
+		{
+			--map_iterator_val;
+			return *this;
+		}
+		const_iterator& operator--(int)
+		{
+			map_iterator_val--;
+			return *this;
+		}
+		Person operator*() const { return Person(map_iterator_val->first, map_iterator_val->second); }
+		bool operator==(const const_iterator& other) const
+		{
+			return map_iterator_val == other.map_iterator_val;
+		}
+		bool operator!=(const const_iterator& other) const
+		{
+			return map_iterator_val != other.map_iterator_val;
+		}
+
+		friend void swap(const_iterator& lhs, const_iterator& rhs);
+
+	private:
+		map_iterator map_iterator_val;
+	};
+
+	typedef const_iterator iterator;
+
+	/// Inserts a new element into the container constructed in-place with the given args.
+	template <typename... TArgs>
+	const_iterator emplace(TArgs&&... args)
+	{
+		Person value(args...);
+		if (value.GetId() > max_person_id)
+			max_person_id = value.GetId();
+
+		return const_iterator(people.emplace(value.GetId(), value.GetData()).first);
 	}
 
+	/// Extracts the person with the given id from this population.
+	Person extract(PersonId id)
+	{
+		Person result(id, people.find(id)->second);
+		people.erase(id);
+		return result;
+	}
+
+	/// Gets the number of people in this population.
+	auto size() const -> decltype(people.size()) { return people.size(); }
+
+	/// Creates a constant iterator positioned at the first person in this population.
+	const_iterator begin() const { return const_iterator(people.begin()); }
+
+	/// Creates a constant iterator positioned just past the last person in this population.
+	const_iterator end() const { return const_iterator(people.end()); }
+
+	/// Gets the largest id for any person that has ever been in this population.
+	PersonId get_max_id() const { return max_person_id; }
+
+	/// Gets a list of pointers to 'count' unique, randomly chosen participants in the population.
+	std::vector<Person> get_random_persons(util::Random& rng, std::size_t count);
+
+	/// Gets a list of pointers to 'count' unique, randomly chosen participants in the population
+	/// which satisfy the given predicate.
+	std::vector<Person> get_random_persons(
+	    util::Random& rng, std::size_t count, std::function<bool(const Person&)> matches);
+
+	/// Get the cumulative number of cases.
+	unsigned int get_infected_count() const;
 };
 
+/// Swaps two population iterators.
+inline void swap(typename Population::const_iterator& lhs, typename Population::const_iterator& rhs)
+{
+	std::swap(lhs.map_iterator_val, rhs.map_iterator_val);
+}
+
+using PopulationRef = std::shared_ptr<const Population>;
+
 } // end_of_namespace
+
+namespace std {
+template <>
+struct iterator_traits<stride::Population::const_iterator>
+{
+	typedef const stride::Person value_type;
+	typedef value_type& reference;
+	typedef value_type* pointer;
+};
+}
 
 #endif // end of include guard

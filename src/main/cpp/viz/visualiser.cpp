@@ -3,11 +3,15 @@
     adapted from an example included in the SDK
 */
 
-#include "prototype.h"
+#include "visualiser.h"
 
 using namespace std;
 
-void VizProto::run(){
+namespace Stride {
+
+Visualiser::Visualiser(){}
+
+void Visualiser::run(){
     return;
 }
 

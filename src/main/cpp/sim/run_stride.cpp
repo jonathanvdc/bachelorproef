@@ -71,7 +71,7 @@ void StrideSimulatorResult::BeforeSimulatorStep(const Population&) { run_clock.S
 void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 {
 	run_clock.Stop();
-	auto infected_count = pop.GetInfectedCount();
+	auto infected_count = pop.get_infected_count();
 	cases.push_back(infected_count);
 	day++;
 
@@ -156,7 +156,10 @@ void run_stride(const MultiSimulationConfig& config)
 	// Create simulator.
 	// -----------------------------------------------------------------------------------------
 	Stopwatch<> total_clock("total_clock", true);
-	multiregion::ParallelSimulationManager<StrideSimulatorResult, multiregion::RegionId> sim_manager{num_threads};
+	// multiregion::SequentialSimulationManager<StrideSimulatorResult, multiregion::RegionId> sim_manager{
+	//     num_threads};
+	multiregion::ParallelSimulationManager<StrideSimulatorResult, multiregion::RegionId> sim_manager{
+	    config.region_models.size(), num_threads};
 
 	// Build all the simulations.
 	struct SimulationTuple
@@ -189,18 +192,13 @@ void run_stride(const MultiSimulationConfig& config)
 	}
 	cout << "Done building simulators. " << endl << endl;
 
-	// Start all the simulations.
-	for (const auto& sim_tuple : tasks) {
-		sim_tuple.sim_task->Start();
-	}
+	// -----------------------------------------------------------------------------------------
+	// Run the simulation.
+	// -----------------------------------------------------------------------------------------
+	sim_manager.WaitAll();
 
-	// Wait for the simulations to complete and generate output files for them.
+	// Generate output files for the simulations.
 	for (const auto& sim_tuple : tasks) {
-		// -----------------------------------------------------------------------------------------
-		// Run the simulation.
-		// -----------------------------------------------------------------------------------------
-		sim_tuple.sim_task->Wait();
-
 		// -----------------------------------------------------------------------------------------
 		// Generate output files
 		// -----------------------------------------------------------------------------------------
@@ -219,7 +217,7 @@ void run_stride(const MultiSimulationConfig& config)
 
 		// Persons
 		if (sim_tuple.sim_config.log_config->generate_person_file) {
-			auto pop = std::make_shared<Population>(sim_tuple.sim_task->GetPopulation());
+			auto pop = sim_tuple.sim_task->GetPopulation();
 			PersonFile person_file(sim_tuple.sim_output_prefix);
 			person_file.Print(pop);
 		}

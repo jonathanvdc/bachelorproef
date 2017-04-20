@@ -1,7 +1,4 @@
 #include <iostream>
-#include <Awesomium/WebCore.h>
-#include <Awesomium/BitmapSurface.h>
-#include <Awesomium/STLHelpers.h>
 #include <gtest/gtest.h>
 #include "sim/run_stride.h"
 
@@ -15,6 +12,11 @@ TEST(RunSimulator, RunSimulatorDefault)
 TEST(RunSimulator, RunSimulatorMultiregion)
 {
 	stride::run_stride(false, "../config/run_multiregion.xml");
+}
+
+TEST(RunSimulator, RunSimulatorTravel)
+{
+	stride::run_stride(false, "../config/run_travel_test.xml");
 }
 
 } // Tests

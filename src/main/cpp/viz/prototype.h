@@ -1,17 +1,13 @@
 
-#include <Awesomium/WebCore.h>
-#include <Awesomium/BitmapSurface.h>
-#include <Awesomium/STLHelpers.h>
 #include <unistd.h>
 #include <iostream>
 
 
 namespace Stride {
 
-class AwesomiumProto{
+class VizProto{
     public:
-    void main();
-    void Update(int);
+    void run();
 };
 
 }

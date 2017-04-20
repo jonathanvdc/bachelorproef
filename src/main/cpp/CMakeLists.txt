@@ -31,6 +31,8 @@ set(LIB_SRC
     core/Infector.cpp
     core/LogMode.cpp
 #---
+    geo/Profile.cpp
+#---
     multiregion/TravelModel.cpp
 #---
 	output/CasesFile.cpp
@@ -40,11 +42,13 @@ set(LIB_SRC
     output/CasesFile.cpp
     output/PersonFile.cpp
     output/SummaryFile.cpp
-#---	
+#---
     pop/Person.cpp
+    pop/Population.cpp
     pop/PopulationBuilder.cpp
-    pop/PopulationGenerator.cpp
-    pop/PopulationModel.cpp
+    pop/Generator.cpp
+    pop/Household.cpp
+    pop/Model.cpp
 #---
     sim/run_stride.cpp
     sim/SimulationConfig.cpp
@@ -56,11 +60,9 @@ set(LIB_SRC
     alias/Alias.cpp
 #---
     checkpoint/CheckPoint.cpp
+#---
+    viz/visualiser.cpp
 )
-
-if( AWESOMIUM_FOUND )
-    set(LIB_SRC ${LIB_SRC} viz/prototype.cpp)
-endif()
 
 set(MAIN_SRC
     sim/main.cpp
