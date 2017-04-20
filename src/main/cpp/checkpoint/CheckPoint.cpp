@@ -11,12 +11,14 @@
 #include <core/ClusterType.h>
 #include <core/Health.h>
 #include <pop/Person.h>
+#include <util/InstallDirs.h>
 
 #include <cstring>
 #include <fstream>
 #include <sstream>
 #include <streambuf>
 #include <string>
+#include <boost/filesystem.hpp>
 
 namespace stride {
 namespace checkpoint {
@@ -41,17 +43,16 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 {
 	std::shared_ptr<CommonSimulationConfig> common_config = conf.common_config;
 	std::shared_ptr<LogConfig> log_config = conf.log_config;
-	
+
 	hid_t group = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Gclose(group);
 
 	group = H5Gcreate2(m_file, "Population", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Gclose(group);
-	
-	
-	//WriteDisease(common_config->disease_config_file_name);
-	//WriteContactMatrix(common_config->contact_matrix_file_name);
-	
+
+	WriteDisease(common_config->disease_config_file_name);
+	WriteContactMatrix(common_config->contact_matrix_file_name);
+
 	group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims = 2;
 	hid_t dataspace = H5Screate_simple(1, &dims, NULL);
@@ -85,7 +86,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	H5Awrite(attr, H5T_NATIVE_DOUBLE, doubles);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
-	/*
+
 	dims = log_config->output_prefix.size();
 	dataspace = H5Screate_simple(1, &dims, NULL);
 	attr = H5Acreate2(group, "prefix", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
@@ -95,7 +96,6 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	H5Awrite(attr, H5T_NATIVE_CHAR, prefix);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
-	*/
 
 	H5Gclose(group);
 }
@@ -106,6 +106,7 @@ void CheckPoint::WriteConfig(const MultiSimulationConfig& conf)
 	auto singles = conf.GetSingleConfigs();
 	if (singles.size() == 1) {
 		WriteConfig(singles[0]);
+		return;
 	}
 	for (unsigned int i = 0; i < singles.size(); i++) {
 		std::stringstream ss;
@@ -196,14 +197,20 @@ void CheckPoint::WriteHolidays(const boost::property_tree::ptree& holidays_ptree
 
 void CheckPoint::WriteDisease(const std::string& filename)
 {
-
-	std::ifstream f(filename);
+	boost::filesystem::path path = util::InstallDirs::GetDataDir();
+	boost::filesystem::path filep(filename);
+	boost::filesystem::path fullpath = path / filep;
+	if (!is_regular_file(fullpath)) {
+		std::cout << "Error" << std::endl;
+	}
+	std::ifstream f(fullpath.string());
 	std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 	char dataset[str.size()];
 	strncpy(dataset, str.c_str(), sizeof(dataset));
 	dataset[sizeof(dataset) - 1] = 0;
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims[1] = {sizeof(dataset) - 1};
+	std::cout << sizeof(dataset - 1) << std::endl << std::endl;
 	hid_t dataspace = H5Screate_simple(1, dims, NULL);
 	hid_t dset = H5Dcreate2(group, "Disease", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset);
@@ -272,7 +279,13 @@ void CheckPoint::WritePopulation(const Population& pop)
 
 void CheckPoint::WriteContactMatrix(const std::string& filename)
 {
-	std::ifstream f(filename);
+	boost::filesystem::path path = util::InstallDirs::GetDataDir();
+	boost::filesystem::path filep(filename);
+	boost::filesystem::path fullpath = path / filep;
+	if (!is_regular_file(fullpath)) {
+		std::cout << "Error" << std::endl;
+	}
+	std::ifstream f(fullpath.string());
 	std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 	char dataset[str.size()];
 	strncpy(dataset, str.c_str(), sizeof(dataset));
