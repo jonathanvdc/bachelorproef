@@ -35,8 +35,6 @@
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
 
-#include "viz/prototype.h"
-
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -128,9 +126,6 @@ void verify_execution_environment()
 /// Run the stride simulator.
 void run_stride(const MultiSimulationConfig& config)
 {
-	Stride::VizProto p;
-	p.run();
-	
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
