@@ -21,13 +21,13 @@ class Atlas
 {
 public:
 	using Key = std::pair<std::size_t, ClusterType>;
-    using Map = std::map<Key, geo::GeoPosition>;
+	using Map = std::map<Key, geo::GeoPosition>;
 
-    Atlas() {}
-    Atlas(const Map& map) : map(map) {}
+	Atlas() {}
+	Atlas(const Map& map) : map(map) {}
 
-    /// Look up a cluster's position. If it isn't found, throw std::out_of_range.
-    const geo::GeoPosition& Lookup(const Key& key) { return map.at(key); }
+	/// Look up a cluster's position. If it isn't found, throw std::out_of_range.
+	const geo::GeoPosition& Lookup(const Key& key) { return map.at(key); }
 
 	/// Store a GeoPosition in the atlas.
 	auto Emplace(const Atlas::Key& key, const geo::GeoPosition& pos) -> decltype(Map().emplace(key, pos))
