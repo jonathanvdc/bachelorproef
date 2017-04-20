@@ -11,6 +11,7 @@
 #include <core/ClusterType.h>
 #include <core/Health.h>
 #include <pop/Person.h>
+#include <util/Errors.h>
 #include <util/InstallDirs.h>
 
 #include <cstring>
@@ -19,6 +20,8 @@
 #include <streambuf>
 #include <string>
 #include <boost/filesystem.hpp>
+
+using namespace std;
 
 namespace stride {
 namespace checkpoint {
@@ -201,7 +204,7 @@ void CheckPoint::WriteDisease(const std::string& filename)
 	boost::filesystem::path filep(filename);
 	boost::filesystem::path fullpath = path / filep;
 	if (!is_regular_file(fullpath)) {
-		std::cout << "Error" << std::endl;
+		FATAL_ERROR("Unable to find file: " + fullpath.string());
 	}
 	std::ifstream f(fullpath.string());
 	std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
@@ -210,7 +213,6 @@ void CheckPoint::WriteDisease(const std::string& filename)
 	dataset[sizeof(dataset) - 1] = 0;
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims[1] = {sizeof(dataset) - 1};
-	std::cout << sizeof(dataset - 1) << std::endl << std::endl;
 	hid_t dataspace = H5Screate_simple(1, dims, NULL);
 	hid_t dset = H5Dcreate2(group, "Disease", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset);
@@ -283,7 +285,7 @@ void CheckPoint::WriteContactMatrix(const std::string& filename)
 	boost::filesystem::path filep(filename);
 	boost::filesystem::path fullpath = path / filep;
 	if (!is_regular_file(fullpath)) {
-		std::cout << "Error" << std::endl;
+		FATAL_ERROR("Unable to find file: " + fullpath.string());
 	}
 	std::ifstream f(fullpath.string());
 	std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());

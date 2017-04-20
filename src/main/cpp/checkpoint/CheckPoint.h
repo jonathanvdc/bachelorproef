@@ -49,11 +49,6 @@ private:
 	/// Loads the holidays into a boost::property_tree::ptree.
 	std::unique_ptr<boost::property_tree::ptree> LoadHolidays();
 
-	/// Writes Contact Matrices.
-	void WriteMatrices(std::string&);
-
-	/// Loads Contact Matrices.
-
 	/// Writes the disease file.
 	void WriteDisease(const std::string&);
 
