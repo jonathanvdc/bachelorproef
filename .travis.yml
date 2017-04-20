@@ -68,6 +68,15 @@ before_install:
   # Set the BOOST_ROOT environment variable.
   - export BOOST_ROOT=$HOME/boost_1_63_0
   - export LD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/lib:$LD_LIBRARY_PATH
+  
+  # Build and install Poco
+  - wget https://pocoproject.org/releases/poco-1.7.8/poco-1.7.8p2.tar.gz
+  - gunzip poco-1.7.8p2.tar.gz
+  - tar -xf poco-1.7.8p2.tar
+  - cd poco-1.7.8p2
+  - ./configure
+  - make -s
+  - sudo make -s install
 
 script:
   # `make all; make test`, but fancier.

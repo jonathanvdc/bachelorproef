@@ -141,5 +141,9 @@ test_all: install_test
 test_all_no_x: install_test    
 	cd build/installed/bin/; \
 	./gtester  --gtest_filter=-*_x  --gtest_output=xml:gtester_all_no_x.xml
+
+test_only_x: install_test    
+	cd build/installed/bin/; \
+	./gtester  --gtest_filter=*_x  --gtest_output=xml:gtester_only_x.xml
 	
 #############################################################################
