@@ -10,12 +10,14 @@
 #include "Population.h"
 
 #include "alias/Alias.h"
+#include "core/Cluster.h"
 #include "core/ClusterType.h"
 #include "util/Errors.h"
 
 namespace stride {
 namespace population {
 
+/// Calculate the sum of all the values of a map.
 template <typename K, typename V>
 V SumValues(const std::map<K, V>& map)
 {
@@ -31,10 +33,10 @@ Population Generator::Generate()
 	// Types used in this method.
 	using stride::geo::GeoPosition;
 	using GeoBRNG = alias::BiasedRandomValueGenerator<GeoPosition>;
-	using SchoolClusterID = std::size_t;
-	using WorkClusterID = std::size_t;
-	using CommunityClusterID = std::size_t;
-	using HouseholdClusterID = std::size_t;
+	using SchoolClusterID = ClusterID;
+	using WorkClusterID = ClusterID;
+	using CommunityClusterID = ClusterID;
+	using HouseholdClusterID = ClusterID;
 	using School = std::vector<SchoolClusterID>;
 	using College = School;
 
@@ -227,7 +229,7 @@ Population Generator::Generate()
 	{
 		console->debug("Generating people...");
 		HouseholdClusterID household_id = 1;
-		std::size_t person_id = 1;
+		ClusterID person_id = 1;
 
 		for (const auto& p : households) {
 			const auto& home = p.first;
