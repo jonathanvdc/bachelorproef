@@ -83,7 +83,7 @@ bool queryServer(VizProto* p){
 namespace Tests {
 
 // Tests that make use of X (the linux window system) need to end in '_x'
-TEST(Visualiser_x, VisualiserRunPrototype_x)
+TEST(Visualiser, VisualiserRunPrototype)
 {
     VizProto* p = new VizProto();
     thread serverThread(runServer, p);
