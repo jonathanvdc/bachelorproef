@@ -76,7 +76,7 @@ before_install:
   - cd poco-1.7.8p2
   - ./configure --prefix=/usr/local
   - make -s
-  - sudo make -s install --prefix=/usr/local
+  - sudo make -s install
   - cd ..
 
 script:
