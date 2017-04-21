@@ -247,8 +247,7 @@ Population Generator::Generate()
 					} else if (
 					    model->IsEmployableAge(age) && random.Chance(model->employed_ratio)) {
 						// TODO: technically, commuters should commute to workplaces in big
-						// cities, not
-						// just random ones.
+						// cities, not just random ones.
 						bool commutes = random.Chance(model->work_commute_ratio);
 						work_id = random.Sample(
 						    FindLocal(commutes ? work_geo_brng.Next() : home, workplaces));
