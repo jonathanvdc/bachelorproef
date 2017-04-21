@@ -3,9 +3,7 @@
 #include <thread>
 #include <iterator>
 
-#include "viz/prototype.h"
-#include "pop/Population.h"
-#include "sim/Simulator.h"
+#include "http/prototype.h"
 
 #include "Poco/Net/HTTPClientSession.h"
 #include "Poco/Net/NetException.h"
@@ -82,8 +80,7 @@ bool queryServer(VizProto* p){
 
 namespace Tests {
 
-// Tests that make use of X (the linux window system) need to end in '_x'
-TEST(Visualiser, VisualiserRunPrototype)
+TEST(HTTP, ServerPrototype)
 {
     VizProto* p = new VizProto();
     thread serverThread(runServer, p);

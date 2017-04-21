@@ -82,6 +82,6 @@ before_install:
 script:
   # `make all; make test`, but fancier.
   - make all
-  - make test_all_no_x
+  - make test_all
   # Pretty-print the test results.
   - mono gtest-report-tools/gtest-report-print.exe --ansi build/installed/bin/gtester_all_no_x.xml

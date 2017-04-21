@@ -39,11 +39,6 @@ add_custom_target( run_ctest_all
 	COMMAND ctest --tests-regex all --exclude-regex no_x ${CTEST_VERBOSE_OPTION} 
 				-O ${TESTS_DIR}/ctests_all.txt
 )
-add_custom_target( run_ctest_all_no_x
-	COMMAND ctest --tests-regex all_no_x ${CTEST_VERBOSE_OPTION} 
-				-O ${TESTS_DIR}/ctests_all_no_x.txt
-)
-
 #============================================================================
 # Config related to using Google test (src in resources/lib/gtest) for cpp
 #============================================================================

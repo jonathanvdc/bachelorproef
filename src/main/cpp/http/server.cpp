@@ -1,8 +1,9 @@
-#include "visualiser.h"
+#include "server.h"
 
 using namespace std;
 
-namespace Stride {
+namespace Stride{
+namespace HTTP{
 
 Visualiser::Visualiser(){}
 
@@ -10,4 +11,5 @@ void Visualiser::run(){
     return;
 }
 
+}
 }
