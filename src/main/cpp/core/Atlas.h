@@ -27,7 +27,7 @@ public:
 	Atlas(const Map& map) : map(map) {}
 
 	/// Look up a cluster's position. If it isn't found, throw std::out_of_range.
-	const geo::GeoPosition& Lookup(const Key& key) { return map.at(key); }
+	const geo::GeoPosition& Lookup(const Key& key) const { return map.at(key); }
 
 	/// Store a GeoPosition in the atlas.
 	auto Emplace(const Atlas::Key& key, const geo::GeoPosition& pos) -> decltype(Map().emplace(key, pos))
