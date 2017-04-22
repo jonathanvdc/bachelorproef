@@ -58,9 +58,14 @@ set(LIB_SRC
 	util/InstallDirs.cpp
 #---
     alias/Alias.cpp
-#---
-    viz/visualiser.cpp
 )
+
+if( Poco_FOUND )
+    set(LIB_SRC ${LIB_SRC} 
+        http/prototype.cpp
+        http/server.cpp
+    )
+endif()
 
 set(MAIN_SRC
     sim/main.cpp
