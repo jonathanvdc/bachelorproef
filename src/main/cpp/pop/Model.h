@@ -6,6 +6,7 @@
  * Header file for the population model class
  */
 
+#include <map>
 #include <memory>
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
@@ -13,23 +14,6 @@
 
 namespace stride {
 namespace population {
-
-// The proportion of the generated population that *doesn't* get placed in a
-// city is randomly allocated among a set of randomly-placed towns. The number
-// of inhabitants such a town should have is determined by a list of "town
-// ranges". For example, such a list might describe that
-//
-//     * 30% of the generated towns have 100-1000 inhabitants; and
-//     * 70% of the generated towns have 1000-5000 inhabitants.
-//
-// A TownRange represents one entry in this list: a population range, paired
-// with a probability of this range being picked when generating a town.
-//
-struct TownRange final
-{
-	util::InclusiveRange<int> population;
-	double probability;
-};
 
 struct Model;
 using ModelRef = std::shared_ptr<const Model>;
@@ -46,18 +30,27 @@ struct Model final
 
 	Model(
 	    int school_size, int school_cluster_size, int college_size, int college_cluster_size, int workplace_size,
-	    int community_size, double school_radius, int population_size, int city_ratio,
-	    std::vector<TownRange> town_ranges, util::InclusiveRange<int> school_age,
+	    int community_size, double search_radius, int population_size, int city_ratio,
+	    std::map<util::InclusiveRange<int>, double> town_distribution, util::InclusiveRange<int> school_age,
 	    util::InclusiveRange<int> college_age, double college_ratio, double college_commute_ratio,
 	    util::InclusiveRange<int> employable_age, double employed_ratio, double work_commute_ratio)
 	    : school_size(school_size), school_cluster_size(school_cluster_size), college_size(college_size),
 	      college_cluster_size(college_cluster_size), workplace_size(workplace_size),
-	      community_size(community_size), school_radius(school_radius), population_size(population_size),
-	      city_ratio(city_ratio), town_ranges(town_ranges), school_age(school_age), college_age(college_age),
-	      college_ratio(college_ratio), college_commute_ratio(college_commute_ratio),
+	      community_size(community_size), search_radius(search_radius), population_size(population_size),
+	      city_ratio(city_ratio), town_distribution(town_distribution), school_age(school_age),
+	      college_age(college_age), college_ratio(college_ratio), college_commute_ratio(college_commute_ratio),
 	      employable_age(employable_age), employed_ratio(employed_ratio), work_commute_ratio(work_commute_ratio)
 	{
 	}
+
+	// Is the given age in the mandatory education age range?
+	bool IsSchoolAge(int age) const { return school_age.Includes(age); }
+
+	// Is the given age in the college age range?
+	bool IsCollegeAge(int age) const { return college_age.Includes(age); }
+
+	// Is the given age in the employable age range?
+	bool IsEmployableAge(int age) const { return employable_age.Includes(age); }
 
 	// The size of a (non-college) school.
 	int school_size;
@@ -78,9 +71,10 @@ struct Model final
 	// The size of a primary or secondary community.
 	int community_size;
 
-	// The radius to look for (non-college) schools in. (When no schools are
-	// found in this radius, it is doubled repeatedly until one is found.)
-	double school_radius;
+	// The radius to look for geopositions in when allocating a Person to one.
+	// (When no geopositions are found in this radius, it is doubled
+	// repeatedly until one is found.)
+	double search_radius;
 
 	// The size of the entire population.
 	int population_size;
@@ -89,8 +83,10 @@ struct Model final
 	// lives in randomly-generated towns.)
 	double city_ratio;
 
-	// The ranges for town generation.
-	std::vector<TownRange> town_ranges;
+	// The distribution for town population ranges. Every entry ([a, b], p)
+	// in this map represents a statement of the form: with relative
+	// probability p, a generated town has between a and b inhabitants.
+	std::map<util::InclusiveRange<int>, double> town_distribution;
 
 	// The age range for compulsory lower education.
 	util::InclusiveRange<int> school_age;

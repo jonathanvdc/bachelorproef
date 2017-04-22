@@ -2,24 +2,25 @@
 #define GEO_CITY_H_INCLUDED
 
 #include <string>
+#include "GeoPosition.h"
 
 namespace stride {
 namespace geo {
 
-using CityID = int;
-using ProvinceID = int;
+using CityId = int;
+using ProvinceId = int;
 
 /// A city, as part of a geodistribution profile.
 struct City final
 {
 	/// The city's ID.
-	CityID id;
+	CityId id;
 
 	/// The city's name.
 	std::string name;
 
 	/// The ID of the province this city is in.
-	ProvinceID province_id;
+	ProvinceId province_id;
 
 	/// The relative population count of this city. Profile-wide, these add up to 1.
 	double relative_population;
@@ -30,11 +31,8 @@ struct City final
 	/// The Cartesian y-coordinate of this city.
 	double y_coord;
 
-	/// The geographic latitude of this city.
-	double latitude;
-
-	/// The geographic longitude of this city.
-	double longitude;
+	/// The geographic position of this city.
+	GeoPosition geo_position;
 };
 
 } // namespace

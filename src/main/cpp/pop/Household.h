@@ -13,10 +13,14 @@ namespace stride {
 namespace population {
 
 // A list of ages.
-using Household = std::vector<int>;
+struct ReferenceHousehold final
+{
+	ReferenceHousehold() {}
+	std::vector<int> ages;
+};
 
 // Parse a reference households file.
-std::vector<Household> ParseReferenceHouseholds(const boost::property_tree::ptree& pt);
+std::vector<ReferenceHousehold> ParseReferenceHouseholds(const boost::property_tree::ptree& pt);
 
 } // namespace population
 } // namespace stride
