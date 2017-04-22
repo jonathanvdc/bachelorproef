@@ -53,6 +53,7 @@ matrix:
             - clang-3.8
             - clang++-3.8
             - libstdc++-6-dev
+            - libiomp-dev
 
 before_install:
   - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
