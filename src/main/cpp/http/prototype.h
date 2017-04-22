@@ -82,7 +82,7 @@ private:
 class VizProto
 {
 public:
-	VizProto(){};
+	VizProto();
 	void run();
 	void kill();
 

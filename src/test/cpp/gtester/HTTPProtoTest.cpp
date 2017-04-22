@@ -94,6 +94,7 @@ TEST(HTTP, ServerPrototype)
 	// results in a few seconds waiting after the tests complete running...
 	// TODO: figure out how to kill this thing
 	serverThread.detach();
+	delete p;
 	return;
 }
 

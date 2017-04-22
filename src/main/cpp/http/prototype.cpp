@@ -93,6 +93,8 @@ int HTTPHelloWorldServer::main(const std::vector<std::string>& args)
 
 // VizProto
 
+VizProto::VizProto(){}
+
 void VizProto::run()
 {
 	char* argc[] = {"stride"};
