@@ -76,7 +76,7 @@ before_install:
   - cd poco-1.7.8p2
   - ./configure
   - make -s
-  - ./configure --prefix=/usr/local
+  - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
   - sudo make -s install
   - cd ..
 
