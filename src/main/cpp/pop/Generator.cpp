@@ -33,11 +33,11 @@ Population Generator::Generate()
 	// Types used in this method.
 	using stride::geo::GeoPosition;
 	using GeoBRNG = alias::BiasedRandomValueGenerator<GeoPosition>;
-	using SchoolClusterID = ClusterID;
-	using WorkClusterID = ClusterID;
-	using CommunityClusterID = ClusterID;
-	using HouseholdClusterID = ClusterID;
-	using School = std::vector<SchoolClusterID>;
+	using SchoolClusterId = ClusterId;
+	using WorkClusterId = ClusterId;
+	using CommunityClusterId = ClusterId;
+	using HouseholdClusterId = ClusterId;
+	using School = std::vector<SchoolClusterId>;
 	using College = School;
 
 	// Logging.
@@ -58,9 +58,9 @@ Population Generator::Generate()
 	std::map<GeoPosition, std::vector<ReferenceHousehold>> households;
 	std::map<GeoPosition, std::vector<School>> schools;
 	std::map<GeoPosition, College> colleges;
-	std::map<GeoPosition, std::vector<WorkClusterID>> workplaces;
-	std::map<GeoPosition, std::vector<CommunityClusterID>> primary_communities;
-	std::map<GeoPosition, std::vector<CommunityClusterID>> secondary_communities;
+	std::map<GeoPosition, std::vector<WorkClusterId>> workplaces;
+	std::map<GeoPosition, std::vector<CommunityClusterId>> primary_communities;
+	std::map<GeoPosition, std::vector<CommunityClusterId>> secondary_communities;
 
 	// A map from GeoPositions to # of people to generate there.
 	std::map<GeoPosition, int> population_distribution;
@@ -132,7 +132,7 @@ Population Generator::Generate()
 	std::map<GeoPosition, double> college_distribution;
 	{
 		console->debug("Generating schools...");
-		SchoolClusterID school_cluster_id = 1;
+		SchoolClusterId school_cluster_id = 1;
 		int schools_created = 0;
 
 		auto school_geo_brng = GeoBRNG::CreateDistribution(school_population_distribution, random);
@@ -181,7 +181,7 @@ Population Generator::Generate()
 	// Generate workplaces.
 	{
 		console->debug("Generating workplaces...");
-		WorkClusterID work_cluster_id = 1;
+		WorkClusterId work_cluster_id = 1;
 		int workplaces_created = 0;
 
 		n = SumValues(work_population_distribution);
@@ -196,7 +196,7 @@ Population Generator::Generate()
 	// Generate communities.
 	{
 		console->debug("Generating primary communities...");
-		CommunityClusterID primary_community_cluster_id = 1;
+		CommunityClusterId primary_community_cluster_id = 1;
 		int primary_communities_created = 0;
 
 		n = SumValues(population_distribution);
@@ -212,7 +212,7 @@ Population Generator::Generate()
 	// Generate secondary communities.
 	{
 		console->debug("Generating secondary communities...");
-		CommunityClusterID secondary_community_cluster_id = 1;
+		CommunityClusterId secondary_community_cluster_id = 1;
 		int secondary_communities_created = 0;
 
 		n = SumValues(population_distribution);
@@ -228,8 +228,8 @@ Population Generator::Generate()
 	// Generate people.
 	{
 		console->debug("Generating people...");
-		HouseholdClusterID household_id = 1;
-		ClusterID person_id = 1;
+		HouseholdClusterId household_id = 1;
+		ClusterId person_id = 1;
 
 		for (const auto& p : households) {
 			const auto& home = p.first;
@@ -274,30 +274,30 @@ Population Generator::Generate()
 	// Store all the cluster's locations in the population's atlas.
 	{
 		console->debug("Creating atlas of cluster locations...");
-		HouseholdClusterID household_id = 1;
+		HouseholdClusterId household_id = 1;
 		for (const auto& p : households)
 			for (auto it = p.second.begin(); it != p.second.end(); ++it)
 				population.AtlasEmplace({household_id++, ClusterType::Household}, p.first);
 
 		for (const auto& p : schools)
 			for (const auto& school : p.second)
-				for (SchoolClusterID id : school)
+				for (SchoolClusterId id : school)
 					population.AtlasEmplace({id, ClusterType::School}, p.first);
 
 		for (const auto& p : colleges)
-			for (SchoolClusterID id : p.second)
+			for (SchoolClusterId id : p.second)
 				population.AtlasEmplace({id, ClusterType::School}, p.first);
 
 		for (const auto& p : workplaces)
-			for (WorkClusterID id : p.second)
+			for (WorkClusterId id : p.second)
 				population.AtlasEmplace({id, ClusterType::Work}, p.first);
 
 		for (const auto& p : primary_communities)
-			for (CommunityClusterID id : p.second)
+			for (CommunityClusterId id : p.second)
 				population.AtlasEmplace({id, ClusterType::PrimaryCommunity}, p.first);
 
 		for (const auto& p : secondary_communities)
-			for (CommunityClusterID id : p.second)
+			for (CommunityClusterId id : p.second)
 				population.AtlasEmplace({id, ClusterType::SecondaryCommunity}, p.first);
 	}
 

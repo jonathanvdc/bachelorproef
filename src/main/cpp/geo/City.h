@@ -7,20 +7,20 @@
 namespace stride {
 namespace geo {
 
-using CityID = int;
-using ProvinceID = int;
+using CityId = int;
+using ProvinceId = int;
 
 /// A city, as part of a geodistribution profile.
 struct City final
 {
 	/// The city's ID.
-	CityID id;
+	CityId id;
 
 	/// The city's name.
 	std::string name;
 
 	/// The ID of the province this city is in.
-	ProvinceID province_id;
+	ProvinceId province_id;
 
 	/// The relative population count of this city. Profile-wide, these add up to 1.
 	double relative_population;

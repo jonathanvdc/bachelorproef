@@ -90,22 +90,6 @@ private:
 		std::advance(it, random(map.size()));
 		return it->second;
 	}
-
-	/*
-	int num_schools;
-	int num_works;
-	int num_communities;
-	int people_generated;
-	unsigned int household_id;
-
-	void GenerateHousehold(Population& population, int size);
-	void GeneratePerson(Population& population, int age);
-	unsigned int SchoolID(int age);
-	unsigned int WorkID(int age);
-	unsigned int CommunityID();
-
-	std::vector<int> SampleApart(InclusiveRange<int> range, InclusiveRange<int> gap, std::size_t count);
-	*/
 };
 
 } // namespace population

@@ -36,7 +36,7 @@ namespace stride {
 class RngHandler;
 class Calendar;
 
-using ClusterID = std::size_t;
+using ClusterId = std::size_t;
 
 /**
  * Represents a location for social contacts, an group of people.
@@ -45,7 +45,7 @@ class Cluster
 {
 public:
 	/// Constructor
-	Cluster(ClusterID cluster_id, ClusterType cluster_type);
+	Cluster(ClusterId cluster_id, ClusterType cluster_type);
 
 	/// Add the given Person to the Cluster.
 	void AddPerson(const Person& p);
@@ -81,7 +81,7 @@ private:
 	void UpdateMemberPresence();
 
 private:
-	ClusterID                                 m_cluster_id;     ///< The ID of the Cluster (for logging purposes).
+	ClusterId                                 m_cluster_id;     ///< The ID of the Cluster (for logging purposes).
 	ClusterType                               m_cluster_type;   ///< The type of the Cluster (for logging purposes).
 	std::size_t                               m_index_immune;   ///< Index of the first immune member in the Cluster.
 	std::vector<std::pair<Person, bool>>      m_members;        ///< Container with pointers to Cluster members.

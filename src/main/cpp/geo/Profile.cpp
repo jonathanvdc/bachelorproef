@@ -30,9 +30,9 @@ ProfileRef Profile::Parse(std::ifstream& csv_file)
 		double latitude = util::StringUtils::FromString<double>(tokens[6]);
 		double longitude = util::StringUtils::FromString<double>(tokens[7]);
 		cities.push_back(
-		    {util::StringUtils::FromString<CityID>(tokens[0]),     // city_id
+		    {util::StringUtils::FromString<CityId>(tokens[0]),     // city_id
 		     util::StringUtils::Trim(tokens[1]),		   // city_name
-		     util::StringUtils::FromString<ProvinceID>(tokens[2]), // province
+		     util::StringUtils::FromString<ProvinceId>(tokens[2]), // province
 		     util::StringUtils::FromString<double>(tokens[3]),     // population
 		     util::StringUtils::FromString<double>(tokens[4]),     // x_coord
 		     util::StringUtils::FromString<double>(tokens[5]),     // y_coord
