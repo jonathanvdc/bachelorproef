@@ -28,7 +28,7 @@ public:
 
 	/// Return the simulation area, which is defined as the the latitude/longitude
 	/// bounding geodesic rectangle of all the cities.
-	const GeoRectangle GetSimulationArea() const { return m_simulation_area; }
+	const GeoRectangle& GetSimulationArea() const { return m_simulation_area; }
 
 	static ProfileRef Parse(std::ifstream& csv_file);
 
