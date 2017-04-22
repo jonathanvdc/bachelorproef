@@ -84,6 +84,9 @@ endif
 ifeq ($(BUILD_DIR),)
 	BUILD_DIR = ./build
 endif
+ifeq ($(PARALLEL_MAKE),)
+	PARALLEL_MAKE = 4
+endif
 
 #============================================================================
 #   Targets
