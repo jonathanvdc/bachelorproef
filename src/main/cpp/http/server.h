@@ -1,20 +1,19 @@
 #ifndef STRIDEHTTPSERVER_H_INCLUDED
 #define STRIDEHTTPSERVER_H_INCLUDED
 
-#include <unistd.h>
 #include <iostream>
-
+#include <unistd.h>
 
 namespace Stride {
 namespace HTTP {
 
-class Visualiser{
-    public:
-    Visualiser();
-    void run();
+class Visualiser
+{
+public:
+	Visualiser();
+	void run();
 };
-
 }
 }
 
-#endif  // end of include guard
+#endif // end of include guard

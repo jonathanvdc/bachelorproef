@@ -2,14 +2,11 @@
 
 using namespace std;
 
-namespace Stride{
-namespace HTTP{
+namespace Stride {
+namespace HTTP {
 
-Visualiser::Visualiser(){}
+Visualiser::Visualiser() {}
 
-void Visualiser::run(){
-    return;
-}
-
+void Visualiser::run() { return; }
 }
 }
