@@ -85,4 +85,4 @@ script:
   - make all
   - make test_all
   # Pretty-print the test results.
-  - mono gtest-report-tools/gtest-report-print.exe --ansi build/installed/bin/gtester_all.xml
+  - mono gtest-report-tools/gtest-report-print.exe --ansi build/installed/tests/gtester_all.xml
