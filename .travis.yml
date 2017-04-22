@@ -74,8 +74,9 @@ before_install:
   - gunzip poco-1.7.8p2.tar.gz
   - tar -xf poco-1.7.8p2.tar
   - cd poco-1.7.8p2
-  - ./configure --prefix=/usr/local
+  - ./configure
   - make -s
+  - ./configure --prefix=/usr/local
   - sudo make -s install
   - cd ..
 
