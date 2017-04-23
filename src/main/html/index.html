@@ -6,20 +6,38 @@
 
 
 <body>
+    <div> STATUS: <span class="status">Offline</span> </div>
     <div> DATA: <span class="data"></span> </div>
 </body>
 
 <script>
 
-$(document).ready(function () {
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+async function tryConnecting(){
     var request = new XMLHttpRequest();
-    request.open('GET', 'http://127.0.0.1:5731/API/Gimme/');
+    request.open('GET', 'http://127.0.0.1:5731/API/Online');
     request.responseType = 'json';
+
     request.onload = function () {
         console.log(request.response);
-        $('.data').text(request.response.data);
+        $('.status').text("Online!");
     };
+
+    request.onerror = async function() {
+        console.log("Unable to connect");
+        await sleep(500);
+        tryConnecting();
+    }
+
     request.send();
+}
+
+$(document).ready(function () {
+    // Keep checking
+    tryConnecting();
 });
 
 
