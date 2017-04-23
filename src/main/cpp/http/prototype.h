@@ -47,9 +47,6 @@ class HelloWorldRequestHandler : public HTTPRequestHandler
 public:
 	HelloWorldRequestHandler();
 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response);
-
-private:
-	std::string _format;
 };
 
 class HelloWorldRequestHandlerFactory : public HTTPRequestHandlerFactory
@@ -65,12 +62,6 @@ public:
 	HTTPHelloWorldServer();
 	~HTTPHelloWorldServer();
 	int run(unsigned short port);
-
-protected:
-	void initialize(Application& self);
-
-private:
-	bool _helpRequested;
 };
 
 class VizProto

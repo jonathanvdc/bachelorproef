@@ -12,16 +12,12 @@ HelloWorldRequestHandler::HelloWorldRequestHandler() {}
 
 void HelloWorldRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
-	Application& app = Application::instance();
-	app.logger().information("Request from " + request.clientAddress().toString());
-
 	response.setChunkedTransferEncoding(true);
 	response.setContentType("text/html");
 
 	std::ostream& ostr = response.send();
 	ostr << "Hello, World!";
 }
-
 // HelloWorldRequestHandlerFactory
 
 HelloWorldRequestHandlerFactory::HelloWorldRequestHandlerFactory() {}
@@ -36,27 +32,19 @@ HTTPRequestHandler* HelloWorldRequestHandlerFactory::createRequestHandler(const 
 
 // HTTPHelloWorldServer
 
-HTTPHelloWorldServer::HTTPHelloWorldServer() : _helpRequested(false) {}
+HTTPHelloWorldServer::HTTPHelloWorldServer() {}
 HTTPHelloWorldServer::~HTTPHelloWorldServer() {}
-
-void HTTPHelloWorldServer::initialize(Application& self)
-{
-	loadConfiguration();
-	ServerApplication::initialize(self);
-}
 
 int HTTPHelloWorldServer::run(unsigned short port)
 {
-	if (!_helpRequested) {
-		ServerSocket svs(port);
-		HelloWorldRequestHandlerFactory* factory = new HelloWorldRequestHandlerFactory();
-		HTTPServerParams* params = new HTTPServerParams;
-		HTTPServer srv(factory, svs, params);
-		srv.start();
-		waitForTerminationRequest();
-		srv.stop();
-		delete factory;
-	}
+	ServerSocket svs(port);
+	HelloWorldRequestHandlerFactory* factory = new HelloWorldRequestHandlerFactory();
+	HTTPServerParams* params = new HTTPServerParams;
+	HTTPServer srv(factory, svs, params);
+	srv.start();
+	waitForTerminationRequest();
+	srv.stop();
+	delete factory;
 	return Application::EXIT_OK;
 }
 
