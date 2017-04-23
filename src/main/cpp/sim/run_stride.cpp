@@ -64,6 +64,7 @@ using namespace checkpoint;
 
 std::mutex StrideSimulatorResult::io_mutex;
 
+//temporary "global" for demo and testing purposes
 CheckPoint *cp;
 
 /// Performs an action just before a simulator step is performed.

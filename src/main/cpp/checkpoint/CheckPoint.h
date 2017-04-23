@@ -20,8 +20,9 @@ namespace checkpoint {
 class CheckPoint
 {
 public:
-	/// Constructor The string is the file for the checkpoints.
-	CheckPoint(const std::string&);
+	/// Constructor The string is the file for the checkpoints. The unsigned int is the interval between
+	/// checkpoints. An interval of 0 makes no checkpoints.
+	CheckPoint(const std::string&, unsigned int interval = 5);
 
 	/// Loads a checkpoint from the file in the constructor. The unsigned int tells which checkpoint to use.
 	void LoadCheckPoint(unsigned int);
@@ -82,6 +83,8 @@ private:
 
 	hid_t m_file;		      //< current hdf5 workspace
 	const std::string m_filename; //< filename
+	unsigned int m_limit;	 //< the amount of steps before a checkpoint
+	unsigned int m_lastCh = 0;    //< the amoint of steps since the last checkpoint
 };
 
 } /* namespace checkpoint */

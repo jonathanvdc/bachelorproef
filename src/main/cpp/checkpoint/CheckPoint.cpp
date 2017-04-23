@@ -27,7 +27,7 @@ using namespace std;
 namespace stride {
 namespace checkpoint {
 
-CheckPoint::CheckPoint(const std::string& filename) : m_filename(filename) {}
+CheckPoint::CheckPoint(const std::string& filename, unsigned int interval) : m_filename(filename), m_limit(interval) {}
 
 void CheckPoint::CreateFile()
 {
@@ -166,26 +166,36 @@ void CheckPoint::WriteHolidays(const std::string& filename, const std::string& g
 }
 
 void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
-{	
+{
 	htri_t exist = H5Lexists(m_file, "Population", H5P_DEFAULT);
 	if (exist <= 0) {
 		hid_t temp = H5Gcreate2(m_file, "Population", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		H5Gclose(temp);
 	}
-	unsigned int ** dset;
-	dset = new unsigned int * [pop.size()];
+	hsize_t entries = 5 + NumOfClusterTypes();
+
+	hsize_t dims[2] = {pop.size(), entries};
+	hid_t dataspace = H5Screate_simple(2, dims, NULL);
+	std::string spot = "Population/" + std::to_string(date);
+
+	hid_t chunkP = H5Pcreate(H5P_DATASET_CREATE);
+	hsize_t chunkDims[2] = {1, entries};
+	H5Pset_chunk(chunkP, 2, chunkDims);
+
+	hid_t dataset = H5Dcreate2(m_file, spot.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, chunkP, H5P_DEFAULT);
+
+	chunkP = H5Pcreate(H5P_DATASET_XFER);
 	unsigned int i = 0;
 	for (const auto& p : pop) {
-		unsigned int *data;
-		data = new unsigned int [5+NumOfClusterTypes() - 1];
+		unsigned int data[1][entries];
 		// Basic Data
-		data[0] = p.GetId();
-		data[1] = p.GetAge();
-		data[2] = p.GetGender();
-		data[3] = p.IsParticipatingInSurvey();
+		data[0][0] = p.GetId();
+		data[0][1] = p.GetAge();
+		data[0][2] = p.GetGender();
+		data[0][3] = p.IsParticipatingInSurvey();
 
 		// Health data
-		data[4] = (unsigned int) p.GetHealth().GetHealthStatus();
+		data[0][4] = (unsigned int)p.GetHealth().GetHealthStatus();
 
 		// Cluster data
 		unsigned int k = 5;
@@ -194,24 +204,19 @@ void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
 			if (ToString(temp) == "Null") {
 				continue;
 			}
-			data[k] = p.GetClusterId(temp);
+			data[0][k] = p.GetClusterId(temp);
 			k++;
 		}
-		dset[i] = data;
+
+		hsize_t start[2] = {i, 0};
+		hsize_t count[2] = {1, entries};
+		hid_t chunkspace = H5Screate_simple(2, count, NULL);
+		H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
+		H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, chunkP, data);
 		i++;
+		H5Sclose(chunkspace);
 	}
 
-	hsize_t dims[2] = {pop.size(), 5 + NumOfClusterTypes()};
-	hid_t dataspace = H5Screate_simple(2, dims, NULL);
-	std::string spot = "Population/"+std::to_string(date);
-	hid_t dataset =
-	    H5Dcreate2(m_file, spot.c_str(), H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dset);
-	std::cout<<"written"<<std::endl;
-	for(unsigned int i = 0; i < pop.size(); i++){
-		delete [] dset[i];
-	}
-	delete [] dset;
 	H5Dclose(dataset);
 	H5Sclose(dataspace);
 }
@@ -234,15 +239,21 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 	hsize_t dims[1] = {dataset.size() - 1};
 	hid_t dataspace = H5Screate_simple(1, dims, NULL);
 	hid_t dset =
-	    H5Dcreate2(group, setname.c_str(), H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	    H5Dcreate2(group, setname.c_str(), H5T_NATIVE_CHAR, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(*dataset.begin()));
 	H5Dclose(dset);
 	H5Sclose(dataspace);
 	H5Gclose(group);
 }
 
-void CheckPoint::SaveCheckPoint(const Population& pop, unsigned int time){
-	WritePopulation(pop,time);
+void CheckPoint::SaveCheckPoint(const Population& pop, unsigned int time)
+{
+	// TODO: make it multiregion
+	m_lastCh++;
+	if (m_lastCh == m_limit) {
+		m_lastCh = 0;
+		WritePopulation(pop, time);
+	}
 }
 
 } /* namespace checkpoint */
