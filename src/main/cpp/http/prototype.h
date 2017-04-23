@@ -45,7 +45,7 @@ namespace Stride {
 class HelloWorldRequestHandler : public HTTPRequestHandler
 {
 public:
-	HelloWorldRequestHandler(const std::string& format);
+	HelloWorldRequestHandler();
 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response);
 
 private:
@@ -55,11 +55,8 @@ private:
 class HelloWorldRequestHandlerFactory : public HTTPRequestHandlerFactory
 {
 public:
-	HelloWorldRequestHandlerFactory(const std::string& format);
+	HelloWorldRequestHandlerFactory();
 	HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request);
-
-private:
-	std::string _format;
 };
 
 class HTTPHelloWorldServer : public Poco::Util::ServerApplication
@@ -67,13 +64,10 @@ class HTTPHelloWorldServer : public Poco::Util::ServerApplication
 public:
 	HTTPHelloWorldServer();
 	~HTTPHelloWorldServer();
+	int run(unsigned short port);
 
 protected:
 	void initialize(Application& self);
-	void uninitialize();
-	void defineOptions(OptionSet& options);
-	void handleHelp(const std::string& name, const std::string& value);
-	int main(const std::vector<std::string>& args);
 
 private:
 	bool _helpRequested;
@@ -83,7 +77,7 @@ class VizProto
 {
 public:
 	VizProto();
-	void run();
+	void run(unsigned short port);
 	void kill();
 
 private:

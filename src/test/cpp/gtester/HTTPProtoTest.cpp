@@ -30,10 +30,10 @@ using Poco::Path;
 using Poco::URI;
 using Poco::Exception;
 
-void runServer(VizProto* p)
+void runServer(VizProto* p, unsigned short port)
 {
-	cout << "Running server!" << endl;
-	p->run();
+	cout << "Running server on port: " << port << endl;
+	p->run(port);
 }
 
 string doRequest(
@@ -49,18 +49,18 @@ string doRequest(
 	return string(istreambuf_iterator<char>(rs), {});
 }
 
-bool queryServer(VizProto* p)
+bool queryServer(VizProto* p, unsigned short port)
 {
 	this_thread::sleep_for(2s);
 	cout << "Querying server." << endl;
 
-	URI uri("http://127.0.0.1:9980/");
+	URI uri("http://127.0.0.1");
 	string path(uri.getPathAndQuery());
 	if (path.empty())
 		path = "/";
 
 	try {
-		HTTPClientSession session(uri.getHost(), uri.getPort());
+		HTTPClientSession session(uri.getHost(), port);
 		HTTPRequest request(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
 		HTTPResponse response;
 		try {
@@ -75,9 +75,8 @@ bool queryServer(VizProto* p)
 		cout << "Connection refused!" << endl;
 		return false;
 	}
-
-	// Kill the server thread, causes the entire test to crash without any warning, so don't...
-	// p->kill();
+	// Terminate the server.
+	p->kill();
 }
 
 namespace Tests {
@@ -85,14 +84,12 @@ namespace Tests {
 TEST(HTTP, ServerPrototype)
 {
 	VizProto* p = new VizProto();
-	thread serverThread(runServer, p);
+	thread serverThread(runServer, p, 1234);
 	// thread clientThread(queryServer, p);
 
-	EXPECT_TRUE(queryServer(p));
+	EXPECT_TRUE(queryServer(p, 1234));
 
-	//...detach the thread, since I can find no good way of killing it humanely
-	// results in a few seconds waiting after the tests complete running...
-	// TODO: figure out how to kill this thing
+	// Detach the thread, it dies after a while, once the HTTP Server fully shuts down
 	serverThread.detach();
 	delete p;
 	return;
