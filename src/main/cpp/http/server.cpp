@@ -33,7 +33,7 @@ HTTPRequestHandler* StrideRequestHandlerFactory::createRequestHandler(const HTTP
 	cout << endl;
 	if (url[1] == string("API"))
 	{
-		if (url.size() > 2 && url[2] == "Gimme")
+		if (url.size() > 2 && url[2] == "Online")
 			return new DataRequestHandler();
 		return new NotFoundRequestHandler();
 	}
