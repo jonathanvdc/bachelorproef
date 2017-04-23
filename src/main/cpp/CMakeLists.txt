@@ -64,6 +64,7 @@ if( Poco_FOUND )
     set(LIB_SRC ${LIB_SRC} 
         http/prototype.cpp
         http/server.cpp
+        http/handlers.cpp
     )
 endif()
 
