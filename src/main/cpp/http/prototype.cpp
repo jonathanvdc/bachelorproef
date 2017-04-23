@@ -8,15 +8,12 @@ using namespace Stride;
 
 // HelloWorldRequestHandler
 
-HelloWorldRequestHandler::HelloWorldRequestHandler(const std::string& format) : _format(format) {}
+HelloWorldRequestHandler::HelloWorldRequestHandler() {}
 
 void HelloWorldRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
 	Application& app = Application::instance();
 	app.logger().information("Request from " + request.clientAddress().toString());
-
-	Timestamp now;
-	std::string dt(DateTimeFormatter::format(now, _format));
 
 	response.setChunkedTransferEncoding(true);
 	response.setContentType("text/html");
@@ -27,12 +24,12 @@ void HelloWorldRequestHandler::handleRequest(HTTPServerRequest& request, HTTPSer
 
 // HelloWorldRequestHandlerFactory
 
-HelloWorldRequestHandlerFactory::HelloWorldRequestHandlerFactory(const std::string& format) : _format(format) {}
+HelloWorldRequestHandlerFactory::HelloWorldRequestHandlerFactory() {}
 
 HTTPRequestHandler* HelloWorldRequestHandlerFactory::createRequestHandler(const HTTPServerRequest& request)
 {
 	if (request.getURI() == "/")
-		return new HelloWorldRequestHandler(_format);
+		return new HelloWorldRequestHandler();
 	else
 		return nullptr;
 }
@@ -48,39 +45,11 @@ void HTTPHelloWorldServer::initialize(Application& self)
 	ServerApplication::initialize(self);
 }
 
-void HTTPHelloWorldServer::uninitialize() { ServerApplication::uninitialize(); }
-
-void HTTPHelloWorldServer::defineOptions(OptionSet& options)
-{
-	ServerApplication::defineOptions(options);
-
-	options.addOption(
-	    Option("help", "h", "display argument help information")
-		.required(false)
-		.repeatable(false)
-		.callback(OptionCallback<HTTPHelloWorldServer>(this, &HTTPHelloWorldServer::handleHelp)));
-}
-
-void HTTPHelloWorldServer::handleHelp(const std::string& name, const std::string& value)
-{
-	HelpFormatter helpFormatter(options());
-	helpFormatter.setCommand(commandName());
-	helpFormatter.setUsage("OPTIONS");
-	helpFormatter.setHeader("A web server that posts \"Hello, world!\".");
-	helpFormatter.format(std::cout);
-	stopOptionsProcessing();
-	_helpRequested = true;
-}
-
-int HTTPHelloWorldServer::main(const std::vector<std::string>& args)
+int HTTPHelloWorldServer::run(unsigned short port)
 {
 	if (!_helpRequested) {
-		unsigned short port = (unsigned short)config().getInt("HTTPHelloWorldServer.port", 9980);
-
-		std::string format(config().getString("HTTPHelloWorldServer.format", DateTimeFormat::SORTABLE_FORMAT));
-
 		ServerSocket svs(port);
-		HelloWorldRequestHandlerFactory* factory = new HelloWorldRequestHandlerFactory(format);
+		HelloWorldRequestHandlerFactory* factory = new HelloWorldRequestHandlerFactory();
 		HTTPServerParams* params = new HTTPServerParams;
 		HTTPServer srv(factory, svs, params);
 		srv.start();
@@ -93,12 +62,8 @@ int HTTPHelloWorldServer::main(const std::vector<std::string>& args)
 
 // VizProto
 
-VizProto::VizProto(){}
+VizProto::VizProto() {}
 
-void VizProto::run()
-{
-	char* argc[] = {"stride"};
-	app.run(1, argc);
-}
+void VizProto::run(unsigned short port) { app.run(port); }
 
 void VizProto::kill() { app.terminate(); }
