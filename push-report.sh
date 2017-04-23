@@ -25,6 +25,7 @@ cd ..
 
 # Copy our gtest report to out/gtest-reports/CONTRIBUTOR-BRANCH-COMPILER.xml
 REPO_OWNER_NAME=$(echo $TRAVIS_REPO_SLUG | cut -d '/' -f1)
+mkdir -p out/gtest-reports
 cp build/installed/bin/gtester_all.xml out/gtest-reports/${REPO_OWNER_NAME}-${TRAVIS_BRANCH}-${CC_COMPILER_NAME}.xml
 
 # Create a table comparison of all reports.
