@@ -13,11 +13,11 @@
 
 $(document).ready(function () {
     var request = new XMLHttpRequest();
-    request.open('GET', 'http://127.0.0.1:5731/API/');
+    request.open('GET', 'http://127.0.0.1:5731/API/Gimme/');
     request.responseType = 'json';
     request.onload = function () {
         console.log(request.response);
-        $('.data').text(request.response.message);
+        $('.data').text(request.response.data);
     };
     request.send();
 });
