@@ -1,25 +1,10 @@
 #include "Poco/JSON/Object.h"
 #include "server.h"
+#include "handlers.h"
 
 using namespace std;
 
 namespace Stride {
-
-// NotFoundRequestHandler
-
-NotFoundRequestHandler::NotFoundRequestHandler() {}
-
-void NotFoundRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
-{
-	response.setChunkedTransferEncoding(true);
-	response.setContentType("json");
-
-	Poco::JSON::Object out;
-	out.set("message", "Not found!");
-
-	std::ostream& ostr = response.send();
-	out.stringify(ostr);
-}
 
 // StrideRequestHandlerFactory
 
