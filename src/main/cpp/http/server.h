@@ -4,13 +4,13 @@
 #include <iostream>
 #include <unistd.h>
 #include "Poco/Exception.h"
-#include "Poco/Net/ServerSocket.h"
 #include "Poco/Net/HTTPRequestHandler.h"
 #include "Poco/Net/HTTPRequestHandlerFactory.h"
 #include "Poco/Net/HTTPServer.h"
 #include "Poco/Net/HTTPServerParams.h"
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPServerResponse.h"
+#include "Poco/Net/ServerSocket.h"
 #include "Poco/ThreadPool.h"
 #include "Poco/Util/ServerApplication.h"
 
@@ -32,7 +32,7 @@ public:
 	HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request);
 
 private:
-	// Put our window into the simulator here
+	// (Put our window into the simulator here)
 };
 
 class StrideServer : public Poco::Util::ServerApplication
@@ -41,7 +41,8 @@ public:
 	StrideServer();
 	~StrideServer();
 
-	// Run the Stride Server at localhost:`port`
+	// Run the server on the given port.
+	// The server runs on the current thread until it is terminated.
 	int run(unsigned short port);
 };
 
