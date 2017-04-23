@@ -76,7 +76,7 @@ include_directories( SYSTEM ${CMAKE_HOME_DIRECTORY}/main/resources/lib/trng-4.15
 #----------------------------------------------------------------------------
 # Poco
 #----------------------------------------------------------------------------
-find_package( Poco COMPONENTS Net Util)
+find_package( Poco COMPONENTS Net Util JSON)
 if( Poco_FOUND )
     include_directories( SYSTEM ${Poco_Net_INCLUDE_DIRS} )
     set( LIBS ${LIBS} ${Poco_LIBRARIES} )
