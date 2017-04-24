@@ -1,3 +1,35 @@
+
+Skip to content
+This repository
+
+    Pull requests
+    Issues
+    Gist
+
+    @cekefun
+
+4
+0
+
+    4
+
+flu-plus-plus/bachelorproef
+Code
+Issues 7
+Pull requests 0
+Projects 1
+Wiki
+Pulse
+Graphs
+Settings
+bachelorproef/src/main/cpp/CMakeLists.txt
+2a86274 3 days ago
+@Sibert-Aerts Sibert-Aerts Rename viz, remove references to X
+@jonathanvdc
+@Sibert-Aerts
+@lynn
+@cekefun
+94 lines (87 sloc) 2.81 KB
 #############################################################################
 #  This file is part of the Stride software.
 #  It is free software: you can redistribute it and/or modify
@@ -35,9 +67,9 @@ set(LIB_SRC
 #---
     multiregion/TravelModel.cpp
 #---
-	output/CasesFile.cpp
-	output/PersonFile.cpp
-	output/SummaryFile.cpp
+    output/CasesFile.cpp
+    output/PersonFile.cpp
+    output/SummaryFile.cpp
 #---
     output/CasesFile.cpp
     output/PersonFile.cpp
@@ -55,13 +87,9 @@ set(LIB_SRC
     sim/Simulator.cpp
     sim/SimulatorBuilder.cpp
 #---
-	util/InstallDirs.cpp
+    util/InstallDirs.cpp
 #---
     alias/Alias.cpp
-#---
-    checkpoint/CheckPoint.cpp
-#---
-    viz/visualiser.cpp
 )
 
 if( Poco_FOUND )
@@ -95,3 +123,8 @@ unset(LIB_SRC)
 unset(MAIN_SRC)
 
 #############################################################################
+
+    Contact GitHub API Training Shop Blog About 
+
+    © 2017 GitHub, Inc. Terms Privacy Security Status Help 
+
