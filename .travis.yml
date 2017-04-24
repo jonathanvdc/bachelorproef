@@ -63,7 +63,7 @@ before_install:
   # Print the CMake version.
   - cmake --version
   # Grab the gtest report pretty printer.
-  - wget https://github.com/jonathanvdc/gtest-report-tools/releases/download/v0.1.1/gtest-report-tools.zip
+  - wget https://github.com/jonathanvdc/gtest-report-tools/releases/download/v0.1.2/gtest-report-tools.zip
   - unzip gtest-report-tools.zip -d gtest-report-tools
   # Build and install boost.
   - echo "using mpi ;" > ~/site-config.jam
