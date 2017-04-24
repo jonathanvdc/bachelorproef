@@ -4,7 +4,6 @@
 #include <string>
 #include "GeoPosition.h"
 
-
 namespace stride {
 namespace geo {
 
