@@ -32,7 +32,8 @@ cp build/installed/bin/gtester_all.xml out/gtest-reports/${REPO_OWNER_NAME}-${TR
 
 # Create a table comparison of all reports.
 echo "Regenerating comparison table..."
-mono gtest-report-tools/gtest-report-html.exe out/gtest-reports/*.xml --css=gtest-report-tools/resources/simple-style.css | tee out/gtest-reports/comparison.html
+mono gtest-report-tools/gtest-report-html.exe out/gtest-reports/*.xml --css=gtest-report-tools/resources/simple-style.css \
+    > out/gtest-reports/comparison.html
 
 # Now let's go have some fun with the cloned repo
 cd out
