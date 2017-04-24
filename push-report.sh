@@ -44,7 +44,7 @@ git config user.email "flu-plus-plus-flubot@outlook.com"
 git add .
 
 # If there are no changes to the compiled out (e.g. this is a README update) then just bail.
-if ! git diff --cached --exit-code; then
+if git diff --cached --exit-code; then
     echo "No changes to the output on this push; exiting."
     exit 0
 fi
