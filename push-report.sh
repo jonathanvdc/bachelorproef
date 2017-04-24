@@ -53,7 +53,7 @@ fi
 # Commit the "changes", i.e. the new version.
 # The delta will show diffs between new and old versions.
 echo "Committing changes..."
-git commit -m "Deploy to GitHub Pages: ${SHA}"
+git commit -m "Deploy comparison table to github.io: ${SHA}"
 
 # Now that we're all set up, we can push.
 echo "Pushing commit..."
