@@ -41,8 +41,10 @@ echo "Configuring user..."
 git config user.name "FluBot"
 git config user.email "flu-plus-plus-flubot@outlook.com"
 
+git add .
+
 # If there are no changes to the compiled out (e.g. this is a README update) then just bail.
-if [ -z `git diff --exit-code` ]; then
+if [ -z `git diff --cached --exit-code` ]; then
     echo "No changes to the output on this push; exiting."
     exit 0
 fi
@@ -50,7 +52,6 @@ fi
 # Commit the "changes", i.e. the new version.
 # The delta will show diffs between new and old versions.
 echo "Committing changes..."
-git add .
 git commit -m "Deploy to GitHub Pages: ${SHA}"
 
 # Now that we're all set up, we can push.
