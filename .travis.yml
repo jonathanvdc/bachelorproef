@@ -20,6 +20,9 @@ addons:
   apt:
     packages: &default_packages
       - mono-runtime
+      - libmono-corlib2.0-cil
+      - libmono-corlib4.0-cil
+      - libmono-corlib4.5-cil
       - libmono-system-xml4.0-cil
       - libmono-system-core4.0-cil
       - cmake
