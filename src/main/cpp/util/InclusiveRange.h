@@ -25,6 +25,12 @@ struct InclusiveRange
 	// Is the given argument contained in this range?
 	bool Includes(T x) const { return minimum <= x && x <= maximum; }
 
+	// Lexicographic ordering.
+	bool operator<(const InclusiveRange<T>& rhs) const
+	{
+		return minimum < rhs.minimum || (minimum == rhs.minimum && maximum < rhs.maximum);
+	}
+
 	T minimum;
 	T maximum;
 };

@@ -74,6 +74,15 @@ include_directories( SYSTEM ${CMAKE_HOME_DIRECTORY}/main/resources/lib/trng-4.15
 #set( LIBS ${LIBS} trng )
 
 #----------------------------------------------------------------------------
+# Poco
+#----------------------------------------------------------------------------
+find_package( Poco COMPONENTS Net Util)
+if( Poco_FOUND )
+    include_directories( SYSTEM ${Poco_Net_INCLUDE_DIRS} )
+    set( LIBS ${LIBS} ${Poco_LIBRARIES} )
+endif()
+
+#----------------------------------------------------------------------------
 # MPI compile flags
 #----------------------------------------------------------------------------
 find_package( MPI )

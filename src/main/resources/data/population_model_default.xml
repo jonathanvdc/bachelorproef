@@ -7,12 +7,12 @@
     <college_cluster_size>50</college_cluster_size>
     <workplace_size>50</workplace_size>
     <community_size>2000</community_size>
-    <school_radius>10.0</school_radius> <!-- in kilometers -->
+    <search_radius>10.0</search_radius> <!-- in kilometers -->
 
     <!-- Population/city/town parameters -->
     <population_size>100000</population_size>
     <city_ratio>0.6</city_ratio>
-    <town_ranges>
+    <town_distribution>
         <town_range>
             <minimum>100</minimum>
             <maximum>1000</maximum>
@@ -23,7 +23,7 @@
             <maximum>10000</maximum>
             <probability>0.4</probability>
         </town_range>
-    </town_ranges>
+    </town_distribution>
 
     <!-- School-work profile -->
     <school_age><minimum>3</minimum><maximum>18</maximum></school_age>

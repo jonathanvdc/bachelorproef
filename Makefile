@@ -84,6 +84,9 @@ endif
 ifeq ($(BUILD_DIR),)
 	BUILD_DIR = ./build
 endif
+ifeq ($(PARALLEL_MAKE),)
+	PARALLEL_MAKE = 4
+endif
 
 #============================================================================
 #   Targets
@@ -137,9 +140,5 @@ test installcheck: install_test
 
 test_all: install_test
 	$(MAKE) -C $(BUILD_DIR)/test --no-print-directory run_ctest_all
-
-test_all_no_x: install_test    
-	cd build/installed/bin/; \
-	./gtester  --gtest_filter=-*_x  --gtest_output=xml:gtester_all_no_x.xml
 	
 #############################################################################
