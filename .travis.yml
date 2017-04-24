@@ -80,7 +80,6 @@ before_install:
   - sudo make -s install
   - cd ..
 
-
 script:
   # `make all; make test`, but fancier.
   - make all
