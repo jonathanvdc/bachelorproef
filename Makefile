@@ -139,6 +139,7 @@ test installcheck: install_test
 	$(MAKE) -C $(BUILD_DIR)/test --no-print-directory run_ctest
 
 test_all: install_test
-	$(MAKE) -C $(BUILD_DIR)/test --no-print-directory run_ctest_all
+	cd build/installed/bin/; \
+	./gtester --gtest_output=xml:gtester_all.xml
 	
 #############################################################################
