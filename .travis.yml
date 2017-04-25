@@ -13,12 +13,16 @@ cache:
     # Cache the boost install
     - $HOME/boost_1_63_0/boost
     - $HOME/boost_1_63_0/stage/lib
+    - $HOME/poco
 
 # We're going to need cmake, MPI and the mono runtime.
 addons:
   apt:
     packages: &default_packages
       - mono-runtime
+      - libmono-corlib2.0-cil
+      - libmono-corlib4.0-cil
+      - libmono-corlib4.5-cil
       - libmono-system-xml4.0-cil
       - libmono-system-core4.0-cil
       - cmake
@@ -56,10 +60,14 @@ matrix:
 
 before_install:
   - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
+  # Print the C++ compiler version.
+  - $CXX --version
   # Print the CMake version.
   - cmake --version
+  # Print the Mono version number.
+  - mono --version
   # Grab the gtest report pretty printer.
-  - wget https://github.com/jonathanvdc/gtest-report-tools/releases/download/v0.1.1/gtest-report-tools.zip
+  - wget https://github.com/jonathanvdc/gtest-report-tools/releases/download/v0.1.3/gtest-report-tools.zip
   - unzip gtest-report-tools.zip -d gtest-report-tools
   # Build and install boost.
   - echo "using mpi ;" > ~/site-config.jam
@@ -70,19 +78,21 @@ before_install:
   - export LD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/lib:$LD_LIBRARY_PATH
   
   # Build and install Poco
+  - mkdir -p $HOME/poco
   - wget https://pocoproject.org/releases/poco-1.7.8/poco-1.7.8p2.tar.gz
-  - gunzip poco-1.7.8p2.tar.gz
-  - tar -xf poco-1.7.8p2.tar
-  - cd poco-1.7.8p2
+  - tar -xzf poco-1.7.8p2.tar.gz -C $HOME/poco
+  - pushd $HOME/poco/poco-1.7.8p2
   - ./configure
   - make -s
   - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
   - sudo make -s install
-  - cd ..
+  - popd
 
 script:
   # `make all; make test`, but fancier.
   - make all
   - make test_all
+  # Push the report to our website.
+  - ./push-report.sh
   # Pretty-print the test results.
-  - mono gtest-report-tools/gtest-report-print.exe --ansi build/installed/tests/gtester_all.xml
+  - mono gtest-report-tools/gtest-report-print.exe --ansi build/installed/bin/gtester_all.xml
