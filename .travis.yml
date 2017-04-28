@@ -49,17 +49,17 @@ matrix:
             - g++-6
 
     - compiler: clang
-      env: CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0'
+      env: CC_COMPILER_NAME='clang-3.8' CXX_COMPILER_NAME='clang++-3.8'
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-4.0
+            - llvm-toolchain-trusty
             - mono
           packages:
             - *default_packages
-            - clang-4.0
-            - clang++-4.0
+            - clang-3.8
+            - clang++-3.8
             - libstdc++-6-dev
             - libiomp-dev
 
