@@ -64,7 +64,7 @@ class LOG_POLICY
 {
 public:
         static void Execute(const shared_ptr<spdlog::logger>& logger, const Person& p1, const Person& p2,
-                ClusterType cluster_type, const shared_ptr<const Calendar>& environ)
+                ClusterType cluster_type, const CalendarRef& environ)
         {}
 };
 
@@ -76,7 +76,7 @@ class LOG_POLICY<LogMode::Transmissions>
 {
 public:
         static void Execute(const shared_ptr<spdlog::logger>& logger, const Person& p1, const Person& p2,
-                ClusterType cluster_type, const shared_ptr<const Calendar>& environ)
+                ClusterType cluster_type, const CalendarRef& environ)
         {
                 logger->info("[TRAN] {} {} {} {}",
                        p1.GetId(), p2.GetId(), ToString(cluster_type), environ->GetSimulationDay());
@@ -91,7 +91,7 @@ class LOG_POLICY<LogMode::Contacts>
 {
 public:
         static void Execute(const shared_ptr<spdlog::logger>& logger, const Person& p1, const Person& p2,
-                ClusterType cluster_type, const shared_ptr<const Calendar>& calendar)
+                ClusterType cluster_type, const CalendarRef& calendar)
         {
                 unsigned int home                 = (cluster_type == ClusterType::Household);
                 unsigned int work                 = (cluster_type == ClusterType::Work);
@@ -112,7 +112,7 @@ public:
 template<LogMode log_level, bool track_index_case>
 void Infector<log_level, track_index_case>::Execute(
         Cluster& cluster, DiseaseProfile disease_profile,
-        RngHandler& contact_handler, const shared_ptr<const Calendar>& calendar,
+        RngHandler& contact_handler, const CalendarRef& calendar,
         const std::shared_ptr<spdlog::logger>& log)
 {
         // check if the cluster has infected members and sort
@@ -160,7 +160,7 @@ void Infector<log_level, track_index_case>::Execute(
 template<bool track_index_case>
 void Infector<LogMode::Contacts, track_index_case>::Execute(
         Cluster& cluster, DiseaseProfile disease_profile,
-        RngHandler& contact_handler, const shared_ptr<const Calendar>& calendar,
+        RngHandler& contact_handler, const CalendarRef& calendar,
         const std::shared_ptr<spdlog::logger>& log)
 {
         cluster.UpdateMemberPresence();
