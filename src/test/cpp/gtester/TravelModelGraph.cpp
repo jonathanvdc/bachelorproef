@@ -39,9 +39,9 @@ TEST(TravelModelGraph, VerifyBoostGraph)
 	auto boost_graph = first_region_travel_model->ToBoostGraph();
 	using BoostGraph = decltype(boost_graph);
 	ASSERT_EQ(boost_graph[0].region_id, 0u);
-	ASSERT_DOUBLE_EQ(boost_graph[0].passenger_fraction, 0.01);
+	ASSERT_DOUBLE_EQ(boost_graph[0].passenger_fraction, 2.0);
 	ASSERT_EQ(boost_graph[1].region_id, 1u);
-	ASSERT_DOUBLE_EQ(boost_graph[1].passenger_fraction, 0.01);
+	ASSERT_DOUBLE_EQ(boost_graph[1].passenger_fraction, 1.0);
 
 	boost::property_map<BoostGraph, boost::edge_weight_t>::type edge_weight_map =
 	    get(boost::edge_weight_t(), boost_graph);
@@ -50,7 +50,7 @@ TEST(TravelModelGraph, VerifyBoostGraph)
 
 	ASSERT_TRUE(route1.second);
 	ASSERT_TRUE(route2.second);
-	ASSERT_DOUBLE_EQ(edge_weight_map[route1.first], 2.0);
+	ASSERT_DOUBLE_EQ(edge_weight_map[route1.first], 3.0);
 	ASSERT_DOUBLE_EQ(edge_weight_map[route2.first], 1.0);
 }
 
