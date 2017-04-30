@@ -139,34 +139,38 @@ void Simulator::RemovePersonFromClusters(const Person& person)
 
 PersonId Simulator::GeneratePersonId()
 {
-	// TODO: recycle ids
-	return m_population->get_max_id() + 1;
+	if (m_unused_person_ids.empty()) {
+		return m_population->get_max_id() + 1;
+	} else {
+		auto result = m_unused_person_ids.front();
+		m_unused_person_ids.pop();
+		return result;
+	}
 }
 
 std::size_t Simulator::GenerateHousehold()
 {
-	// TODO: recycle households
-	auto household_id = m_households.size();
-	m_households.emplace_back(household_id, ClusterType::Household);
+	std::size_t household_id;
+	if (m_unused_households.empty()) {
+		household_id = m_households.size();
+		m_households.emplace_back(household_id, ClusterType::Household);
+	} else {
+		household_id = m_unused_households.front();
+		m_unused_households.pop();
+	}
 	return household_id;
 }
 
-void Simulator::RecyclePersonId(PersonId id)
-{
-	// TODO: recycle ids
-}
+void Simulator::RecyclePersonId(PersonId id) { m_unused_person_ids.push(id); }
 
-void Simulator::RecycleHousehold(std::size_t household_id)
-{
-	// TODO: recycle households
-}
+void Simulator::RecycleHousehold(std::size_t household_id) { m_unused_households.push(household_id); }
 
 void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 {
 	for (const auto& returning_expat : input.expatriates) {
 		// Return the expatriate to this region's population.
-		const auto& home_expat = *m_population->emplace(
-			m_expatriates.ExtractExpatriate(returning_expat.GetId()));
+		const auto& home_expat =
+		    *m_population->emplace(m_expatriates.ExtractExpatriate(returning_expat.GetId()));
 
 		// Update the expatriate's stats.
 		home_expat.GetHealth() = returning_expat.GetHealth();
