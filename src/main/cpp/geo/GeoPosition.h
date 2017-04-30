@@ -116,24 +116,6 @@ private:
 	GeoBox box;
 };
 
-/*
-/// A geodesic "rectangle" (latitude range x longitude range.)
-struct GeoRectangle final
-{
-	/// The minimum geographic latitude of this are.
-	double min_latitude;
-
-	/// The maximum geographic latitude of this are.
-	double max_latitude;
-
-	/// The minimum geographic longitude of this are.
-	double min_longitude;
-
-	/// The maximum geographic longitude of this are.
-	double max_longitude;
-};
-*/
-
 } // namespace
 } // namespace
 
