@@ -165,18 +165,17 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 {
 	for (const auto& returning_expat : input.expatriates) {
 		// Return the expatriate to this region's population.
-		auto returned_expat = *m_population->emplace(returning_expat);
+		const auto& home_expat = *m_population->emplace(
+			m_expatriates.ExtractExpatriate(returning_expat.GetId()));
 
-		auto home_expat = m_expatriates.ExtractExpatriate(returning_expat.GetId());
-
-		// Update the returning expatriate's clusters.
-		for (std::size_t i = 0; i < NumOfClusterTypes(); i++) {
-			auto cluster_type = static_cast<ClusterType>(i);
-			returned_expat.GetClusterId(cluster_type) = home_expat.GetClusterId(cluster_type);
+		// Update the expatriate's stats.
+		home_expat.GetHealth() = returning_expat.GetHealth();
+		if (returning_expat.IsParticipatingInSurvey()) {
+			home_expat.ParticipateInSurvey();
 		}
 
 		// Add the returning expatriate to their clusters.
-		AddPersonToClusters(returned_expat);
+		AddPersonToClusters(home_expat);
 	}
 
 	for (const auto& visitor : input.visitors) {
