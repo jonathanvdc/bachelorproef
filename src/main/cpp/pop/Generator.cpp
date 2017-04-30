@@ -301,6 +301,21 @@ Population Generator::Generate()
 				population.AtlasEmplace({id, ClusterType::SecondaryCommunity}, p.first);
 	}
 
+	/* {
+		console->debug("Writing .SVG file of towns and cities...");
+		std::ofstream svg_file;
+		svg_file.open("towns_and_cities.svg");
+		svg_file << "<svg width=\"500\" height=\"400\" viewBox=\"2 49 5 3\" xmlns=\"http://www.w3.org/2000/svg\">\n";
+		for (const auto& p : population_distribution) {
+			console->debug("{} {} {}", p.first.longitude, p.first.longitude, p.second);
+			svg_file << "  <circle cx=\"" << p.first.longitude
+				<< "\" cy=\"" << (101.0 - p.first.latitude)
+				<< "\" r=\"" << (std::log(p.second) * 0.005) << "\"/>\n";
+		}
+		svg_file << "</svg>\n";
+		svg_file.close();
+	} */
+
 	console->debug("Done!");
 	return population;
 }

@@ -60,9 +60,7 @@ private:
 	/// Generate a random GeoPosition in the simulation area.
 	geo::GeoPosition GetRandomGeoPosition()
 	{
-		const auto area = geo_profile->GetSimulationArea();
-		return geo::GeoPosition{random(area.min_latitude, area.max_latitude),
-					random(area.min_longitude, area.max_longitude)};
+		return geo_profile->GetRandomGeoPosition(random);
 	}
 
 	/// Find a random GeoPosition map value close to the given origin point.
