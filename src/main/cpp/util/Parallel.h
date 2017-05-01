@@ -111,7 +111,7 @@ const char* const parallelization_library_name = "OpenMP";
 /// Tells if a parallelization library is in use.
 const bool using_parallelization_library = true;
 
-    inline unsigned int get_number_of_threads()
+inline unsigned int get_number_of_threads()
 {
 	unsigned int num_threads;
 #pragma omp parallel
