@@ -77,8 +77,8 @@ void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 	     << "     Done, infected count: " << setw(10) << infected_count << endl;
 }
 
-/// Prints and returns the number of threads provided by OpenMP.
-unsigned int print_number_of_omp_threads()
+/// Prints and returns the number of threads.
+unsigned int print_number_of_threads()
 {
 	unsigned int num_threads = stride::util::parallel::get_number_of_threads();
 	if (stride::util::parallel::using_parallelization_library) {
@@ -117,7 +117,7 @@ void run_stride(const MultiSimulationConfig& config)
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
-	unsigned int num_threads = print_number_of_omp_threads();
+	unsigned int num_threads = print_number_of_threads();
 
 	// -----------------------------------------------------------------------------------------
 	// Set output path prefix.
