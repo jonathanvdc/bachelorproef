@@ -84,7 +84,7 @@ unsigned int print_number_of_threads()
 	if (stride::util::parallel::using_parallelization_library) {
 		cout << "Using " << stride::util::parallel::parallelization_library_name << " threads: " << num_threads << endl;
 	} else {
-		cout << "Not using threads for parallization." << endl;
+		cout << "Not using threads for parallelization." << endl;
 	}
 	return num_threads;
 }
