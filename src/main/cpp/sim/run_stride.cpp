@@ -29,7 +29,6 @@
 #include "output/SummaryFile.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
-#include "util/ConfigInfo.h"
 #include "util/Errors.h"
 #include "util/InstallDirs.h"
 #include "util/Parallel.h"
@@ -82,10 +81,10 @@ void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 unsigned int print_number_of_omp_threads()
 {
 	unsigned int num_threads = stride::util::parallel::get_number_of_threads();
-	if (ConfigInfo::HaveOpenMP()) {
-		cout << "Using OpenMP threads: " << num_threads << endl;
+	if (stride::util::parallel::using_parallelization_library) {
+		cout << "Using " << stride::util::parallel::parallelization_library_name << " threads: " << num_threads << endl;
 	} else {
-		cout << "Not using OpenMP threads." << endl;
+		cout << "Not using threads for parallization." << endl;
 	}
 	return num_threads;
 }

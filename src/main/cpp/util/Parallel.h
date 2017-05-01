@@ -3,14 +3,14 @@
 
 /**
  * @file
- * A paper-thin abstraction layer over parallelization technologies.
+ * A paper-thin abstraction layer over parallelization libraries.
  */
 
 #include <mutex>
 #include <queue>
 #include <vector>
 
-#ifdef USE_TBB
+#ifdef PARALLELIZATION_LIBRARY_TBB
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 #include <tbb/tbb_thread.h>
@@ -20,14 +20,32 @@
 
 namespace stride {
 namespace util {
+
 namespace parallel {
 
 /// Gets the number of threads that are available for parallelization.
 unsigned int get_number_of_threads();
 
 /// Applies the given action to each element in the given list of values.
+/// The action may be applied to up to num_threads elements simultaneously.
+/// An action is a function object with signature `void(T&, unsigned int)`
+/// where the first parameter is the value that the action takes and the second
+/// parameter is the index of the thread it runs on.
 template <typename T, typename TAction>
 void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action);
+
+/// Applies the given action to each element in the given list of values.
+/// The action is not applied to multiple elements simultaneously.
+/// An action is a function object with signature `void(T&, unsigned int)`
+/// where the first parameter is the value that the action takes and the second
+/// parameter is the index of the thread it runs on.
+template <typename T, typename TAction>
+void serial_for(std::vector<T>& values, const TAction& action)
+{
+	for (size_t i = 0; i < values.size(); i++) {
+		action(values[i], 0);
+	}
+}
 
 /// A thread-safe queue.
 template <typename T>
@@ -54,9 +72,15 @@ private:
 	std::mutex mutex;
 };
 
-#ifdef USE_TBB
+#ifdef PARALLELIZATION_LIBRARY_TBB
 
-inline unsigned int get_number_of_threads() { return 4; }
+/// The name of the parallelization library that is in use.
+const char* const parallelization_library_name = "TBB";
+
+/// Tells if a parallelization library is in use.
+const bool using_parallelization_library = true;
+
+inline unsigned int get_number_of_threads() { return tbb::task_scheduler_init::default_num_threads(); }
 
 template <typename T, typename TAction>
 void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action)
@@ -79,9 +103,15 @@ void parallel_for(std::vector<T>& values, unsigned int num_threads, const TActio
 	    });
 }
 
-#else
+#elif defined _OPENMP
 
-inline unsigned int get_number_of_threads()
+/// The name of the parallelization library that is in use.
+const char* const parallelization_library_name = "OpenMP";
+
+/// Tells if a parallelization library is in use.
+const bool using_parallelization_library = true;
+
+    inline unsigned int get_number_of_threads()
 {
 	unsigned int num_threads;
 #pragma omp parallel
@@ -98,6 +128,24 @@ void parallel_for(std::vector<T>& values, unsigned int num_threads, const TActio
 	for (size_t i = 0; i < values.size(); i++) {
 		const unsigned int thread_id = omp_get_thread_num();
 		action(values[i], thread_id);
+	}
+}
+
+#else
+
+/// The name of the parallelization library that is in use.
+const char* const parallelization_library_name = "serial";
+
+/// Tells if a parallelization library is in use.
+const bool using_parallelization_library = false;
+
+inline unsigned int get_number_of_threads() { return 1; }
+
+template <typename T, typename TAction>
+void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action)
+{
+	for (size_t i = 0; i < values.size(); i++) {
+		action(values[i], 0);
 	}
 }
 
