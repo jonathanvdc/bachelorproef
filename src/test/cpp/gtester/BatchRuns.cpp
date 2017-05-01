@@ -119,7 +119,9 @@ TEST_P( BatchDemos, Run )
 	tuple<string, unsigned int> t(GetParam());
 	const string test_tag = get<0>(t);
 	const unsigned int num_threads = get<1>(t);
-	omp_set_num_threads(num_threads);
+	if (!stride::util::parallel::try_set_number_of_threads(num_threads) && num_threads != 1) {
+		return;
+	}
 	omp_set_schedule(omp_sched_static,1);
 
 	// -----------------------------------------------------------------------------------------

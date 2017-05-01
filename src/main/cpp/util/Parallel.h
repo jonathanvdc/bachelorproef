@@ -28,6 +28,11 @@ namespace parallel {
 /// Gets the number of threads that are available for parallelization.
 unsigned int get_number_of_threads();
 
+/// Tries to set the number of threads to the given value. A Boolean flag
+/// is returned that specifies if the number of threads could be set
+/// successfully.
+bool try_set_number_of_threads(unsigned int number_of_threads);
+
 /// Applies the given action to each element in the given list of values.
 /// The action may be applied to up to num_threads elements simultaneously.
 /// An action is a function object with signature `void(T&, unsigned int)`
@@ -82,8 +87,6 @@ const char* const parallelization_library_name = "TBB";
 /// Tells if a parallelization library is in use.
 const bool using_parallelization_library = true;
 
-inline unsigned int get_number_of_threads() { return tbb::task_scheduler_init::default_num_threads(); }
-
 template <typename T, typename TAction>
 void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action)
 {
@@ -112,19 +115,6 @@ const char* const parallelization_library_name = "STL";
 
 /// Tells if a parallelization library is in use.
 const bool using_parallelization_library = true;
-
-inline unsigned int get_number_of_threads()
-{
-	unsigned int num_threads = std::thread::hardware_concurrency();
-	if (num_threads == 0) {
-		// std::thread::hardware_concurrency() can return zero if it can't
-		// detect the number of cores in the machine. If so, then we'll
-		// conservatively use one thread.
-		return 1;
-	} else {
-		return num_threads;
-	}
-}
 
 template <typename T, typename TAction>
 void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action)
@@ -166,16 +156,6 @@ const char* const parallelization_library_name = "OpenMP";
 /// Tells if a parallelization library is in use.
 const bool using_parallelization_library = true;
 
-inline unsigned int get_number_of_threads()
-{
-	unsigned int num_threads;
-#pragma omp parallel
-	{
-		num_threads = omp_get_num_threads();
-	}
-	return num_threads;
-}
-
 template <typename T, typename TAction>
 void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action)
 {
@@ -193,8 +173,6 @@ const char* const parallelization_library_name = "serial";
 
 /// Tells if a parallelization library is in use.
 const bool using_parallelization_library = false;
-
-inline unsigned int get_number_of_threads() { return 1; }
 
 template <typename T, typename TAction>
 void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action)
