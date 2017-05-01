@@ -9,6 +9,8 @@
 #include <memory>
 #include <unordered_set>
 #include <vector>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/graph_traits.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 namespace stride {
@@ -36,7 +38,19 @@ struct AirRoute final
 };
 
 /**
- * Describes information pertaining to an airport.
+ * Describes an airport's region ID and passenger fraction.
+ */
+struct AirportDescription final
+{
+	/// The id of the region where this airport is located.
+	RegionId region_id;
+
+	/// The fraction of passengers in the region that use this airport.
+	double passenger_fraction;
+};
+
+/**
+ * Describes an airport's region ID, passenger fraction and routes.
  */
 struct Airport final
 {
@@ -45,6 +59,9 @@ struct Airport final
 
 	/// The fraction of passengers in the region that use this airport.
 	double passenger_fraction;
+
+	/// Gets this airport's description.
+	AirportDescription GetDescription() const { return {region_id, passenger_fraction}; }
 
 	/// Gets the list of all outgoing routes that start at this airport.
 	std::vector<AirRoute> routes;
@@ -107,6 +124,13 @@ public:
 	/// range.
 	static std::vector<RegionTravelRef> ParseRegionTravel(
 	    const boost::property_tree::ptree& ptree, RegionId first_region_id = 0);
+
+	using BoostEdgeWeightProperty = boost::property<boost::edge_weight_t, double>;
+	using BoostGraph = boost::adjacency_list<
+	    boost::vecS, boost::vecS, boost::directedS, AirportDescription, BoostEdgeWeightProperty>;
+
+	/// Creates a boost graph that is equivalent to the graph defined by this travel model.
+	BoostGraph ToBoostGraph() const;
 
 private:
 	RegionId region_id;

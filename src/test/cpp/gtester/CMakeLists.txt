@@ -28,6 +28,7 @@ set( SRC
 		ParseTravelConfig.cpp
 		MpiTests.cpp
 		RunSimulator.cpp
+		TravelModelGraph.cpp
 )
 
 if( Poco_FOUND )
