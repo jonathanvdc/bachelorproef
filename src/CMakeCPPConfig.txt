@@ -135,7 +135,7 @@ endif()
 find_package( TBB COMPONENTS tbbmalloc tbbmalloc_proxy )
 if( TBB_FOUND )
 	include_directories( SYSTEM ${TBB_INCLUDE_DIR} )
-	set( LIBS ${LIBS} ${TBB_LIBRARY} )
+	set( LIBS ${LIBS} ${TBB_LIBRARIES} )
 endif()
  
 #----------------------------------------------------------------------------
