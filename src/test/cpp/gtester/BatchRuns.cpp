@@ -22,6 +22,7 @@
 #include "pop/Population.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
+#include "util/Parallel.h"
 
 #include <gtest/gtest.h>
 #include <boost/property_tree/ptree.hpp>
@@ -205,11 +206,9 @@ namespace {
 		"maximum"
 	};
 
-#ifdef _OPENMP
-	unsigned int threads[] { 1U , 4U, 8U};
-#else
-	unsigned int threads[] { 1U };
-#endif
+	std::vector<unsigned int> threads = stride::util::parallel::using_parallelization_library
+		? std::vector<unsigned int>({ 1U, 4U, 8U})
+		: std::vector<unsigned int>({ 1U });
 
 }
 
