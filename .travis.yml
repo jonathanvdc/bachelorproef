@@ -37,7 +37,7 @@ addons:
 matrix:
   include:
     - compiler: gcc
-      env: CC_COMPILER_NAME='gcc-6' CXX_COMPILER_NAME='g++-6' CONFIG_IDENTIFIER=gcc-6
+      env: CONFIG_IDENTIFIER='gcc-6' CC_COMPILER_NAME='gcc-6' CXX_COMPILER_NAME='g++-6'
       addons:
         apt:
           sources:
@@ -49,7 +49,7 @@ matrix:
             - g++-6
 
     - compiler: clang
-      env: CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0' CONFIG_IDENTIFIER=clang-4.0-tbb
+      env: CONFIG_IDENTIFIER='clang-4.0-tbb' CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0'
       addons:
         apt:
           sources:
@@ -64,7 +64,7 @@ matrix:
             - libtbb-dev
 
     - compiler: clang
-      env: CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0' CONFIG_IDENTIFIER=clang-4.0
+      env: CONFIG_IDENTIFIER='clang-4.0' CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0'
       addons:
         apt:
           sources:
