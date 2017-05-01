@@ -141,6 +141,11 @@ if( TBB_FOUND )
 		# logic to use TBB then, which we'll do using a preprocessor directive.
 		add_definitions(-DPARALLELIZATION_LIBRARY_TBB)
 	endif()
+else()
+	if ( NOT OPENMP_FOUND )
+		# We found neither TBB nor OpenMP. But we can still use STL threads for parallelization.
+		add_definitions(-DPARALLELIZATION_LIBRARY_STL)
+	endif()
 endif()
  
 #----------------------------------------------------------------------------
