@@ -158,7 +158,7 @@ void parallel_for(std::vector<T>& values, unsigned int num_threads, const TActio
 	}
 }
 
-#elif defined _OPENMP
+#elif defined _OPENMP && !defined PARALLELIZATION_LIBRARY_NONE
 
 /// The name of the parallelization library that is in use.
 const char* const parallelization_library_name = "OpenMP";
