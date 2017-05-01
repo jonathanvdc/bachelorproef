@@ -61,9 +61,6 @@ private:
 	static std::mutex io_mutex;
 };
 
-/// Gets the number of threads provided by OpenMP.
-unsigned int get_number_of_omp_threads();
-
 /// Prints and returns the number of threads provided by OpenMP.
 unsigned int print_number_of_omp_threads();
 
