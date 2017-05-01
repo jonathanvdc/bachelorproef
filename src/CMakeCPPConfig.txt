@@ -136,6 +136,11 @@ find_package( TBB COMPONENTS tbbmalloc tbbmalloc_proxy )
 if( TBB_FOUND )
 	include_directories( SYSTEM ${TBB_INCLUDE_DIR} )
 	set( LIBS ${LIBS} ${TBB_LIBRARIES} )
+	if ( NOT OPENMP_FOUND )
+		# We didn't find OpenMP but we *did* find TBB. We should advise our parallelization
+		# logic to use TBB then, which we'll do using a preprocessor directive.
+		add_definitions(-DPARALLELIZATION_LIBRARY_TBB)
+	endif()
 endif()
  
 #----------------------------------------------------------------------------
