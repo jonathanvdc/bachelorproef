@@ -89,21 +89,21 @@ const bool using_parallelization_library = true;
 template <typename T, typename TAction>
 void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action)
 {
-	ConcurrentQueue<unsigned int> thread_ids;
+	ConcurrentQueue<unsigned int> thread_id_pool;
 	for (unsigned int i = 0; i < num_threads; i++) {
-		thread_ids.Enqueue(i);
+		thread_id_pool.Enqueue(i);
 	}
 
 	tbb::task_scheduler_init init(num_threads);
 
 	tbb::parallel_for(
 	    tbb::blocked_range<size_t>(0, values.size()),
-	    [&action, &values, &thread_ids](const tbb::blocked_range<size_t>& r) {
-		    auto thread_id = thread_ids.Dequeue();
+	    [&action, &values, &thread_id_pool](const tbb::blocked_range<size_t>& r) {
+		    auto thread_id = thread_id_pool.Dequeue();
 		    for (size_t i = r.begin(); i != r.end(); i++) {
 			    action(values[i], thread_id);
 		    }
-		    thread_ids.Enqueue(thread_id);
+		    thread_id_pool.Enqueue(thread_id);
 	    });
 }
 
