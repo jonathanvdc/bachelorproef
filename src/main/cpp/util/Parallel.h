@@ -14,6 +14,8 @@
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 #include <tbb/tbb_thread.h>
+#elif defined PARALLELIZATION_LIBRARY_STL
+#include <thread>
 #else
 #include <omp.h>
 #endif
@@ -101,6 +103,59 @@ void parallel_for(std::vector<T>& values, unsigned int num_threads, const TActio
 		    }
 		    thread_ids.Enqueue(thread_id);
 	    });
+}
+
+#elif defined PARALLELIZATION_LIBRARY_STL
+
+/// The name of the parallelization library that is in use.
+const char* const parallelization_library_name = "STL";
+
+/// Tells if a parallelization library is in use.
+const bool using_parallelization_library = true;
+
+inline unsigned int get_number_of_threads()
+{
+	unsigned int num_threads = std::thread::hardware_concurrency();
+	if (num_threads == 0) {
+		// std::thread::hardware_concurrency() can return zero if it can't
+		// detect the number of cores in the machine. If so, then we'll
+		// conservatively use one thread.
+		return 1;
+	} else {
+		return num_threads;
+	}
+}
+
+template <typename T, typename TAction>
+void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action)
+{
+	if (num_threads <= 1) {
+		// Nothing to parallelize.
+		serial_for(values, action);
+	} else {
+		// Create num_thread threads and divide the workload statically.
+		std::vector<std::thread> thread_pool;
+		size_t workload_per_thread = values.size() / num_threads;
+		size_t values_start_offset = 0;
+		for (unsigned int i = 0; i < num_threads; i++) {
+			size_t next_start_offset = values_start_offset + workload_per_thread;
+			size_t values_end_offset = i == num_threads - 1 ? values.size() : next_start_offset;
+			if (values_end_offset == next_start_offset) {
+				continue;
+			}
+
+			thread_pool.emplace_back([&values, &action, i, values_start_offset, values_end_offset] {
+				for (size_t j = values_start_offset; j < values_end_offset; j++) {
+					action(values[j], i);
+				}
+			});
+		}
+
+		// Wait for the threads to finish.
+		for (auto& thread : thread_pool) {
+			thread.join();
+		}
+	}
 }
 
 #elif defined _OPENMP
