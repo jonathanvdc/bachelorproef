@@ -11,17 +11,17 @@
 
     <!-- Population/city/town parameters -->
     <population_size>100000</population_size>
-    <city_ratio>0.6</city_ratio>
+    <city_ratio>0.4</city_ratio>
     <town_distribution>
+        <town_range>
+            <minimum>10</minimum>
+            <maximum>100</maximum>
+            <probability>0.7</probability>
+        </town_range>
         <town_range>
             <minimum>100</minimum>
             <maximum>1000</maximum>
-            <probability>0.6</probability>
-        </town_range>
-        <town_range>
-            <minimum>1000</minimum>
-            <maximum>10000</maximum>
-            <probability>0.4</probability>
+            <probability>0.3</probability>
         </town_range>
     </town_distribution>
 

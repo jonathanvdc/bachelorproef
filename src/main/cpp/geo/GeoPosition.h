@@ -7,6 +7,12 @@
 
 #include <cmath>
 #include <string>
+#include <vector>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/register/multi_point.hpp>
+#include <boost/geometry/geometries/register/point.hpp>
+#include "util/Random.h"
 
 namespace stride {
 namespace geo {
@@ -51,22 +57,63 @@ struct GeoPosition final
 #endif
 		return R * c;
 	}
+
+	double GetLatitude() const { return latitude; }
+	double GetLongitude() const { return longitude; }
+	void SetLatitude(double in) { latitude = in; }
+	void SetLongitude(double in) { longitude = in; }
 };
+}
+}
 
-/// A geodesic "rectangle" (latitude range x longitude range.)
-struct GeoRectangle final
+// Q: Why is GeoPosition registered as boost::geometry::cs::cartesian?
+// A: Boost's convex hull algorithm doesn't work for geographic points (in
+//    fact, such an algorithm is pretty tricky to write). But pretending
+//    (lat, long) pairs are (x, y) is a close enough approximation for the
+//    areas Stride users seem to simulate: Belgium and the continental US.
+
+BOOST_GEOMETRY_REGISTER_POINT_2D_GET_SET(
+    stride::geo::GeoPosition, double, boost::geometry::cs::cartesian, //
+    stride::geo::GeoPosition::GetLatitude, stride::geo::GeoPosition::GetLongitude,
+    stride::geo::GeoPosition::SetLatitude, stride::geo::GeoPosition::SetLongitude)
+
+BOOST_GEOMETRY_REGISTER_MULTI_POINT(std::vector<stride::geo::GeoPosition>)
+
+namespace stride {
+namespace geo {
+
+using GeoPolygon = boost::geometry::model::polygon<GeoPosition>;
+using GeoBox = boost::geometry::model::box<GeoPosition>;
+
+class HullSampler
 {
-	/// The minimum geographic latitude of this are.
-	double min_latitude;
+public:
+	HullSampler(const std::vector<GeoPosition>& points)
+	{
+		boost::geometry::convex_hull(points, hull);
+		boost::geometry::envelope(hull, box);
+	}
 
-	/// The maximum geographic latitude of this are.
-	double max_latitude;
+	GeoPosition Sample(util::Random& random) const
+	{
+		GeoPosition point;
+		do {
+			GeoPosition a = box.min_corner();
+			GeoPosition b = box.max_corner();
+			double ax = a.latitude, ay = a.longitude;
+			double bx = b.latitude, by = b.longitude;
+			double t = random.NextDouble();
+			double u = random.NextDouble();
+			point.latitude = ax * t + bx * (1.0 - t);
+			point.longitude = ay * u + by * (1.0 - u);
+		} while (!boost::geometry::within(point, hull));
 
-	/// The minimum geographic longitude of this are.
-	double min_longitude;
+		return point;
+	}
 
-	/// The maximum geographic longitude of this are.
-	double max_longitude;
+private:
+	GeoPolygon hull;
+	GeoBox box;
 };
 
 } // namespace
