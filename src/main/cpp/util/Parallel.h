@@ -22,7 +22,6 @@
 
 namespace stride {
 namespace util {
-
 namespace parallel {
 
 /// Gets the number of threads that are available for parallelization.
@@ -56,7 +55,7 @@ void serial_for(std::vector<T>& values, const TAction& action)
 
 /// A thread-safe queue.
 template <typename T>
-struct ConcurrentQueue
+struct ConcurrentQueue final
 {
 	/// Dequeues an item from this concurrent queue.
 	T Dequeue()
