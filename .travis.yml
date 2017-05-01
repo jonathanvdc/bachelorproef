@@ -61,7 +61,7 @@ matrix:
             - clang-4.0
             - clang++-4.0
             - libstdc++-6-dev
-            - libiomp-dev
+            - libtbb-dev
 
 before_install:
   - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
