@@ -94,7 +94,7 @@ set( LIBS ${LIBS} ${MPI_CXX_LIBRARIES} )
 #----------------------------------------------------------------------------
 set(BOOST_ROOT ${STRIDE_BOOST_ROOT})
 find_package( Boost COMPONENTS filesystem thread date_time system mpi serialization REQUIRED )
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} )
+include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 set( LIBS   ${LIBS} ${Boost_LIBRARIES} )
 
 #----------------------------------------------------------------------------
@@ -127,6 +127,15 @@ endif()
 # If not found, use the dummy omp.
 if( NOT OPENMP_FOUND )
     include_directories( ${CMAKE_HOME_DIRECTORY}/main/resources/lib/domp/include )
+endif()
+
+#----------------------------------------------------------------------------
+# TBB
+#----------------------------------------------------------------------------
+find_package( TBB COMPONENTS tbbmalloc tbbmalloc_proxy )
+if( TBB_FOUND )
+	include_directories( SYSTEM ${TBB_INCLUDE_DIR} )
+	set( LIBS ${LIBS} ${TBB_LIBRARY} )
 endif()
  
 #----------------------------------------------------------------------------
