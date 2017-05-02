@@ -120,7 +120,7 @@ void parallel_for(std::vector<T>& values, unsigned int num_threads, const TActio
 {
 	if (num_threads <= 1) {
 		// Nothing to parallelize.
-		serial_for(values, action);
+		serial_for<T, TAction>(values, action);
 	} else {
 		// Create num_thread threads and divide the workload statically.
 		std::vector<std::thread> thread_pool;
@@ -176,9 +176,7 @@ const bool using_parallelization_library = false;
 template <typename T, typename TAction>
 void parallel_for(std::vector<T>& values, unsigned int num_threads, const TAction& action)
 {
-	for (size_t i = 0; i < values.size(); i++) {
-		action(values[i], 0);
-	}
+	serial_for<T, TAction>(values, action);
 }
 
 #endif
