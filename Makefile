@@ -81,6 +81,9 @@ endif
 ifneq ($(STRIDE_VERBOSE_TESTING),)
 	CMAKE_ARGS += -DSTRIDE_VERBOSE_TESTING:BOOL=$(STRIDE_VERBOSE_TESTING)
 endif
+ifneq ($(STRIDE_PARALLELIZATION_LIBRARY),)
+	CMAKE_ARGS += -DSTRIDE_PARALLELIZATION_LIBRARY:STRING=$(STRIDE_PARALLELIZATION_LIBRARY)
+endif
 ifeq ($(BUILD_DIR),)
 	BUILD_DIR = ./build
 endif
@@ -101,19 +104,20 @@ help:
 	@ $(CMAKE) -E echo "    "
 	@ $(CMAKE) -E echo " Current macro values are (cmake will use an appropriate"
 	@ $(CMAKE) -E echo " default for any macro that has not been set):"
-	@ $(CMAKE) -E echo "   STRIDE_BOOST_ROOT          : " $(STRIDE_BOOST_ROOT)
-	@ $(CMAKE) -E echo "   STRIDE_INCLUDE_DOC         : " $(STRIDE_INCLUDE_DOC)
-	@ $(CMAKE) -E echo "   STRIDE_FORCE_NO_OPENMP     : " $(STRIDE_FORCE_NO_OPENMP)
-	@ $(CMAKE) -E echo "   STRIDE_FORCE_NO_HDF5       : " $(STRIDE_FORCE_NO_HDF5)
-	@ $(CMAKE) -E echo "   STRIDE_VERBOSE_TESTING     : " $(STRIDE_VERBOSE_TESTING)
-	@ $(CMAKE) -E echo "   BUILD_DIR                  : " $(BUILD_DIR)
+	@ $(CMAKE) -E echo "   STRIDE_BOOST_ROOT              : " $(STRIDE_BOOST_ROOT)
+	@ $(CMAKE) -E echo "   STRIDE_INCLUDE_DOC             : " $(STRIDE_INCLUDE_DOC)
+	@ $(CMAKE) -E echo "   STRIDE_FORCE_NO_OPENMP         : " $(STRIDE_FORCE_NO_OPENMP)
+	@ $(CMAKE) -E echo "   STRIDE_FORCE_NO_HDF5           : " $(STRIDE_FORCE_NO_HDF5)
+	@ $(CMAKE) -E echo "   STRIDE_VERBOSE_TESTING         : " $(STRIDE_VERBOSE_TESTING)
+	@ $(CMAKE) -E echo "   STRIDE_PARALLELIZATION_LIBRARY : " $(STRIDE_PARALLELIZATION_LIBRARY)
+	@ $(CMAKE) -E echo "   BUILD_DIR                      : " $(BUILD_DIR)
 	@ $(CMAKE) -E echo " "
-	@ $(CMAKE) -E echo "   CMAKE_GENERATOR            : " $(CMAKE_GENERATOR)
-	@ $(CMAKE) -E echo "   CMAKE_C_COMPILER           : " $(CMAKE_C_COMPILER)
-	@ $(CMAKE) -E echo "   CMAKE_CXX_COMPILER         : " $(CMAKE_CXX_COMPILER)
-	@ $(CMAKE) -E echo "   CMAKE_CXX_FLAGS            : " $(CMAKE_CXX_FLAGS)
-	@ $(CMAKE) -E echo "   CMAKE_BUILD_TYPE           : " $(CMAKE_BUILD_TYPE)
-	@ $(CMAKE) -E echo "   CMAKE_INSTALL_PREFIX       : " $(CMAKE_INSTALL_PREFIX)
+	@ $(CMAKE) -E echo "   CMAKE_GENERATOR                : " $(CMAKE_GENERATOR)
+	@ $(CMAKE) -E echo "   CMAKE_C_COMPILER               : " $(CMAKE_C_COMPILER)
+	@ $(CMAKE) -E echo "   CMAKE_CXX_COMPILER             : " $(CMAKE_CXX_COMPILER)
+	@ $(CMAKE) -E echo "   CMAKE_CXX_FLAGS                : " $(CMAKE_CXX_FLAGS)
+	@ $(CMAKE) -E echo "   CMAKE_BUILD_TYPE               : " $(CMAKE_BUILD_TYPE)
+	@ $(CMAKE) -E echo "   CMAKE_INSTALL_PREFIX           : " $(CMAKE_INSTALL_PREFIX)
 	@ $(CMAKE) -E echo " "
 				
 configure:

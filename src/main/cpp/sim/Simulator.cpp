@@ -30,10 +30,10 @@
 #include "core/LogMode.h"
 #include "multiregion/Visitor.h"
 #include "pop/Population.h"
+#include "util/Parallel.h"
 
 #include <memory>
 #include <boost/property_tree/ptree.hpp>
-#include <omp.h>
 #include <spdlog/spdlog.h>
 
 namespace stride {
@@ -55,36 +55,16 @@ void Simulator::UpdateClusters()
 {
 	auto log = m_log;
 
-#pragma omp parallel num_threads(m_num_threads)
-	{
-		const unsigned int thread = omp_get_thread_num();
+	auto action = [this, log](Cluster& cluster, unsigned int thread_id) {
+		Infector<log_level, track_index_case>::Execute(
+		    cluster, m_disease_profile, m_rng_handler[thread_id], m_calendar, log);
+	};
 
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_households.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_households[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_school_clusters.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_school_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_work_clusters.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_work_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_primary_community.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_primary_community[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_secondary_community.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_secondary_community[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-	}
+	stride::util::parallel::parallel_for(m_households, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_school_clusters, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_work_clusters, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_primary_community, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_secondary_community, m_num_threads, action);
 }
 
 void Simulator::AddPersonToClusters(const Person& person)

@@ -22,6 +22,7 @@
 #include "pop/Population.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
+#include "util/Parallel.h"
 
 #include <gtest/gtest.h>
 #include <boost/property_tree/ptree.hpp>
@@ -103,7 +104,7 @@ const double         BatchDemos::g_transmission_rate_measles   = 16U;
 const double         BatchDemos::g_transmission_rate_maximum   = 100U;
 
 const map<string, unsigned int> BatchDemos::g_results {
-	make_pair("default", 70000),
+	make_pair("default", 75000),
 	make_pair("seeding_rate",0),
 	make_pair("immunity_rate",6),
 	make_pair("measles",135000),
@@ -118,7 +119,9 @@ TEST_P( BatchDemos, Run )
 	tuple<string, unsigned int> t(GetParam());
 	const string test_tag = get<0>(t);
 	const unsigned int num_threads = get<1>(t);
-	omp_set_num_threads(num_threads);
+	if (!stride::util::parallel::try_set_number_of_threads(num_threads) && num_threads != 1) {
+		return;
+	}
 	omp_set_schedule(omp_sched_static,1);
 
 	// -----------------------------------------------------------------------------------------
@@ -193,7 +196,7 @@ TEST_P( BatchDemos, Run )
 	// Round up.
         // -----------------------------------------------------------------------------------------
 	const unsigned int num_cases = sim->GetPopulation()->get_infected_count();
-	ASSERT_NEAR(num_cases, g_results.at(test_tag),10000) << "!! CHANGED !!";
+	ASSERT_NEAR(num_cases, g_results.at(test_tag),15000) << "!! CHANGED !!";
 }
 
 namespace {
@@ -205,11 +208,9 @@ namespace {
 		"maximum"
 	};
 
-#ifdef _OPENMP
-	unsigned int threads[] { 1U , 4U, 8U};
-#else
-	unsigned int threads[] { 1U };
-#endif
+	std::vector<unsigned int> threads = stride::util::parallel::using_parallelization_library
+		? std::vector<unsigned int>({ 1U, 4U, 8U})
+		: std::vector<unsigned int>({ 1U });
 
 }
 

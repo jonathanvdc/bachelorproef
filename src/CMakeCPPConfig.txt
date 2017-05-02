@@ -94,7 +94,7 @@ set( LIBS ${LIBS} ${MPI_CXX_LIBRARIES} )
 #----------------------------------------------------------------------------
 set(BOOST_ROOT ${STRIDE_BOOST_ROOT})
 find_package( Boost COMPONENTS filesystem thread date_time system mpi serialization REQUIRED )
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} )
+include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 set( LIBS   ${LIBS} ${Boost_LIBRARIES} )
 
 #----------------------------------------------------------------------------
@@ -127,6 +127,38 @@ endif()
 # If not found, use the dummy omp.
 if( NOT OPENMP_FOUND )
     include_directories( ${CMAKE_HOME_DIRECTORY}/main/resources/lib/domp/include )
+endif()
+
+#----------------------------------------------------------------------------
+# TBB
+#----------------------------------------------------------------------------
+find_package( TBB )
+if( TBB_FOUND )
+	include_directories( SYSTEM ${TBB_INCLUDE_DIR} )
+	set( LIBS ${LIBS} ${TBB_LIBRARIES} )
+endif()
+
+if( STRIDE_PARALLELIZATION_LIBRARY STREQUAL "TBB" )
+	add_definitions(-DPARALLELIZATION_LIBRARY_TBB)
+elseif( STRIDE_PARALLELIZATION_LIBRARY STREQUAL "STL" )
+	add_definitions(-DPARALLELIZATION_LIBRARY_STL)
+elseif( STRIDE_PARALLELIZATION_LIBRARY STREQUAL "OpenMP" )
+	# Do nothing. Stride will use OpenMP by default.
+elseif( STRIDE_PARALLELIZATION_LIBRARY STREQUAL "none" )
+	# Disable parallelization altogether.
+	add_definitions(-DPARALLELIZATION_LIBRARY_NONE)
+else()
+	# Pick a parallelization library by looking at what's present.
+	if( NOT OPENMP_FOUND )
+		if( TBB_FOUND )
+			# We didn't find OpenMP but we *did* find TBB. We should advise our parallelization
+			# logic to use TBB then, which we'll do using a preprocessor directive.
+			add_definitions(-DPARALLELIZATION_LIBRARY_TBB)
+		else()
+			# We found neither TBB nor OpenMP. But we can still use STL threads for parallelization.
+			add_definitions(-DPARALLELIZATION_LIBRARY_STL)
+		endif()
+	endif()
 endif()
  
 #----------------------------------------------------------------------------
