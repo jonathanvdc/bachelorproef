@@ -33,7 +33,7 @@ public:
 	    const stride::population::ModelRef& m, const geo::ProfileRef& g,
 	    const std::shared_ptr<std::vector<ReferenceHousehold>>& h, const disease::Disease& d, util::Random& r)
 	    : model(m), geo_profile(g), reference_households(h), disease(d), random(r),
-	      town_brng(TownBRNG::CreateDistribution(m->town_distribution, r))
+	      town_brng(TownBRNG::CreateDistribution(m->town_distribution, r)), verbose(false)
 	{
 		std::cout << "Constructed generator" << std::endl;
 	}
@@ -47,7 +47,25 @@ public:
 
 	/// Check if a population fits the model.
 	/// If verbose is true, log the checks performed.
-	bool FitsModel(const Population& population, bool verbose = false);
+	bool FitsModel(const Population& population);
+
+	/// Log a debug message.
+	template <typename... Args>
+	void Debug(const char* fmt, const Args&... args)
+	{
+		if (!verbose)
+			return;
+		auto console = spdlog::get("popgen");
+		if (!console) {
+			console = spdlog::stderr_logger_st("popgen");
+			console->set_level(spdlog::level::debug);
+			console->set_pattern("\x1b[36;1m[popgen] %v\x1b[0m");
+		}
+		console->debug(fmt, args...);
+	}
+
+	/// Enable/disable logging.
+	void Verbose(bool v) { verbose = v; }
 
 private:
 	ModelRef model;
@@ -57,6 +75,8 @@ private:
 	util::Random& random;
 
 	TownBRNG town_brng;
+
+	bool verbose;
 
 	/// Get a random reference household.
 	const ReferenceHousehold& GetRandomReferenceHousehold() { return random.Sample(*reference_households); }
@@ -69,7 +89,7 @@ private:
 
 	/// Find a random GeoPosition map value close to the given origin point.
 	template <typename T>
-	T& FindLocal(const geo::GeoPosition& origin, std::map<geo::GeoPosition, T>& map)
+	T& FindLocal(const geo::GeoPosition& origin, std::map<geo::GeoPosition, T>& map, int tries = 5)
 	{
 		if (map.empty()) {
 			FATAL_ERROR("Generator::FindLocal called on empty map.");
@@ -77,7 +97,7 @@ private:
 
 		double r = model->search_radius;
 		std::vector<std::reference_wrapper<T>> hits;
-		for (int i = 0; i < 5; i++, r *= 2.0) {
+		for (int i = 0; i < tries; i++, r *= 2.0) {
 			for (auto& p : map) {
 				if (p.first.Distance(origin) < r) {
 					hits.emplace_back(p.second);
@@ -88,8 +108,11 @@ private:
 			}
 		}
 
+		Debug("FindLocal: giving up after {} radius expansions", tries);
 		auto it = map.begin();
 		std::advance(it, random(map.size()));
+		const double distance = it->first.Distance(origin);
+		Debug("Settling on distance {} between {} and {}", distance, it->first.ToString(), origin.ToString());
 		return it->second;
 	}
 };

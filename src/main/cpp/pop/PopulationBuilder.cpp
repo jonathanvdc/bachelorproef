@@ -98,7 +98,7 @@ shared_ptr<Population> PopulationBuilder::Build(
 	} else if (boost::algorithm::ends_with(config.GetPopulationPath(), ".xml")) {
 		auto generator = population::Generator::FromConfig(config, *disease, rng);
 		population = generator->Generate();
-		if (!generator->FitsModel(population, true)) {
+		if (!generator->FitsModel(population)) {
 			FATAL_ERROR("Generated population doesn't fit model " + config.GetPopulationPath());
 		}
 	} else {
