@@ -4,6 +4,9 @@
 #include <memory>
 #include <numeric>
 #include <vector>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include <spdlog/spdlog.h>
 
 #include "Generator.h"
@@ -12,10 +15,34 @@
 #include "alias/Alias.h"
 #include "core/Cluster.h"
 #include "core/ClusterType.h"
+#include "sim/SimulationConfig.h"
 #include "util/Errors.h"
+#include "util/InstallDirs.h"
 
 namespace stride {
 namespace population {
+
+std::unique_ptr<Generator> Generator::FromConfig(
+    const SingleSimulationConfig& config, const disease::Disease& disease, util::Random& rng)
+{
+	// Read geodistribution profile.
+	auto geo_file = util::InstallDirs::OpenDataFile(config.GetGeodistributionProfilePath());
+	const geo::ProfileRef geo_profile = geo::Profile::Parse(*geo_file);
+
+	// Read reference households.
+	auto households_file = util::InstallDirs::OpenDataFile(config.GetReferenceHouseholdsPath());
+	boost::property_tree::ptree hpt;
+	boost::property_tree::read_json(*households_file, hpt);
+	const auto reference_households = population::ParseReferenceHouseholds(hpt);
+
+	// Read population model file.
+	auto pop_file = util::InstallDirs::OpenDataFile(config.GetPopulationPath());
+	boost::property_tree::ptree pt;
+	boost::property_tree::read_xml(*pop_file, pt);
+	const population::ModelRef model = population::Model::Parse(pt);
+
+	return std::make_unique<Generator>(model, geo_profile, reference_households, disease, rng);
+}
 
 /// Calculate the sum of all the values of a map.
 template <typename K, typename V>
@@ -109,8 +136,8 @@ Population Generator::Generate()
 		int households_created = 0;
 		n = model->population_size;
 		while (n > 0) {
-			auto geo_position = geo_brng.Next();
-			auto rh = GetRandomReferenceHousehold();
+			const auto geo_position = geo_brng.Next();
+			const auto rh = GetRandomReferenceHousehold();
 			households[geo_position].emplace_back(rh);
 
 			for (int age : rh.ages) {
@@ -305,7 +332,8 @@ Population Generator::Generate()
 		console->debug("Writing .SVG file of towns and cities...");
 		std::ofstream svg_file;
 		svg_file.open("towns_and_cities.svg");
-		svg_file << "<svg width=\"500\" height=\"400\" viewBox=\"2 49 5 3\" xmlns=\"http://www.w3.org/2000/svg\">\n";
+		svg_file << "<svg width=\"500\" height=\"400\" viewBox=\"2 49 5 3\"
+	xmlns=\"http://www.w3.org/2000/svg\">\n";
 		for (const auto& p : population_distribution) {
 			console->debug("{} {} {}", p.first.longitude, p.first.longitude, p.second);
 			svg_file << "  <circle cx=\"" << p.first.longitude

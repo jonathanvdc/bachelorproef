@@ -7,6 +7,7 @@
  */
 
 #include <cstddef>
+#include <iostream>
 #include <memory>
 #include <vector>
 #include "Household.h"
@@ -16,6 +17,7 @@
 #include "core/Disease.h"
 #include "geo/Profile.h"
 #include "pop/Population.h"
+#include "sim/SimulationConfig.h"
 #include "util/InclusiveRange.h"
 #include "util/Random.h"
 
@@ -28,12 +30,17 @@ class Generator
 
 public:
 	Generator(
-	    const stride::population::ModelRef& m, const geo::ProfileRef& g, const std::vector<ReferenceHousehold>& h,
-	    const disease::Disease& d, util::Random& r)
+	    const stride::population::ModelRef& m, const geo::ProfileRef& g,
+	    const std::shared_ptr<std::vector<ReferenceHousehold>>& h, const disease::Disease& d, util::Random& r)
 	    : model(m), geo_profile(g), reference_households(h), disease(d), random(r),
 	      town_brng(TownBRNG::CreateDistribution(m->town_distribution, r))
 	{
+		std::cout << "Constructed generator" << std::endl;
 	}
+
+	// "Constructor" that reads the model, geoprofile and households from a configuration file.
+	static std::unique_ptr<Generator> FromConfig(
+	    const SingleSimulationConfig& config, const disease::Disease& disease, util::Random& rng);
 
 	/// Generate a random population.
 	Population Generate();
@@ -45,23 +52,20 @@ public:
 private:
 	ModelRef model;
 	geo::ProfileRef geo_profile;
-	const std::vector<ReferenceHousehold>& reference_households;
+	std::shared_ptr<std::vector<ReferenceHousehold>> reference_households;
 	const disease::Disease& disease;
 	util::Random& random;
 
 	TownBRNG town_brng;
 
 	/// Get a random reference household.
-	const ReferenceHousehold& GetRandomReferenceHousehold() { return random.Sample(reference_households); }
+	const ReferenceHousehold& GetRandomReferenceHousehold() { return random.Sample(*reference_households); }
 
 	/// Sample a random Town size from the model.
 	int GetRandomTownSize() { return random(town_brng.Next()); }
 
 	/// Generate a random GeoPosition in the simulation area.
-	geo::GeoPosition GetRandomGeoPosition()
-	{
-		return geo_profile->GetRandomGeoPosition(random);
-	}
+	geo::GeoPosition GetRandomGeoPosition() { return geo_profile->GetRandomGeoPosition(random); }
 
 	/// Find a random GeoPosition map value close to the given origin point.
 	template <typename T>

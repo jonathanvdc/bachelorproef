@@ -21,7 +21,9 @@
  */
 
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <memory>
 #include <string>
 
 namespace stride {
@@ -47,11 +49,22 @@ public:
 	/// Utility method: get application installation root directory.
 	static boost::filesystem::path GetRootDir();
 
+        /// Opens (for reading) a file at the given path, relative to some anchor path.
+        /// Throws a fatal error if the file cannot be opened or found.
+        static std::unique_ptr<boost::filesystem::ifstream> OpenFile(
+                const boost::filesystem::path& relative_path,
+                const boost::filesystem::path& anchor_path);
+
 	/// Reads the XML file at the given path, relative to some anchor path.
 	static void ReadXmlFile(
 		const boost::filesystem::path& relative_path,
 		const boost::filesystem::path& anchor_path,
 		boost::property_tree::ptree& result);
+
+        /// Opens (for reading) the file at the given path, relative to the data file directory.
+        /// Throws a fatal error if the file cannot be opened or found.
+        static std::unique_ptr<boost::filesystem::ifstream> OpenDataFile(
+                const boost::filesystem::path& relative_path);
 
 private:
 	/// Check initialization.
