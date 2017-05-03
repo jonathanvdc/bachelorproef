@@ -345,6 +345,30 @@ Population Generator::Generate()
 
 bool Generator::FitsModel(const Population& population) {
 	Debug("Checking if population fits model...");
+
+	// Check the population size.
+	const double population_ratio = double(population.size()) / double(model->population_size);
+	if (population_ratio < 0.9 || population_ratio > 1.1) {
+		Debug("Population size deviates more than 10% from goal");
+		return false;
+	}
+
+	// Check the generated persons' ages.
+	for (const auto& person : population) {
+		const int age = person.GetAge();
+		const bool is_student_age = model->IsSchoolAge(age) || model->IsCollegeAge(age);
+		if (person.GetClusterId(ClusterType::School) && !is_student_age) {
+			Debug("Generated student with invalid age: {}", age);
+			return false;
+		}
+		if (person.GetClusterId(ClusterType::Work) && !model->IsEmployableAge(age)) {
+			Debug("Generated employee with invalid age: {}", age);
+			return false;
+		}
+	}
+
+	// You could write a billion checks like this, of course. Is it worth it?
+
 	return true;
 }
 
