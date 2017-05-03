@@ -1,10 +1,6 @@
 #ifndef GEO_GEOPOSITION_H_INCLUDED
 #define GEO_GEOPOSITION_H_INCLUDED
 
-// If this flag is enabled, distances between geodesic positions are
-// calculated using a faster, but only approximately correct, method.
-// #define EQUIRECTANGULAR_APPROXIMATION
-
 #include <cmath>
 #include <string>
 #include <vector>
@@ -32,30 +28,24 @@ struct GeoPosition final
 		return latitude < rhs.latitude || (latitude == rhs.latitude && longitude < rhs.longitude);
 	}
 
-	// Calculate the distance (in kilometres) between two geodesic positions.
+	std::string ToString() const
+	{
+		std::string ns = latitude > 0 ? std::to_string(latitude) + "N" : std::to_string(-latitude) + "S";
+		std::string ew = longitude > 0 ? std::to_string(longitude) + "E" : std::to_string(-longitude) + "W";
+		return ns + " " + ew;
+	}
+
+	// Calculate the distance (in kilometres) between two geodesic positions on Earth.
 	double Distance(const GeoPosition& rhs) const
 	{
-		// Earth's radius in kilometres.
-		const double R = 6371.0;
-		const double deg_to_rad = 3.14159265359 / 180.0;
-		const double f1 = latitude * deg_to_rad;
-		const double f2 = rhs.latitude * deg_to_rad;
-		const double l1 = longitude * deg_to_rad;
-		const double l2 = rhs.longitude * deg_to_rad;
-		const double df = f2 - f1;
-		const double dl = l2 - l1;
+		using CS = boost::geometry::cs::spherical_equatorial<boost::geometry::degree>;
+		using EarthPoint = boost::geometry::model::point<double, 2, CS>;
 
-#ifdef EQUIRECTANGULAR_APPROXIMATION
-		const double x = dl * std::cos((f1 + f2) / 2.0);
-		const double y = df;
-		const double c = std::sqrt(x * x + y * y);
-#else
-		const double sf = std::sin(df / 2.0);
-		const double sl = std::sin(dl / 2.0);
-		const double a = sf * sf + std::sin(f1) * std::sin(f2) + sl * sl;
-		const double c = 2.0 * std::atan2(std::sqrt(a), std::sqrt(1.0 - a));
-#endif
-		return R * c;
+		// Earth's radius in kilometres.
+		const double earth_radius = 6371.0;
+		EarthPoint p1(longitude, latitude);
+		EarthPoint p2(rhs.longitude, rhs.latitude);
+		return earth_radius * boost::geometry::distance(p1, p2);
 	}
 
 	double GetLatitude() const { return latitude; }
