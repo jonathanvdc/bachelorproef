@@ -194,7 +194,8 @@ void InstallDirs::ReadXmlFile(
 	const boost::filesystem::path& anchor_path,
 	boost::property_tree::ptree& result)
 {
-	boost::property_tree::read_xml(*OpenFile(relative_path, anchor_path), result);
+        auto stream = OpenFile(relative_path, anchor_path);
+	boost::property_tree::read_xml(*stream, result);
 }
 
 std::unique_ptr<boost::filesystem::ifstream> InstallDirs::OpenDataFile(
