@@ -115,9 +115,6 @@ void verify_execution_environment()
 /// Run the stride simulator.
 void run_stride(const MultiSimulationConfig& config)
 {
-	StrideServer server;
-	server.run(5731);
-
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
