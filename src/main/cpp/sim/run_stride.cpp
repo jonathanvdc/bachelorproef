@@ -34,6 +34,7 @@
 #include "util/Parallel.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
+#include "http/server.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -114,6 +115,9 @@ void verify_execution_environment()
 /// Run the stride simulator.
 void run_stride(const MultiSimulationConfig& config)
 {
+	StrideServer server;
+	server.run(5731);
+
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------

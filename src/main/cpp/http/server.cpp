@@ -2,24 +2,14 @@
 #include <sstream>
 
 #include "Poco/JSON/Object.h"
+#include "Poco/URI.h"
 
 #include "handlers.h"
 #include "server.h"
 
 using namespace std;
 
-namespace Stride {
-
-vector<string> split(const string& s, char delim)
-{
-	stringstream ss;
-	ss.str(s);
-	string item;
-	vector<string> items;
-	while (getline(ss, item, delim))
-		items.push_back(item);
-	return items;
-}
+namespace stride {
 
 // StrideRequestHandlerFactory
 
@@ -27,17 +17,35 @@ StrideRequestHandlerFactory::StrideRequestHandlerFactory() {}
 
 HTTPRequestHandler* StrideRequestHandlerFactory::createRequestHandler(const HTTPServerRequest& request)
 {
-	vector<string> url = split(request.getURI(), '/');
-	for(string& i : url)
+	Poco::URI uri(request.getURI());
+
+	vector<string> path;
+	uri.getPathSegments(path);
+
+	vector<pair<string, string> > params = uri.getQueryParameters();
+	map<string, string> paramMap(params.begin(), params.end());
+
+	// Debug: Print the URL path to console
+	cout << "Path: ";
+	for (string& i : path) 
 		cout << i << '/';
 	cout << endl;
-	if (url[1] == string("API"))
-	{
-		if (url.size() > 2 && url[2] == "Online")
+
+	// Debug: Print the Parameters to console
+	cout << "Parameters: ";
+	for (pair<string, string>& i : params)
+		cout << i.first << '=' << i.second << ' ';
+	cout << endl;
+
+	if (path[0] == string("API")) {
+		if (path.size() == 1)
+			return new NotFoundRequestHandler();
+
+		if (path[1] == "online")
 			return new DataRequestHandler();
-		return new NotFoundRequestHandler();
-	}
-	else
+		else if (path[1] == "math")
+			return new MathRequestHandler(paramMap);
+	} else
 		return new NotFoundRequestHandler();
 }
 

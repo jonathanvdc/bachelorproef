@@ -23,7 +23,7 @@ using Poco::Net::HTTPServerResponse;
 using Poco::Net::HTTPServerParams;
 using Poco::Util::ServerApplication;
 
-namespace Stride {
+namespace stride {
 
 class StrideRequestHandlerFactory : public HTTPRequestHandlerFactory
 {

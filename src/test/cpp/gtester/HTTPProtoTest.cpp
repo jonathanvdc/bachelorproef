@@ -17,7 +17,7 @@
 #include "Poco/URI.h"
 
 using namespace std;
-using namespace Stride;
+using namespace stride;
 
 // Poco
 using Poco::Net::HTTPClientSession;

@@ -40,7 +40,7 @@ using Poco::Util::OptionSet;
 using Poco::Util::OptionCallback;
 using Poco::Util::HelpFormatter;
 
-namespace Stride {
+namespace stride {
 
 class HelloWorldRequestHandler : public HTTPRequestHandler
 {

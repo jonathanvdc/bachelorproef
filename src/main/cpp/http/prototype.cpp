@@ -2,7 +2,7 @@
 #include "prototype.h"
 
 using namespace std;
-using namespace Stride;
+using namespace stride;
 
 // Adapted from Poco/Net/samples/HTTPTimeServer
 

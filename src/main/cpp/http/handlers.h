@@ -15,7 +15,7 @@ using Poco::Net::HTTPRequestHandler;
 using Poco::Net::HTTPServerRequest;
 using Poco::Net::HTTPServerResponse;
 
-namespace Stride {
+namespace stride {
 
 class NotFoundRequestHandler : public HTTPRequestHandler
 {
@@ -30,6 +30,18 @@ public:
 	DataRequestHandler();
 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response);
 };
-}
+
+class MathRequestHandler : public HTTPRequestHandler
+{
+public:
+	MathRequestHandler(std::map<std::string, std::string> paramMap);
+	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response);
+
+private:
+	double x, y;
+	std::string op;
+};
+
+} // namespace Stride
 
 #endif // end of include guard
