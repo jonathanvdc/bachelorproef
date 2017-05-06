@@ -113,7 +113,7 @@ void verify_execution_environment()
 }
 
 /// Run the stride simulator.
-void run_stride(const MultiSimulationConfig& config)
+void run_stride(const MultiSimulationConfig& config, int port)
 {
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
@@ -177,6 +177,13 @@ void run_stride(const MultiSimulationConfig& config)
 	}
 	cout << "Done building simulators. " << endl << endl;
 
+	// Start a new thread to run the server.
+	// if (port) {
+		StrideServer server;
+		thread serverThread([port](StrideServer* server) { server->run(port); }, &server);
+		cout << "Running server on port " << port << "." << endl;
+	// }
+
 	// -----------------------------------------------------------------------------------------
 	// Run the simulation.
 	// -----------------------------------------------------------------------------------------
@@ -214,18 +221,21 @@ void run_stride(const MultiSimulationConfig& config)
 
 		spdlog::drop(sim_tuple.log_name);
 	}
-
 	// -----------------------------------------------------------------------------------------
 	// Print final message to command line.
 	// -----------------------------------------------------------------------------------------
 	cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
+
+	// Terminates the server and the entire program...?
+	server.terminate();
+	serverThread.join();
 }
 
 /// Run the stride simulator.
-void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMultiConfig()); }
+void run_stride(const SingleSimulationConfig& config, int port) { run_stride(config.AsMultiConfig(), port); }
 
 /// Run the stride simulator.
-void run_stride(bool track_index_case, const string& config_file_name)
+void run_stride(bool track_index_case, const string& config_file_name, int port)
 {
 	// Parse the configuration.
 	ptree pt_config;
@@ -242,7 +252,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	config.common_config->track_index_case = track_index_case;
 
 	// Run Stride.
-	run_stride(config);
+	run_stride(config, port);
 }
 
 } // end_of_namespace

@@ -41,6 +41,7 @@ int main(int argc, char** argv)
 		SwitchArg         index_case_Arg("r", "r0", "R0 only", cmd, false);
 		ValueArg<string>  config_file_Arg("c", "config", "Config File", false,
 		                                "./config/run_default.xml", "CONFIGURATION FILE", cmd);
+		ValueArg<int>     port_Arg("p", "port", "HTTP server port", false, 0, "Port", cmd);
 		cmd.parse(argc, argv);
 
 		// -----------------------------------------------------------------------------------------
@@ -56,7 +57,7 @@ int main(int argc, char** argv)
 		// -----------------------------------------------------------------------------------------
 		// Run the Stride simulator.
 		// -----------------------------------------------------------------------------------------
-		run_stride(index_case_Arg.getValue(), config_file_Arg.getValue());
+		run_stride(index_case_Arg.getValue(), config_file_Arg.getValue(), port_Arg.getValue());
 	}
 	catch (exception& e) {
 		exit_status = EXIT_FAILURE;
