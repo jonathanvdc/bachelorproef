@@ -58,6 +58,8 @@ set(LIB_SRC
     util/InstallDirs.cpp
 #---
     alias/Alias.cpp
+#---
+    checkpoint/CheckPoint.cpp
 )
 
 if( Poco_FOUND )
