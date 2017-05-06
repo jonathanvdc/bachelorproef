@@ -26,6 +26,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <memory>
 #include <string>
 
 #if defined(WIN32)
@@ -170,19 +171,37 @@ path InstallDirs::GetRootDir()
 	return g_root_dir;
 }
 
+std::unique_ptr<boost::filesystem::ifstream> InstallDirs::OpenFile(
+        const boost::filesystem::path& relative_path,
+        const boost::filesystem::path& anchor_path)
+{
+	auto file_path = anchor_path / relative_path;
+	if (!is_regular_file(file_path)) {
+		FATAL_ERROR("File " + file_path.string() + " not present.");
+	}
+
+        auto stream = std::make_unique<boost::filesystem::ifstream>();
+	stream->open(file_path.string());
+	if (!stream->is_open()) {
+		FATAL_ERROR("Error opening file " + file_path.string());
+	}
+
+        return stream;
+}
+
 void InstallDirs::ReadXmlFile(
 	const boost::filesystem::path& relative_path,
 	const boost::filesystem::path& anchor_path,
 	boost::property_tree::ptree& result)
 {
-	auto file_path = InstallDirs::GetDataDir() /= relative_path;
-	if (!is_regular_file(file_path)) {
-		FATAL_ERROR(
-			"File " + relative_path.string() +
-			" not present. (full path: " + file_path.string() + ")");
-	}
+	auto stream = OpenFile(relative_path, anchor_path);
+	boost::property_tree::read_xml(*stream, result);
+}
 
-	boost::property_tree::read_xml(file_path.string(), result);
+std::unique_ptr<boost::filesystem::ifstream> InstallDirs::OpenDataFile(
+        const boost::filesystem::path& relative_path)
+{
+	return OpenFile(relative_path, InstallDirs::GetDataDir());
 }
 
 } // namespace

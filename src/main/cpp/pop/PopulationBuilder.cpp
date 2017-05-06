@@ -76,24 +76,13 @@ shared_ptr<Population> PopulationBuilder::Build(
 	}
 
 	// Add persons to population.
-	const auto pop_file_name = config.GetPopulationPath();
-	const auto pop_file_path = InstallDirs::GetDataDir() /= pop_file_name;
-	if (!is_regular_file(pop_file_path)) {
-		FATAL_ERROR("Population file " + pop_file_path.string() + " not present.");
-	}
-
-	boost::filesystem::ifstream pop_file;
-	pop_file.open(pop_file_path.string());
-	if (!pop_file.is_open()) {
-		FATAL_ERROR("Error opening population file " + pop_file_path.string());
-	}
-
-	if (boost::algorithm::ends_with(pop_file_name, ".csv")) {
+	auto pop_file = InstallDirs::OpenDataFile(config.GetPopulationPath());
+	if (boost::algorithm::ends_with(config.GetPopulationPath(), ".csv")) {
 		// Read population data file.
 		string line;
-		getline(pop_file, line); // step over file header
+		getline(*pop_file, line); // step over file header
 		unsigned int person_id = 0U;
-		while (getline(pop_file, line)) {
+		while (getline(*pop_file, line)) {
 			const auto values = StringUtils::Split(line, ",");
 			population.emplace(
 			    person_id,
@@ -106,60 +95,17 @@ shared_ptr<Population> PopulationBuilder::Build(
 			    disease->Sample(rng));			      // Fate
 			++person_id;
 		}
-	} else if (boost::algorithm::ends_with(pop_file_name, ".xml")) {
-		// Read geodistribution profile.
-		const auto geo_file_name = config.GetGeodistributionProfilePath();
-		const auto geo_file_path = InstallDirs::GetDataDir() /= geo_file_name;
-		if (!is_regular_file(geo_file_path)) {
-			FATAL_ERROR("Geodistribution profile " + geo_file_path.string() + " not present.");
-		}
-
-		boost::filesystem::ifstream geo_file;
-		geo_file.open(geo_file_path.string());
-		if (!geo_file.is_open()) {
-			FATAL_ERROR("Error opening geodistribution profile " + geo_file_path.string());
-		}
-
-		const geo::ProfileRef geo_profile = geo::Profile::Parse(geo_file);
-		geo_file.close();
-
-		// Read reference households.
-		const auto households_file_name = config.GetReferenceHouseholdsPath();
-		const auto households_file_path = InstallDirs::GetDataDir() /= households_file_name;
-		if (!is_regular_file(households_file_path)) {
-			FATAL_ERROR("Reference households file " + households_file_path.string() + " not present.");
-		}
-
-		boost::filesystem::ifstream households_file;
-		households_file.open(households_file_path.string());
-		if (!households_file.is_open()) {
-			FATAL_ERROR("Error opening reference households file " + households_file_path.string());
-		}
-
-		boost::property_tree::ptree hpt;
-		read_json(households_file, hpt);
-		const auto reference_households = population::ParseReferenceHouseholds(hpt);
-		households_file.close();
-
-		// Read population model file.
-		boost::property_tree::ptree pt;
-		read_xml(pop_file, pt);
-		const population::ModelRef model = population::Model::Parse(pt);
-
-		// Generate population.
-		population::Generator generator(model, geo_profile, reference_households, *disease, rng);
-		population = generator.Generate();
-
-		if (!generator.FitsModel(population, true)) {
-			FATAL_ERROR("Generated population doesn't fit model " + pop_file_name);
+	} else if (boost::algorithm::ends_with(config.GetPopulationPath(), ".xml")) {
+		auto generator = population::Generator::FromConfig(config, *disease, rng);
+		population = generator->Generate();
+		if (!generator->FitsModel(population)) {
+			FATAL_ERROR("Generated population doesn't fit model " + config.GetPopulationPath());
 		}
 	} else {
 		FATAL_ERROR(
-		    "Population file " + pop_file_path.string() +
+		    "Population file " + config.GetPopulationPath() +
 		    " must be CSV (population data file) or XML (population model file).");
 	}
-
-	pop_file.close();
 
 	if (population.size() <= 2U) {
 		FATAL_ERROR("Population is too small.");

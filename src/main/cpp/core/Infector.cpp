@@ -64,7 +64,7 @@ class LOG_POLICY
 {
 public:
         static void Execute(const shared_ptr<spdlog::logger>& logger, const Person& p1, const Person& p2,
-                ClusterType cluster_type, const shared_ptr<const Calendar>& environ)
+                ClusterType cluster_type, const CalendarRef& environ)
         {}
 };
 
@@ -76,7 +76,7 @@ class LOG_POLICY<LogMode::Transmissions>
 {
 public:
         static void Execute(const shared_ptr<spdlog::logger>& logger, const Person& p1, const Person& p2,
-                ClusterType cluster_type, const shared_ptr<const Calendar>& environ)
+                ClusterType cluster_type, const CalendarRef& environ)
         {
                 logger->info("[TRAN] {} {} {} {}",
                        p1.GetId(), p2.GetId(), ToString(cluster_type), environ->GetSimulationDay());
@@ -91,7 +91,7 @@ class LOG_POLICY<LogMode::Contacts>
 {
 public:
         static void Execute(const shared_ptr<spdlog::logger>& logger, const Person& p1, const Person& p2,
-                ClusterType cluster_type, const shared_ptr<const Calendar>& calendar)
+                ClusterType cluster_type, const CalendarRef& calendar)
         {
                 unsigned int home                 = (cluster_type == ClusterType::Household);
                 unsigned int work                 = (cluster_type == ClusterType::Work);
@@ -112,7 +112,7 @@ public:
 template<LogMode log_level, bool track_index_case>
 void Infector<log_level, track_index_case>::Execute(
         Cluster& cluster, DiseaseProfile disease_profile,
-        RngHandler& contact_handler, const shared_ptr<const Calendar>& calendar,
+        RngHandler& contact_handler, const CalendarRef& calendar,
         const std::shared_ptr<spdlog::logger>& log)
 {
         // check if the cluster has infected members and sort
@@ -133,13 +133,13 @@ void Infector<log_level, track_index_case>::Execute(
                 for (size_t i_infected = 0; i_infected < num_cases; i_infected++) {
                         // check if member is present today
                         if (c_members[i_infected].second) {
-                                const auto p1 = c_members[i_infected].first;
+                                const auto& p1 = c_members[i_infected].first;
                                 if (p1.GetHealth().IsInfectious()) {
                                         const double contact_rate = cluster.GetContactRate(p1);
                                         for (size_t i_contact = num_cases; i_contact < c_immune; i_contact++) {
                                                 // check if member is present today
                                                 if (c_members[i_contact].second) {
-                                                        auto p2 = c_members[i_contact].first;
+                                                        const auto& p2 = c_members[i_contact].first;
                                                         if (contact_handler.HasTransmission(contact_rate, transmission_rate)) {
                                                                 LOG_POLICY<log_level>::Execute(log, p1, p2, c_type, calendar);
                                                                 p2.GetHealth().StartInfection();
@@ -160,7 +160,7 @@ void Infector<log_level, track_index_case>::Execute(
 template<bool track_index_case>
 void Infector<LogMode::Contacts, track_index_case>::Execute(
         Cluster& cluster, DiseaseProfile disease_profile,
-        RngHandler& contact_handler, const shared_ptr<const Calendar>& calendar,
+        RngHandler& contact_handler, const CalendarRef& calendar,
         const std::shared_ptr<spdlog::logger>& log)
 {
         cluster.UpdateMemberPresence();
@@ -174,12 +174,12 @@ void Infector<LogMode::Contacts, track_index_case>::Execute(
         for (size_t i_person1 = 0; i_person1 < cluster.m_members.size(); i_person1++) {
                 // check if member participates in the social contact survey && member is present today
                 if (c_members[i_person1].second && c_members[i_person1].first.IsParticipatingInSurvey()) {
-                        auto p1 = c_members[i_person1].first;
+                        const auto& p1 = c_members[i_person1].first;
                         const double contact_rate = cluster.GetContactRate(p1);
                         for (size_t i_person2 = 0; i_person2 < c_members.size(); i_person2++) {
                                 // check if member is present today
                                 if ((i_person1 != i_person2) && c_members[i_person2].second) {
-                                        auto p2 = c_members[i_person2].first;
+                                        const auto& p2 = c_members[i_person2].first;
                                         // check for contact
                                         if (contact_handler.HasContact(contact_rate)) {
                                                 // TODO ContactHandler doesn't have a separate transmission function anymore to

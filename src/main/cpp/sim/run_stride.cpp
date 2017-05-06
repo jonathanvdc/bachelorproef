@@ -29,9 +29,9 @@
 #include "output/SummaryFile.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
-#include "util/ConfigInfo.h"
 #include "util/Errors.h"
 #include "util/InstallDirs.h"
+#include "util/Parallel.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
 #include "checkpoint/CheckPoint.h"
@@ -39,7 +39,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <omp.h>
 #include <spdlog/spdlog.h>
 
 #include <cmath>
@@ -86,25 +85,14 @@ void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 	     << "     Done, infected count: " << setw(10) << infected_count << endl;
 }
 
-/// Gets the number of threads provided by OpenMP.
-unsigned int get_number_of_omp_threads()
+/// Prints and returns the number of threads.
+unsigned int print_number_of_threads()
 {
-	unsigned int num_threads;
-#pragma omp parallel
-	{
-		num_threads = omp_get_num_threads();
-	}
-	return num_threads;
-}
-
-/// Prints and returns the number of threads provided by OpenMP.
-unsigned int print_number_of_omp_threads()
-{
-	unsigned int num_threads = get_number_of_omp_threads();
-	if (ConfigInfo::HaveOpenMP()) {
-		cout << "Using OpenMP threads:  " << num_threads << endl;
+	unsigned int num_threads = stride::util::parallel::get_number_of_threads();
+	if (stride::util::parallel::using_parallelization_library) {
+		cout << "Using " << stride::util::parallel::parallelization_library_name << " threads: " << num_threads << endl;
 	} else {
-		cout << "Not using OpenMP threads." << endl;
+		cout << "Not using threads for parallelization." << endl;
 	}
 	return num_threads;
 }
@@ -137,7 +125,7 @@ void run_stride(const MultiSimulationConfig& config)
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
-	unsigned int num_threads = print_number_of_omp_threads();
+	unsigned int num_threads = print_number_of_threads();
 
 	// -----------------------------------------------------------------------------------------
 	// Set output path prefix.

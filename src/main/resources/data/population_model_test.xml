@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- This file is used by the popgen tests; edit at your own risk. -->
+
 <population_model>
     <!-- Generation parameters -->
     <school_size>500</school_size>
@@ -7,11 +9,11 @@
     <college_cluster_size>50</college_cluster_size>
     <workplace_size>50</workplace_size>
     <community_size>2000</community_size>
-    <search_radius>10.0</search_radius> <!-- in kilometers -->
+    <search_radius>20.0</search_radius> <!-- in kilometers -->
 
     <!-- Population/city/town parameters -->
-    <population_size>100000</population_size>
-    <city_ratio>0.4</city_ratio>
+    <population_size>10000</population_size>
+    <city_ratio>0.5</city_ratio>
     <town_distribution>
         <town_range>
             <minimum>10</minimum>
@@ -20,7 +22,7 @@
         </town_range>
         <town_range>
             <minimum>100</minimum>
-            <maximum>1000</maximum>
+            <maximum>300</maximum>
             <probability>0.3</probability>
         </town_range>
     </town_distribution>

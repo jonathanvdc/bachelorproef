@@ -20,14 +20,17 @@
 #============================================================================
 set( EXEC       gtester     )
 set( SRC
-		main.cpp
-		BatchRuns.cpp
-		ParsePopulationModel.cpp
 		AliasTest.cpp
+		BatchRuns.cpp
+		GeoPosition.cpp
+		main.cpp
+		MpiTests.cpp
+		ParsePopulationModel.cpp
 		ParseSimulationConfig.cpp
 		ParseTravelConfig.cpp
-		MpiTests.cpp
+		PopulationGeneration.cpp
 		RunSimulator.cpp
+		TravelModelGraph.cpp
 )
 
 if( Poco_FOUND )

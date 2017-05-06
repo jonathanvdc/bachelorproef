@@ -41,7 +41,7 @@ class Infector
 public:
 	///
 	static void Execute(Cluster& cluster, DiseaseProfile disease_profile,
-	        RngHandler& contact_handler, const std::shared_ptr<const Calendar>& sim_state,
+	        RngHandler& contact_handler, const CalendarRef& sim_state,
                 const std::shared_ptr<spdlog::logger>& log);
 };
 
@@ -54,7 +54,7 @@ class Infector<LogMode::Contacts, track_index_case>
 public:
         ///
         static void Execute(Cluster& cluster, DiseaseProfile disease_profile,
-                RngHandler& contact_handler, const std::shared_ptr<const Calendar>& calendar,
+                RngHandler& contact_handler, const CalendarRef& calendar,
                 const std::shared_ptr<spdlog::logger>& log);
 };
 

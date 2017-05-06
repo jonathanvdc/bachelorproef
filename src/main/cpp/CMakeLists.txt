@@ -56,6 +56,8 @@ set(LIB_SRC
     sim/SimulatorBuilder.cpp
 #---
     util/InstallDirs.cpp
+    util/Parallel.cpp
+
 #---
     alias/Alias.cpp
 #---

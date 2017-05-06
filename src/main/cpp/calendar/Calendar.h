@@ -80,6 +80,8 @@ private:
 	std::vector<boost::gregorian::date>    m_school_holidays;         ///< Vector of school holidays
 };
 
+using CalendarRef = std::shared_ptr<const Calendar>;
+
 } // end_of_namespace
 
 #endif // end of include guard

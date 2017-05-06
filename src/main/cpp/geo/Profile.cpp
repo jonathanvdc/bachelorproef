@@ -12,17 +12,13 @@ namespace geo {
 ProfileRef Profile::Parse(std::ifstream& csv_file)
 {
 	std::vector<City> cities;
+	std::vector<GeoPosition> points;
 	std::vector<std::string> tokens;
 	std::string line;
 
 	// Skip the header line:
 	// "city_id","city_name","province","population","x_coord","y_coord","latitude","longitude"
 	getline(csv_file, line);
-
-	double min_latitude = +std::numeric_limits<double>::infinity();
-	double max_latitude = -std::numeric_limits<double>::infinity();
-	double min_longitude = +std::numeric_limits<double>::infinity();
-	double max_longitude = -std::numeric_limits<double>::infinity();
 
 	while (getline(csv_file, line)) {
 		boost::tokenizer<boost::escaped_list_separator<char>> tok(line);
@@ -37,15 +33,10 @@ ProfileRef Profile::Parse(std::ifstream& csv_file)
 		     util::StringUtils::FromString<double>(tokens[4]),     // x_coord
 		     util::StringUtils::FromString<double>(tokens[5]),     // y_coord
 		     {latitude, longitude}});
-
-		min_latitude = std::min(min_latitude, latitude);
-		max_latitude = std::max(max_latitude, latitude);
-		min_longitude = std::min(min_longitude, longitude);
-		max_longitude = std::max(max_longitude, longitude);
+		points.push_back({latitude, longitude});
 	}
 
-	return std::make_shared<Profile>(
-	    cities, GeoRectangle{min_latitude, max_latitude, min_longitude, max_longitude});
+	return std::make_shared<Profile>(cities, HullSampler(points));
 }
 
 } // namespace

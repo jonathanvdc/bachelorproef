@@ -30,10 +30,10 @@
 #include "core/LogMode.h"
 #include "multiregion/Visitor.h"
 #include "pop/Population.h"
+#include "util/Parallel.h"
 
 #include <memory>
 #include <boost/property_tree/ptree.hpp>
-#include <omp.h>
 #include <spdlog/spdlog.h>
 
 namespace stride {
@@ -55,36 +55,16 @@ void Simulator::UpdateClusters()
 {
 	auto log = m_log;
 
-#pragma omp parallel num_threads(m_num_threads)
-	{
-		const unsigned int thread = omp_get_thread_num();
+	auto action = [this, log](Cluster& cluster, unsigned int thread_id) {
+		Infector<log_level, track_index_case>::Execute(
+		    cluster, m_disease_profile, m_rng_handler[thread_id], m_calendar, log);
+	};
 
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_households.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_households[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_school_clusters.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_school_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_work_clusters.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_work_clusters[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_primary_community.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_primary_community[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-#pragma omp for schedule(runtime)
-		for (size_t i = 0; i < m_secondary_community.size(); i++) {
-			Infector<log_level, track_index_case>::Execute(
-			    m_secondary_community[i], m_disease_profile, m_rng_handler[thread], m_calendar, log);
-		}
-	}
+	stride::util::parallel::parallel_for(m_households, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_school_clusters, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_work_clusters, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_primary_community, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_secondary_community, m_num_threads, action);
 }
 
 void Simulator::AddPersonToClusters(const Person& person)
@@ -139,44 +119,47 @@ void Simulator::RemovePersonFromClusters(const Person& person)
 
 PersonId Simulator::GeneratePersonId()
 {
-	// TODO: recycle ids
-	return m_population->get_max_id() + 1;
+	if (m_unused_person_ids.empty()) {
+		return m_population->get_max_id() + 1;
+	} else {
+		auto result = m_unused_person_ids.front();
+		m_unused_person_ids.pop();
+		return result;
+	}
 }
 
 std::size_t Simulator::GenerateHousehold()
 {
-	// TODO: recycle households
-	auto household_id = m_households.size();
-	m_households.emplace_back(household_id, ClusterType::Household);
+	std::size_t household_id;
+	if (m_unused_households.empty()) {
+		household_id = m_households.size();
+		m_households.emplace_back(household_id, ClusterType::Household);
+	} else {
+		household_id = m_unused_households.front();
+		m_unused_households.pop();
+	}
 	return household_id;
 }
 
-void Simulator::RecyclePersonId(PersonId id)
-{
-	// TODO: recycle ids
-}
+void Simulator::RecyclePersonId(PersonId id) { m_unused_person_ids.push(id); }
 
-void Simulator::RecycleHousehold(std::size_t household_id)
-{
-	// TODO: recycle households
-}
+void Simulator::RecycleHousehold(std::size_t household_id) { m_unused_households.push(household_id); }
 
 void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 {
 	for (const auto& returning_expat : input.expatriates) {
 		// Return the expatriate to this region's population.
-		auto returned_expat = *m_population->emplace(returning_expat);
+		const auto& home_expat =
+		    *m_population->emplace(m_expatriates.ExtractExpatriate(returning_expat.GetId()));
 
-		auto home_expat = m_expatriates.ExtractExpatriate(returning_expat.GetId());
-
-		// Update the returning expatriate's clusters.
-		for (std::size_t i = 0; i < NumOfClusterTypes(); i++) {
-			auto cluster_type = static_cast<ClusterType>(i);
-			returned_expat.GetClusterId(cluster_type) = home_expat.GetClusterId(cluster_type);
+		// Update the expatriate's stats.
+		home_expat.GetHealth() = returning_expat.GetHealth();
+		if (returning_expat.IsParticipatingInSurvey()) {
+			home_expat.ParticipateInSurvey();
 		}
 
 		// Add the returning expatriate to their clusters.
-		AddPersonToClusters(returned_expat);
+		AddPersonToClusters(home_expat);
 	}
 
 	for (const auto& visitor : input.visitors) {

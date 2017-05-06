@@ -6,6 +6,7 @@
  * Header file for reference households
  */
 
+#include <iostream>
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 
@@ -20,7 +21,7 @@ struct ReferenceHousehold final
 };
 
 // Parse a reference households file.
-std::vector<ReferenceHousehold> ParseReferenceHouseholds(const boost::property_tree::ptree& pt);
+std::shared_ptr<std::vector<ReferenceHousehold>> ParseReferenceHouseholds(const boost::property_tree::ptree& pt);
 
 } // namespace population
 } // namespace stride
