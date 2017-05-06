@@ -4,6 +4,9 @@
 #include <memory>
 #include <numeric>
 #include <vector>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include <spdlog/spdlog.h>
 
 #include "Generator.h"
@@ -12,10 +15,34 @@
 #include "alias/Alias.h"
 #include "core/Cluster.h"
 #include "core/ClusterType.h"
+#include "sim/SimulationConfig.h"
 #include "util/Errors.h"
+#include "util/InstallDirs.h"
 
 namespace stride {
 namespace population {
+
+std::unique_ptr<Generator> Generator::FromConfig(
+    const SingleSimulationConfig& config, const disease::Disease& disease, util::Random& rng)
+{
+	// Read geodistribution profile.
+	auto geo_file = util::InstallDirs::OpenDataFile(config.GetGeodistributionProfilePath());
+	const geo::ProfileRef geo_profile = geo::Profile::Parse(*geo_file);
+
+	// Read reference households.
+	auto households_file = util::InstallDirs::OpenDataFile(config.GetReferenceHouseholdsPath());
+	boost::property_tree::ptree hpt;
+	boost::property_tree::read_json(*households_file, hpt);
+	const auto reference_households = population::ParseReferenceHouseholds(hpt);
+
+	// Read population model file.
+	auto pop_file = util::InstallDirs::OpenDataFile(config.GetPopulationPath());
+	boost::property_tree::ptree pt;
+	boost::property_tree::read_xml(*pop_file, pt);
+	const population::ModelRef model = population::Model::Parse(pt);
+
+	return std::make_unique<Generator>(model, geo_profile, reference_households, disease, rng);
+}
 
 /// Calculate the sum of all the values of a map.
 template <typename K, typename V>
@@ -40,11 +67,6 @@ Population Generator::Generate()
 	using School = std::vector<SchoolClusterId>;
 	using College = School;
 
-	// Logging.
-	auto console = spdlog::stderr_logger_st("popgen");
-	console->set_level(spdlog::level::debug);
-	console->set_pattern("\x1b[36;1m[popgen] %v\x1b[0m");
-
 	// The population object we're filling up.
 	Population population;
 
@@ -67,7 +89,7 @@ Population Generator::Generate()
 
 	// Generate cities.
 	{
-		console->debug("Generating cities...");
+		Debug("Generating cities...");
 		int cities_created = 0;
 		n = model->population_size;
 		for (const auto& city : geo_profile->GetCities()) {
@@ -79,12 +101,12 @@ Population Generator::Generate()
 			}
 			cities_created++;
 		}
-		console->debug("Created {} cities.", cities_created);
+		Debug("Created {} cities.", cities_created);
 	}
 
 	// Generate towns.
 	{
-		console->debug("Generating towns...");
+		Debug("Generating towns...");
 		int towns_created = 0;
 		while (n > 0) {
 			int town_size = GetRandomTownSize();
@@ -94,7 +116,7 @@ Population Generator::Generate()
 			}
 			towns_created++;
 		}
-		console->debug("Created {} towns.", towns_created);
+		Debug("Created {} towns.", towns_created);
 	}
 
 	// A GeoPosition distribution, biased towards locations with high populations.
@@ -105,12 +127,12 @@ Population Generator::Generate()
 	std::map<GeoPosition, int> school_population_distribution;
 	std::map<GeoPosition, int> work_population_distribution;
 	{
-		console->debug("Generating households...");
+		Debug("Generating households...");
 		int households_created = 0;
 		n = model->population_size;
 		while (n > 0) {
-			auto geo_position = geo_brng.Next();
-			auto rh = GetRandomReferenceHousehold();
+			const auto geo_position = geo_brng.Next();
+			const auto rh = GetRandomReferenceHousehold();
 			households[geo_position].emplace_back(rh);
 
 			for (int age : rh.ages) {
@@ -125,13 +147,13 @@ Population Generator::Generate()
 			n -= rh.ages.size();
 			households_created++;
 		}
-		console->debug("Created {} households.", households_created);
+		Debug("Created {} households.", households_created);
 	}
 
 	// Generate schools.
 	std::map<GeoPosition, double> college_distribution;
 	{
-		console->debug("Generating schools...");
+		Debug("Generating schools...");
 		SchoolClusterId school_cluster_id = 1;
 		int schools_created = 0;
 
@@ -147,10 +169,10 @@ Population Generator::Generate()
 			n -= model->school_size;
 			schools_created++;
 		}
-		console->debug("Created {} schools.", schools_created);
+		Debug("Created {} schools.", schools_created);
 
 		// Generate colleges.
-		console->debug("Generating colleges...");
+		Debug("Generating colleges...");
 		const int clusters_per_college = model->college_size / model->college_cluster_size;
 		int colleges_created = 0;
 
@@ -169,7 +191,7 @@ Population Generator::Generate()
 			n -= model->college_size;
 			colleges_created++;
 		}
-		console->debug("Created {} colleges.", colleges_created);
+		Debug("Created {} colleges.", colleges_created);
 	}
 
 	// This biased distribution is sampled from for students who commute to college.
@@ -180,7 +202,7 @@ Population Generator::Generate()
 
 	// Generate workplaces.
 	{
-		console->debug("Generating workplaces...");
+		Debug("Generating workplaces...");
 		WorkClusterId work_cluster_id = 1;
 		int workplaces_created = 0;
 
@@ -190,12 +212,12 @@ Population Generator::Generate()
 			n -= model->workplace_size;
 			workplaces_created++;
 		}
-		console->debug("Created {} workplaces.", workplaces_created);
+		Debug("Created {} workplaces.", workplaces_created);
 	}
 
 	// Generate communities.
 	{
-		console->debug("Generating primary communities...");
+		Debug("Generating primary communities...");
 		CommunityClusterId primary_community_cluster_id = 1;
 		int primary_communities_created = 0;
 
@@ -206,12 +228,12 @@ Population Generator::Generate()
 			primary_communities_created++;
 		}
 
-		console->debug("Created {} primary communities.", primary_communities_created);
+		Debug("Created {} primary communities.", primary_communities_created);
 	}
 
 	// Generate secondary communities.
 	{
-		console->debug("Generating secondary communities...");
+		Debug("Generating secondary communities...");
 		CommunityClusterId secondary_community_cluster_id = 1;
 		int secondary_communities_created = 0;
 
@@ -222,12 +244,12 @@ Population Generator::Generate()
 			secondary_communities_created++;
 		}
 
-		console->debug("Created {} secondary communities.", secondary_communities_created);
+		Debug("Created {} secondary communities.", secondary_communities_created);
 	}
 
 	// Generate people.
 	{
-		console->debug("Generating people...");
+		Debug("Generating people...");
 		HouseholdClusterId household_id = 1;
 		ClusterId person_id = 1;
 
@@ -262,18 +284,18 @@ Population Generator::Generate()
 					    secondary_community_id, disease.Sample(random));
 
 					if (person_id % 10000 == 0) {
-						console->debug("Person {}...", person_id);
+						Debug("Person {}...", person_id);
 					}
 				}
 				household_id++;
 			}
 		}
-		console->debug("Generated {} people.", person_id - 1);
+		Debug("Generated {} people.", person_id - 1);
 	}
 
 	// Store all the cluster's locations in the population's atlas.
 	{
-		console->debug("Creating atlas of cluster locations...");
+		Debug("Creating atlas of cluster locations...");
 		HouseholdClusterId household_id = 1;
 		for (const auto& p : households)
 			for (auto it = p.second.begin(); it != p.second.end(); ++it)
@@ -301,11 +323,54 @@ Population Generator::Generate()
 				population.AtlasEmplace({id, ClusterType::SecondaryCommunity}, p.first);
 	}
 
-	console->debug("Done!");
+	/* {
+		Debug("Writing .SVG file of towns and cities...");
+		std::ofstream svg_file;
+		svg_file.open("towns_and_cities.svg");
+		svg_file << "<svg width=\"500\" height=\"400\" viewBox=\"2 49 5 3\"
+	xmlns=\"http://www.w3.org/2000/svg\">\n";
+		for (const auto& p : population_distribution) {
+			Debug("{} {} {}", p.first.longitude, p.first.longitude, p.second);
+			svg_file << "  <circle cx=\"" << p.first.longitude
+				<< "\" cy=\"" << (101.0 - p.first.latitude)
+				<< "\" r=\"" << (std::log(p.second) * 0.005) << "\"/>\n";
+		}
+		svg_file << "</svg>\n";
+		svg_file.close();
+	} */
+
+	Debug("Done!");
 	return population;
 }
 
-bool Generator::FitsModel(const Population& population, bool verbose) { return true; }
+bool Generator::FitsModel(const Population& population) {
+	Debug("Checking if population fits model...");
+
+	// Check the population size.
+	const double population_ratio = double(population.size()) / double(model->population_size);
+	if (population_ratio < 0.9 || population_ratio > 1.1) {
+		Debug("Population size deviates more than 10% from goal");
+		return false;
+	}
+
+	// Check the generated persons' ages.
+	for (const auto& person : population) {
+		const int age = person.GetAge();
+		const bool is_student_age = model->IsSchoolAge(age) || model->IsCollegeAge(age);
+		if (person.GetClusterId(ClusterType::School) && !is_student_age) {
+			Debug("Generated student with invalid age: {}", age);
+			return false;
+		}
+		if (person.GetClusterId(ClusterType::Work) && !model->IsEmployableAge(age)) {
+			Debug("Generated employee with invalid age: {}", age);
+			return false;
+		}
+	}
+
+	// You could write a billion checks like this, of course. Is it worth it?
+
+	return true;
+}
 
 } // namespace population
 } // namespace stride

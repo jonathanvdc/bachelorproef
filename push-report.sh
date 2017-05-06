@@ -28,7 +28,7 @@ cd ..
 echo "Copying gtest report to flu-plus-plus.github.io/gtest-reports/ ..."
 REPO_OWNER_NAME=$(echo $TRAVIS_REPO_SLUG | cut -d '/' -f1)
 mkdir -p out/gtest-reports
-cp build/installed/bin/gtester_all.xml out/gtest-reports/${REPO_OWNER_NAME}-${TRAVIS_BRANCH}-${CC_COMPILER_NAME}.xml
+cp build/installed/bin/gtester_all.xml out/gtest-reports/${REPO_OWNER_NAME}-${TRAVIS_BRANCH}-${CONFIG_IDENTIFIER}.xml
 
 # Create a table comparison of all reports.
 echo "Regenerating comparison table..."

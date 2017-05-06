@@ -15,7 +15,7 @@ cache:
     - $HOME/boost_1_63_0/stage/lib
     - $HOME/poco
 
-# We're going to need cmake, MPI and the mono runtime.
+# We're going to need MPI and the mono runtime.
 addons:
   apt:
     packages: &default_packages
@@ -25,9 +25,11 @@ addons:
       - libmono-corlib4.5-cil
       - libmono-system-xml4.0-cil
       - libmono-system-core4.0-cil
-      - cmake
       - mpich
       - libmpich-dev
+      # The CMake package is kind of dated. We'll download a later version
+      # of cmake later on.
+      # - cmake
       # Don't grab the APT boost package, because that package is stale.
       # We'll need to build boost ourselves.
       # - libboost-all-dev
@@ -35,37 +37,59 @@ addons:
 matrix:
   include:
     - compiler: gcc
-      env: CC_COMPILER_NAME='gcc-6' CXX_COMPILER_NAME='g++-6'
+      env: CONFIG_IDENTIFIER='gcc-6' CC_COMPILER_NAME='gcc-6' CXX_COMPILER_NAME='g++-6'
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+            - mono
           packages:
             - *default_packages
             - gcc-6
             - g++-6
 
     - compiler: clang
-      env: CC_COMPILER_NAME='clang-3.8' CXX_COMPILER_NAME='clang++-3.8'
+      env: CONFIG_IDENTIFIER='clang-4.0-tbb' CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0'
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty
+            - llvm-toolchain-trusty-4.0
+            - mono
           packages:
             - *default_packages
-            - clang-3.8
-            - clang++-3.8
+            - clang-4.0
+            - clang++-4.0
+            - libstdc++-6-dev
+            - libtbb-dev
+
+    - compiler: clang
+      env: CONFIG_IDENTIFIER='clang-4.0' CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0'
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+            - mono
+          packages:
+            - *default_packages
+            - clang-4.0
+            - clang++-4.0
             - libstdc++-6-dev
 
 before_install:
   - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
   # Print the C++ compiler version.
   - $CXX --version
-  # Print the CMake version.
-  - cmake --version
   # Print the Mono version number.
   - mono --version
+  # Grab a relatively recent version of CMake, unzip it and add
+  # it to the path.
+  - wget https://cmake.org/files/v3.8/cmake-3.8.0-Linux-x86_64.tar.gz
+  - tar -xzf cmake-3.8.0-Linux-x86_64.tar.gz
+  - export PATH="$PWD/cmake-3.8.0-Linux-x86_64/bin/:$PATH"
+  # Print the CMake version.
+  - cmake --version
   # Grab the gtest report pretty printer.
   - wget https://github.com/jonathanvdc/gtest-report-tools/releases/download/v0.1.3/gtest-report-tools.zip
   - unzip gtest-report-tools.zip -d gtest-report-tools

@@ -31,6 +31,7 @@
 #include "sim/SimulationConfig.h"
 
 #include <memory>
+#include <queue>
 #include <vector>
 #include <boost/property_tree/ptree.hpp>
 #include <spdlog/spdlog.h>
@@ -114,6 +115,9 @@ private:
 	std::vector<Cluster> m_work_clusters;       ///< Container with work Clusters.
 	std::vector<Cluster> m_primary_community;   ///< Container with primary community Clusters.
 	std::vector<Cluster> m_secondary_community; ///< Container with secondary community  Clusters.
+
+	std::queue<std::size_t> m_unused_households; ///< A list of unused households which can are eligible for recycling.
+	std::queue<PersonId> m_unused_person_ids; ///< A list of unused person IDs which are eligible for recycling.
 
 	DiseaseProfile m_disease_profile; ///< Profile of disease.
 

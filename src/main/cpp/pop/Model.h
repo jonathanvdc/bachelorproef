@@ -30,7 +30,7 @@ struct Model final
 
 	Model(
 	    int school_size, int school_cluster_size, int college_size, int college_cluster_size, int workplace_size,
-	    int community_size, double search_radius, int population_size, int city_ratio,
+	    int community_size, double search_radius, int population_size, double city_ratio,
 	    std::map<util::InclusiveRange<int>, double> town_distribution, util::InclusiveRange<int> school_age,
 	    util::InclusiveRange<int> college_age, double college_ratio, double college_commute_ratio,
 	    util::InclusiveRange<int> employable_age, double employed_ratio, double work_commute_ratio)
