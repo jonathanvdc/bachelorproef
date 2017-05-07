@@ -155,6 +155,7 @@ void run_stride(const MultiSimulationConfig& config, int port)
 		std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>> sim_task;
 	};
 	std::vector<SimulationTuple> tasks;
+	std::vector<std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>> myTasks;
 	for (const auto& single_config : config.GetSingleConfigs()) {
 		multiregion::RegionId region_id = single_config.GetId();
 		cout << "Building simulator #" << region_id << endl;
@@ -172,13 +173,14 @@ void run_stride(const MultiSimulationConfig& config, int port)
 		    std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-		tasks.push_back({log_name, sim_output_prefix, single_config,
-				 sim_manager.CreateSimulation(single_config, file_logger, region_id)});
+		auto task = sim_manager.CreateSimulation(single_config, file_logger, region_id);
+		myTasks.push_back(task);
+		tasks.push_back({log_name, sim_output_prefix, single_config, task});
 	}
 	cout << "Done building simulators. " << endl << endl;
 
-	StrideServer server;
-	// Start the server thread.
+	StrideServer server(myTasks);
+	// Start the server if a port was specified
 	if (port) {
 		server.start(port);
 		cout << "Running server on port " << port << "." << endl;

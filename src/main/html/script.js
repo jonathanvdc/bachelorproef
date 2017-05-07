@@ -11,17 +11,54 @@ function sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-baseUrl = 'http://127.0.0.1:5731/';
+address = '127.0.0.1';
+port = 5731;
+baseUrl = 'http://' + address + ':' + port + '/';
+
+function makeRequest(path, argDict){
+    argStr = '?';
+    for(var arg in argDict)
+        argStr += arg + '=' + argDict[arg] + '&';
+
+    var request = new XMLHttpRequest();
+    request.open('GET', baseUrl + path + argStr);
+    request.responseType = 'json';
+    return request;
+}
+
+var online = true;
+
+async function updateLoop(){
+    while(online){
+        updateInfected();
+        await sleep(200);
+    }
+}
+
+function updateInfected(){
+    var request = makeRequest('API/sim/infectedCount');
+
+    request.onload = function(){
+        console.log("Infected count request answer: " + request.response.value);
+        $('.infected').text(request.response.value);
+    }
+
+    request.onerror = async function () {
+        console.log("Unable to connect, process must have stopped.");
+        online = false;
+    }
+
+    request.send();
+}
+
 
 
 // Sends a math request to the server and writes the outcome in the .data section of the page
 function mathRequest(x, y, op = "add"){
-    var request = new XMLHttpRequest();
-    request.open('GET', baseUrl + 'API/math?x={0}&y={1}&op={2}'.format(x, y, op));
-    request.responseType = 'json';
+    var request = makeRequest('API/math', {x : x, y : y, op : op});
 
     request.onload = function(){
-        console.log("Math request answer: " + request.response);
+        console.log("Math request answer: " + request.response.value);
         $('.data').text(request.response.value);
     }
 
@@ -32,6 +69,7 @@ function onConnect(request){
     console.log(request.response);
     $('.status').text("Online!");
     mathRequest(10, 20);
+    updateLoop();
 }
 
 // Function which will continuously try connecting until it succeeds
@@ -52,5 +90,9 @@ async function tryConnecting() {
     request.send();
 }
 
-// Try connecting as soon as the document has finished loading.
-$(document).ready(() => tryConnecting());
+$(document).ready(function(){
+
+    $('.port').text(port)
+    // Try connecting as soon as the document has finished loading.
+    tryConnecting();
+});

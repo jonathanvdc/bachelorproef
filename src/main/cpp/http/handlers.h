@@ -3,6 +3,12 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <memory>
+
+#include "sim/run_stride.h"
+#include "multiregion/ParallelSimulationManager.h"
+#include "multiregion/SimulationManager.h"
+
 #include "Poco/Exception.h"
 #include "Poco/JSON/Object.h"
 #include "Poco/Net/HTTPRequestHandler.h"
@@ -15,20 +21,33 @@ using Poco::Net::HTTPRequestHandler;
 using Poco::Net::HTTPServerRequest;
 using Poco::Net::HTTPServerResponse;
 
+using namespace std;
+
 namespace stride {
 
-class NotFoundRequestHandler : public HTTPRequestHandler
+class ErrorRequestHandler : public HTTPRequestHandler
 {
 public:
-	NotFoundRequestHandler();
+	ErrorRequestHandler(string message);
+	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response);
+private:
+	string message;
+};
+
+class OnlineRequestHandler : public HTTPRequestHandler
+{
+public:
+	OnlineRequestHandler();
 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response);
 };
 
-class DataRequestHandler : public HTTPRequestHandler
+class InfectedCountRequestHandler : public HTTPRequestHandler
 {
 public:
-	DataRequestHandler();
+	InfectedCountRequestHandler(shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>> task);
 	void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response);
+private:
+	size_t count;
 };
 
 class MathRequestHandler : public HTTPRequestHandler

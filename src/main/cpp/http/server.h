@@ -5,6 +5,10 @@
 #include <memory>
 #include <unistd.h>
 
+#include "sim/run_stride.h"
+#include "multiregion/ParallelSimulationManager.h"
+#include "multiregion/SimulationManager.h"
+
 #include "Poco/Exception.h"
 #include "Poco/Net/HTTPRequestHandler.h"
 #include "Poco/Net/HTTPRequestHandlerFactory.h"
@@ -32,17 +36,18 @@ namespace stride {
 class StrideRequestHandlerFactory : public HTTPRequestHandlerFactory
 {
 public:
-	StrideRequestHandlerFactory();
+	StrideRequestHandlerFactory(shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>> task);
 	HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request);
 
 private:
+	shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>> task;
 	// (Put our window into the simulator here)
 };
 
 class StrideServer
 {
 public:
-	StrideServer();
+	StrideServer(std::vector<std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>> myTasks);
 	~StrideServer();
 
 	// Run the server on the given port.
@@ -53,6 +58,7 @@ public:
 	void stop();
 
 private:
+	shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>> task;
 	StrideRequestHandlerFactory* factory;
 	shared_ptr<HTTPServer> server;
 };

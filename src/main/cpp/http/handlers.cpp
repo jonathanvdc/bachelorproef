@@ -4,29 +4,29 @@ using namespace std;
 
 namespace stride {
 
-// NotFoundRequestHandler
+// ErrorRequestHandler
 
-NotFoundRequestHandler::NotFoundRequestHandler() {}
+ErrorRequestHandler::ErrorRequestHandler(string message) : message(message) {}
 
-void NotFoundRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
+void ErrorRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
 	response.set("Access-Control-Allow-Origin", request.get("Origin"));
 	response.setChunkedTransferEncoding(true);
 	response.setContentType("json");
 
 	Poco::JSON::Object out;
-	out.set("responseType", "notFound");
-	out.set("message", "Not found!");
+	out.set("responseType", "error");
+	out.set("error", message);
 
 	std::ostream& ostr = response.send();
 	out.stringify(ostr);
 }
 
-// DataRequestHandler
+// OnlineRequestHandler
 
-DataRequestHandler::DataRequestHandler() {}
+OnlineRequestHandler::OnlineRequestHandler() {}
 
-void DataRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
+void OnlineRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
 	response.set("Access-Control-Allow-Origin", request.get("Origin"));
 	response.setChunkedTransferEncoding(true);
@@ -34,7 +34,28 @@ void DataRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerRes
 
 	Poco::JSON::Object out;
 	out.set("responseType", "data");
-	out.set("data", "this is the data");
+	out.set("data", "Server is online!");
+
+	std::ostream& ostr = response.send();
+	out.stringify(ostr);
+}
+
+// InfectedCountRequestHandler
+
+InfectedCountRequestHandler::InfectedCountRequestHandler(shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>> task)
+{
+	count = task->GetInfectedCount();
+}
+
+void InfectedCountRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
+{
+	response.set("Access-Control-Allow-Origin", request.get("Origin"));
+	response.setChunkedTransferEncoding(true);
+	response.setContentType("json");
+
+	Poco::JSON::Object out;
+	out.set("responseType", "value");
+	out.set("value", count);
 
 	std::ostream& ostr = response.send();
 	out.stringify(ostr);
