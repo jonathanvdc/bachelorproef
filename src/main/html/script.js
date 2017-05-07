@@ -13,9 +13,9 @@ function sleep(time) {
 
 address = '127.0.0.1';
 port = 5731;
-baseUrl = 'http://' + address + ':' + port + '/';
+baseUrl = 'http://' + address + ':' + port + '/API/';
 
-function makeRequest(path, argDict){
+function apiRequest(path, argDict){
     argStr = '?';
     for(var arg in argDict)
         argStr += arg + '=' + argDict[arg] + '&';
@@ -36,7 +36,7 @@ async function updateLoop(){
 }
 
 function updateInfected(){
-    var request = makeRequest('API/sim/infectedCount');
+    var request = apiRequest('sim/infectedCount');
 
     request.onload = function(){
         console.log("Infected count request answer: " + request.response.value);
@@ -45,21 +45,18 @@ function updateInfected(){
 
     request.onerror = async function () {
         console.log("Unable to connect, process must have stopped.");
-        online = false;
+        onDisconnect();
     }
 
     request.send();
 }
 
-
-
-// Sends a math request to the server and writes the outcome in the .data section of the page
+// Test function.
 function mathRequest(x, y, op = "add"){
-    var request = makeRequest('API/math', {x : x, y : y, op : op});
+    var request = apiRequest('math', {x : x, y : y, op : op});
 
     request.onload = function(){
-        console.log("Math request answer: " + request.response.value);
-        $('.data').text(request.response.value);
+        console.log("Math request answer: {0} {1} {2} = {3}".format(x, y, opp, request.response.value));
     }
 
     request.send();
@@ -69,15 +66,19 @@ function onConnect(request){
     console.log(request.response);
     $('.status').text("Online!");
     mathRequest(10, 20);
+    // Start the update loop.
     updateLoop();
+}
+
+function onDisconnect(){
+    $('.status').text("Back offline");
+    online = false;
 }
 
 // Function which will continuously try connecting until it succeeds
 // Calls onConnect with the request response upon connecting.
 async function tryConnecting() {
-    var request = new XMLHttpRequest();
-    request.open('GET', baseUrl + 'API/online');
-    request.responseType = 'json';
+    var request = apiRequest('online');
 
     request.onload = () => onConnect(request);
 
