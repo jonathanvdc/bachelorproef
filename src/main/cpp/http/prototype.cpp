@@ -1,4 +1,3 @@
-#include <iostream>
 #include "prototype.h"
 
 using namespace std;
@@ -26,32 +25,21 @@ HTTPRequestHandler* HelloWorldRequestHandlerFactory::createRequestHandler(const 
 {
 	if (request.getURI() == "/")
 		return new HelloWorldRequestHandler();
-	else
-		return nullptr;
+	return nullptr;
 }
 
-// HTTPHelloWorldServer
+// HelloWorldServer
 
-HTTPHelloWorldServer::HTTPHelloWorldServer() {}
-HTTPHelloWorldServer::~HTTPHelloWorldServer() {}
+HelloWorldServer::HelloWorldServer() {}
+HelloWorldServer::~HelloWorldServer() {}
 
-int HTTPHelloWorldServer::run(unsigned short port)
+void HelloWorldServer::start(unsigned short port)
 {
 	ServerSocket svs(port);
-	HelloWorldRequestHandlerFactory* factory = new HelloWorldRequestHandlerFactory();
-	HTTPServerParams* params = new HTTPServerParams;
-	HTTPServer srv(factory, svs, params);
-	srv.start();
-	waitForTerminationRequest();
-	srv.stop();
-	delete factory;
-	return Application::EXIT_OK;
+	factory = new HelloWorldRequestHandlerFactory();
+	HTTPServerParams* params = new HTTPServerParams();
+	server = make_unique<HTTPServer>(factory, svs, params);
+	server->start();
 }
 
-// VizProto
-
-VizProto::VizProto() {}
-
-void VizProto::run(unsigned short port) { app.run(port); }
-
-void VizProto::kill() { app.terminate(); }
+void HelloWorldServer::stop() { server->stop(); }

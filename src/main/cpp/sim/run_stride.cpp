@@ -177,12 +177,12 @@ void run_stride(const MultiSimulationConfig& config, int port)
 	}
 	cout << "Done building simulators. " << endl << endl;
 
-	// Start a new thread to run the server.
-	// if (port) {
-		StrideServer server;
-		thread serverThread([port](StrideServer* server) { server->run(port); }, &server);
+	StrideServer server;
+	// Start the server thread.
+	if (port) {
+		server.start(port);
 		cout << "Running server on port " << port << "." << endl;
-	// }
+	}
 
 	// -----------------------------------------------------------------------------------------
 	// Run the simulation.
@@ -221,14 +221,15 @@ void run_stride(const MultiSimulationConfig& config, int port)
 
 		spdlog::drop(sim_tuple.log_name);
 	}
+
+	// Stop the server.
+	server.stop();
+	cout << "Server stopped." << endl;
+
 	// -----------------------------------------------------------------------------------------
 	// Print final message to command line.
 	// -----------------------------------------------------------------------------------------
 	cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
-
-	// Terminates the server and the entire program...?
-	server.terminate();
-	serverThread.join();
 }
 
 /// Run the stride simulator.

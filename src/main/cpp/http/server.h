@@ -2,7 +2,9 @@
 #define STRIDEHTTPSERVER_H_INCLUDED
 
 #include <iostream>
+#include <memory>
 #include <unistd.h>
+
 #include "Poco/Exception.h"
 #include "Poco/Net/HTTPRequestHandler.h"
 #include "Poco/Net/HTTPRequestHandlerFactory.h"
@@ -23,6 +25,8 @@ using Poco::Net::HTTPServerResponse;
 using Poco::Net::HTTPServerParams;
 using Poco::Util::ServerApplication;
 
+using namespace std;
+
 namespace stride {
 
 class StrideRequestHandlerFactory : public HTTPRequestHandlerFactory
@@ -35,7 +39,7 @@ private:
 	// (Put our window into the simulator here)
 };
 
-class StrideServer : public Poco::Util::ServerApplication
+class StrideServer
 {
 public:
 	StrideServer();
@@ -43,7 +47,14 @@ public:
 
 	// Run the server on the given port.
 	// The server runs on the current thread until it is terminated.
-	int run(unsigned short port);
+	void start(unsigned short port);
+
+	// Stop the server.
+	void stop();
+
+private:
+	StrideRequestHandlerFactory* factory;
+	unique_ptr<HTTPServer> server;
 };
 
 } // namespace Stride

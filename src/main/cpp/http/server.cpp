@@ -19,15 +19,17 @@ HTTPRequestHandler* StrideRequestHandlerFactory::createRequestHandler(const HTTP
 {
 	Poco::URI uri(request.getURI());
 
+	// Get the path as a vector of segments
 	vector<string> path;
 	uri.getPathSegments(path);
 
-	vector<pair<string, string> > params = uri.getQueryParameters();
+	// Get the parameters as a map of names to values
+	vector<pair<string, string>> params = uri.getQueryParameters();
 	map<string, string> paramMap(params.begin(), params.end());
 
 	// Debug: Print the URL path to console
 	cout << "Path: ";
-	for (string& i : path) 
+	for (string& i : path)
 		cout << i << '/';
 	cout << endl;
 
@@ -37,6 +39,7 @@ HTTPRequestHandler* StrideRequestHandlerFactory::createRequestHandler(const HTTP
 		cout << i.first << '=' << i.second << ' ';
 	cout << endl;
 
+	// Determine our response by breaking down the path
 	if (path[0] == string("API")) {
 		if (path.size() == 1)
 			return new NotFoundRequestHandler();
@@ -45,8 +48,8 @@ HTTPRequestHandler* StrideRequestHandlerFactory::createRequestHandler(const HTTP
 			return new DataRequestHandler();
 		else if (path[1] == "math")
 			return new MathRequestHandler(paramMap);
-	} else
-		return new NotFoundRequestHandler();
+	}
+	return new NotFoundRequestHandler();
 }
 
 // StrideServer
@@ -54,19 +57,15 @@ HTTPRequestHandler* StrideRequestHandlerFactory::createRequestHandler(const HTTP
 StrideServer::StrideServer() {}
 StrideServer::~StrideServer() {}
 
-int StrideServer::run(unsigned short port)
+void StrideServer::start(unsigned short port)
 {
 	ServerSocket svs(port);
-	StrideRequestHandlerFactory* factory = new StrideRequestHandlerFactory();
+	factory = new StrideRequestHandlerFactory();
 	HTTPServerParams* params = new HTTPServerParams;
-	HTTPServer srv(factory, svs, params);
-	// Start the server
-	srv.start();
-	// Wait until some call for termination occurs
-	waitForTerminationRequest();
-	// Stop the server
-	srv.stop();
-	delete factory;
-	return Application::EXIT_OK;
+	server = make_unique<HTTPServer>(factory, svs, params);
+	server->start();
 }
-}
+
+void StrideServer::stop() { server->stop(); }
+
+} // namespace stride

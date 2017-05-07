@@ -30,12 +30,6 @@ using Poco::Path;
 using Poco::URI;
 using Poco::Exception;
 
-void runServer(VizProto* p, unsigned short port)
-{
-	cout << "Running server on port: " << port << endl;
-	p->run(port);
-}
-
 string doRequest(
     Poco::Net::HTTPClientSession& session, Poco::Net::HTTPRequest& request, Poco::Net::HTTPResponse& response)
 {
@@ -49,7 +43,7 @@ string doRequest(
 	return string(istreambuf_iterator<char>(rs), {});
 }
 
-bool queryServer(VizProto* p, unsigned short port)
+bool queryServer(unsigned short port)
 {
 	this_thread::sleep_for(2s);
 	cout << "Querying server." << endl;
@@ -75,24 +69,16 @@ bool queryServer(VizProto* p, unsigned short port)
 		cout << "Connection refused!" << endl;
 		return false;
 	}
-	// Terminate the server.
-	p->kill();
 }
 
 namespace Tests {
 
 TEST(HTTP, ServerPrototype)
 {
-	VizProto* p = new VizProto();
-	thread serverThread(runServer, p, 1234);
-	// thread clientThread(queryServer, p);
-
-	EXPECT_TRUE(queryServer(p, 1234));
-
-	// Detach the thread, it dies after a while, once the HTTP Server fully shuts down
-	serverThread.detach();
-	delete p;
-	return;
+	auto s = make_shared<HelloWorldServer>();
+	s->start(1234);
+	EXPECT_TRUE(queryServer(1234));
+	s->stop();
 }
 
 } // Tests
