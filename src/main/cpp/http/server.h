@@ -54,7 +54,7 @@ public:
 
 private:
 	StrideRequestHandlerFactory* factory;
-	unique_ptr<HTTPServer> server;
+	shared_ptr<HTTPServer> server;
 };
 
 } // namespace Stride

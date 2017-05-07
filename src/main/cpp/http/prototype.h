@@ -50,7 +50,7 @@ public:
 	void stop();
 
 private:
-	unique_ptr<HTTPServer> server;
+	shared_ptr<HTTPServer> server;
 	HelloWorldRequestHandlerFactory* factory;
 };
 

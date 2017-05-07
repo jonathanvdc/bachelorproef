@@ -38,7 +38,7 @@ void HelloWorldServer::start(unsigned short port)
 	ServerSocket svs(port);
 	factory = new HelloWorldRequestHandlerFactory();
 	HTTPServerParams* params = new HTTPServerParams();
-	server = make_unique<HTTPServer>(factory, svs, params);
+	server = make_shared<HTTPServer>(factory, svs, params);
 	server->start();
 }
 

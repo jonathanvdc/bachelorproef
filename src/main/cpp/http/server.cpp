@@ -62,7 +62,7 @@ void StrideServer::start(unsigned short port)
 	ServerSocket svs(port);
 	factory = new StrideRequestHandlerFactory();
 	HTTPServerParams* params = new HTTPServerParams;
-	server = make_unique<HTTPServer>(factory, svs, params);
+	server = make_shared<HTTPServer>(factory, svs, params);
 	server->start();
 }
 
