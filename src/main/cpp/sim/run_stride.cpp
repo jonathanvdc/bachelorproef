@@ -223,8 +223,10 @@ void run_stride(const MultiSimulationConfig& config, int port)
 	}
 
 	// Stop the server.
-	server.stop();
-	cout << "Server stopped." << endl;
+	if(port){
+		server.stop();
+		cout << "Server stopped." << endl;
+	}
 
 	// -----------------------------------------------------------------------------------------
 	// Print final message to command line.
