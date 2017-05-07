@@ -61,14 +61,6 @@ set(LIB_SRC
     alias/Alias.cpp
 )
 
-if( Poco_FOUND )
-    set(LIB_SRC ${LIB_SRC} 
-        http/prototype.cpp
-        http/server.cpp
-        http/handlers.cpp
-    )
-endif()
-
 set(MAIN_SRC
     sim/main.cpp
 )

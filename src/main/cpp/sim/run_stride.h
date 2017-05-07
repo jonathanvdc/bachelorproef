@@ -71,13 +71,13 @@ void print_execution_environment();
 void verify_execution_environment();
 
 /// Runs the simulator with the given multi-simulation configuration.
-void run_stride(const MultiSimulationConfig& config, int port = 0);
+void run_stride(const MultiSimulationConfig& config);
 
 /// Runs the simulator with the given single-simulation configuration.
-void run_stride(const SingleSimulationConfig& config, int port = 0);
+void run_stride(const SingleSimulationConfig& config);
 
 /// Runs the simulator with the given configuration file.
-void run_stride(bool track_index_case, const std::string& config_file_name, int port = 0);
+void run_stride(bool track_index_case, const std::string& config_file_name);
 
 } // end_of_namespace
 

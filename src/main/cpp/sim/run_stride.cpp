@@ -34,7 +34,6 @@
 #include "util/Parallel.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
-#include "http/server.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -113,7 +112,7 @@ void verify_execution_environment()
 }
 
 /// Run the stride simulator.
-void run_stride(const MultiSimulationConfig& config, int port)
+void run_stride(const MultiSimulationConfig& config)
 {
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
@@ -179,13 +178,6 @@ void run_stride(const MultiSimulationConfig& config, int port)
 	}
 	cout << "Done building simulators. " << endl << endl;
 
-	StrideServer server(myTasks);
-	// Start the server if a port was specified
-	if (port) {
-		server.start(port);
-		cout << "Running server on port " << port << "." << endl;
-	}
-
 	// -----------------------------------------------------------------------------------------
 	// Run the simulation.
 	// -----------------------------------------------------------------------------------------
@@ -224,12 +216,6 @@ void run_stride(const MultiSimulationConfig& config, int port)
 		spdlog::drop(sim_tuple.log_name);
 	}
 
-	// Stop the server.
-	if(port){
-		server.stop();
-		cout << "Server stopped." << endl;
-	}
-
 	// -----------------------------------------------------------------------------------------
 	// Print final message to command line.
 	// -----------------------------------------------------------------------------------------
@@ -237,10 +223,10 @@ void run_stride(const MultiSimulationConfig& config, int port)
 }
 
 /// Run the stride simulator.
-void run_stride(const SingleSimulationConfig& config, int port) { run_stride(config.AsMultiConfig(), port); }
+void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMultiConfig()); }
 
 /// Run the stride simulator.
-void run_stride(bool track_index_case, const string& config_file_name, int port)
+void run_stride(bool track_index_case, const string& config_file_name)
 {
 	// Parse the configuration.
 	ptree pt_config;
@@ -257,7 +243,7 @@ void run_stride(bool track_index_case, const string& config_file_name, int port)
 	config.common_config->track_index_case = track_index_case;
 
 	// Run Stride.
-	run_stride(config, port);
+	run_stride(config);
 }
 
 } // end_of_namespace
