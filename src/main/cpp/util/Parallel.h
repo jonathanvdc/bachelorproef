@@ -9,16 +9,14 @@
 #include <map>
 #include <mutex>
 #include <queue>
+#include <thread>
 #include <vector>
-#include <iostream>
 
 #ifdef PARALLELIZATION_LIBRARY_TBB
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 #include <tbb/tbb_thread.h>
-#elif defined PARALLELIZATION_LIBRARY_STL
-#include <thread>
-#else
+#elif !defined PARALLELIZATION_LIBRARY_STL
 #include <omp.h>
 #endif
 
