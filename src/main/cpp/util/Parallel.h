@@ -44,12 +44,25 @@ void parallel_for(std::vector<T>& values, unsigned int num_threads, const TActio
 /// The action is not applied to multiple elements simultaneously.
 /// An action is a function object with signature `void(T&, unsigned int)`
 /// where the first parameter is the value that the action takes and the second
-/// parameter is the index of the thread it runs on.
+/// parameter is a dummy value.
 template <typename T, typename TAction>
 void serial_for(std::vector<T>& values, const TAction& action)
 {
 	for (size_t i = 0; i < values.size(); i++) {
 		action(values[i], 0);
+	}
+}
+
+/// Applies the given action to each element in the given map of values.
+/// The action is not applied to elements simultaneously.
+/// An action is a function object with signature `void(const K&, V&, unsigned int)`
+/// where the first parameter is the value that the action takes and the second
+/// parameter is a dummy value.
+template <typename K, typename V, typename TAction>
+void serial_for(std::map<K, V>& values, const TAction& action)
+{
+	for (auto& pair : values) {
+		action(pair.first, pair.second, 0);
 	}
 }
 
@@ -76,7 +89,7 @@ struct CreateChunks
 /// Applies the given action to each element in the given map of values.
 /// The action may be applied to up to num_threads elements simultaneously.
 /// An action is a function object with signature `void(const K&, V&, unsigned int)`
-/// where the first parameter is the value that the action takes and the second
+/// where the first parameter is the value that the action takes and the third
 /// parameter is the index of the thread it runs on.
 template <typename K, typename V, typename TAction, typename TCreateChunks = CreateChunks<K>>
 void parallel_for(std::map<K, V>& values, unsigned int num_threads, const TAction& action)
@@ -84,6 +97,10 @@ void parallel_for(std::map<K, V>& values, unsigned int num_threads, const TActio
 	if (values.size() == 0) {
 		// Nothing to do here.
 		return;
+	}
+	else if (num_threads <= 1) {
+		// Use a simple serial implementation.
+		serial_for<K, V, TAction>(values, action);
 	}
 
 	// We can't divide an std::map into chunks like we would divide an std::vector
@@ -128,19 +145,6 @@ void parallel_for(std::map<K, V>& values, unsigned int num_threads, const TActio
 	// Wait for the threads to finish.
 	for (auto& thread : thread_pool) {
 		thread.join();
-	}
-}
-
-/// Applies the given action to each element in the given map of values.
-/// The action is not applied to elements simultaneously.
-/// An action is a function object with signature `void(const K&, V&, unsigned int)`
-/// where the first parameter is the value that the action takes and the second
-/// parameter is the index of the thread it runs on.
-template <typename K, typename V, typename TAction>
-void serial_for(std::map<K, V>& values, const TAction& action)
-{
-	for (auto& pair : values) {
-		action(pair.first, pair.second);
 	}
 }
 
