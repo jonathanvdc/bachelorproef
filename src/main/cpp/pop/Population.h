@@ -30,6 +30,7 @@
 #include "core/Atlas.h"
 #include "core/Health.h"
 #include "geo/GeoPosition.h"
+#include "util/Parallel.h"
 #include "util/Random.h"
 
 namespace stride {
@@ -137,6 +138,16 @@ public:
 	auto AtlasEmplace(const Atlas::Key& key, const geo::GeoPosition& pos) -> decltype(atlas.Emplace(key, pos))
 	{
 		return atlas.Emplace(key, pos);
+	}
+
+	template <typename TAction>
+	void parallel_for(unsigned int number_of_threads, const TAction& action)
+	{
+		stride::util::parallel::parallel_for(
+		    people, number_of_threads,
+		    [&action](const PersonId& id, const std::shared_ptr<PersonData>& data, unsigned int thread_number) {
+			    return action(Person(id, data), thread_number);
+		    });
 	}
 };
 

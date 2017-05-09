@@ -10,6 +10,7 @@
 #include <mutex>
 #include <queue>
 #include <vector>
+#include <iostream>
 
 #ifdef PARALLELIZATION_LIBRARY_TBB
 #include <tbb/parallel_for.h>
@@ -58,7 +59,7 @@ void serial_for(std::vector<T>& values, const TAction& action)
 template <typename T>
 struct CreateChunks
 {
-	std::vector<T> operator()(const T& range_size, size_t number_of_chunks) const
+	std::vector<T> operator()(const T& range_size, std::size_t number_of_chunks) const
 	{
 		std::vector<T> results;
 		auto chunk_size = range_size / number_of_chunks;
@@ -67,16 +68,83 @@ struct CreateChunks
 			auto next_start_offset = values_start_offset + chunk_size;
 			auto values_end_offset = i == number_of_chunks - 1 ? range_size : next_start_offset;
 
-			if (values_end_offset == next_start_offset) {
-				continue;
-			}
-
 			results.push_back(values_end_offset);
-			values_start_offset = next_start_offset;
+			values_start_offset = values_end_offset;
 		}
 		return results;
 	}
 };
+
+/// Applies the given action to each element in the given map of values.
+/// The action may be applied to up to num_threads elements simultaneously.
+/// An action is a function object with signature `void(const K&, V&, unsigned int)`
+/// where the first parameter is the value that the action takes and the second
+/// parameter is the index of the thread it runs on.
+template <typename K, typename V, typename TAction, typename TCreateChunks = CreateChunks<K>>
+void parallel_for(std::map<K, V>& values, unsigned int num_threads, const TAction& action)
+{
+	if (values.size() == 0) {
+		// Nothing to do here.
+		return;
+	}
+
+	// We can't divide an std::map into chunks like we would divide an std::vector
+	// (even though the map's underlying data structure probably supports it). Instead,
+	// we'll find the min and max keys in the map and use those to carve the map into
+	// `num_thread` chunks.
+	auto min_key = values.begin()->first;
+	auto max_key = (values.end()--)->first;
+	auto chunks = TCreateChunks()(max_key - min_key + 1, num_threads);
+
+	std::vector<typename std::map<K, V>::iterator> start_iterators;
+	auto start_value = min_key;
+	for (std::size_t i = 0; i < chunks.size(); i++) {
+		auto start_iterator = values.find(start_value);
+		if (start_iterator == values.end()) {
+			// Perform the insert hack: insert a value,
+			// get an iterator to the inserted value, proceed to the
+			// next value and erase the inserted value.
+			start_iterator = values.emplace(start_value, V()).first++;
+			values.erase(start_value);
+		}
+
+		start_iterators.push_back(start_iterator);
+		start_value = min_key + chunks[i];
+	}
+
+	std::vector<std::thread> thread_pool;
+	for (std::size_t i = 0; i < chunks.size(); i++) {
+		auto next_start_value = chunks[i];
+		auto start_iterator = start_iterators[i];
+		thread_pool.emplace_back([&values, &action, i, start_iterator, next_start_value] {
+			for (auto it = start_iterator; it != values.end(); it++) {
+				auto& elem = *it;
+				if (elem.first >= next_start_value) {
+					break;
+				}
+				action(elem.first, elem.second, i);
+			}
+		});
+	}
+
+	// Wait for the threads to finish.
+	for (auto& thread : thread_pool) {
+		thread.join();
+	}
+}
+
+/// Applies the given action to each element in the given map of values.
+/// The action is not applied to elements simultaneously.
+/// An action is a function object with signature `void(const K&, V&, unsigned int)`
+/// where the first parameter is the value that the action takes and the second
+/// parameter is the index of the thread it runs on.
+template <typename K, typename V, typename TAction>
+void serial_for(std::map<K, V>& values, const TAction& action)
+{
+	for (auto& pair : values) {
+		action(pair.first, pair.second);
+	}
+}
 
 /// A thread-safe queue.
 template <typename T>
