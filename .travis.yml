@@ -7,6 +7,7 @@ language: cpp
 
 # Use Ubuntu 14.04.5 LTS (Trusty Tahr) instead of Ubuntu 12.04.5 LTS (Precise Pangolin)
 dist: trusty
+osx_image: xcode8.3
 
 cache:
   directories:
@@ -36,8 +37,9 @@ addons:
 
 matrix:
   include:
-    - compiler: gcc
-      env: CONFIG_IDENTIFIER='gcc-6' CC_COMPILER_NAME='gcc-6' CXX_COMPILER_NAME='g++-6'
+    - os: linux
+      compiler: gcc
+      env: CONFIG_IDENTIFIER='linux-gcc-6' CC_COMPILER_NAME='gcc-6' CXX_COMPILER_NAME='g++-6'
       addons:
         apt:
           sources:
@@ -48,8 +50,9 @@ matrix:
             - gcc-6
             - g++-6
 
-    - compiler: clang
-      env: CONFIG_IDENTIFIER='clang-4.0-tbb' CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0'
+    - os: linux
+      compiler: clang
+      env: CONFIG_IDENTIFIER='linux-clang-4.0-tbb' CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0'
       addons:
         apt:
           sources:
@@ -63,8 +66,9 @@ matrix:
             - libstdc++-6-dev
             - libtbb-dev
 
-    - compiler: clang
-      env: CONFIG_IDENTIFIER='clang-4.0' CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0'
+    - os: linux
+      compiler: clang
+      env: CONFIG_IDENTIFIER='linux-clang-4.0' CC_COMPILER_NAME='clang-4.0' CXX_COMPILER_NAME='clang++-4.0'
       addons:
         apt:
           sources:
@@ -76,6 +80,10 @@ matrix:
             - clang-4.0
             - clang++-4.0
             - libstdc++-6-dev
+
+    - os: osx
+      compiler: clang
+      env: CONFIG_IDENTIFIER='osx-clang-4.0' CC_COMPILER_NAME='clang' CXX_COMPILER_NAME='clang++'
 
 before_install:
   - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
