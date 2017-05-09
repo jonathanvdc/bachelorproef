@@ -6,6 +6,7 @@
  * A paper-thin abstraction layer over parallelization libraries.
  */
 
+#include <map>
 #include <mutex>
 #include <queue>
 #include <vector>
@@ -52,6 +53,30 @@ void serial_for(std::vector<T>& values, const TAction& action)
 		action(values[i], 0);
 	}
 }
+
+/// A default integer implementation of an operation that divides a range into chunks.
+template <typename T>
+struct CreateChunks
+{
+	std::vector<T> operator()(const T& range_size, size_t number_of_chunks) const
+	{
+		std::vector<T> results;
+		auto chunk_size = range_size / number_of_chunks;
+		auto values_start_offset = T();
+		for (unsigned int i = 0; i < number_of_chunks; i++) {
+			auto next_start_offset = values_start_offset + chunk_size;
+			auto values_end_offset = i == number_of_chunks - 1 ? range_size : next_start_offset;
+
+			if (values_end_offset == next_start_offset) {
+				continue;
+			}
+
+			results.push_back(values_end_offset);
+			values_start_offset = next_start_offset;
+		}
+		return results;
+	}
+};
 
 /// A thread-safe queue.
 template <typename T>
@@ -124,20 +149,16 @@ void parallel_for(std::vector<T>& values, unsigned int num_threads, const TActio
 	} else {
 		// Create num_thread threads and divide the workload statically.
 		std::vector<std::thread> thread_pool;
-		size_t workload_per_thread = values.size() / num_threads;
-		size_t values_start_offset = 0;
-		for (unsigned int i = 0; i < num_threads; i++) {
-			size_t next_start_offset = values_start_offset + workload_per_thread;
-			size_t values_end_offset = i == num_threads - 1 ? values.size() : next_start_offset;
-			if (values_end_offset == next_start_offset) {
-				continue;
-			}
-
-			thread_pool.emplace_back([&values, &action, i, values_start_offset, values_end_offset] {
-				for (size_t j = values_start_offset; j < values_end_offset; j++) {
+		auto chunks = CreateChunks<std::size_t>()(values.size(), num_threads);
+		std::size_t values_start_offset = 0;
+		for (std::size_t i = 0; i < chunks.size(); i++) {
+			auto next_start_offset = chunks[i];
+			thread_pool.emplace_back([&values, &action, i, values_start_offset, next_start_offset] {
+				for (size_t j = values_start_offset; j < next_start_offset; j++) {
 					action(values[j], i);
 				}
 			});
+			values_start_offset = next_start_offset;
 		}
 
 		// Wait for the threads to finish.
