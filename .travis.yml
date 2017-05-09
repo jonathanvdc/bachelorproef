@@ -108,7 +108,7 @@ before_install:
   - python install_boost.py --directory ~ --boost-version 1.63.0 --address-model 64 --toolchain=$CC_COMPILER_NAME --stagedir stage atomic chrono date_time filesystem iostreams locale log regex system thread serialization mpi
   # Set the BOOST_ROOT environment variable.
   - export BOOST_ROOT=$HOME/boost_1_63_0
-  - export LD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/lib:$LD_LIBRARY_PATH
+  - if [ $TRAVIS_OS_NAME == "osx" ]; then export DYLD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/lib:$DYLD_LIBRARY_PATH; else export LD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/lib:$LD_LIBRARY_PATH; fi
   
   # Build and install Poco
   - mkdir -p $HOME/poco
@@ -117,7 +117,7 @@ before_install:
   - pushd $HOME/poco/poco-1.7.8p2
   - ./configure
   - make -s
-  - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+  - if [ $TRAVIS_OS_NAME == "osx" ]; then export DYLD_LIBRARY_PATH=/usr/local/lib:$DYLD_LIBRARY_PATH; else export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; fi
   - sudo make -s install
   - popd
 
