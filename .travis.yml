@@ -83,7 +83,7 @@ matrix:
 
     - os: osx
       compiler: clang
-      env: CONFIG_IDENTIFIER='osx-clang-4.0' CC_COMPILER_NAME='clang' CXX_COMPILER_NAME='clang++'
+      env: CONFIG_IDENTIFIER='osx-clang' CC_COMPILER_NAME='clang' CXX_COMPILER_NAME='clang++'
 
 before_install:
   # If we're working with an OS X machine, then want to install homebrew packages (the APT packages
