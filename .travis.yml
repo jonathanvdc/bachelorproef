@@ -86,6 +86,9 @@ matrix:
       env: CONFIG_IDENTIFIER='osx-clang-4.0' CC_COMPILER_NAME='clang' CXX_COMPILER_NAME='clang++'
 
 before_install:
+  # If we're working with an OS X machine, then want to install homebrew packages (the APT packages
+  # will be ignored)
+  - if [ $TRAVIS_OS_NAME == "osx" ]; then brew update; brew outdated mono || brew upgrade mono; fi
   - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
   # Print the C++ compiler version.
   - $CXX --version
