@@ -140,11 +140,26 @@ public:
 		return atlas.Emplace(key, pos);
 	}
 
+	/// Runs the `action` on every element of this vector. Up to `number_of_threads` instances of
+	/// the `action` are run at the same time. `action` must be invocable with signature
+	/// `void(const Person& person, unsigned int thread_number)`.
 	template <typename TAction>
 	void parallel_for(unsigned int number_of_threads, const TAction& action)
 	{
 		stride::util::parallel::parallel_for(
 		    people, number_of_threads,
+		    [&action](const PersonId& id, const std::shared_ptr<PersonData>& data, unsigned int thread_number) {
+			    return action(Person(id, data), thread_number);
+		    });
+	}
+
+	/// Runs the `action` on every element of this vector. `action` must be invocable with signature
+	/// `void(const Person& person, unsigned int dummy)`.
+	template <typename TAction>
+	void serial_for(unsigned int number_of_threads, const TAction& action)
+	{
+		stride::util::parallel::serial_for(
+		    people,
 		    [&action](const PersonId& id, const std::shared_ptr<PersonData>& data, unsigned int thread_number) {
 			    return action(Person(id, data), thread_number);
 		    });
