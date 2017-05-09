@@ -101,6 +101,7 @@ void parallel_for(std::map<K, V>& values, unsigned int num_threads, const TActio
 	else if (num_threads <= 1) {
 		// Use a simple serial implementation.
 		serial_for<K, V, TAction>(values, action);
+		return;
 	}
 
 	// We can't divide an std::map into chunks like we would divide an std::vector
