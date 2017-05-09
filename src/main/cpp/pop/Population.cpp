@@ -24,9 +24,9 @@ std::vector<Person> Population::get_random_persons(util::Random& rng, std::size_
 	}
 
 	auto max_population_index = size() - 1;
-	std::unordered_map<size_t, std::size_t> random_pick_indices;
-	for (size_t i = 0; i < count; i++) {
-		size_t pick_index;
+	std::unordered_map<std::size_t, std::size_t> random_pick_indices;
+	for (std::size_t i = 0; i < count; i++) {
+		std::size_t pick_index;
 		do {
 			pick_index = rng(max_population_index);
 		} while (random_pick_indices.find(pick_index) != random_pick_indices.end());
@@ -34,7 +34,7 @@ std::vector<Person> Population::get_random_persons(util::Random& rng, std::size_
 	}
 
 	std::vector<Person> random_picks(count, Person(0, nullptr));
-	size_t i = 0;
+	std::size_t i = 0;
 	for (const auto& pair : people) {
 		if (random_pick_indices.find(i) != random_pick_indices.end()) {
 			random_picks[random_pick_indices[i]] = Person(pair.first, pair.second);
