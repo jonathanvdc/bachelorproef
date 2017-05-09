@@ -40,55 +40,12 @@ namespace stride {
 class Population
 {
 private:
-	std::map<PersonId, std::shared_ptr<PersonData>> people;
+	std::vector<Person> people;
 	PersonId max_person_id;
 	Atlas atlas;
 
 public:
-	/// An iterator implementation for Population containers.
-	class const_iterator final
-	{
-	public:
-		typedef decltype(people)::const_iterator map_iterator;
-
-		const_iterator(const map_iterator& map_iterator_val) : map_iterator_val(map_iterator_val) {}
-		const_iterator(const const_iterator&) = default;
-		const_iterator& operator++()
-		{
-			++map_iterator_val;
-			return *this;
-		}
-		const_iterator& operator++(int)
-		{
-			map_iterator_val++;
-			return *this;
-		}
-		const_iterator& operator--()
-		{
-			--map_iterator_val;
-			return *this;
-		}
-		const_iterator& operator--(int)
-		{
-			map_iterator_val--;
-			return *this;
-		}
-		Person operator*() const { return Person(map_iterator_val->first, map_iterator_val->second); }
-		bool operator==(const const_iterator& other) const
-		{
-			return map_iterator_val == other.map_iterator_val;
-		}
-		bool operator!=(const const_iterator& other) const
-		{
-			return map_iterator_val != other.map_iterator_val;
-		}
-
-		friend void swap(const_iterator& lhs, const_iterator& rhs);
-
-	private:
-		map_iterator map_iterator_val;
-	};
-
+	typedef decltype(people)::const_iterator const_iterator;
 	typedef const_iterator iterator;
 
 	/// Inserts a new element into the container constructed in-place with the given args.
@@ -99,15 +56,14 @@ public:
 		if (value.GetId() > max_person_id)
 			max_person_id = value.GetId();
 
-		return const_iterator(people.emplace(value.GetId(), value.GetData()).first);
+		people.emplace_back(value.GetId(), value.GetData());
+		return end() - 1;
 	}
 
 	/// Extracts the person with the given id from this population.
 	Person extract(PersonId id)
 	{
-		Person result(id, people.find(id)->second);
-		people.erase(id);
-		return result;
+		throw std::runtime_error("'extract' is not supported");
 	}
 
 	/// Gets the number of people in this population.
@@ -140,24 +96,8 @@ public:
 	}
 };
 
-/// Swaps two population iterators.
-inline void swap(typename Population::const_iterator& lhs, typename Population::const_iterator& rhs)
-{
-	std::swap(lhs.map_iterator_val, rhs.map_iterator_val);
-}
-
 using PopulationRef = std::shared_ptr<const Population>;
 
 } // end_of_namespace
-
-namespace std {
-template <>
-struct iterator_traits<stride::Population::const_iterator>
-{
-	typedef const stride::Person value_type;
-	typedef value_type& reference;
-	typedef value_type* pointer;
-};
-}
 
 #endif // end of include guard

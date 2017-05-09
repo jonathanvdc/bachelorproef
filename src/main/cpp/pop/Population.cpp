@@ -35,9 +35,9 @@ std::vector<Person> Population::get_random_persons(util::Random& rng, std::size_
 
 	std::vector<Person> random_picks(count, Person(0, nullptr));
 	size_t i = 0;
-	for (const auto& pair : people) {
+	for (const auto& person : people) {
 		if (random_pick_indices.find(i) != random_pick_indices.end()) {
-			random_picks[random_pick_indices[i]] = Person(pair.first, pair.second);
+			random_picks[random_pick_indices[i]] = person;
 		}
 		i++;
 	}
