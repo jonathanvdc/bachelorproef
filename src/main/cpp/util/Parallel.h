@@ -16,7 +16,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 #include <tbb/tbb_thread.h>
-#elif !defined PARALLELIZATION_LIBRARY_STL
+#elif !defined PARALLELIZATION_LIBRARY_STL && !defined PARALLELIZATION_LIBRARY_NONE
 #include <omp.h>
 #endif
 

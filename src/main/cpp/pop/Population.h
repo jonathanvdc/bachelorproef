@@ -156,7 +156,7 @@ public:
 	/// Runs the `action` on every element of this vector. `action` must be invocable with signature
 	/// `void(const Person& person, unsigned int dummy)`.
 	template <typename TAction>
-	void serial_for(unsigned int number_of_threads, const TAction& action)
+	void serial_for(unsigned int number_of_threads, const TAction& action) const
 	{
 		stride::util::parallel::serial_for(
 		    people,
