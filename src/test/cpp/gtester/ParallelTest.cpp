@@ -62,6 +62,7 @@ void map_test(const MapForType<int, int>& run_for)
 	}
 	ASSERT_EQ(values.size(), 200u);
 	run_for(values, [](const int& key, int& val, unsigned int) { val = key; });
+	ASSERT_EQ(values.size(), 200u);
 	for (auto pair : values) {
 		ASSERT_EQ(pair.first, pair.second);
 	}
@@ -70,6 +71,18 @@ void map_test(const MapForType<int, int>& run_for)
 	ASSERT_EQ(empty_map.size(), 0u);
 	run_for(empty_map, [](const int& key, int& val, unsigned int) { val = key; });
 	ASSERT_EQ(empty_map.size(), 0u);
+
+	std::map<int, int> sparse_map;
+	sparse_map[100] = 0;
+	for (int i = 1000; i < 1010; i++) {
+		sparse_map[i] = 0;
+	}
+	ASSERT_EQ(sparse_map.size(), 11u);
+	run_for(sparse_map, [](const int& key, int& val, unsigned int) { val++; });
+	ASSERT_EQ(sparse_map.size(), 11u);
+	for (auto pair : sparse_map) {
+		ASSERT_EQ(pair.second, 1) << " (key: " << pair.first << ")";
+	}
 }
 
 TEST(Parallel, MapSerial)
