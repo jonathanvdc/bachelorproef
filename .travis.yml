@@ -7,7 +7,6 @@ language: cpp
 
 # Use Ubuntu 14.04.5 LTS (Trusty Tahr) instead of Ubuntu 12.04.5 LTS (Precise Pangolin)
 dist: trusty
-osx_image: xcode8.3
 
 cache:
   directories:
@@ -82,6 +81,7 @@ matrix:
             - libstdc++-6-dev
 
     - os: osx
+      osx_image: xcode8.3
       compiler: clang
       env: CONFIG_IDENTIFIER='osx-clang' CC_COMPILER_NAME='clang' CXX_COMPILER_NAME='clang++'
 
