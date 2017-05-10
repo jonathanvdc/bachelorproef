@@ -12,8 +12,6 @@
 #include <thread>
 #include <vector>
 
-#include <iostream>
-
 #ifdef PARALLELIZATION_LIBRARY_TBB
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
@@ -111,14 +109,7 @@ void parallel_for(std::map<K, V>& values, unsigned int num_threads, const TActio
 	// `num_thread` chunks.
 	auto min_key = values.begin()->first;
 	auto max_key = values.rbegin()->first;
-	std::cout << "Min map value: " << min_key << ", max map value: " << max_key << std::endl;
 	auto chunks = TCreateChunks()(max_key - min_key + 1, num_threads);
-
-	std::cout << "Chunks for parallel_for on map:";
-	for (auto item : chunks) {
-		std::cout << " " << item;
-	}
-	std::cout << std::endl;
 
 	std::vector<typename std::map<K, V>::iterator> start_iterators;
 	auto start_value = min_key;
