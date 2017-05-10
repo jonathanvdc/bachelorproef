@@ -110,7 +110,8 @@ void parallel_for(std::map<K, V>& values, unsigned int num_threads, const TActio
 	// we'll find the min and max keys in the map and use those to carve the map into
 	// `num_thread` chunks.
 	auto min_key = values.begin()->first;
-	auto max_key = (values.end()--)->first;
+	auto max_key = values.rbegin()->first;
+	std::cout << "Min map value: " << min_key << ", max map value: " << max_key << std::endl;
 	auto chunks = TCreateChunks()(max_key - min_key + 1, num_threads);
 
 	std::cout << "Chunks for parallel_for on map:";
