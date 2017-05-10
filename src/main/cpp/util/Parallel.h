@@ -127,19 +127,23 @@ void parallel_for(std::map<K, V>& values, unsigned int num_threads, const TActio
 		start_value = min_key + chunks[i];
 	}
 
+	auto prev_iterator = values.begin();
 	std::vector<std::thread> thread_pool;
 	for (std::size_t i = 0; i < chunks.size(); i++) {
-		auto next_start_value = chunks[i];
+		auto next_start_value = min_key + chunks[i];
 		auto start_iterator = start_iterators[i];
-		thread_pool.emplace_back([&values, &action, i, start_iterator, next_start_value] {
-			for (auto it = start_iterator; it != values.end(); it++) {
-				auto& elem = *it;
-				if (elem.first >= next_start_value) {
-					break;
+		if (i == 0 || start_iterator != prev_iterator) {
+			thread_pool.emplace_back([&values, &action, i, start_iterator, next_start_value] {
+				for (auto it = start_iterator; it != values.end(); it++) {
+					auto& elem = *it;
+					if (elem.first >= next_start_value) {
+						break;
+					}
+					action(elem.first, elem.second, i);
 				}
-				action(elem.first, elem.second, i);
-			}
-		});
+			});
+			prev_iterator = start_iterator;
+		}
 	}
 
 	// Wait for the threads to finish.
