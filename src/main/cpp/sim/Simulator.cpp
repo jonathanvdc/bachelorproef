@@ -147,7 +147,6 @@ void Simulator::RecycleHousehold(std::size_t household_id) { m_unused_households
 
 void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 {
-	std::cout << "Accepting returning visitors" << std::endl;
 	for (const auto& returning_expat : input.expatriates) {
 		// Return the expatriate to this region's population.
 		const auto& home_expat =
@@ -163,7 +162,6 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 		AddPersonToClusters(home_expat);
 	}
 
-	std::cout << "Accepting incoming visitors" << std::endl;
 	for (const auto& visitor : input.visitors) {
 		// Generate local ids and create a household cluster for the visitor.
 		auto id = GeneratePersonId();
@@ -193,7 +191,6 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 
 multiregion::SimulationStepOutput Simulator::ReturnVisitors()
 {
-	std::cout << "Sending returning visitors" << std::endl;
 	// First, find visitors which we can return.
 	std::vector<multiregion::OutgoingVisitor> returning_expatriates;
 	auto today = m_calendar->GetSimulationDay();
@@ -211,7 +208,6 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
 		}
 	}
 
-	std::cout << "Sending outgoing visitors" << std::endl;
 	// Next, create a list of people which we'd like to send elsewhere.
 	std::vector<multiregion::OutgoingVisitor> outgoing_visitors;
 	auto travel_model = m_config.travel_model;
@@ -279,11 +275,9 @@ multiregion::SimulationStepOutput Simulator::TimeStep(const multiregion::Simulat
 	const bool is_work_off{days_off->IsWorkOff()};
 	const bool is_school_off{days_off->IsSchoolOff()};
 
-	std::cout << "Updating population" << std::endl;
 	m_population->parallel_for(m_num_threads, [=](const Person& p, unsigned int) {
 		p.Update(is_work_off, is_school_off);
 	});
-	std::cout << "Updated population" << std::endl;
 
 	if (m_track_index_case) {
 		switch (m_log_level) {
