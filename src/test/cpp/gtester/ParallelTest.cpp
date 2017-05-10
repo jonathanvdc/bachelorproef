@@ -1,4 +1,5 @@
 #include <iostream>
+#include <mutex>
 #include <vector>
 #include <gtest/gtest.h>
 #include "util/Parallel.h"
@@ -61,7 +62,14 @@ void map_test(const MapForType<int, int>& run_for)
 		values[i] = 0;
 	}
 	ASSERT_EQ(values.size(), 200u);
-	run_for(values, [](const int& key, int& val, unsigned int) { val = key; });
+	std::mutex mutex;
+	run_for(values, [&mutex](const int& key, int& val, unsigned int) {
+		{
+			std::lock_guard<std::mutex> guard(mutex);
+			std::cout << "visiting map key " << key << std::endl;
+		}
+		val = key;
+	});
 	for (auto pair : values) {
 		ASSERT_EQ(pair.first, pair.second);
 	}
