@@ -119,30 +119,32 @@ void parallel_for(std::map<K, V>& values, unsigned int num_threads, const TActio
 			// Perform the insert hack: insert a value,
 			// get an iterator to the inserted value, proceed to the
 			// next value and erase the inserted value.
-			start_iterator = values.emplace(start_value, V()).first++;
-			values.erase(start_value);
+			auto inserted_elem_iterator = values.emplace(start_value, V()).first;
+			start_iterator = inserted_elem_iterator;
+			start_iterator++;
+			values.erase(inserted_elem_iterator);
 		}
 
 		start_iterators.push_back(start_iterator);
 		start_value = min_key + chunks[i];
 	}
 
-	auto prev_iterator = values.begin();
+	// We now want to start a bunch of threads.
 	std::vector<std::thread> thread_pool;
 	for (std::size_t i = 0; i < chunks.size(); i++) {
-		auto next_start_value = min_key + chunks[i];
 		auto start_iterator = start_iterators[i];
-		if (i == 0 || start_iterator != prev_iterator) {
-			thread_pool.emplace_back([&values, &action, i, start_iterator, next_start_value] {
-				for (auto it = start_iterator; it != values.end(); it++) {
+		auto end_iterator = i == chunks.size() - 1
+			? values.end()
+			: start_iterators[i + 1];
+
+		// Only start jobs if we know that they're non-empty.
+		if (start_iterator != values.end() && start_iterator != end_iterator) {
+			thread_pool.emplace_back([&values, &action, i, start_iterator, end_iterator] {
+				for (auto it = start_iterator; it != end_iterator; it++) {
 					auto& elem = *it;
-					if (elem.first >= next_start_value) {
-						break;
-					}
 					action(elem.first, elem.second, i);
 				}
 			});
-			prev_iterator = start_iterator;
 		}
 	}
 
