@@ -117,7 +117,7 @@ before_install:
   - pushd $HOME/poco/poco-1.7.8p2
   - ./configure
   - make -s
-  - if [ $TRAVIS_OS_NAME == "osx" ]; then export DYLD_LIBRARY_PATH=/usr/local/lib:$DYLD_LIBRARY_PATH; else export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; fi
+  - if [ $TRAVIS_OS_NAME != "osx" ]; then export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; fi
   - sudo make -s install
   - popd
 
