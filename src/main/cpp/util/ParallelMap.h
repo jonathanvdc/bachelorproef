@@ -78,7 +78,12 @@ private:
 	/// An iterator wrapper that acquires read locks to maintain the illusion
 	/// that parallel_for does not mutate any data.
 	template <typename TIterator>
-	class IteratorWrapper final
+	class IteratorWrapper final : public std::iterator<
+					  typename std::iterator_traits<TIterator>::iterator_category,
+					  typename std::iterator_traits<TIterator>::value_type,
+					  typename std::iterator_traits<TIterator>::difference_type,
+					  typename std::iterator_traits<TIterator>::pointer,
+					  typename std::iterator_traits<TIterator>::reference>
 	{
 	private:
 		using inner_iterator_type = TIterator;
@@ -88,7 +93,7 @@ private:
 		using pointer_type = decltype(inner_iterator.operator->());
 		shared_mutex_type* mutex_ptr;
 
-		template <typename TOtherIterator>
+		template <typename>
 		friend class IteratorWrapper;
 
 	public:
@@ -185,18 +190,33 @@ private:
 
 	/// Wraps the given pair of iterators in a thread-safe wrapper.
 	template <typename TIterator>
-	std::pair<IteratorWrapper<TIterator>, IteratorWrapper<TIterator>> make_iterator_pair(
+	std::pair<IteratorWrapper<TIterator>, IteratorWrapper<TIterator>> make_iterator(
 	    const std::pair<TIterator, TIterator>& pair) const
 	{
-		return std::make_pair(make_iterator(pair.first), make_iterator(pair.second));
+		return std::make_pair(make_iterator<TIterator>(pair.first), make_iterator<TIterator>(pair.second));
 	}
 
 	/// Wraps the given pair of iterators in a thread-safe wrapper.
 	template <typename TIterator>
-	std::pair<IteratorWrapper<TIterator>, IteratorWrapper<TIterator>> make_iterator_pair(
+	std::pair<IteratorWrapper<TIterator>, IteratorWrapper<TIterator>> make_iterator(
 	    std::pair<TIterator, TIterator>&& pair) const
 	{
-		return std::make_pair(std::move(make_iterator(pair.first)), std::move(make_iterator(pair.second)));
+		return std::make_pair(
+		    std::move(make_iterator<TIterator>(pair.first)), std::move(make_iterator<TIterator>(pair.second)));
+	}
+
+	/// Wraps the given pair containing an iterator in a thread-safe wrapper.
+	template <typename TIterator>
+	std::pair<IteratorWrapper<TIterator>, bool> make_iterator(const std::pair<TIterator, bool>& pair) const
+	{
+		return std::make_pair(std::move(make_iterator<TIterator>(pair.first)), pair.second);
+	}
+
+	/// Wraps the given pair containing an iterator in a thread-safe wrapper.
+	template <typename TIterator>
+	std::pair<IteratorWrapper<TIterator>, bool> make_iterator(std::pair<TIterator, bool>&& pair) const
+	{
+		return std::make_pair(std::move(make_iterator<TIterator>(pair.first)), pair.second);
 	}
 
 public:
@@ -426,8 +446,7 @@ public:
 	std::pair<iterator, bool> emplace(TFuncArgs&&... args)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		auto result = get_inner_map().emplace(args...);
-		return std::make_pair(make_iterator(result.first), result.second);
+		return make_iterator(get_inner_map().emplace(args...));
 	}
 
 	/// Inserts a new element to the container as close as possible to the position just before hint. The element is
@@ -511,7 +530,7 @@ public:
 	std::pair<iterator, iterator> equal_range(const key_type& key)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return make_iterator_pair(get_inner_map().equal_range(key));
+		return make_iterator(get_inner_map().equal_range(key));
 	}
 
 	/// Returns a range containing all elements with the given key in the container. The range is defined by two
@@ -521,7 +540,7 @@ public:
 	std::pair<const_iterator, const_iterator> equal_range(const key_type& key) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return make_iterator_pair(get_inner_map().equal_range(key));
+		return make_iterator(get_inner_map().equal_range(key));
 	}
 
 	/// Returns a range containing all elements with the given key in the container. The range is defined by two
@@ -532,7 +551,7 @@ public:
 	std::pair<iterator, iterator> equal_range(const TFuncArg& x)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return make_iterator_pair(get_inner_map().equal_range(x));
+		return make_iterator(get_inner_map().equal_range(x));
 	}
 
 	/// Returns a range containing all elements with the given key in the container. The range is defined by two
@@ -543,7 +562,7 @@ public:
 	std::pair<const_iterator, const_iterator> equal_range(const TFuncArg& x) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return make_iterator_pair(get_inner_map().equal_range(x));
+		return make_iterator(get_inner_map().equal_range(x));
 	}
 
 	/// Returns an iterator pointing to the first element that is not less than key.
