@@ -31,6 +31,7 @@
 #include "core/Health.h"
 #include "geo/GeoPosition.h"
 #include "util/Parallel.h"
+#include "util/ParallelMap.h"
 #include "util/Random.h"
 
 namespace stride {
@@ -41,7 +42,7 @@ namespace stride {
 class Population
 {
 private:
-	std::map<PersonId, std::shared_ptr<PersonData>> people;
+	util::parallel::ParallelMap<PersonId, std::shared_ptr<PersonData>> people;
 	PersonId max_person_id;
 	Atlas atlas;
 

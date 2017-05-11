@@ -2,6 +2,7 @@
 #include <vector>
 #include <gtest/gtest.h>
 #include "util/Parallel.h"
+#include "util/ParallelMap.h"
 #include "util/Random.h"
 
 namespace Tests {
@@ -52,11 +53,12 @@ template <typename K, typename V>
 using MapActionType = std::function<void(const K& key, V& val, unsigned int thread_number)>;
 
 template <typename K, typename V>
-using MapForType = std::function<void(std::map<K, V>& values, const MapActionType<K, V>& action)>;
+using MapForType =
+    std::function<void(stride::util::parallel::ParallelMap<K, V>& values, const MapActionType<K, V>& action)>;
 
 void map_test(const MapForType<int, int>& run_for)
 {
-	std::map<int, int> values;
+	stride::util::parallel::ParallelMap<int, int> values;
 	for (int i = 0; i < 200; i++) {
 		values[i] = 0;
 	}
@@ -67,12 +69,12 @@ void map_test(const MapForType<int, int>& run_for)
 		ASSERT_EQ(pair.first, pair.second);
 	}
 
-	std::map<int, int> empty_map;
+	stride::util::parallel::ParallelMap<int, int> empty_map;
 	ASSERT_EQ(empty_map.size(), 0u);
 	run_for(empty_map, [](const int& key, int& val, unsigned int) { val = key; });
 	ASSERT_EQ(empty_map.size(), 0u);
 
-	std::map<int, int> sparse_map;
+	stride::util::parallel::ParallelMap<int, int> sparse_map;
 	sparse_map[100] = 0;
 	for (int i = 1000; i < 1010; i++) {
 		sparse_map[i] = 0;
@@ -87,21 +89,21 @@ void map_test(const MapForType<int, int>& run_for)
 
 TEST(Parallel, MapSerial)
 {
-	map_test([](std::map<int, int>& values, const MapActionType<int, int>& action) {
+	map_test([](stride::util::parallel::ParallelMap<int, int>& values, const MapActionType<int, int>& action) {
 		stride::util::parallel::serial_for(values, action);
 	});
 }
 
 TEST(Parallel, MapParallel)
 {
-	map_test([](std::map<int, int>& values, const MapActionType<int, int>& action) {
+	map_test([](stride::util::parallel::ParallelMap<int, int>& values, const MapActionType<int, int>& action) {
 		stride::util::parallel::parallel_for(values, stride::util::parallel::get_number_of_threads(), action);
 	});
 }
 
 TEST(Parallel, MapPseudoParallel)
 {
-	map_test([](std::map<int, int>& values, const MapActionType<int, int>& action) {
+	map_test([](stride::util::parallel::ParallelMap<int, int>& values, const MapActionType<int, int>& action) {
 		stride::util::parallel::parallel_for(values, 1, action);
 	});
 }
