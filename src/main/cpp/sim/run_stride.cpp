@@ -26,6 +26,7 @@
 #include "multiregion/TravelModel.h"
 #include "output/CasesFile.h"
 #include "output/PersonFile.h"
+#include "output/VisualizerFile.h"
 #include "output/SummaryFile.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
@@ -207,6 +208,9 @@ void run_stride(const MultiSimulationConfig& config)
 			PersonFile person_file(sim_tuple.sim_output_prefix);
 			person_file.Print(pop);
 		}
+
+		VisualizerFile vis_file(sim_tuple.sim_output_prefix);
+		vis_file.Print(10);
 
 		cout << endl << endl;
 		cout << "  run_time: " << sim_result.GetRuntimeString() << "  -- total time: " << total_clock.ToString()
