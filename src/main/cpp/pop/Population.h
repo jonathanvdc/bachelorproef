@@ -60,20 +60,22 @@ public:
 			++map_iterator_val;
 			return *this;
 		}
-		const_iterator& operator++(int)
+		const_iterator operator++(int)
 		{
+			auto result = *this;
 			map_iterator_val++;
-			return *this;
+			return result;
 		}
 		const_iterator& operator--()
 		{
 			--map_iterator_val;
 			return *this;
 		}
-		const_iterator& operator--(int)
+		const_iterator operator--(int)
 		{
+			auto result = *this;
 			map_iterator_val--;
-			return *this;
+			return result;
 		}
 		Person operator*() const { return Person(map_iterator_val->first, map_iterator_val->second); }
 		bool operator==(const const_iterator& other) const
