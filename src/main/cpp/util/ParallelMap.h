@@ -19,6 +19,55 @@ namespace parallel {
 template <typename... TArgs>
 class ParallelMap final
 {
+	// Some implementation details:
+	// ===========================
+	//
+	// (If you don't care about the implementation please skip to the bullets at the
+	//  end of this paragraph. You should probably read them if you're considering to
+	//  use `ParallelMap`.)
+	//
+	// `ParallelMap`'s main attraction is `parallel_for`, which allows us to parallelize
+	// actions on (dense) maps. However, the standard library makes it hard to implement
+	// this functionality on top of `std::map`.
+	//
+	// At the core of `ParallelMap::parallel_for` is the "insert hack," which inserts
+	// dummy elements (and later deletes them!) to carve the map into chunks that can
+	// be distributed across different threads. Note that this actually mutates the map,
+	// so `parallel_for` is, at first glance, not thread-safe, even if we don't touch
+	// the map's contents. That's super counter-intuitive and will probably lead to
+	// hordes of bugs.
+	//
+	// ParallelMap makes `parallel_for` thread-safe again by maintaining a reader/writer
+	// lock. Wrappers for `std::map` operations acquire a reader lock and `parallel_for`
+	// acquires a writer lock while it's mutating the map. This makes it seem like
+	// `parallel_for` doesn't mutate the map's state at all, because `parallel_for`
+	// restores the map's state after it's cut the map up into chunks and no more than
+	// one writer lock can be active at the same time.
+	//
+	// Conversely, any number of reader locks can be active at the same time as long as
+	// no writer locks are active. So `ParallelMap` will not make any threads wait for
+	// a lock as long as `parallel_for` is never called.
+	//
+	// Here's a quick summary of what this design means for `ParallelMap` users:
+	//
+	//     1. Iterators and operations that were inherited from `std::map` are slower
+	//        because they need to acquire a lock. Tthey probably won't have to wait
+	//        for the lock, but I guess merely asking for a lock probably has a measurable
+	//        performance overhead.
+	//
+	//        Try to use `serial_for` or `parallel_for` if at all possible; these methods
+	//        are far less granular and hence acquire far fewer locks.
+	//
+	//     2. `parallel_for` is as thread-safe as the `parallel_for` implementation for
+	//        for `std::vector`: if you mutate the container's element, then you might get
+	//        data races.
+	//
+	//        All the locking scheme does is hide the fact that `parallel_for` mutates the map.
+	//
+	//     3. Non-parallel operations have the same thread-safety as before. The locking
+	//        scheme will not (and cannot because of how iterators work!) avoid data races
+	//        that arise from using them.
+
 private:
 	using inner_map_type = std::map<TArgs...>;
 	using this_map_type = ParallelMap<TArgs...>;
