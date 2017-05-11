@@ -145,7 +145,7 @@ public:
 	/// the `action` are run at the same time. `action` must be invocable with signature
 	/// `void(const Person& person, unsigned int thread_number)`.
 	template <typename TAction>
-	void parallel_for(unsigned int number_of_threads, const TAction& action)
+	void parallel_for(unsigned int number_of_threads, const TAction& action) const
 	{
 		stride::util::parallel::parallel_for(
 		    people, number_of_threads,
@@ -157,7 +157,7 @@ public:
 	/// Runs the `action` on every element of this vector. `action` must be invocable with signature
 	/// `void(const Person& person, unsigned int dummy)`.
 	template <typename TAction>
-	void serial_for(unsigned int number_of_threads, const TAction& action) const
+	void serial_for(const TAction& action) const
 	{
 		stride::util::parallel::serial_for(
 		    people,
