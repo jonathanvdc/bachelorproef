@@ -1,5 +1,6 @@
 #include "Population.h"
 
+#include <atomic>
 #include <functional>
 #include <map>
 #include <memory>
@@ -11,6 +12,8 @@
 #include "Person.h"
 #include "core/Health.h"
 #include "util/Errors.h"
+#include "util/Parallel.h"
+#include "util/ParallelMap.h"
 #include "util/Random.h"
 
 namespace stride {
@@ -99,11 +102,15 @@ std::vector<Person> Population::get_random_persons(
 /// Get the cumulative number of cases.
 unsigned int Population::get_infected_count() const
 {
-	unsigned int total{0U};
-	for (const auto& p : *this) {
-		const auto& h = p.GetHealth();
-		total += h.IsInfected() || h.IsRecovered();
-	}
+	std::atomic<unsigned int> total(0u);
+	util::parallel::parallel_for(
+	    people, util::parallel::get_number_of_threads(),
+	    [&total](const PersonId&, const std::shared_ptr<PersonData>& data, unsigned int) {
+		    const auto& health = data->GetHealth();
+		    if (health.IsInfected() || health.IsRecovered()) {
+			    total++;
+		    }
+	    });
 	return total;
 }
 }
