@@ -129,26 +129,6 @@ void CheckPoint::WriteConfig(const MultiSimulationConfig& conf)
 
 void CheckPoint::OpenFile() { m_file = H5Fopen(m_filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT); }
 
-void CheckPoint::WriteDate(const Calendar& cal)
-{
-	std::size_t day = cal.GetDay();
-	std::size_t month = cal.GetMonth();
-	std::size_t year = cal.GetYear();
-
-	std::stringstream ss;
-	ss << year;
-	if (month < 10) {
-		ss << 0;
-	}
-	ss << month;
-	if (day < 10) {
-		ss << 0;
-	}
-	ss << day;
-	unsigned int date = std::stoi(ss.str());
-	// TODO: write as attribute to dataset
-}
-
 void CheckPoint::WriteHolidays(const std::string& filename, unsigned int* group)
 {
 	hid_t temp = m_file;
