@@ -6,6 +6,7 @@
 #include <queue>
 #include <shared_mutex>
 #include <thread>
+#include <utility>
 #include <vector>
 #include "Parallel.h"
 
@@ -13,9 +14,8 @@ namespace stride {
 namespace util {
 namespace parallel {
 
-/// A lock-based ordered map that supports parallel iteration. This type
-/// exposes the same interface as std::map and extends it with parallelization
-/// methods.
+/// An ordered map that supports parallel iteration. This type exposes the same
+/// interface as std::map and extends it with parallelization methods.
 template <typename... TArgs>
 class ParallelMap final
 {
@@ -25,6 +25,130 @@ private:
 	using shared_mutex_type = std::shared_timed_mutex;
 	mutable inner_map_type vals;
 	mutable shared_mutex_type parallel_iter_mutex;
+
+	/// An iterator wrapper that acquires read locks to maintain the illusion
+	/// that parallel_for does not mutate any data.
+	template <typename TIterator>
+	class IteratorWrapper final
+	{
+	private:
+		using inner_iterator_type = TIterator;
+		using this_iterator_type = IteratorWrapper<inner_iterator_type>;
+		inner_iterator_type inner_iterator;
+		using value_type = decltype(inner_iterator.operator*());
+		using pointer_type = decltype(inner_iterator.operator->());
+		shared_mutex_type* mutex_ptr;
+
+		template <typename TOtherIterator>
+		friend class IteratorWrapper;
+
+	public:
+		IteratorWrapper(const inner_iterator_type& inner_iterator, shared_mutex_type* mutex_ptr)
+		    : inner_iterator(inner_iterator), mutex_ptr(mutex_ptr)
+		{
+		}
+
+		template <typename TOtherIterator>
+		IteratorWrapper(const IteratorWrapper<TOtherIterator>& other)
+		    : inner_iterator(other.inner_iterator), mutex_ptr(other.mutex_ptr)
+		{
+		}
+
+		template <typename TOtherIterator>
+		IteratorWrapper(IteratorWrapper<TOtherIterator>&& other)
+		    : inner_iterator(other.inner_iterator), mutex_ptr(other.mutex_ptr)
+		{
+		}
+
+		IteratorWrapper(const this_iterator_type&) = default;
+		IteratorWrapper(this_iterator_type&&) = default;
+		this_iterator_type& operator=(const this_iterator_type& other) = default;
+		this_iterator_type& operator=(this_iterator_type&& other) = default;
+
+		value_type& operator*() const
+		{
+			std::shared_lock<shared_mutex_type> read_lock{*mutex_ptr};
+			return inner_iterator.operator*();
+		}
+
+		pointer_type operator->() const
+		{
+			std::shared_lock<shared_mutex_type> read_lock{*mutex_ptr};
+			return inner_iterator.operator->();
+		}
+
+		this_iterator_type& operator++()
+		{
+			std::shared_lock<shared_mutex_type> read_lock{*mutex_ptr};
+			++inner_iterator;
+			return *this;
+		}
+
+		this_iterator_type operator++(int)
+		{
+			auto old_value = *this;
+			std::shared_lock<shared_mutex_type> read_lock{*mutex_ptr};
+			inner_iterator++;
+			return old_value;
+		}
+
+		this_iterator_type& operator--()
+		{
+			std::shared_lock<shared_mutex_type> read_lock{*mutex_ptr};
+			--inner_iterator;
+			return *this;
+		}
+
+		this_iterator_type operator--(int)
+		{
+			auto old_value = *this;
+			std::shared_lock<shared_mutex_type> read_lock{*mutex_ptr};
+			inner_iterator--;
+			return old_value;
+		}
+
+		void swap(this_iterator_type& other) { std::swap(inner_iterator, other.inner_iterator); }
+
+		bool operator==(const this_iterator_type& other) const
+		{
+			return inner_iterator == other.inner_iterator;
+		}
+
+		bool operator!=(const this_iterator_type& other) const
+		{
+			return inner_iterator != other.inner_iterator;
+		}
+	};
+
+	/// Wraps the given iterator in a thread-safe wrapper.
+	template <typename TIterator>
+	IteratorWrapper<TIterator> make_iterator(const TIterator& value) const
+	{
+		return IteratorWrapper<TIterator>(value, &parallel_iter_mutex);
+	}
+
+	/// Wraps the given iterator in a thread-safe wrapper.
+	template <typename TIterator>
+	IteratorWrapper<TIterator> make_iterator(TIterator&& value) const
+	{
+		return IteratorWrapper<TIterator>(value, &parallel_iter_mutex);
+	}
+
+	/// Wraps the given pair of iterators in a thread-safe wrapper.
+	template <typename TIterator>
+	std::pair<IteratorWrapper<TIterator>, IteratorWrapper<TIterator>> make_iterator_pair(
+	    const std::pair<TIterator, TIterator>& pair) const
+	{
+		return std::make_pair(make_iterator(pair.first), make_iterator(pair.second));
+	}
+
+	/// Wraps the given pair of iterators in a thread-safe wrapper.
+	template <typename TIterator>
+	std::pair<IteratorWrapper<TIterator>, IteratorWrapper<TIterator>> make_iterator_pair(
+	    std::pair<TIterator, TIterator>&& pair) const
+	{
+		return std::make_pair(std::move(make_iterator(pair.first)), std::move(make_iterator(pair.second)));
+	}
 
 public:
 	using key_type = typename inner_map_type::key_type;
@@ -38,10 +162,10 @@ public:
 	using const_reference = typename inner_map_type::const_reference;
 	using pointer = typename inner_map_type::pointer;
 	using const_pointer = typename inner_map_type::const_pointer;
-	using iterator = typename inner_map_type::iterator;
-	using const_iterator = typename inner_map_type::const_iterator;
-	using reverse_iterator = typename inner_map_type::reverse_iterator;
-	using const_reverse_iterator = typename inner_map_type::const_reverse_iterator;
+	using iterator = IteratorWrapper<typename inner_map_type::iterator>;
+	using const_iterator = IteratorWrapper<typename inner_map_type::const_iterator>;
+	using reverse_iterator = IteratorWrapper<typename inner_map_type::reverse_iterator>;
+	using const_reverse_iterator = IteratorWrapper<typename inner_map_type::const_reverse_iterator>;
 	using value_compare = typename inner_map_type::value_compare;
 
 	/// Constructs a concurrent map.
@@ -116,7 +240,7 @@ public:
 	iterator begin() noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().begin();
+		return make_iterator(get_inner_map().begin());
 	}
 
 	/// Returns an iterator to the first element of the container.
@@ -124,7 +248,7 @@ public:
 	const_iterator begin() const noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().begin();
+		return make_iterator(get_inner_map().begin());
 	}
 
 	/// Returns an iterator to the first element of the container.
@@ -132,7 +256,7 @@ public:
 	const_iterator cbegin() const noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().cbegin();
+		return make_iterator(get_inner_map().cbegin());
 	}
 
 	/// Returns an iterator to the element following the last element of the container.
@@ -140,7 +264,7 @@ public:
 	iterator end() noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().end();
+		return make_iterator(get_inner_map().end());
 	}
 
 	/// Returns an iterator to the element following the last element of the container.
@@ -148,7 +272,7 @@ public:
 	const_iterator end() const noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().end();
+		return make_iterator(get_inner_map().end());
 	}
 
 	/// Returns an iterator to the element following the last element of the container.
@@ -156,7 +280,7 @@ public:
 	const_iterator cend() const noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().cend();
+		return make_iterator(get_inner_map().cend());
 	}
 
 	/// Returns a reverse iterator to the first element of the reversed container.
@@ -164,7 +288,7 @@ public:
 	reverse_iterator rbegin() noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().rbegin();
+		return make_iterator(get_inner_map().rbegin());
 	}
 
 	/// Returns a reverse iterator to the first element of the reversed container.
@@ -172,7 +296,7 @@ public:
 	const_reverse_iterator rbegin() const noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().rbegin();
+		return make_iterator(get_inner_map().rbegin());
 	}
 
 	/// Returns a reverse iterator to the first element of the reversed container.
@@ -180,7 +304,7 @@ public:
 	const_reverse_iterator crbegin() const noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().crbegin();
+		return make_iterator(get_inner_map().crbegin());
 	}
 
 	/// Returns a reverse iterator to the element following the last element of the reversed container.
@@ -189,7 +313,7 @@ public:
 	reverse_iterator rend() noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().rend();
+		return make_iterator(get_inner_map().rend());
 	}
 
 	/// Returns an iterator to the element following the last element of the container.
@@ -197,7 +321,7 @@ public:
 	const_reverse_iterator rend() const noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().rend();
+		return make_iterator(get_inner_map().rend());
 	}
 
 	/// Returns an iterator to the element following the last element of the container.
@@ -205,7 +329,7 @@ public:
 	const_reverse_iterator crend() const noexcept
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().crend();
+		return make_iterator(get_inner_map().crend());
 	}
 
 	/// Checks if the container has no elements, i.e. whether begin() == end().
@@ -244,7 +368,7 @@ public:
 	auto insert(TFuncArgs... args)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().insert(args...);
+		return make_iterator(get_inner_map().insert(args...));
 	}
 
 	/// Inserts a new element into the container constructed in-place with the given args if there is no element
@@ -253,7 +377,8 @@ public:
 	std::pair<iterator, bool> emplace(TFuncArgs&&... args)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().emplace(args...);
+		auto result = get_inner_map().emplace(args...);
+		return std::make_pair(make_iterator(result.first), result.second);
 	}
 
 	/// Inserts a new element to the container as close as possible to the position just before hint. The element is
@@ -262,7 +387,7 @@ public:
 	iterator emplace_hint(const_iterator hint, TFuncArgs&&... args)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().emplace_hint(args...);
+		return make_iterator(get_inner_map().emplace_hint(args...));
 	}
 
 	/// Removes specified elements from the container.
@@ -300,14 +425,14 @@ public:
 	iterator find(const key_type& key)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().find(key);
+		return make_iterator(get_inner_map().find(key));
 	}
 
 	/// Finds an element with key equivalent to key.
 	const_iterator find(const key_type& key) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().find(key);
+		return make_iterator(get_inner_map().find(key));
 	}
 
 	/// Finds an element with key that compares equivalent to the value x. This overload only participates in
@@ -317,7 +442,7 @@ public:
 	iterator find(const TFuncArg& x)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().find(x);
+		return make_iterator(get_inner_map().find(x));
 	}
 
 	/// Finds an element with key that compares equivalent to the value x. This overload only participates in
@@ -327,7 +452,7 @@ public:
 	const_iterator find(const TFuncArg& x) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().find(x);
+		return make_iterator(get_inner_map().find(x));
 	}
 
 	/// Returns a range containing all elements with the given key in the container. The range is defined by two
@@ -337,7 +462,7 @@ public:
 	std::pair<iterator, iterator> equal_range(const key_type& key)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().equal_range(key);
+		return make_iterator_pair(get_inner_map().equal_range(key));
 	}
 
 	/// Returns a range containing all elements with the given key in the container. The range is defined by two
@@ -347,7 +472,7 @@ public:
 	std::pair<const_iterator, const_iterator> equal_range(const key_type& key) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().equal_range(key);
+		return make_iterator_pair(get_inner_map().equal_range(key));
 	}
 
 	/// Returns a range containing all elements with the given key in the container. The range is defined by two
@@ -358,7 +483,7 @@ public:
 	std::pair<iterator, iterator> equal_range(const TFuncArg& x)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().equal_range(x);
+		return make_iterator_pair(get_inner_map().equal_range(x));
 	}
 
 	/// Returns a range containing all elements with the given key in the container. The range is defined by two
@@ -369,21 +494,21 @@ public:
 	std::pair<const_iterator, const_iterator> equal_range(const TFuncArg& x) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().equal_range(x);
+		return make_iterator_pair(get_inner_map().equal_range(x));
 	}
 
 	/// Returns an iterator pointing to the first element that is not less than key.
 	iterator lower_bound(const key_type& key)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().lower_bound(key);
+		return make_iterator(get_inner_map().lower_bound(key));
 	}
 
 	/// Returns an iterator pointing to the first element that is not less than key.
 	const_iterator lower_bound(const key_type& key) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().lower_bound(key);
+		return make_iterator(get_inner_map().lower_bound(key));
 	}
 
 	/// Returns an iterator pointing to the first element that compares not less to the value x. This overload only
@@ -393,7 +518,7 @@ public:
 	iterator lower_bound(const TFuncArg& x)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().lower_bound(x);
+		return make_iterator(get_inner_map().lower_bound(x));
 	}
 
 	/// Returns an iterator pointing to the first element that compares not less to the value x. This overload only
@@ -403,21 +528,21 @@ public:
 	const_iterator lower_bound(const TFuncArg& x) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().lower_bound(x);
+		return make_iterator(get_inner_map().lower_bound(x));
 	}
 
 	/// Returns an iterator pointing to the first element that is greater than key.
 	iterator upper_bound(const key_type& key)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().upper_bound(key);
+		return make_iterator(get_inner_map().upper_bound(key));
 	}
 
 	/// Returns an iterator pointing to the first element that is greater than key.
 	const_iterator upper_bound(const key_type& key) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().upper_bound(key);
+		return make_iterator(get_inner_map().upper_bound(key));
 	}
 
 	/// Returns an iterator pointing to the first element that compares greater to the value x. This overload only
@@ -427,7 +552,7 @@ public:
 	iterator upper_bound(const TFuncArg& x)
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().upper_bound(x);
+		return make_iterator(get_inner_map().upper_bound(x));
 	}
 
 	/// Returns an iterator pointing to the first element that compares greater to the value x. This overload only
@@ -437,7 +562,7 @@ public:
 	const_iterator upper_bound(const TFuncArg& x) const
 	{
 		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
-		return get_inner_map().upper_bound(x);
+		return make_iterator(get_inner_map().upper_bound(x));
 	}
 
 	/// Returns the function object that compares the keys, which is a copy of this container's constructor argument
@@ -502,7 +627,7 @@ public:
 		auto min_key = begin()->first;
 		auto max_key = rbegin()->first;
 		auto chunks = TCreateChunks()(max_key - min_key + 1, num_threads);
-		std::vector<iterator> start_iterators;
+		std::vector<typename inner_map_type::iterator> start_iterators;
 		{
 			std::unique_lock<shared_mutex_type> write_lock{parallel_iter_mutex};
 
@@ -528,10 +653,10 @@ public:
 		std::vector<std::thread> thread_pool;
 		for (std::size_t i = 0; i < chunks.size(); i++) {
 			auto start_iterator = start_iterators[i];
-			auto end_iterator = i == chunks.size() - 1 ? end() : start_iterators[i + 1];
+			auto end_iterator = i == chunks.size() - 1 ? vals.end() : start_iterators[i + 1];
 
 			// Only start jobs if we know that they're non-empty.
-			if (start_iterator != end() && start_iterator != end_iterator) {
+			if (start_iterator != vals.end() && start_iterator != end_iterator) {
 				thread_pool.emplace_back([this, &action, i, start_iterator, end_iterator] {
 					std::shared_lock<shared_mutex_type> write_lock{parallel_iter_mutex};
 					for (auto it = start_iterator; it != end_iterator; it++) {
@@ -704,14 +829,44 @@ void parallel_for(const ParallelMap<K, V>& values, unsigned int number_of_thread
 	values.parallel_for(number_of_threads, action);
 }
 }
-}
-}
 
-namespace std {
 template <typename... TArgs>
 void swap(stride::util::parallel::ParallelMap<TArgs...>& lhs, stride::util::parallel::ParallelMap<TArgs...>& rhs)
 {
 	lhs.swap(rhs);
+}
+
+template <typename... TArgs>
+void swap(
+    typename stride::util::parallel::ParallelMap<TArgs...>::iterator& lhs,
+    typename stride::util::parallel::ParallelMap<TArgs...>::iterator& rhs)
+{
+	lhs.swap(rhs);
+}
+
+template <typename... TArgs>
+void swap(
+    typename stride::util::parallel::ParallelMap<TArgs...>::const_iterator& lhs,
+    typename stride::util::parallel::ParallelMap<TArgs...>::const_iterator& rhs)
+{
+	lhs.swap(rhs);
+}
+
+template <typename... TArgs>
+void swap(
+    typename stride::util::parallel::ParallelMap<TArgs...>::reverse_iterator& lhs,
+    typename stride::util::parallel::ParallelMap<TArgs...>::reverse_iterator& rhs)
+{
+	lhs.swap(rhs);
+}
+
+template <typename... TArgs>
+void swap(
+    typename stride::util::parallel::ParallelMap<TArgs...>::const_reverse_iterator& lhs,
+    typename stride::util::parallel::ParallelMap<TArgs...>::const_reverse_iterator& rhs)
+{
+	lhs.swap(rhs);
+}
 }
 }
 
