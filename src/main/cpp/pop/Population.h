@@ -30,6 +30,8 @@
 #include "core/Atlas.h"
 #include "core/Health.h"
 #include "geo/GeoPosition.h"
+#include "util/Parallel.h"
+#include "util/ParallelMap.h"
 #include "util/Random.h"
 
 namespace stride {
@@ -40,7 +42,7 @@ namespace stride {
 class Population
 {
 private:
-	std::map<PersonId, std::shared_ptr<PersonData>> people;
+	util::parallel::ParallelMap<PersonId, std::shared_ptr<PersonData>> people;
 	PersonId max_person_id;
 	Atlas atlas;
 
@@ -58,20 +60,22 @@ public:
 			++map_iterator_val;
 			return *this;
 		}
-		const_iterator& operator++(int)
+		const_iterator operator++(int)
 		{
+			auto result = *this;
 			map_iterator_val++;
-			return *this;
+			return result;
 		}
 		const_iterator& operator--()
 		{
 			--map_iterator_val;
 			return *this;
 		}
-		const_iterator& operator--(int)
+		const_iterator operator--(int)
 		{
+			auto result = *this;
 			map_iterator_val--;
-			return *this;
+			return result;
 		}
 		Person operator*() const { return Person(map_iterator_val->first, map_iterator_val->second); }
 		bool operator==(const const_iterator& other) const
@@ -137,6 +141,31 @@ public:
 	auto AtlasEmplace(const Atlas::Key& key, const geo::GeoPosition& pos) -> decltype(atlas.Emplace(key, pos))
 	{
 		return atlas.Emplace(key, pos);
+	}
+
+	/// Runs the `action` on every element of this vector. Up to `number_of_threads` instances of
+	/// the `action` are run at the same time. `action` must be invocable with signature
+	/// `void(const Person& person, unsigned int thread_number)`.
+	template <typename TAction>
+	void parallel_for(unsigned int number_of_threads, const TAction& action) const
+	{
+		stride::util::parallel::parallel_for(
+		    people, number_of_threads,
+		    [&action](const PersonId& id, const std::shared_ptr<PersonData>& data, unsigned int thread_number) {
+			    return action(Person(id, data), thread_number);
+		    });
+	}
+
+	/// Runs the `action` on every element of this vector. `action` must be invocable with signature
+	/// `void(const Person& person, unsigned int dummy)`.
+	template <typename TAction>
+	void serial_for(const TAction& action) const
+	{
+		stride::util::parallel::serial_for(
+		    people,
+		    [&action](const PersonId& id, const std::shared_ptr<PersonData>& data, unsigned int thread_number) {
+			    return action(Person(id, data), thread_number);
+		    });
 	}
 };
 
