@@ -23,7 +23,7 @@ private:
 	using inner_map_type = std::map<TArgs...>;
 	using this_map_type = ParallelMap<TArgs...>;
 	using shared_mutex_type = std::shared_timed_mutex;
-	inner_map_type vals;
+	mutable inner_map_type vals;
 	mutable shared_mutex_type parallel_iter_mutex;
 
 public:
@@ -456,6 +456,19 @@ public:
 	template <typename TAction>
 	void serial_for(const TAction& action)
 	{
+		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
+		::stride::util::parallel::serial_for<key_type, mapped_type, TAction>(get_inner_map(), action);
+	}
+
+	/// Applies the given action to each element in this map.
+	/// The action is not applied to elements simultaneously.
+	/// An action is a function object with signature `void(const K&, const V&, unsigned int)`
+	/// where the first parameter is the value that the action takes and the second
+	/// parameter is a dummy value.
+	template <typename TAction>
+	void serial_for(const TAction& action) const
+	{
+		std::shared_lock<shared_mutex_type> read_lock{parallel_iter_mutex};
 		::stride::util::parallel::serial_for<key_type, mapped_type, TAction>(get_inner_map(), action);
 	}
 
@@ -520,6 +533,7 @@ public:
 			// Only start jobs if we know that they're non-empty.
 			if (start_iterator != end() && start_iterator != end_iterator) {
 				thread_pool.emplace_back([this, &action, i, start_iterator, end_iterator] {
+					std::shared_lock<shared_mutex_type> write_lock{parallel_iter_mutex};
 					for (auto it = start_iterator; it != end_iterator; it++) {
 						auto& elem = *it;
 						action(elem.first, elem.second, i);
@@ -532,6 +546,21 @@ public:
 		for (auto& thread : thread_pool) {
 			thread.join();
 		}
+	}
+
+	/// Applies the given action to each element in this map.
+	/// The action may be applied to up to `num_threads` elements simultaneously.
+	/// An action is a function object with signature `void(const K&, const V&, unsigned int)`
+	/// where the first parameter is the value that the action takes and the third
+	/// parameter is the index of the thread it runs on.
+	template <typename TAction, typename TCreateChunks = CreateChunks<key_type>>
+	void parallel_for(unsigned int num_threads, const TAction& action) const
+	{
+		const_cast<this_map_type*>(this)->parallel_for(
+		    num_threads,
+		    [&action](const key_type& key, const mapped_type& value, unsigned int thread_number) -> void {
+			    action(key, value, thread_number);
+		    });
 	}
 };
 
@@ -649,6 +678,28 @@ void serial_for(ParallelMap<K, V>& values, const TAction& action)
 /// parameter is the index of the thread it runs on.
 template <typename K, typename V, typename TAction>
 void parallel_for(ParallelMap<K, V>& values, unsigned int number_of_threads, const TAction& action)
+{
+	values.parallel_for(number_of_threads, action);
+}
+
+/// Applies the given action to each element in the given map.
+/// The action is not applied to elements simultaneously.
+/// An action is a function object with signature `void(const K&, V&, unsigned int)`
+/// where the first parameter is the value that the action takes and the second
+/// parameter is a dummy value.
+template <typename K, typename V, typename TAction>
+void serial_for(const ParallelMap<K, V>& values, const TAction& action)
+{
+	values.serial_for(action);
+}
+
+/// Applies the given action to each element in the given map.
+/// The action may be applied to up to `num_threads` elements simultaneously.
+/// An action is a function object with signature `void(const K&, V&, unsigned int)`
+/// where the first parameter is the value that the action takes and the third
+/// parameter is the index of the thread it runs on.
+template <typename K, typename V, typename TAction>
+void parallel_for(const ParallelMap<K, V>& values, unsigned int number_of_threads, const TAction& action)
 {
 	values.parallel_for(number_of_threads, action);
 }

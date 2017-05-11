@@ -66,6 +66,19 @@ void serial_for(std::map<K, V>& values, const TAction& action)
 	}
 }
 
+/// Applies the given action to each element in the given map of values.
+/// The action is not applied to elements simultaneously.
+/// An action is a function object with signature `void(const K&, const V&, unsigned int)`
+/// where the first parameter is the value that the action takes and the second
+/// parameter is a dummy value.
+template <typename K, typename V, typename TAction>
+void serial_for(const std::map<K, V>& values, const TAction& action)
+{
+	for (auto& pair : values) {
+		action(pair.first, pair.second, 0);
+	}
+}
+
 /// A default integer implementation of an operation that divides a range into chunks.
 template <typename T>
 struct CreateChunks
