@@ -115,6 +115,12 @@ public:
 	/// Gets the number of people in this population.
 	auto size() const -> decltype(people.size()) { return people.size(); }
 
+	/// Creates a constant iterator positioned at the first person in this population.
+	const_iterator begin() const { return const_iterator(people.begin()); }
+
+	/// Creates a constant iterator positioned just past the last person in this population.
+	const_iterator end() const { return const_iterator(people.end()); }
+
 	/// Gets the largest id for any person that has ever been in this population.
 	PersonId get_max_id() const { return max_person_id; }
 
