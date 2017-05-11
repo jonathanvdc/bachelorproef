@@ -130,10 +130,20 @@ void run_stride(const MultiSimulationConfig& config)
 	// -----------------------------------------------------------------------------------------
 	// Set output path prefix.
 	// -----------------------------------------------------------------------------------------
-	auto output_prefix = config.log_config->output_prefix;
-	if (output_prefix.length() == 0) {
-		output_prefix = TimeStamp().ToTag();
+	
+	if (config.log_config->output_prefix.length() == 0) {
+		config.log_config->output_prefix = TimeStamp().ToTag();
 	}
+	auto output_prefix = config.log_config->output_prefix;
+
+	cp->OpenFile();
+	cp->WriteConfig(config);
+	cp->CloseFile();
+	cp->OpenFile();
+	SingleSimulationConfig foo = cp->LoadSingleConfig();
+	foo.common_config->initial_calendar = cp->LoadCalendar(20170504);
+	cp->CloseFile();
+
 	cout << "Project output tag:  " << output_prefix << endl << endl;
 
 	// -----------------------------------------------------------------------------------------
@@ -249,11 +259,12 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	config.common_config->track_index_case = track_index_case;
 
 	cp = new CheckPoint("foo.h5");
+
 	cp->CreateFile();
 	cp->OpenFile();
-	cp->WriteConfig(config);
 	cp->WriteHolidays(pt_config.get_child("run").get<std::string>("holidays_file", "holidays_flanders_2016.json"));
 	cp->CloseFile();
+
 
 	// Run Stride.
 	run_stride(config);

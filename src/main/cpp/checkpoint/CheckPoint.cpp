@@ -8,8 +8,10 @@
 #include "CheckPoint.h"
 #include "hdf5.h"
 
+#include <calendar/Calendar.h>
 #include <core/ClusterType.h>
 #include <core/Health.h>
+#include <multiregion/TravelModel.h>
 #include <pop/Person.h>
 #include <util/Errors.h>
 #include <util/InstallDirs.h>
@@ -55,23 +57,23 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 		WriteFileDSet(conf.GetGeodistributionProfilePath(), "geoconfig");
 	}
 	if (conf.GetReferenceHouseholdsPath().size() != 0) {
-		WriteFileDSet(conf.GetReferenceHouseholdsPath(), "contact");
+		WriteFileDSet(conf.GetReferenceHouseholdsPath(), "household");
 	}
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims = 2;
 	hid_t dataspace = H5Screate_simple(1, &dims, NULL);
-	bool bools[2];
+	hbool_t bools[2];
 	bools[0] = common_config->track_index_case;
 	bools[1] = log_config->generate_person_file;
-	hid_t attr = H5Acreate2(group, "bools", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
-	H5Awrite(attr, H5T_NATIVE_INT, bools);
+	hid_t attr = H5Acreate2(group, "bools", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	H5Awrite(attr, H5T_NATIVE_HBOOL, bools);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
 
 	dims = 4;
 	dataspace = H5Screate_simple(1, &dims, NULL);
-	attr = H5Acreate2(group, "uints", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	attr = H5Acreate2(group, "uints", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	unsigned int uints[4];
 	uints[0] = common_config->rng_seed;
 	uints[1] = common_config->number_of_days;
@@ -83,18 +85,19 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 
 	dims = 3;
 	dataspace = H5Screate_simple(1, &dims, NULL);
-	attr = H5Acreate2(group, "doubles", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	attr = H5Acreate2(group, "doubles", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	double doubles[3];
 	doubles[0] = common_config->r0;
 	doubles[1] = common_config->seeding_rate;
 	doubles[2] = common_config->immunity_rate;
+
 	H5Awrite(attr, H5T_NATIVE_DOUBLE, doubles);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
 
 	dims = log_config->output_prefix.size();
 	dataspace = H5Screate_simple(1, &dims, NULL);
-	attr = H5Acreate2(group, "prefix", H5T_STD_I32BE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	attr = H5Acreate2(group, "prefix", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	char prefix[log_config->output_prefix.size()];
 	strncpy(prefix, log_config->output_prefix.c_str(), sizeof(prefix));
 	prefix[sizeof(prefix) - 1] = 0;
@@ -146,20 +149,21 @@ void CheckPoint::WriteDate(const Calendar& cal)
 	// TODO: write as attribute to dataset
 }
 
-void CheckPoint::WriteHolidays(const std::string& filename, const std::string& groupname)
+void CheckPoint::WriteHolidays(const std::string& filename, unsigned int* group)
 {
+	hid_t temp = m_file;
+	if (group != NULL) {
+		std::stringstream ss;
+		ss << "Simulation " << *group;
+		m_file = H5Gopen2(m_file, ss.str().c_str(), H5P_DEFAULT);
+	}
 	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
 	if (exist <= 0) {
-		hid_t temp = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-		H5Gclose(temp);
-	}
-	hid_t temp = m_file;
-
-	if (groupname.size() != 0) {
-		m_file = H5Gopen2(m_file, groupname.c_str(), H5P_DEFAULT);
+		hid_t tempCreate = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(tempCreate);
 	}
 	WriteFileDSet(filename, "holidays");
-	if (groupname.size() != 0) {
+	if (group != NULL) {
 		H5Gclose(m_file);
 		m_file = temp;
 	}
@@ -172,7 +176,7 @@ void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
 		hid_t temp = H5Gcreate2(m_file, "Population", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		H5Gclose(temp);
 	}
-	hsize_t entries = 5 + NumOfClusterTypes();
+	hsize_t entries = 9 + NumOfClusterTypes();
 
 	hsize_t dims[2] = {pop.size(), entries};
 	hid_t dataspace = H5Screate_simple(2, dims, NULL);
@@ -196,9 +200,13 @@ void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
 
 		// Health data
 		data[0][4] = (unsigned int)p.GetHealth().GetHealthStatus();
+		data[0][5] = p.GetHealth().GetStartInfectiousness();
+		data[0][6] = p.GetHealth().GetEndInfectiousness();
+		data[0][7] = p.GetHealth().GetStartSymptomatic();
+		data[0][8] = p.GetHealth().GetEndSymptomatic();
 
 		// Cluster data
-		unsigned int k = 5;
+		unsigned int k = 9;
 		for (unsigned int j = 0; j < NumOfClusterTypes(); j++) {
 			ClusterType temp = (ClusterType)j;
 			if (ToString(temp) == "Null") {
@@ -236,11 +244,12 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 	std::copy(str.begin(), str.end(), std::back_inserter(dataset));
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
-	hsize_t dims[1] = {dataset.size() - 1};
+	hsize_t dims[1] = {dataset.size()};
 	hid_t dataspace = H5Screate_simple(1, dims, NULL);
 	hid_t dset =
 	    H5Dcreate2(group, setname.c_str(), H5T_NATIVE_CHAR, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(*dataset.begin()));
+
 	H5Dclose(dset);
 	H5Sclose(dataspace);
 	H5Gclose(group);
@@ -248,12 +257,368 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 
 void CheckPoint::SaveCheckPoint(const Population& pop, unsigned int time)
 {
-	// TODO: make it multiregion
+	// TODO: add airport
 	m_lastCh++;
 	if (m_lastCh == m_limit) {
 		m_lastCh = 0;
 		WritePopulation(pop, time);
 	}
+}
+
+void CheckPoint::SaveCheckPoint(const std::string& filename, unsigned int groupnum)
+{
+	std::stringstream ss;
+	ss << "Simulation " << groupnum;
+	std::string groupname = ss.str();
+
+	htri_t exist = H5Lexists(m_file, groupname.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, groupname.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
+	}
+
+	hid_t group = H5Gopen2(m_file, groupname.c_str(), H5P_DEFAULT);
+
+	hid_t pop_group = H5Gopen2(group, "Population", H5P_DEFAULT);
+
+	hid_t newFile = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+
+	hid_t source_group = H5Gopen2(newFile, "Population", H5P_DEFAULT);
+
+	H5G_info_t* to_move = new H5G_info_t();
+
+	H5Gget_info(source_group, to_move);
+
+	auto op_func = [&pop_group](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
+		H5Ocopy(loc_id, name, pop_group, name, H5P_DEFAULT, H5P_DEFAULT);
+		return 0;
+	};
+	auto temp = [](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
+		(*static_cast<decltype(op_func)*>(operator_data))(loc_id, name, info, operator_data);
+	};
+
+	// H5Literate(source_group, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, temp, &op_func);
+
+	H5Gclose(source_group);
+	H5Fclose(newFile);
+	H5Gclose(pop_group);
+	H5Gclose(group);
+}
+
+Population CheckPoint::LoadCheckPoint(unsigned int date)
+{
+	htri_t exist = H5Lexists(m_file, "Population", H5P_DEFAULT);
+	if (exist <= 0) {
+		FATAL_ERROR("Tried to load incorrect file");
+	}
+	std::string name = "Population/" + to_string(date);
+	exist = H5Lexists(m_file, name.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		FATAL_ERROR("Incorrect date loaded");
+	}
+
+	hid_t dset = H5Dopen(m_file, name.c_str(), H5P_DEFAULT);
+	hid_t dspace = H5Dget_space(dset);
+
+	hsize_t dims[2];
+	H5Sget_simple_extent_dims(dspace, dims, NULL);
+
+	Population result;
+
+	for (hsize_t i = 0; i < dims[0]; i++) {
+		hsize_t start[2];
+		start[0] = i;
+		start[1] = 0;
+
+		hsize_t count[2];
+		count[0] = 1;
+		count[1] = dims[1];
+
+		H5Sselect_hyperslab(dspace, H5S_SELECT_SET, start, NULL, count, NULL);
+
+		unsigned int data[1][dims[1]];
+
+		H5Dread(dset, H5T_NATIVE_UINT, H5S_ALL, dspace, H5P_DEFAULT, data[0]);
+
+		/*
+		Person toAdd(
+		    data[0][0], data[0][1], data[0][9], data[0][10], data[0][11], data[0][12], data[0][13],
+		    disease.Sample(random));
+
+		if((bool) data[0][3]){
+			toAdd.ParticipateInSurvey();
+		}
+		*/
+		/*
+		// Basic Data
+		data[0][0] = p.GetId();
+		data[0][1] = p.GetAge();
+		data[0][2] = p.GetGender();
+		data[0][3] = p.IsParticipatingInSurvey();
+
+		// Health data
+		data[0][4] = (unsigned int)p.GetHealth().GetHealthStatus();
+
+		// Cluster data
+		unsigned int k = 5;
+		for (unsigned int j = 0; j < NumOfClusterTypes(); j++) {
+			ClusterType temp = (ClusterType)j;
+			if (ToString(temp) == "Null") {
+				continue;
+			}
+			data[0][k] = p.GetClusterId(temp);
+			k++;
+		}
+		*/
+	}
+
+	return result;
+}
+
+SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
+{
+	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
+	if (exist <= 0) {
+		FATAL_ERROR("Invalid file");
+	}
+
+	SingleSimulationConfig result;
+	std::shared_ptr<CommonSimulationConfig> comCon(new CommonSimulationConfig());
+	std::shared_ptr<LogConfig> logCon(new LogConfig());
+	result.common_config = comCon;
+	result.log_config = logCon;
+
+	auto path = util::InstallDirs::GetDataDir();
+
+	boost::filesystem::path filename("tmp_matrix.xml");
+	std::ofstream out((path / filename).string(), std::ios::out | std::ios::trunc);
+	hid_t dset = H5Dopen(m_file, "Config/contact", H5P_DEFAULT);
+
+	hid_t dspace = H5Dget_space(dset);
+
+	hsize_t dims[1];
+	H5Sget_simple_extent_dims(dspace, dims, NULL);
+
+	char matrixdata[dims[0]];
+	H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrixdata);
+	out << matrixdata;
+	out.close();
+	result.common_config->contact_matrix_file_name = filename.string();
+	H5Dclose(dset);
+	H5Sclose(dspace);
+
+	filename = boost::filesystem::path("tmp_disease.xml");
+	out = std::ofstream((path / filename).string(), std::ios::out | std::ios::trunc);
+	dset = H5Dopen(m_file, "Config/disease", H5P_DEFAULT);
+
+	dspace = H5Dget_space(dset);
+
+	H5Sget_simple_extent_dims(dspace, dims, NULL);
+
+	char diseasedata[dims[0]];
+	H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, diseasedata);
+	out << diseasedata << std::endl;
+	out.close();
+	result.common_config->disease_config_file_name = filename.string();
+	H5Dclose(dset);
+	H5Sclose(dspace);
+
+	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
+
+	hid_t attr = H5Aopen(group, "bools", H5P_DEFAULT);
+	hbool_t bools[2];
+	H5Aread(attr, H5T_NATIVE_HBOOL, bools);
+	H5Aclose(attr);
+
+	result.common_config->track_index_case = bools[0];
+	result.log_config->generate_person_file = bools[1];
+
+	attr = H5Aopen(group, "doubles", H5P_DEFAULT);
+	double doubles[3];
+	H5Aread(attr, H5T_NATIVE_DOUBLE, doubles);
+	H5Aclose(attr);
+
+	result.common_config->r0 = doubles[0];
+	result.common_config->seeding_rate = doubles[1];
+	result.common_config->immunity_rate = doubles[2];
+
+	attr = H5Aopen(group, "uints", H5P_DEFAULT);
+	unsigned int uints[3];
+	H5Aread(attr, H5T_NATIVE_UINT, uints);
+	H5Aclose(attr);
+
+	result.common_config->rng_seed = uints[0];
+	result.common_config->number_of_days = uints[1];
+	result.common_config->number_of_survey_participants = uints[2];
+	result.log_config->log_level = (LogMode)uints[3];
+
+	attr = H5Aopen(group, "prefix", H5P_DEFAULT);
+
+	H5A_info_t* info = new H5A_info_t();
+
+	H5Aget_info(attr, info);
+
+	char prefix[info->data_size];
+
+	delete info;
+	H5Aread(attr, H5T_NATIVE_CHAR, prefix);
+	H5Aclose(attr);
+
+	result.log_config->output_prefix = prefix;
+	// travel model
+	/*
+	filename = boost::filesystem::path("tmp_pop.json");
+	out = std::ofstream((path / filename).string(), std::ios::out | std::ios::trunc);
+	dset = H5Dopen(m_file, "Config/popconfig", H5P_DEFAULT);
+
+	dspace = H5Dget_space(dset);
+
+	H5Sget_simple_extent_dims(dspace, dims, NULL);
+	//File is too big for memory
+	// needs to be solved
+	//
+	unsigned int part = dims[0]/ 100;
+	unsigned int leftover = dims[0]%100;
+
+	std::cout<<part << " "<<leftover<<std::endl;
+
+	for(int i = 0; i < 100; i++){
+		std::cout<<"start"<<std::endl;
+		hsize_t start[1];
+		start[0] = i*part;
+		std::cout<<"count"<<std::endl;
+		hsize_t count[1];
+		count[0] = part;
+		std::cout<<"hyperslab"<<std::endl;
+		H5Sselect_hyperslab(dspace, H5S_SELECT_SET, start, NULL, count, NULL);
+		std::cout<<"just before alloc"<<std::endl;
+		char popdata[part];
+		std::cout<<"just after alloc"<<std::endl;
+		H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, dspace, H5P_DEFAULT, popdata);
+		out.write(popdata,part);
+	}
+	std::cout<<"100 gedaan"<<std::endl;
+	hsize_t start[1];
+	start[0] = 100*part;
+
+	hsize_t count[1];
+	count[0] = leftover;
+
+	H5Sselect_hyperslab(dspace, H5S_SELECT_SET, start, NULL, count, NULL);
+
+	char popdata[part];
+	H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, dspace, H5P_DEFAULT, popdata);
+	out.write(popdata,leftover);
+
+	out.close();
+	std::string popconfig = filename.string();
+	H5Dclose(dset);
+	H5Sclose(dspace);
+	std::string geoconfig ="";
+
+
+	exist = H5Lexists(m_file, "Config/geoconfig", H5P_DEFAULT);
+	if (exist > 0) {
+		filename = boost::filesystem::path("tmp_geoconfig.json");
+		out =std::ofstream((path / filename).string(), std::ios::out | std::ios::trunc);
+		dset = H5Dopen(m_file, "Config/geoconfig", H5P_DEFAULT);
+
+		dspace = H5Dget_space(dset);
+
+		H5Sget_simple_extent_dims(dspace, dims, NULL);
+
+		char geodata[dims[0]];
+		H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, geodata);
+		out << geodata;
+		out.close();
+		geoconfig = filename.string();
+		H5Dclose(dset);
+		H5Sclose(dspace);
+	}
+	std::string household = "";
+	exist = H5Lexists(m_file, "Config/household", H5P_DEFAULT);
+	if (exist > 0) {
+		filename = boost::filesystem::path("tmp_household.json");
+		out = std::ofstream((path / filename).string(), std::ios::out | std::ios::trunc);
+		dset = H5Dopen(m_file, "Config/household", H5P_DEFAULT);
+
+		dspace = H5Dget_space(dset);
+
+		H5Sget_simple_extent_dims(dspace, dims, NULL);
+
+		char householddata[dims[0]];
+		H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, householddata);
+		out << householddata;
+		out.close();
+		household = filename.string();
+		H5Dclose(dset);
+		H5Sclose(dspace);
+	}
+	std::shared_ptr<const multiregion::RegionTravel> travelRef(new
+	multiregion::RegionTravel(id,popconfig,geoconfig,household));
+	result.travel_model=travelRef;
+	*/
+	return result;
+}
+
+void CheckPoint::ToSingleFile(unsigned int groupnum, std::string filename)
+{
+	std::stringstream ss;
+	ss << "Simulation " << groupnum;
+	std::string groupname = ss.str();
+
+	htri_t exist = H5Lexists(m_file, groupname.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		FATAL_ERROR("Non-existing group");
+	}
+
+	hid_t group = H5Gopen2(m_file, groupname.c_str(), H5P_DEFAULT);
+
+	hid_t f = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+	exist = H5Lexists(group, "Config", H5P_DEFAULT);
+	if (exist > 0) {
+		H5Ocopy(group, "Config", f, "Config", H5P_DEFAULT, H5P_DEFAULT);
+	}
+	exist = H5Lexists(group, "Population", H5P_DEFAULT);
+	if (exist > 0) {
+		H5Ocopy(group, "Population", f, "Population", H5P_DEFAULT, H5P_DEFAULT);
+	}
+
+	H5Fclose(f);
+	H5Gclose(group);
+}
+
+Calendar CheckPoint::LoadCalendar(unsigned int date)
+{
+	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
+	if (exist <= 0) {
+		FATAL_ERROR("Invalid file");
+	}
+
+	auto path = util::InstallDirs::GetDataDir();
+
+	boost::filesystem::path filename("tmp_holidays.json");
+	std::ofstream out((path / filename).string(), std::ios::out | std::ios::trunc);
+	hid_t dset = H5Dopen(m_file, "Config/holidays", H5P_DEFAULT);
+
+	hid_t dspace = H5Dget_space(dset);
+
+	hsize_t dims[1];
+	H5Sget_simple_extent_dims(dspace, dims, NULL);
+
+	char holidaydata[dims[0]];
+	H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, holidaydata);
+	out.write(holidaydata, dims[0]);
+	out.close();
+	H5Dclose(dset);
+	H5Sclose(dspace);
+
+	Calendar result;
+	boost::gregorian::date d;
+	d = boost::gregorian::from_undelimited_string(std::to_string(date));
+	result.Initialize(d, filename.string());
+	boost::filesystem::remove(filename);
+	return result;
 }
 
 } /* namespace checkpoint */

@@ -31,6 +31,7 @@ set( SRC
 		PopulationGeneration.cpp
 		RunSimulator.cpp
 		TravelModelGraph.cpp
+		CheckPointTest.cpp
 )
 
 if( Poco_FOUND )

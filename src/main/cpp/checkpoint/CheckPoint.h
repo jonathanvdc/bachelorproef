@@ -20,34 +20,46 @@ namespace checkpoint {
 class CheckPoint
 {
 public:
+	/// Creates the wanted file and immediately closes it. It will overwrite a file if one of the same name already
+	/// exists.
+	void CreateFile();
+
 	/// Constructor The string is the file for the checkpoints. The unsigned int is the interval between
 	/// checkpoints. An interval of 0 makes no checkpoints.
 	CheckPoint(const std::string&, unsigned int interval = 5);
 
 	/// Loads a checkpoint from the file in the constructor. The unsigned int tells which checkpoint to use.
-	void LoadCheckPoint(unsigned int);
+	Population LoadCheckPoint(unsigned int);
 
-	/// Saves the current simulation to a checkpoint.
+	/// Loads a checkpoint from a group into a seperate file for transmission
+	void LoadCheckPoint(unsigned int , unsigned int, std::string);
+
+	/// Saves the current simulation to a checkpoint with the int as index.
 	void SaveCheckPoint(const Population&, unsigned int);
+
+	/// Saves the population in a file to a checkpoint to group with the unsigned int as index
+	void SaveCheckPoint(const std::string& , unsigned int);
 
 	/// Writes the MultiSimulationConfig.
 	void WriteConfig(const MultiSimulationConfig&);
 
-	/// Loads the MultiSimulationConfig.
-	MultiSimulationConfig LoadConfig();
-
 	/// Writes the SingleSimulationConfig.
 	void WriteConfig(const SingleSimulationConfig&);
 
+	/// Loads the MultiSimulationConfig.
+	MultiSimulationConfig LoadMultiConfig();
+
+	/// Loads a SingleSimulationConfig with id the given id.
+	SingleSimulationConfig LoadSingleConfig(unsigned int id =0);
+
+	/// Puts the h5 for a single simulation into a seperate file
+	void ToSingleFile(unsigned int, std::string);
+
 	/// Writes the holidays from a file. The second string represents the groupname.
-	void WriteHolidays(const std::string&, const std::string& groupname = "");
+	void WriteHolidays(const std::string&, unsigned int* group = NULL);
 
-	/// Loads the holidays into a std::string.
-	std::string LoadHolidays();
-
-	/// Creates the wanted file and immediately closes it. It will overwrite a file if one of the same name already
-	/// exists.
-	void CreateFile();
+	/// Loads the Calendar starting with the given date.
+	Calendar LoadCalendar(unsigned int);
 
 	/// Opens the wanted file
 	void OpenFile();
