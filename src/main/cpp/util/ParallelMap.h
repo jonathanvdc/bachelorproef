@@ -89,8 +89,8 @@ private:
 		using inner_iterator_type = TIterator;
 		using this_iterator_type = IteratorWrapper<inner_iterator_type>;
 		inner_iterator_type inner_iterator;
-		using value_type = decltype(inner_iterator.operator*());
-		using pointer_type = decltype(inner_iterator.operator->());
+		using value_type = typename std::iterator_traits<TIterator>::value_type;
+		using pointer = typename std::iterator_traits<TIterator>::pointer;
 		shared_mutex_type* mutex_ptr;
 
 		template <typename>
@@ -125,7 +125,7 @@ private:
 			return inner_iterator.operator*();
 		}
 
-		pointer_type operator->() const
+		pointer operator->() const
 		{
 			std::shared_lock<shared_mutex_type> read_lock{*mutex_ptr};
 			return inner_iterator.operator->();
