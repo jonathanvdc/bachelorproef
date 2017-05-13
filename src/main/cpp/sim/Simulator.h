@@ -64,6 +64,81 @@ public:
 	/// Tests if this simulation has run to completion.
 	bool IsDone() const { return m_calendar->GetSimulationDay() >= m_config.common_config->number_of_days; }
 
+	/// Tests if the person is a visitor to this simulation.
+	bool IsVisitor(PersonId id) const { return m_visitors.IsVisitor(id); }
+
+	/// Runs the given action on every resident who is currently present
+	/// in the simulation. More than one invocation of `action` may be
+	/// running simultaneously. `action` must be invocable and have
+	/// signature `void(const Person& person, unsigned int thread_number)`.
+	template <typename TAction>
+	void ParallelForeachPresentResident(const TAction& action)
+	{
+		m_population->parallel_for(m_num_threads, [this, &action](const Person& p, unsigned int thread_number) {
+			if (!IsVisitor(p.GetId())) {
+				action(p, thread_number);
+			}
+		});
+	}
+
+	/// Runs the given action on every resident of the simulation, present
+	/// or otherwise. More than one invocation of `action` may be
+	/// running simultaneously. `action` must be invocable and have
+	/// signature `void(const Person& person, unsigned int thread_number)`.
+	template <typename TAction>
+	void ParallelForeachResident(const TAction& action)
+	{
+		ParallelForeachPresentResident<TAction>(action);
+		m_expatriates.SerialForeach(action);
+	}
+
+	/// Runs the given action on every person who is currently present
+	/// in the simulation, person or otherwise. More than one invocation
+	/// of the action may be running simultaneously. `action` must be
+	/// invocable and have signature
+	/// `void(const Person& person, unsigned int thread_number)`.
+	template <typename TAction>
+	void ParallelForeachPresentPerson(const TAction& action)
+	{
+		m_population->parallel_for(m_num_threads, action);
+	}
+
+	/// Runs the given action on every resident who is currently present
+	/// in the simulation. No more than one invocation of `action` will be
+	/// running simultaneously. `action` must be invocable and have
+	/// signature `void(const Person& person, unsigned int dummy)`.
+	template <typename TAction>
+	void SerialForeachPresentResident(const TAction& action)
+	{
+		m_population->serial_for([this, &action](const Person& p, unsigned int thread_number) {
+			if (!IsVisitor(p.GetId())) {
+				action(p, thread_number);
+			}
+		});
+	}
+
+	/// Runs the given action on every resident of the simulation, present
+	/// or otherwise. No more than one invocation of `action` will be running
+	/// simultaneously. `action` must be invocable and have
+	/// signature `void(const Person& person, unsigned int dummy)`.
+	template <typename TAction>
+	void SerialForeachResident(const TAction& action)
+	{
+		SerialForeachPresentResident<TAction>(action);
+		m_expatriates.SerialForeach(action);
+	}
+
+	/// Runs the given action on every person who is currently present
+	/// in the simulation, person or otherwise. No more than one invocation
+	/// of `action` will be running simultaneously. `action` must be
+	/// invocable and have signature
+	/// `void(const Person& person, unsigned int dummy)`.
+	template <typename TAction>
+	void SerialForeachPresentPerson(const TAction& action)
+	{
+		m_population->serial_for(m_num_threads, action);
+	}
+
 private:
 	/// Accepts visitors from other regions.
 	void AcceptVisitors(const multiregion::SimulationStepInput& input);

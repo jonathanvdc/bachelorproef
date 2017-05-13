@@ -75,6 +75,12 @@ void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 	cp->OpenFile();
 	cp->SaveCheckPoint(pop,day);
 	cp->CloseFile();
+
+	cp->OpenFile();
+	Population poptemp = cp->LoadCheckPoint(0);
+	std::cout<<"In CheckPoint 0: "<<poptemp.get_infected_count()<<std::endl;
+	cp->CloseFile();
+
 	run_clock.Stop();
 	auto infected_count = pop.get_infected_count();
 	cases.push_back(infected_count);

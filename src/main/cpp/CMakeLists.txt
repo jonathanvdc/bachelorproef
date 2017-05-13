@@ -57,6 +57,7 @@ set(LIB_SRC
 #---
     util/InstallDirs.cpp
     util/Parallel.cpp
+    util/Signals.cpp
 
 #---
     alias/Alias.cpp

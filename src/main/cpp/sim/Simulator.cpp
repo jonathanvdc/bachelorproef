@@ -275,9 +275,9 @@ multiregion::SimulationStepOutput Simulator::TimeStep(const multiregion::Simulat
 	const bool is_work_off{days_off->IsWorkOff()};
 	const bool is_school_off{days_off->IsSchoolOff()};
 
-	for (const auto& p : *m_population) {
+	m_population->parallel_for(m_num_threads, [=](const Person& p, unsigned int) {
 		p.Update(is_work_off, is_school_off);
-	}
+	});
 
 	if (m_track_index_case) {
 		switch (m_log_level) {
