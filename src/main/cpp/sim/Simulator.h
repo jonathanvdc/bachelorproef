@@ -55,6 +55,9 @@ public:
 	/// Gets the simulator's configuration.
 	SingleSimulationConfig GetConfiguration() const { return m_config; }
 
+	/// Gets the simulator's date
+	unsigned int GetDate() const;
+
 	/// Change track_index_case setting.
 	void SetTrackIndexCase(bool track_index_case);
 

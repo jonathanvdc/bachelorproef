@@ -50,10 +50,10 @@ public:
 	std::string GetRuntimeString() const { return run_clock.ToString(); }
 
 	/// Performs an action just before a simulator step is performed.
-	void BeforeSimulatorStep(const Population&);
+	void BeforeSimulatorStep(const Population& pop);
 
 	/// Performs an action just after a simulator step has been performed.
-	void AfterSimulatorStep(const Population& pop);
+	void AfterSimulatorStep(const Population& pop, unsigned int date);
 
 private:
 	util::Stopwatch<> run_clock;

@@ -50,6 +50,22 @@ Simulator::Simulator()
 
 void Simulator::SetTrackIndexCase(bool track_index_case) { m_track_index_case = track_index_case; }
 
+unsigned int Simulator::GetDate() const{
+	std::string tempResult = "";
+	tempResult += std::to_string(m_calendar->GetYear());
+	size_t temp = m_calendar->GetMonth();
+	if(temp < 10){
+		tempResult += "0";
+	}
+	tempResult += std::to_string(temp);
+	temp = m_calendar->GetDay();
+	if(temp < 10){
+		tempResult += "0";
+	}
+	tempResult += std::to_string(temp);
+	return std::stoi(tempResult);
+}
+
 template <LogMode log_level, bool track_index_case>
 void Simulator::UpdateClusters()
 {

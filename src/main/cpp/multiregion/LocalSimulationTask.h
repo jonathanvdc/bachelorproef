@@ -42,7 +42,7 @@ public:
 		auto pull_data = communicator.Pull();
 		result.BeforeSimulatorStep(*sim->GetPopulation());
 		auto push_data = sim->TimeStep(pull_data);
-		result.AfterSimulatorStep(*sim->GetPopulation());
+		result.AfterSimulatorStep(*sim->GetPopulation(),sim->GetDate());
 		communicator.Push(push_data);
 	}
 
