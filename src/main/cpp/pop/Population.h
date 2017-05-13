@@ -149,6 +149,8 @@ public:
 	Atlas::Town Hometown(const Person& person) const{
 		return atlas.LookupTown({person.GetClusterId(ClusterType::Household), ClusterType::Household});
 	}
+
+	bool has_atlas;
 };
 
 /// Swaps two population iterators.

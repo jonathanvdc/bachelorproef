@@ -71,7 +71,11 @@ void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 	run_clock.Stop();
 	auto infected_count = pop.get_infected_count();
 	cases.push_back(infected_count);
-	visualizer_data.AddDay(pop);
+
+	// TODO: command line flag to suppress visualizer data aggregation
+	if(pop.has_atlas)
+		visualizer_data.AddDay(pop);
+	
 	day++;
 
 	lock_guard<mutex> lock(io_mutex);
@@ -210,8 +214,11 @@ void run_stride(const MultiSimulationConfig& config)
 			person_file.Print(pop);
 		}
 		
-		VisualizerFile vis_file(sim_tuple.sim_output_prefix);
-		vis_file.Print(pop->getAtlas().getTownMap(), sim_result.GetVisualizerData());
+		// TODO: commind line flag to suppress visualizer
+		if(pop->has_atlas){
+			VisualizerFile vis_file(sim_tuple.sim_output_prefix);
+			vis_file.Print(pop->getAtlas().getTownMap(), sim_result.GetVisualizerData());
+		}
 		
 		cout << endl << endl;
 		cout << "  run_time: " << sim_result.GetRuntimeString() << "  -- total time: " << total_clock.ToString()

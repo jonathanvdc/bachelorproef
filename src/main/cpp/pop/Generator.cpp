@@ -69,6 +69,7 @@ Population Generator::Generate()
 
 	// The population object we're filling up.
 	Population population;
+	population.has_atlas = true;
 
 	// Throughout this method, `n` is a counter for how many people are
 	// left to accomodate for. When towns, schools, etc. are added to the
