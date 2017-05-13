@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 #include "multiregion/TravelModel.h"
+#include "output/VisualizerData.h"
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
 #include "util/Stopwatch.h"
@@ -55,9 +56,14 @@ public:
 	/// Performs an action just after a simulator step has been performed.
 	void AfterSimulatorStep(const Population& pop);
 
+	const VisualizerData& GetVisualizerData() const{
+		return visualizer_data;
+	}
+
 private:
 	util::Stopwatch<> run_clock;
 	int day;
+	VisualizerData visualizer_data;
 	static std::mutex io_mutex;
 };
 

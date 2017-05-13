@@ -8,6 +8,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "VisualizerData.h"
+#include "core/Atlas.h"
 
 namespace stride {
 namespace output {
@@ -25,7 +27,7 @@ public:
 	~VisualizerFile();
 
 	/// Print the given visualisation data.
-	void Print(int x);
+	void Print(Atlas::TownMap townMap, const VisualizerData& visualizer_data);
 
 private:
 	/// Generate file name and open the file stream.

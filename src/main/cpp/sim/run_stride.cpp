@@ -71,6 +71,7 @@ void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 	run_clock.Stop();
 	auto infected_count = pop.get_infected_count();
 	cases.push_back(infected_count);
+	visualizer_data.AddDay(pop);
 	day++;
 
 	lock_guard<mutex> lock(io_mutex);
@@ -191,6 +192,7 @@ void run_stride(const MultiSimulationConfig& config)
 		// -----------------------------------------------------------------------------------------
 		// Cases
 		auto sim_result = sim_tuple.sim_task->GetResult();
+		auto pop = sim_tuple.sim_task->GetPopulation();
 		CasesFile cases_file(sim_tuple.sim_output_prefix);
 		cases_file.Print(sim_result.cases);
 
@@ -204,14 +206,13 @@ void run_stride(const MultiSimulationConfig& config)
 
 		// Persons
 		if (sim_tuple.sim_config.log_config->generate_person_file) {
-			auto pop = sim_tuple.sim_task->GetPopulation();
 			PersonFile person_file(sim_tuple.sim_output_prefix);
 			person_file.Print(pop);
 		}
-
+		
 		VisualizerFile vis_file(sim_tuple.sim_output_prefix);
-		vis_file.Print(10);
-
+		vis_file.Print(pop->getAtlas().getTownMap(), sim_result.GetVisualizerData());
+		
 		cout << endl << endl;
 		cout << "  run_time: " << sim_result.GetRuntimeString() << "  -- total time: " << total_clock.ToString()
 		     << endl

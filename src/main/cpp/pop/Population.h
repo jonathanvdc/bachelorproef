@@ -133,10 +133,21 @@ public:
 	/// Get the cumulative number of cases.
 	unsigned int get_infected_count() const;
 
-	/// Store a GeoPosition in the population's atlas.
-	auto AtlasEmplace(const Atlas::Key& key, const geo::GeoPosition& pos) -> decltype(atlas.Emplace(key, pos))
+	/// Get the atlas.
+	const Atlas& getAtlas() const {return atlas;}
+
+	/// Register the map of GeoPositions to Towns to the atlas.
+	void AtlasRegisterTowns(Atlas::TownMap& towns) { atlas.RegisterTowns(towns); }
+
+	/// Store a Cluster's GeoPosition in the population's atlas.
+	auto AtlasEmplaceCluster(const Atlas::ClusterKey& key, const geo::GeoPosition& pos)
+	    -> decltype(atlas.EmplaceCluster(key, pos))
 	{
-		return atlas.Emplace(key, pos);
+		return atlas.EmplaceCluster(key, pos);
+	}
+
+	Atlas::Town Hometown(const Person& person) const{
+		return atlas.LookupTown({person.GetClusterId(ClusterType::Household), ClusterType::Household});
 	}
 };
 
