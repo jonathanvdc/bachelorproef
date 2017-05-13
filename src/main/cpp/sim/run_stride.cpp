@@ -21,6 +21,7 @@
 
 #include "run_stride.h"
 
+#include "checkpoint/CheckPoint.h"
 #include "multiregion/ParallelSimulationManager.h"
 #include "multiregion/SimulationManager.h"
 #include "multiregion/TravelModel.h"
@@ -34,7 +35,6 @@
 #include "util/Parallel.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
-#include "checkpoint/CheckPoint.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -63,22 +63,28 @@ using namespace checkpoint;
 
 std::mutex StrideSimulatorResult::io_mutex;
 
-//temporary "global" for demo and testing purposes
-CheckPoint *cp;
+// temporary "global" for demo and testing purposes
+CheckPoint* cp;
 
 /// Performs an action just before a simulator step is performed.
-void StrideSimulatorResult::BeforeSimulatorStep(const Population&) { run_clock.Start(); }
+void StrideSimulatorResult::BeforeSimulatorStep(const Population&)
+{
+	run_clock.Start();
+	//saves the start configuration
+	if (day == 0) {
+		cp->SaveCheckPoint(pop, 0);
+	}
+}
 
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
-{	
+{
 	cp->OpenFile();
-	cp->SaveCheckPoint(pop,day);
+	cp->SaveCheckPoint(pop, day);
 	cp->CloseFile();
 
 	cp->OpenFile();
-	Population poptemp = cp->LoadCheckPoint(0);
-	std::cout<<"In CheckPoint 0: "<<poptemp.get_infected_count()<<std::endl;
+	cp->LoadCheckPoint(0);
 	cp->CloseFile();
 
 	run_clock.Stop();
@@ -96,7 +102,8 @@ unsigned int print_number_of_threads()
 {
 	unsigned int num_threads = stride::util::parallel::get_number_of_threads();
 	if (stride::util::parallel::using_parallelization_library) {
-		cout << "Using " << stride::util::parallel::parallelization_library_name << " threads: " << num_threads << endl;
+		cout << "Using " << stride::util::parallel::parallelization_library_name << " threads: " << num_threads
+		     << endl;
 	} else {
 		cout << "Not using threads for parallelization." << endl;
 	}
@@ -127,7 +134,7 @@ void verify_execution_environment()
 
 /// Run the stride simulator.
 void run_stride(const MultiSimulationConfig& config)
-{	
+{
 	// -----------------------------------------------------------------------------------------
 	// OpenMP.
 	// -----------------------------------------------------------------------------------------
@@ -136,7 +143,7 @@ void run_stride(const MultiSimulationConfig& config)
 	// -----------------------------------------------------------------------------------------
 	// Set output path prefix.
 	// -----------------------------------------------------------------------------------------
-	
+
 	if (config.log_config->output_prefix.length() == 0) {
 		config.log_config->output_prefix = TimeStamp().ToTag();
 	}
@@ -195,8 +202,9 @@ void run_stride(const MultiSimulationConfig& config)
 		    std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-		tasks.push_back({log_name, sim_output_prefix, single_config,
-				 sim_manager.CreateSimulation(single_config, file_logger, region_id)});
+		tasks.push_back(
+		    {log_name, sim_output_prefix, single_config,
+		     sim_manager.CreateSimulation(single_config, file_logger, region_id)});
 	}
 	cout << "Done building simulators. " << endl << endl;
 
@@ -270,7 +278,6 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	cp->OpenFile();
 	cp->WriteHolidays(pt_config.get_child("run").get<std::string>("holidays_file", "holidays_flanders_2016.json"));
 	cp->CloseFile();
-
 
 	// Run Stride.
 	run_stride(config);

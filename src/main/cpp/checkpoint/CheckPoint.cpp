@@ -151,16 +151,17 @@ void CheckPoint::WriteHolidays(const std::string& filename, unsigned int* group)
 
 void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
 {
-	htri_t exist = H5Lexists(m_file, "Population", H5P_DEFAULT);
+	std::string datestr= std::to_string(date);
+	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
-		hid_t temp = H5Gcreate2(m_file, "Population", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		H5Gclose(temp);
 	}
 	hsize_t entries = 10 + NumOfClusterTypes();
 
 	hsize_t dims[2] = {pop.size(), entries};
 	hid_t dataspace = H5Screate_simple(2, dims, NULL);
-	std::string spot = "Population/" + std::to_string(date);
+	std::string spot = datestr + "/Population";
 
 	hid_t chunkP = H5Pcreate(H5P_DATASET_CREATE);
 	hsize_t chunkDims[2] = {1, entries};
@@ -170,7 +171,7 @@ void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
 
 	chunkP = H5Pcreate(H5P_DATASET_XFER);
 	unsigned int i = 0;
-	for (const auto& p : pop) {
+	pop.serial_for([this,&entries,&i,&dataspace,&dataset,&chunkP](const Person &p, unsigned int) {
 		unsigned int data[1][entries];
 		// Basic Data
 		data[0][0] = p.GetId();
@@ -204,7 +205,7 @@ void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
 		H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, chunkP, data);
 		i++;
 		H5Sclose(chunkspace);
-	}
+	});
 
 	H5Dclose(dataset);
 	H5Sclose(dataspace);
@@ -287,18 +288,10 @@ void CheckPoint::SaveCheckPoint(const std::string& filename, unsigned int groupn
 
 	hid_t group = H5Gopen2(m_file, groupname.c_str(), H5P_DEFAULT);
 
-	hid_t pop_group = H5Gopen2(group, "Population", H5P_DEFAULT);
-
 	hid_t newFile = H5Fopen(filename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
 
-	hid_t source_group = H5Gopen2(newFile, "Population", H5P_DEFAULT);
-
-	H5G_info_t* to_move = new H5G_info_t();
-
-	H5Gget_info(source_group, to_move);
-
-	auto op_func = [&pop_group](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
-		H5Ocopy(loc_id, name, pop_group, name, H5P_DEFAULT, H5P_DEFAULT);
+	auto op_func = [&group](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
+		H5Ocopy(loc_id, name, group, name, H5P_DEFAULT, H5P_DEFAULT);
 		return 0;
 	};
 	auto temp = [](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
@@ -306,11 +299,9 @@ void CheckPoint::SaveCheckPoint(const std::string& filename, unsigned int groupn
 		return 0;
 	};
 
-	H5Literate(source_group, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, temp, &op_func);
+	H5Literate(newFile, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, temp, &op_func);
 
-	H5Gclose(source_group);
 	H5Fclose(newFile);
-	H5Gclose(pop_group);
 	H5Gclose(group);
 }
 
@@ -318,11 +309,12 @@ Population CheckPoint::LoadCheckPoint(unsigned int date)
 {
 
 	std::cout<<"Loading CheckPoint"<<std::endl;
-	htri_t exist = H5Lexists(m_file, "Population", H5P_DEFAULT);
+	std::string groupname = std::to_string(date);
+	htri_t exist = H5Lexists(m_file, groupname.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
 		FATAL_ERROR("Tried to load incorrect file");
 	}
-	std::string name = "Population/" + to_string(date);
+	std::string name = groupname + "/Population";
 	exist = H5Lexists(m_file, name.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
 		FATAL_ERROR("Incorrect date loaded");
@@ -481,14 +473,17 @@ void CheckPoint::ToSingleFile(unsigned int groupnum, std::string filename)
 	hid_t group = H5Gopen2(m_file, groupname.c_str(), H5P_DEFAULT);
 
 	hid_t f = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-	exist = H5Lexists(group, "Config", H5P_DEFAULT);
-	if (exist > 0) {
-		H5Ocopy(group, "Config", f, "Config", H5P_DEFAULT, H5P_DEFAULT);
-	}
-	exist = H5Lexists(group, "Population", H5P_DEFAULT);
-	if (exist > 0) {
-		H5Ocopy(group, "Population", f, "Population", H5P_DEFAULT, H5P_DEFAULT);
-	}
+
+	auto op_func = [&f](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
+		H5Ocopy(loc_id, name, f, name, H5P_DEFAULT, H5P_DEFAULT);
+		return 0;
+	};
+	auto temp = [](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
+		(*static_cast<decltype(op_func)*>(operator_data))(loc_id, name, info, operator_data);
+		return 0;
+	};
+
+	H5Literate(group, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, temp, &op_func);
 
 	H5Fclose(f);
 	H5Gclose(group);
