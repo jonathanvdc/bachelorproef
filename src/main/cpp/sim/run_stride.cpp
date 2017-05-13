@@ -72,7 +72,11 @@ void StrideSimulatorResult::BeforeSimulatorStep(const Population &pop)
 	run_clock.Start();
 	//saves the start configuration
 	if (day == 0) {
+
+		cp->OpenFile();
 		cp->SaveCheckPoint(pop, 0);
+		cp->CloseFile();
+
 	}
 }
 
