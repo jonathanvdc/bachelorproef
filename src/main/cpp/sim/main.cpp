@@ -26,7 +26,6 @@
 #include <tclap/CmdLine.h>
 #include "util/Signals.h"
 
-
 using namespace std;
 using namespace stride;
 using namespace TCLAP;
