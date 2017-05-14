@@ -15,7 +15,7 @@ namespace stride {
 namespace output {
 
 /**
- * Produces a file with daily cases count.
+ * Produces a file with the necessary data for visualization.
  */
 class VisualizerFile
 {

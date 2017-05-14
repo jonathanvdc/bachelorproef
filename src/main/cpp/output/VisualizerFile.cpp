@@ -5,11 +5,9 @@
 
 #include "VisualizerFile.h"
 
-#include <fstream>
 #include <iostream>
 #include <memory>
-#include <string>
-#include <vector>
+#include <boost/property_tree/json_parser.hpp>
 
 namespace stride {
 namespace output {

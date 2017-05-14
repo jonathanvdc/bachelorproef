@@ -41,6 +41,7 @@ set(LIB_SRC
 #---
     output/CasesFile.cpp
     output/VisualizerFile.cpp
+    output/VisualizerData.cpp
     output/PersonFile.cpp
     output/SummaryFile.cpp
 #---

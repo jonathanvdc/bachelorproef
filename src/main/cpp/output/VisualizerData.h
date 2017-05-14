@@ -9,45 +9,30 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include "pop/Population.h"
 
 namespace stride {
 
+/**
+ * Data structure for the visualiser.
+ * Stores the day-by-day infected count per Town.
+ */
 class VisualizerData
 {
 private:
+	/// Vector of days: Each day is a map from Town names to the amount of infected.
 	std::vector<std::map<std::string, unsigned int>> days;
 
 public:
-	void AddDay(const Population& pop)
-	{
-		days.push_back({});
-		for (const auto& p : pop) {
-			if (p.GetHealth().IsInfected()) {
-				days.back()[pop.Hometown(p).name]++;
-			}
-		}
-	}
+	/// Register a new day from the given population's current state.
+	void AddDay(const Population& pop);
 
-	const std::vector<std::map<std::string, unsigned int>>& GetDays() const { return days; }
+	/// Get a reference to the vector of days.
+	const std::vector<std::map<std::string, unsigned int>>& GetDays() const;
 
-	const std::shared_ptr<boost::property_tree::ptree> ToPtree() const
-	{
-		using boost::property_tree::ptree;
-
-		auto daysTree = std::make_shared<ptree>();
-
-		for (const auto& day : days) {
-			ptree data;
-			for (const auto& p : day)
-				data.put(p.first, p.second);
-			daysTree->push_back(std::make_pair("", data));
-		}
-
-		return daysTree;
-	}
+	/// Convert all stored data into a boost property tree, so that it can be converted to JSON.
+	const std::shared_ptr<boost::property_tree::ptree> ToPtree() const;
 };
 
 } // end of namespace
