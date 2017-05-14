@@ -27,13 +27,14 @@ addons:
       - libmono-system-core4.0-cil
       - mpich
       - libmpich-dev
-      - libhdf5-serial-dev
       # The CMake package is kind of dated. We'll download a later version
       # of cmake later on.
       # - cmake
       # Don't grab the APT boost package, because that package is stale.
       # We'll need to build boost ourselves.
       # - libboost-all-dev
+      # The hdf5 package is also outdated. We will install 1.8.16    
+      # - libhdf5-serial-dev
 
 matrix:
   include:
@@ -89,7 +90,7 @@ matrix:
 before_install:
   # If we're working with an OS X machine, then want to install homebrew packages (the APT packages
   # will be ignored)
-  - if [ $TRAVIS_OS_NAME == "osx" ]; then brew update; brew install mono; brew install gcc; brew install mpich; brew install homebrew/science/hdf5; fi
+  - if [ $TRAVIS_OS_NAME == "osx" ]; then brew update; brew install mono; brew install gcc; brew install mpich; brew install wget; fi
   - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
   # Print the C++ compiler version.
   - $CXX --version
@@ -121,6 +122,19 @@ before_install:
   - if [ $TRAVIS_OS_NAME != "osx" ]; then export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH; fi
   - if [ $TRAVIS_OS_NAME != "osx" ]; then sudo make -s install; fi
   - if [ $TRAVIS_OS_NAME != "osx" ]; then popd; fi
+  
+  # Build and install HDF5 v1.8.16
+  - mkdir -p $HOME/soft
+  - pushd $HOME/soft
+  - export HDF5_VER_MAJOR=18
+  - export HDF5_VER_MINOR=1.8.16
+  - wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.16/src/hdf5-$HDF5_VER_MINOR.tar.gz
+  - tar -zxvf hdf5-$HDF5_VER_MINOR.tar.gz
+  - cd hdf5-$HDF5_VER_MINOR
+  - ./configure --prefix=$HOME/usr --libdir=$HOME/usr/lib$CLUSTER --bindir=$HOME/usr/bin$CLUSTER --enable-parallel --enable-shared --with-pic --with-default-api-version=v16
+  - make install
+  - popd
+
 
 script:
   # `make all; make test`, but fancier.
