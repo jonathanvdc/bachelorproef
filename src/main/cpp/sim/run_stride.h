@@ -29,6 +29,7 @@
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
 #include "util/Stopwatch.h"
+#include "core/Cluster.h"
 
 namespace stride {
 
@@ -50,10 +51,10 @@ public:
 	std::string GetRuntimeString() const { return run_clock.ToString(); }
 
 	/// Performs an action just before a simulator step is performed.
-	void BeforeSimulatorStep(const Population& pop);
+	void BeforeSimulatorStep(const Population& pop, const std::vector<std::vector<Cluster>>& clusters);
 
 	/// Performs an action just after a simulator step has been performed.
-	void AfterSimulatorStep(const Population& pop, unsigned int date);
+	void AfterSimulatorStep(const Population& pop, const std::vector<std::vector<Cluster>>& clusters, unsigned int date);
 
 private:
 	util::Stopwatch<> run_clock;

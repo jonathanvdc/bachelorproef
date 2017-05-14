@@ -9,7 +9,9 @@
 #define CHECKPOINT_H_INCLUDED
 
 #include <memory>
+#include <vector>
 #include "calendar/Calendar.h"
+#include "core/Cluster.h"
 #include "hdf5.h"
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
@@ -32,13 +34,13 @@ public:
 	Population LoadCheckPoint(unsigned int);
 
 	/// Loads a checkpoint from a group into a seperate file for transmission
-	void LoadCheckPoint(unsigned int , unsigned int, std::string);
+	void LoadCheckPoint(unsigned int, unsigned int, std::string);
 
 	/// Saves the current simulation to a checkpoint with the int as index.
-	void SaveCheckPoint(const Population&, unsigned int);
+	void SaveCheckPoint(const Population&, const std::vector<std::vector<stride::Cluster>>&, unsigned int);
 
 	/// Saves the population in a file to a checkpoint to group with the unsigned int as index
-	void SaveCheckPoint(const std::string& , unsigned int);
+	void SaveCheckPoint(const std::string&, unsigned int);
 
 	/// Writes the MultiSimulationConfig.
 	void WriteConfig(const MultiSimulationConfig&);
@@ -50,7 +52,7 @@ public:
 	MultiSimulationConfig LoadMultiConfig();
 
 	/// Loads a SingleSimulationConfig with id the given id.
-	SingleSimulationConfig LoadSingleConfig(unsigned int id =0);
+	SingleSimulationConfig LoadSingleConfig(unsigned int id = 0);
 
 	/// Puts the h5 for a single simulation into a seperate file
 	void ToSingleFile(unsigned int, std::string);
@@ -68,9 +70,11 @@ public:
 	void CloseFile();
 
 private:
-
 	/// Writes the current population to a checkpoint.
 	void WritePopulation(const Population&, unsigned int);
+
+	/// Writes the clusters to a checkpoint.
+	void WriteClusters(const std::vector<std::vector<Cluster>>&, unsigned int);
 
 	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset

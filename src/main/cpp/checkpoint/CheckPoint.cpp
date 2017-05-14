@@ -151,7 +151,7 @@ void CheckPoint::WriteHolidays(const std::string& filename, unsigned int* group)
 
 void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
 {
-	std::string datestr= std::to_string(date);
+	std::string datestr = std::to_string(date);
 	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
 		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -171,7 +171,7 @@ void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
 
 	chunkP = H5Pcreate(H5P_DATASET_XFER);
 	unsigned int i = 0;
-	pop.serial_for([this,&entries,&i,&dataspace,&dataset,&chunkP](const Person &p, unsigned int) {
+	pop.serial_for([this, &entries, &i, &dataspace, &dataset, &chunkP](const Person& p, unsigned int) {
 		unsigned int data[1][entries];
 		// Basic Data
 		data[0][0] = p.GetId();
@@ -237,7 +237,8 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 	H5Gclose(group);
 }
 
-void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& setname){
+void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& setname)
+{
 	htri_t exist = H5Lexists(m_file, setname.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
 		FATAL_ERROR("Invalid file");
@@ -256,21 +257,22 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 
 	char data[dims[0]];
 	H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
-	out.write(data,dims[0]);
+	out.write(data, dims[0]);
 
 	out.close();
 	H5Dclose(dset);
 	H5Sclose(dspace);
-
 }
 
-void CheckPoint::SaveCheckPoint(const Population& pop, unsigned int time)
+void CheckPoint::SaveCheckPoint(
+    const Population& pop, const std::vector<std::vector<Cluster>>& clusters, unsigned int time)
 {
 	// TODO: add airport
 	m_lastCh++;
 	if (m_lastCh == m_limit or time == 0) {
 		m_lastCh = 0;
 		WritePopulation(pop, time);
+		WriteClusters(clusters, time);
 	}
 }
 
@@ -308,7 +310,7 @@ void CheckPoint::SaveCheckPoint(const std::string& filename, unsigned int groupn
 Population CheckPoint::LoadCheckPoint(unsigned int date)
 {
 
-	std::cout<<"Loading CheckPoint"<<std::endl;
+	std::cout << "Loading CheckPoint" << std::endl;
 	std::string groupname = std::to_string(date);
 	htri_t exist = H5Lexists(m_file, groupname.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
@@ -368,7 +370,7 @@ Population CheckPoint::LoadCheckPoint(unsigned int date)
 
 		result.emplace(toAdd);
 	}
-	std::cout<<"Loaded Population"<<std::endl;
+	std::cout << "Loaded Population" << std::endl;
 
 	return result;
 }
@@ -386,10 +388,10 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
 	result.common_config = comCon;
 	result.log_config = logCon;
 
-	WriteDSetFile("tmp_matrix.xml","Config/disease");
+	WriteDSetFile("tmp_matrix.xml", "Config/disease");
 	result.common_config->contact_matrix_file_name = "tmp_matrix.xml";
 
-	WriteDSetFile("tmp_disease.xml","Config/contact");
+	WriteDSetFile("tmp_disease.xml", "Config/contact");
 	result.common_config->disease_config_file_name = "tmp_disease.xml";
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
@@ -420,7 +422,7 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
 	result.common_config->number_of_days = uints[1];
 	result.common_config->number_of_survey_participants = uints[2];
 	result.log_config->log_level = (LogMode)uints[3];
-     
+
 	attr = H5Aopen(group, "prefix", H5P_DEFAULT);
 
 	H5A_info_t* info = new H5A_info_t();
@@ -496,8 +498,7 @@ Calendar CheckPoint::LoadCalendar(unsigned int date)
 		FATAL_ERROR("Invalid file");
 	}
 
-	WriteDSetFile("tmp_holidays.json","Config/holidays");		
-
+	WriteDSetFile("tmp_holidays.json", "Config/holidays");
 
 	Calendar result;
 	boost::gregorian::date d;
@@ -505,6 +506,66 @@ Calendar CheckPoint::LoadCalendar(unsigned int date)
 	result.Initialize(d, "tmp_holidays.json");
 	boost::filesystem::remove("tmp_holidays.json");
 	return result;
+}
+
+void CheckPoint::WriteClusters(const std::vector<std::vector<Cluster>>& clusters, unsigned int date)
+{
+	std::string datestr = std::to_string(date);
+	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
+	}
+	hid_t group = H5Gopen2(m_file, datestr.c_str(), H5P_DEFAULT);
+	for (auto& clvector : clusters) {
+		std::string dsetname = ToString(clvector.front().GetClusterType());
+
+		unsigned int totalSize = 0;
+		std::vector<unsigned int> sizes = {};
+
+		for (auto& cluster : clvector) {
+			totalSize += cluster.GetSize()+1;
+			sizes.push_back(cluster.GetSize());
+		}
+
+		hsize_t dims[2] = {totalSize, 3};
+		hid_t dataspace = H5Screate_simple(2, dims, NULL);
+
+		hid_t dataset = H5Dcreate2(
+		    group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		unsigned int spot = 0;
+		for (auto& cluster : clvector) {
+			std::vector<std::pair<Person, bool>> people = cluster.GetPeople();
+
+			unsigned int data[cluster.GetSize() + 1][3];
+
+			// Start of new cluster
+			data[0][0] = cluster.GetId();
+			data[0][1] = 0;
+			data[0][2] = 0;
+			// Data in cluster
+			for (unsigned int i = 1; i <= people.size(); i++) {
+				data[i][0] = cluster.GetId();
+				data[i][1] = people[i-1].first.GetId();
+				data[i][2] = people[i-1].second;
+			}
+
+			hsize_t start[2] = {spot, 0};
+			hsize_t count[2] = {cluster.GetSize()+1, 3};
+			hid_t chunkspace = H5Screate_simple(2, count, NULL);
+			H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
+
+			hid_t plist = H5Pcreate(H5P_DATASET_XFER);
+
+			H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, plist, data);
+			spot += cluster.GetSize()+1;
+			H5Sclose(chunkspace);
+			H5Pclose(plist);
+		}
+		H5Sclose(dataspace);
+		H5Dclose(dataset);
+
+	}
 }
 
 } /* namespace checkpoint */

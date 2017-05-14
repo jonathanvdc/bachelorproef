@@ -67,24 +67,25 @@ std::mutex StrideSimulatorResult::io_mutex;
 CheckPoint* cp;
 
 /// Performs an action just before a simulator step is performed.
-void StrideSimulatorResult::BeforeSimulatorStep(const Population &pop)
+void StrideSimulatorResult::BeforeSimulatorStep(
+    const Population& pop, const std::vector<std::vector<Cluster>>& clusters)
 {
 	run_clock.Start();
-	//saves the start configuration
+	// saves the start configuration
 	if (day == 0) {
 
 		cp->OpenFile();
-		cp->SaveCheckPoint(pop, 0);
+		cp->SaveCheckPoint(pop,clusters, 0);
 		cp->CloseFile();
-
 	}
 }
 
 /// Performs an action just after a simulator step has been performed.
-void StrideSimulatorResult::AfterSimulatorStep(const Population &pop,unsigned int date)
+void StrideSimulatorResult::AfterSimulatorStep(
+    const Population& pop, const std::vector<std::vector<Cluster>>& clusters, unsigned int date)
 {
 	cp->OpenFile();
-	cp->SaveCheckPoint(pop, date);
+	cp->SaveCheckPoint(pop,clusters ,date);
 	cp->CloseFile();
 
 	run_clock.Stop();
