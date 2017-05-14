@@ -27,6 +27,7 @@ addons:
       - libmono-system-core4.0-cil
       - mpich
       - libmpich-dev
+      - libhdf5-serial-dev
       # The CMake package is kind of dated. We'll download a later version
       # of cmake later on.
       # - cmake
