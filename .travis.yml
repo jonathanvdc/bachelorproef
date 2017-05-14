@@ -13,7 +13,6 @@ cache:
     # Cache the boost install
     - $HOME/boost_1_63_0/boost
     - $HOME/boost_1_63_0/stage/lib
-    - $HOME/poco
 
 # We're going to need MPI and the mono runtime.
 addons:
@@ -100,17 +99,6 @@ before_install:
   # Set the BOOST_ROOT environment variable.
   - export BOOST_ROOT=$HOME/boost_1_63_0
   - export LD_LIBRARY_PATH=$HOME/boost_1_63_0/stage/lib:$LD_LIBRARY_PATH
-  
-  # Build and install Poco
-  - mkdir -p $HOME/poco
-  - wget https://pocoproject.org/releases/poco-1.7.8/poco-1.7.8p2.tar.gz
-  - tar -xzf poco-1.7.8p2.tar.gz -C $HOME/poco
-  - pushd $HOME/poco/poco-1.7.8p2
-  - ./configure
-  - make -s
-  - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
-  - sudo make -s install
-  - popd
 
 script:
   # `make all; make test`, but fancier.
