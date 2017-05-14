@@ -7,8 +7,9 @@ $(document).ready(function(){
     $('#file-input').on('change', readSingleFile);
 })
 
-// File reading
+// File reading stuff
 
+/// Handler passed to the file selector, called when a file is selected.
 function readSingleFile(e) {
     var file = e.target.files[0];
     if (!file) return;
@@ -19,11 +20,11 @@ function readSingleFile(e) {
     reader.readAsText(file);
 }
 
+/// Handler passed to the FileReader, called with the contents of the selected file.
 function handleFile(contents) {
     var data = JSON.parse(contents);
     cleanData(data);
     console.log(data);
-    // Load the data as a new visualizer
     visualizer = new Visualizer(data);
 }
 
@@ -42,25 +43,39 @@ function cleanData(data){
     }
 }
 
-// Remove all spaces from a given string
+// Remove all spaces from a given string.
 function noSpace(s){ return s.split(" ").join(''); }
 
 // Class: Visualizer
 
-var Visualizer = function(data){
+/// Make a new Visualizer from the given data.
+/// mode = "table": The data is visualized as a table view.
+/// mode = "map"  : The data is visualized in a map view. 
+var Visualizer = function(data, mode = "table"){
     this.days = data.days;
     this.towns = data.towns;
+    this.mode = mode;
     this.initialize();
 }
 
+/// Initialize the Visualizer.
 Visualizer.prototype.initialize = function(){
     this.maxDays = this.days.length;
     $('.days').text(this.maxDays);
     // set up the view
-    this.makeTable();
-    this.setDay(0);
+    this.makeView();
+    this.updateDay(0);
 }
 
+/// Prepare the HTML document with the basic framework for our view.
+Visualizer.prototype.makeView = function(){
+    if( this.mode == "table")
+        this.makeTable();
+    else
+        this.makeMap();
+}
+
+/// Prepare the HTML document with a basic table.
 Visualizer.prototype.makeTable = function(){
     // Clear the current view
     $view = $("#view");
@@ -89,7 +104,8 @@ Visualizer.prototype.makeTable = function(){
     }
 }
 
-Visualizer.prototype.setDay = function(day){
+/// If given a valid day, update the view to match the info at that day.
+Visualizer.prototype.updateDay = function(day){
     // Make sure it's a valid day to visualize.
     if(day >= this.maxDays || day < 0){
         console.log(`Invalid day: ${day}.`)
@@ -99,7 +115,20 @@ Visualizer.prototype.setDay = function(day){
     this.day = day;
     $('.current-day').text(this.day);
 
-    var currentDay = this.days[day];
+    this.updateView();
+}
+
+/// Update the view to reflect the currently selected day.
+Visualizer.prototype.updateView = function(){
+    if( this.mode == "table")
+        this.updateTable();
+    else
+        this.updateMap();
+}
+
+/// Update the table to reflect the currently selected day.
+Visualizer.prototype.updateTable = function(){
+    var currentDay = this.days[this.day];
     var total = 0;
     // Update the view further
     for(town in this.towns){
@@ -119,8 +148,8 @@ Visualizer.prototype.setDay = function(day){
 // User control:
 
 function prevDay(){
-    visualizer.setDay(visualizer.day - 1);
+    visualizer.updateDay(visualizer.day - 1);
 }
 function nextDay(){
-    visualizer.setDay(visualizer.day + 1);
+    visualizer.updateDay(visualizer.day + 1);
 }
