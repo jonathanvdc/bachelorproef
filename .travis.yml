@@ -130,6 +130,7 @@ before_install:
   - tar -zxvf CMake-hdf5-1.8.18.tar.gz
   - cd CMake-hdf5-1.8.18
   - sudo bash build-unix.sh
+  - export HDF5_ROOT=$PATH/build
   - popd
 
 
