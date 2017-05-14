@@ -126,14 +126,10 @@ before_install:
   # Build and install HDF5 v1.8.16
   - mkdir -p $HOME/soft
   - pushd $HOME/soft
-  - export HDF5_VER_MAJOR=18
-  - export HDF5_VER_MINOR=1.8.16
-  - wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.16/src/hdf5-$HDF5_VER_MINOR.tar.gz
-  - tar -zxvf hdf5-$HDF5_VER_MINOR.tar.gz
-  - cd hdf5-$HDF5_VER_MINOR
-  - sudo ./configure --prefix=/usr --libdir=/usr/lib$CLUSTER --bindir=/usr/bin$CLUSTER
-  - sudo make install
-  - export HDF5_ROOT=/usr/lib
+  - wget https://support.hdfgroup.org/ftp/HDF5/current18/src/CMake-hdf5-1.8.18.tar.gz
+  - tar -zxvf CMake-hdf5-1.8.18.tar.gz
+  - cd CMake-hdf5-1.8.18
+  - sudo bash build-unix.sh
   - popd
 
 
