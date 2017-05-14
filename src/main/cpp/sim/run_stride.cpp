@@ -64,7 +64,7 @@ using namespace checkpoint;
 std::mutex StrideSimulatorResult::io_mutex;
 
 // temporary "global" for demo and testing purposes
-CheckPoint* cp;
+//CheckPoint* cp;
 
 /// Performs an action just before a simulator step is performed.
 void StrideSimulatorResult::BeforeSimulatorStep(
@@ -73,20 +73,23 @@ void StrideSimulatorResult::BeforeSimulatorStep(
 	run_clock.Start();
 	// saves the start configuration
 	if (day == 0) {
-
+		/*
 		cp->OpenFile();
 		cp->SaveCheckPoint(pop,clusters, 0);
 		cp->CloseFile();
+		*/
 	}
 }
 
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(
     const Population& pop, const std::vector<std::vector<Cluster>>& clusters, unsigned int date)
-{
+{	
+	/*
 	cp->OpenFile();
 	cp->SaveCheckPoint(pop,clusters ,date);
 	cp->CloseFile();
+	*/
 
 	run_clock.Stop();
 	auto infected_count = pop.get_infected_count();
@@ -149,7 +152,7 @@ void run_stride(const MultiSimulationConfig& config)
 		config.log_config->output_prefix = TimeStamp().ToTag();
 	}
 	auto output_prefix = config.log_config->output_prefix;
-
+	/*
 	cp->OpenFile();
 	cp->WriteConfig(config);
 	cp->CloseFile();
@@ -157,7 +160,7 @@ void run_stride(const MultiSimulationConfig& config)
 	SingleSimulationConfig foo = cp->LoadSingleConfig();
 	foo.common_config->initial_calendar = cp->LoadCalendar(20170504);
 	cp->CloseFile();
-
+	*/
 	cout << "Project output tag:  " << output_prefix << endl << endl;
 
 	// -----------------------------------------------------------------------------------------
@@ -273,12 +276,14 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
 
+	/*
 	cp = new CheckPoint("foo.h5");
 
 	cp->CreateFile();
 	cp->OpenFile();
 	cp->WriteHolidays(pt_config.get_child("run").get<std::string>("holidays_file", "holidays_flanders_2016.json"));
 	cp->CloseFile();
+	*/
 
 	// Run Stride.
 	run_stride(config);
