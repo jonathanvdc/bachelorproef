@@ -67,7 +67,7 @@ Visualizer.prototype.makeTable = function(){
     $view.html('');
 
     // Make a table
-    $table = $('<table>', {class:'table'});
+    $table = $('<table>', {class:'table table-striped table-condensed'});
     $view.append($table);
 
     // Header

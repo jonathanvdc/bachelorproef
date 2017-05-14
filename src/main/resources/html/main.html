@@ -18,11 +18,15 @@
 <body>
     <div id="control-panel">
         <input type="file" id="file-input" accept=".json"/>
+
         <div> DAYS: <span class="days">-</span> </div>
         <div> CURRENT DAY: <span class="current-day">-</span> </div>
-        <div> TOTAL INFECTED: <span class="total-infected"></span>0</div>
-        <button onclick="prevDay();">PREV</button>
-        <button onclick="nextDay();">NEXT</button>
+        <div> TOTAL INFECTED: <span class="total-infected">-</span> </div>
+
+        <div class="btn-group btn-group-sm" style="margin-left:70px">
+            <button onclick="prevDay();" class="btn btn-primary">PREV</button>
+            <button onclick="nextDay();" class="btn btn-primary">NEXT</button>
+        </div>
     </div>
     
     <div id="view" class="container">
