@@ -18,7 +18,7 @@ VisualizerFile::VisualizerFile(const std::string& file) { Initialize(file); }
 
 VisualizerFile::~VisualizerFile() { m_fstream.close(); }
 
-void VisualizerFile::Initialize(const std::string& file) { m_fstream.open((file + "_vis.txt").c_str()); }
+void VisualizerFile::Initialize(const std::string& file) { m_fstream.open((file + "_vis.json").c_str()); }
 
 void VisualizerFile::Print(Atlas::TownMap townMap, const VisualizerData& visualizer_data)
 {
@@ -27,8 +27,15 @@ void VisualizerFile::Print(Atlas::TownMap townMap, const VisualizerData& visuali
 
 	ptree townsTree;
 
-	for (auto& p : townMap)
-		townsTree.put(p.second.name, p.second.size);
+	for (auto& p : townMap){
+		// append a town node for each town in the map:
+		// name : {size, latitude, longitude}
+		ptree townNode;
+		townNode.put("size", p.second.size);
+		townNode.put("lat", p.first.latitude);
+		townNode.put("long", p.first.longitude);
+		townsTree.add_child(p.second.name, townNode);
+	}
 
 	std::shared_ptr<ptree> daysTree = visualizer_data.ToPtree();
 
