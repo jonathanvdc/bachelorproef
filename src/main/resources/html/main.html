@@ -1,0 +1,23 @@
+<!DOCTYPE html5>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <input type="file" id="file-input" accept=".json"/>
+    <br>
+    <div id="view">
+        &nbsp;
+    </div>
+    <br>
+    <div> DAYS: <span class="days">-</span> </div>
+    <div> CURRENT DAY: <span class="current-day">-</span> </div>
+    <div> TOTAL INFECTED: <span class="total-infected"></span>0</div>
+    <button onclick="prevDay();">PREV</button>
+    <button onclick="nextDay();">NEXT</button>
+</body>
+
+</html>
