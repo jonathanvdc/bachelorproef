@@ -1,0 +1,16 @@
+body{
+}
+
+#control-panel{
+    background-color: #ccc;
+    border-radius: 6px;
+
+    padding: 8px;
+    padding-left: 12px;
+
+    color: black;
+
+    position: fixed;
+    top: 20px;
+    left: 30px;
+}

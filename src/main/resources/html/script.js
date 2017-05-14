@@ -42,7 +42,8 @@ function cleanData(data){
     }
 }
 
-
+// Remove all spaces from a given string
+function noSpace(s){ return s.split(" ").join(''); }
 
 // Class: Visualizer
 
@@ -66,7 +67,7 @@ Visualizer.prototype.makeTable = function(){
     $view.html('');
 
     // Make a table
-    $table = $('<table>');
+    $table = $('<table>', {class:'table'});
     $view.append($table);
 
     // Header
@@ -79,7 +80,7 @@ Visualizer.prototype.makeTable = function(){
 
     // Rows
     for(town in this.towns){
-        $row = $('<tr>', {id:town});
+        $row = $('<tr>', {id:noSpace(town)});
         $row.append($('<td>' + town + '</td>'));
         $row.append($('<td>' + this.towns[town].size + '</td>'));
         $row.append($('<td>', {class:'infected'}));
@@ -105,10 +106,10 @@ Visualizer.prototype.setDay = function(day){
         // If there's no measurement, then it must be zero
         total += val = currentDay[town] || 0;
         // Put the amount of infected
-        $('#' + town + ' .infected').text(val);
+        $('#' + noSpace(town) + ' .infected').text(val);
         // Write the percentage of infected if any
         var percent = val/this.towns[town].size*100;
-        $('#' + town + ' .percent').text(percent? percent.toFixed(1)+'%' : '');
+        $('#' + noSpace(town) + ' .percent').text(percent? percent.toFixed(1)+'%' : '');
     }
     // Put the total infected where we can see it.
     $('.total-infected').text(total);
