@@ -6,7 +6,7 @@
  */
 
 #include "CheckPoint.h"
-#include "hdf5.h"
+#include <hdf5.h>
 
 #include <calendar/Calendar.h>
 #include <core/ClusterType.h>
@@ -307,21 +307,17 @@ void CheckPoint::SaveCheckPoint(const std::string& filename, unsigned int groupn
 	H5Gclose(group);
 }
 
-Population CheckPoint::LoadCheckPoint(unsigned int date)
+Population CheckPoint::LoadCheckPoint(unsigned int date, std::vector<std::vector<Cluster>>& clusters)
 {
 
 	std::cout << "Loading CheckPoint" << std::endl;
 	std::string groupname = std::to_string(date);
-	htri_t exist = H5Lexists(m_file, groupname.c_str(), H5P_DEFAULT);
-	if (exist <= 0) {
-		FATAL_ERROR("Tried to load incorrect file");
-	}
 	std::string name = groupname + "/Population";
-	exist = H5Lexists(m_file, name.c_str(), H5P_DEFAULT);
+	htri_t exist = H5Lexists(m_file, name.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
 		FATAL_ERROR("Incorrect date loaded");
 	}
-
+	// loading people
 	hid_t dset = H5Dopen(m_file, name.c_str(), H5P_DEFAULT);
 	hid_t dspace = H5Dget_space(dset);
 
@@ -371,6 +367,39 @@ Population CheckPoint::LoadCheckPoint(unsigned int date)
 		result.emplace(toAdd);
 	}
 	std::cout << "Loaded Population" << std::endl;
+
+	// loading clusters
+	for (unsigned int i = 0; i < NumOfClusterTypes(); i++) {
+		std::string type = ToString((ClusterType)i);
+		std::string path = groupname + "/" + type;
+		hid_t clusterID = H5Dopen2(m_file, path.c_str(), H5P_DEFAULT);
+		hid_t dspace = H5Dget_space(dset);
+
+		hsize_t dims[2];
+		H5Sget_simple_extent_dims(dspace, dims, NULL);
+
+		for (hsize_t i = 0; i < dims[0]; i++) {
+			hsize_t start[2];
+			start[0] = i;
+			start[1] = 0;
+
+			hsize_t count[2];
+			count[0] = 0;
+			count[1] = dims[1];
+
+			hid_t subspace = H5Dget_space(clusterID);
+
+			H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, NULL, count, NULL);
+
+			unsigned int data[1][dims[1]];
+
+			H5Dread(clusterID, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
+
+			H5Sclose(subspace);
+		}
+		H5Dclose(clusterID);
+		H5Sclose(dspace);
+	}
 
 	return result;
 }
@@ -524,7 +553,7 @@ void CheckPoint::WriteClusters(const std::vector<std::vector<Cluster>>& clusters
 		std::vector<unsigned int> sizes = {};
 
 		for (auto& cluster : clvector) {
-			totalSize += cluster.GetSize()+1;
+			totalSize += cluster.GetSize() + 1;
 			sizes.push_back(cluster.GetSize());
 		}
 
@@ -546,25 +575,24 @@ void CheckPoint::WriteClusters(const std::vector<std::vector<Cluster>>& clusters
 			// Data in cluster
 			for (unsigned int i = 1; i <= people.size(); i++) {
 				data[i][0] = cluster.GetId();
-				data[i][1] = people[i-1].first.GetId();
-				data[i][2] = people[i-1].second;
+				data[i][1] = people[i - 1].first.GetId();
+				data[i][2] = people[i - 1].second;
 			}
 
 			hsize_t start[2] = {spot, 0};
-			hsize_t count[2] = {cluster.GetSize()+1, 3};
+			hsize_t count[2] = {cluster.GetSize() + 1, 3};
 			hid_t chunkspace = H5Screate_simple(2, count, NULL);
 			H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
 
 			hid_t plist = H5Pcreate(H5P_DATASET_XFER);
 
 			H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, plist, data);
-			spot += cluster.GetSize()+1;
+			spot += cluster.GetSize() + 1;
 			H5Sclose(chunkspace);
 			H5Pclose(plist);
 		}
 		H5Sclose(dataspace);
 		H5Dclose(dataset);
-
 	}
 }
 

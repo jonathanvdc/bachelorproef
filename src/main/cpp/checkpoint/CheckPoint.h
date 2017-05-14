@@ -12,7 +12,7 @@
 #include <vector>
 #include "calendar/Calendar.h"
 #include "core/Cluster.h"
-#include "hdf5.h"
+#include <hdf5.h>
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
 
@@ -31,7 +31,7 @@ public:
 	CheckPoint(const std::string&, unsigned int interval = 5);
 
 	/// Loads a checkpoint from the file in the constructor. The unsigned int tells which checkpoint to use.
-	Population LoadCheckPoint(unsigned int);
+	Population LoadCheckPoint(unsigned int, std::vector<std::vector<Cluster>>&);
 
 	/// Loads a checkpoint from a group into a seperate file for transmission
 	void LoadCheckPoint(unsigned int, unsigned int, std::string);
