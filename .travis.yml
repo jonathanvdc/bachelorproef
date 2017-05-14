@@ -131,9 +131,9 @@ before_install:
   - wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.16/src/hdf5-$HDF5_VER_MINOR.tar.gz
   - tar -zxvf hdf5-$HDF5_VER_MINOR.tar.gz
   - cd hdf5-$HDF5_VER_MINOR
-  - ./configure --prefix=$HOME/usr --libdir=$HOME/usr/lib$CLUSTER --bindir=$HOME/usr/bin$CLUSTER
-  - make install
-  - export HDF5_ROOT=$HOME/usr/lib
+  - sudo ./configure --prefix=/usr --libdir=/usr/lib$CLUSTER --bindir=/usr/bin$CLUSTER
+  - sudo make install
+  - sudo export HDF5_ROOT=/usr/lib
   - popd
 
 
