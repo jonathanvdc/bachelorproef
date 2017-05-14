@@ -133,7 +133,7 @@ before_install:
   - cd hdf5-$HDF5_VER_MINOR
   - sudo ./configure --prefix=/usr --libdir=/usr/lib$CLUSTER --bindir=/usr/bin$CLUSTER
   - sudo make install
-  - sudo export HDF5_ROOT=/usr/lib
+  - export HDF5_ROOT=/usr/lib
   - popd
 
 
