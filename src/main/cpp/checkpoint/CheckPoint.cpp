@@ -29,7 +29,7 @@ using namespace std;
 namespace stride {
 namespace checkpoint {
 
-CheckPoint::CheckPoint(const std::string& filename, unsigned int interval) : m_filename(filename), m_limit(interval) {}
+CheckPoint::CheckPoint(const std::string& filename, unsigned int interval) : m_filename(filename), m_limit(interval),m_lastCh(interval - 1) {}
 
 void CheckPoint::CreateFile()
 {
@@ -149,9 +149,9 @@ void CheckPoint::WriteHolidays(const std::string& filename, unsigned int* group)
 	}
 }
 
-void CheckPoint::WritePopulation(const Population& pop, unsigned int date)
+void CheckPoint::WritePopulation(const Population& pop, boost::gregorian::date date)
 {
-	std::string datestr = std::to_string(date);
+	std::string datestr = to_iso_string(date);
 	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
 		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -265,18 +265,18 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 }
 
 void CheckPoint::SaveCheckPoint(
-    const Population& pop, const std::vector<std::vector<Cluster>>& clusters, unsigned int time)
+    const Population& pop, const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date time)
 {
 	// TODO: add airport
 	m_lastCh++;
-	if (m_lastCh == m_limit or time == 0) {
+	if (m_lastCh == m_limit) {
 		m_lastCh = 0;
 		WritePopulation(pop, time);
 		WriteClusters(clusters, time);
 	}
 }
 
-void CheckPoint::SaveCheckPoint(const std::string& filename, unsigned int groupnum)
+void CheckPoint::CombineCheckPoint(const std::string& filename, unsigned int groupnum)
 {
 	std::stringstream ss;
 	ss << "Simulation " << groupnum;
@@ -307,11 +307,10 @@ void CheckPoint::SaveCheckPoint(const std::string& filename, unsigned int groupn
 	H5Gclose(group);
 }
 
-Population CheckPoint::LoadCheckPoint(unsigned int date, std::vector<std::vector<Cluster>>& clusters)
+Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<std::vector<Cluster>>& clusters)
 {
 
-	std::cout << "Loading CheckPoint" << std::endl;
-	std::string groupname = std::to_string(date);
+	std::string groupname = to_iso_string(date);
 	std::string name = groupname + "/Population";
 	htri_t exist = H5Lexists(m_file, name.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
@@ -366,7 +365,6 @@ Population CheckPoint::LoadCheckPoint(unsigned int date, std::vector<std::vector
 
 		result.emplace(toAdd);
 	}
-	std::cout << "Loaded Population" << std::endl;
 	/*
 	// loading clusters
 	for (unsigned int i = 0; i < NumOfClusterTypes(); i++) {
@@ -557,7 +555,7 @@ void CheckPoint::ToSingleFile(unsigned int groupnum, std::string filename)
 	H5Gclose(group);
 }
 
-Calendar CheckPoint::LoadCalendar(unsigned int date)
+Calendar CheckPoint::LoadCalendar(boost::gregorian::date date)
 {
 	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
 	if (exist <= 0) {
@@ -567,16 +565,14 @@ Calendar CheckPoint::LoadCalendar(unsigned int date)
 	WriteDSetFile("tmp_holidays.json", "Config/holidays");
 
 	Calendar result;
-	boost::gregorian::date d;
-	d = boost::gregorian::from_undelimited_string(std::to_string(date));
-	result.Initialize(d, "tmp_holidays.json");
+	result.Initialize(date, "tmp_holidays.json");
 	boost::filesystem::remove("tmp_holidays.json");
 	return result;
 }
 
-void CheckPoint::WriteClusters(const std::vector<std::vector<Cluster>>& clusters, unsigned int date)
+void CheckPoint::WriteClusters(const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date date)
 {
-	std::string datestr = std::to_string(date);
+	std::string datestr = to_iso_string(date);
 	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
 		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);

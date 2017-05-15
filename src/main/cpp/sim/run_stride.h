@@ -51,10 +51,10 @@ public:
 	std::string GetRuntimeString() const { return run_clock.ToString(); }
 
 	/// Performs an action just before a simulator step is performed.
-	void BeforeSimulatorStep(const Population& pop, const std::vector<std::vector<Cluster>>& clusters);
+	void BeforeSimulatorStep(const Population& pop, const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date date);
 
 	/// Performs an action just after a simulator step has been performed.
-	void AfterSimulatorStep(const Population& pop, const std::vector<std::vector<Cluster>>& clusters, unsigned int date);
+	void AfterSimulatorStep(const Population& pop, const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date date);
 
 private:
 	util::Stopwatch<> run_clock;

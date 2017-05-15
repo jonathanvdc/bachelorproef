@@ -31,16 +31,13 @@ public:
 	CheckPoint(const std::string&, unsigned int interval = 5);
 
 	/// Loads a checkpoint from the file in the constructor. The unsigned int tells which checkpoint to use.
-	Population LoadCheckPoint(unsigned int, std::vector<std::vector<Cluster>>&);
+	Population LoadCheckPoint(boost::gregorian::date, std::vector<std::vector<Cluster>>&);
 
-	/// Loads a checkpoint from a group into a seperate file for transmission
-	void LoadCheckPoint(unsigned int, unsigned int, std::string);
-
-	/// Saves the current simulation to a checkpoint with the int as index.
-	void SaveCheckPoint(const Population&, const std::vector<std::vector<stride::Cluster>>&, unsigned int);
+	/// Saves the current simulation to a checkpoint with the date.
+	void SaveCheckPoint(const Population&, const std::vector<std::vector<stride::Cluster>>&, boost::gregorian::date);
 
 	/// Saves the population in a file to a checkpoint to group with the unsigned int as index
-	void SaveCheckPoint(const std::string&, unsigned int);
+	void CombineCheckPoint(const std::string&, unsigned int);
 
 	/// Writes the MultiSimulationConfig.
 	void WriteConfig(const MultiSimulationConfig&);
@@ -57,11 +54,11 @@ public:
 	/// Puts the h5 for a single simulation into a seperate file
 	void ToSingleFile(unsigned int, std::string);
 
-	/// Writes the holidays from a file. The second string represents the groupname.
+	/// Writes the holidays from a file. The int pointer represents the group.
 	void WriteHolidays(const std::string&, unsigned int* group = NULL);
 
 	/// Loads the Calendar starting with the given date.
-	Calendar LoadCalendar(unsigned int);
+	Calendar LoadCalendar(boost::gregorian::date);
 
 	/// Opens the wanted file
 	void OpenFile();
@@ -71,10 +68,10 @@ public:
 
 private:
 	/// Writes the current population to a checkpoint.
-	void WritePopulation(const Population&, unsigned int);
+	void WritePopulation(const Population&, boost::gregorian::date);
 
 	/// Writes the clusters to a checkpoint.
-	void WriteClusters(const std::vector<std::vector<Cluster>>&, unsigned int);
+	void WriteClusters(const std::vector<std::vector<Cluster>>&, boost::gregorian::date);
 
 	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset

@@ -56,7 +56,7 @@ public:
 	SingleSimulationConfig GetConfiguration() const { return m_config; }
 
 	/// Gets the simulator's date
-	unsigned int GetDate() const;
+	boost::gregorian::date GetDate() const {return m_calendar->GetDate();};
 
 	std::vector<std::vector<Cluster>> GetClusters() const
 	{
