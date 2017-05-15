@@ -16,16 +16,23 @@
 </head>
 
 <body>
-    <div id="control-panel">
-        <input type="file" id="file-input" accept=".json"/>
+    <div class="control-panel">
+        <input type="file" class="file-input" accept=".json"/>
 
         <div> DAYS: <span class="days">-</span> </div>
         <div> CURRENT DAY: <span class="current-day">-</span> </div>
         <div> TOTAL INFECTED: <span class="total-infected">-</span> </div>
 
-        <div class="btn-group btn-group-sm" style="margin-left:70px">
-            <button onclick="prevDay();" class="btn btn-primary">PREV</button>
-            <button onclick="nextDay();" class="btn btn-primary">NEXT</button>
+        <div class="day-control">
+            <button class="prev-day btn btn-primary btn-xs" disabled>
+                <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+            </button>
+
+            <input class="range-input" type="range" value=0 disabled>
+
+            <button class="next-day btn btn-primary btn-xs" disabled>
+                <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+            </button>
         </div>
     </div>
     

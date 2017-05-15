@@ -1,7 +1,7 @@
 body{
 }
 
-#control-panel{
+.control-panel{
     background-color: #ccc;
     border-radius: 6px;
 
@@ -13,4 +13,15 @@ body{
     position: fixed;
     top: 20px;
     left: 30px;
+}
+
+input.range-input{
+    width: 75%;
+    display: inline;
+    position: relative;
+    top: 6px;
+}
+
+.day-control > button{
+    padding-bottom: 4px;
 }
