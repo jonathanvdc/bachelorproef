@@ -34,8 +34,6 @@ addons:
       # Don't grab the APT boost package, because that package is stale.
       # We'll need to build boost ourselves.
       # - libboost-all-dev
-      # The hdf5 package is also outdated. We will install 1.8.16    
-      # - libhdf5-serial-dev
 
 matrix:
   include:
@@ -91,7 +89,7 @@ matrix:
 before_install:
   # If we're working with an OS X machine, then want to install homebrew packages (the APT packages
   # will be ignored)
-  - if [ $TRAVIS_OS_NAME == "osx" ]; then brew update; brew install mono; brew install gcc; brew install mpich; brew install wget; brew install homebrew/science/hdf5; fi
+  - if [ $TRAVIS_OS_NAME == "osx" ]; then brew update; brew install mono; brew install gcc; brew install mpich; brew install homebrew/science/hdf5; fi
   - export CXX="$CXX_COMPILER_NAME" CC="$CC_COMPILER_NAME"
   # Print the C++ compiler version.
   - $CXX --version
