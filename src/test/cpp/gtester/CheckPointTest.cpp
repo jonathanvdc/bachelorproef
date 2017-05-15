@@ -38,8 +38,7 @@ TEST(CheckPoint, Open_CloseFile)
 	boost::filesystem::remove(f);
 }
 
-/*
-TEST(CheckPoint, WriteConfig)
+TEST(CheckPoint, Write_LoadConfig)
 {
 	boost::property_tree::ptree pt_config;
 	util::InstallDirs::ReadXmlFile("config/run_default.xml", util::InstallDirs::GetRootDir(), pt_config);
@@ -48,12 +47,37 @@ TEST(CheckPoint, WriteConfig)
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = 0;
 
+	auto toSave = config.AsSingleConfig();
+
 	stride::checkpoint::CheckPoint cp("WriteConfig.h5", 1);
 	cp.CreateFile();
-	boost::filesystem::path f("test.h5");
 	cp.OpenFile();
-	cp.WriteConfig(config);
+	cp.WriteConfig(toSave);
 	cp.CloseFile();
+
+	SingleSimulationConfig toCheck;
+
+	cp.OpenFile();
+	toCheck = cp.LoadSingleConfig();
+	cp.CloseFile();
+
+	EXPECT_EQ(toSave.common_config->track_index_case, toCheck.common_config->track_index_case);
+	EXPECT_EQ(toSave.common_config->rng_seed, toCheck.common_config->rng_seed);
+	EXPECT_EQ(toSave.common_config->r0, toCheck.common_config->r0);
+	EXPECT_EQ(toSave.common_config->seeding_rate, toCheck.common_config->seeding_rate);
+	EXPECT_EQ(toSave.common_config->immunity_rate, toCheck.common_config->immunity_rate);
+	EXPECT_EQ(toSave.common_config->number_of_days, toCheck.common_config->number_of_days);
+	EXPECT_EQ(
+	    toSave.common_config->number_of_survey_participants, toCheck.common_config->number_of_survey_participants);
+
+	EXPECT_EQ(toSave.log_config->output_prefix, toCheck.log_config->output_prefix);
+	EXPECT_EQ(toSave.log_config->generate_person_file, toCheck.log_config->generate_person_file);
+	EXPECT_EQ(toSave.log_config->log_level, toCheck.log_config->log_level);
+
+	EXPECT_EQ(toSave.GetId(),toCheck.GetId());
+
+	// TODO: check contents of files
+	// TODO: check travelmodel
 }
 
 TEST(CheckPoint, WriteHolidays)
@@ -73,6 +97,7 @@ TEST(CheckPoint, WriteHolidays)
 	cp.CloseFile();
 }
 
+/*
 TEST(CheckPoint, SaveCheckPoint)
 {
 	boost::property_tree::ptree pt_config;

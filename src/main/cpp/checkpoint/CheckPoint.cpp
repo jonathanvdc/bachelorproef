@@ -67,14 +67,15 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	H5Sclose(dataspace);
 	H5Aclose(attr);
 
-	dims = 4;
+	dims = 5;
 	dataspace = H5Screate_simple(1, &dims, nullptr);
 	attr = H5Acreate2(group, "uints", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
-	unsigned int uints[4];
+	unsigned int uints[5];
 	uints[0] = common_config->rng_seed;
 	uints[1] = common_config->number_of_days;
 	uints[2] = common_config->number_of_survey_participants;
 	uints[3] = (unsigned int)log_config->log_level;
+	uints[4] = conf.GetId();
 	H5Awrite(attr, H5T_NATIVE_UINT, uints);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
@@ -476,7 +477,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<s
 	return result;
 }
 
-SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
+SingleSimulationConfig CheckPoint::LoadSingleConfig()
 {
 	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
 	if (exist <= 0) {
@@ -523,6 +524,7 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
 	result.common_config->number_of_days = uints[1];
 	result.common_config->number_of_survey_participants = uints[2];
 	result.log_config->log_level = (LogMode)uints[3];
+	unsigned int id = uints[4];
 
 	attr = H5Aopen(group, "prefix", H5P_DEFAULT);
 
@@ -532,11 +534,16 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
 
 	char prefix[info->data_size];
 
-	delete info;
 	H5Aread(attr, H5T_NATIVE_CHAR, prefix);
 	H5Aclose(attr);
 
 	result.log_config->output_prefix = prefix;
+
+	if(info->data_size == 0){
+		result.log_config->output_prefix = "";
+	}
+
+	delete info;
 
 	// travel model
 

@@ -51,7 +51,7 @@ public:
 	void SplitCheckPoint(unsigned int simulation, const std::string& filename);
 
 	/// Loads a SingleSimulationConfig.
-	SingleSimulationConfig LoadSingleConfig(unsigned int simulation);
+	SingleSimulationConfig LoadSingleConfig();
 
 	/// Writes the holidays from a file. The int pointer represents the group.
 	void WriteHolidays(const std::string& filename, unsigned int* simulation = NULL);

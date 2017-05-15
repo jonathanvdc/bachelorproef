@@ -159,7 +159,7 @@ void run_stride(const MultiSimulationConfig& config)
 	cp->WriteConfig(config);
 	cp->CloseFile();
 	cp->OpenFile();
-	SingleSimulationConfig foo = cp->LoadSingleConfig(0);
+	SingleSimulationConfig foo = cp->LoadSingleConfig();
 	std::cout<<"prefix: "<<foo.log_config->output_prefix<<std::endl;
 	cp->CloseFile();
 	*/
