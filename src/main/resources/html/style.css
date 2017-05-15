@@ -25,3 +25,9 @@ input.range-input{
 .day-control > button{
     padding-bottom: 4px;
 }
+
+.map-view{
+    background-color: #bbb;
+    border-radius: 4px;
+    margin: 10px;
+}

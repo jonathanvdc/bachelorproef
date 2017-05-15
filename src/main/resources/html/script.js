@@ -4,20 +4,22 @@
 
 $(document).ready(function(){
     // Register the file-loading event
-    visualizer = new Visualizer('.file-input', '.day-control');
+    visualizer = new Visualizer('.file-input', '.day-control', '#view');
 })
 
-// File reading stuff
+//--------------------//
+// File reading stuff //
+//--------------------//
 
 /// Handler passed to the file selector, called when a file is selected.
 function readSingleFile(f, handler) {
     var file = f.target.files[0];
-    if (!file) return;
-        
+    if (!file) {
+        console.log("File not found!");
+        return;
+    }
     var reader = new FileReader();
     reader.onload = handler;
-    // reader.onload = e => handleFile(e.target.result);
-
     reader.readAsText(file);
 }
 
@@ -36,35 +38,34 @@ function cleanData(data){
     }
 }
 
-// Remove all spaces from a given string.
-function noSpace(s){ return s.split(" ").join(''); }
-
 
 //-------------------//
 // Class: Visualizer //
 //-------------------//
 
 /// Make a new Visualizer bound to the given elements.
-var Visualizer = function(inputSelector, controlSelector){
+var Visualizer = function(inputSelector, controlSelector, viewSelector){
     // Place our hook into the file selector
     $(inputSelector).on('change', f => readSingleFile(f, this.handleFile.bind(this)));
-
+    // Place our hooks into the controls
     this.initializeControls(controlSelector);
+    // Remember our view
+    this.$view = $(viewSelector);
 }
 
 /// Bind into the controls and set the appropriate events.
 Visualizer.prototype.initializeControls = function (controlSelector){
     $c = $(controlSelector);
     this.control = c = Object();
-    c.prevDay = $c.find('.prev-day');
-    c.nextDay = $c.find('.next-day');
-    c.range = $c.find('.range-input');
-    c.all = [c.prevDay, c.nextDay, c.range];
+    c.$prevDay = $c.find('.prev-day');
+    c.$nextDay = $c.find('.next-day');
+    c.$range = $c.find('.range-input');
+    c.all = [c.$prevDay, c.$nextDay, c.$range];
 
     // Bind events
-    c.prevDay.on("click", this.prevDay.bind(this));
-    c.nextDay.on("click", this.nextDay.bind(this));
-    c.range.on("input", () => this.updateDay(this.control.range.val()));
+    c.$prevDay.on("click", this.prevDay.bind(this));
+    c.$nextDay.on("click", this.nextDay.bind(this));
+    c.$range.on("input", () => this.updateDay(parseInt(this.control.$range.val())));
 
     // Disable the controls, they're not ready yet.
     this.disableControls();
@@ -72,12 +73,12 @@ Visualizer.prototype.initializeControls = function (controlSelector){
 
 /// Set up and enable the controls based on the simulation data.
 Visualizer.prototype.configureControls = function(){
-    this.control.range.prop("max", this.maxDays);
+    this.control.$range.prop("max", this.maxDays);
     // Enable the controls
     this.disableControls(false);
 }
 
-// User control methods:
+/// Control interface methods:
 Visualizer.prototype.prevDay = function(){ this.updateDay(visualizer.day - 1); }
 Visualizer.prototype.nextDay = function(){ this.updateDay(visualizer.day + 1); }
 
@@ -91,7 +92,6 @@ Visualizer.prototype.disableControls = function(val=true){
 Visualizer.prototype.handleFile = function(e) {
     var data = JSON.parse(e.target.result);
     cleanData(data);
-    console.log(data);
     this.initialize(data);
 }
 
@@ -116,18 +116,18 @@ Visualizer.prototype.initialize = function(data){
 /// Prepare the HTML document with the basic frameworks for our view.
 Visualizer.prototype.makeView = function(){
     this.makeTable();
-    // this.makeMap();
+    this.makeMap();
 }
 
 /// Prepare the HTML document with a basic table.
 Visualizer.prototype.makeTable = function(){
-    // Clear the current view
-    $view = $("#view");
-    $view.html('');
+    // Find and clear the view target
+    $target = this.$view.find(".table-view");
+    $target.html('');
 
     // Make a table
-    $table = $('<table>', {class:'table table-striped table-condensed'});
-    $view.append($table);
+    this.$table = $table = $('<table>', {class:'table table-striped table-condensed'});
+    $target.append($table);
 
     // Header
     $row = $('<tr>');
@@ -148,14 +148,52 @@ Visualizer.prototype.makeTable = function(){
     }
 }
 
+/// Prepare the HTML document with a basic table.
+Visualizer.prototype.makeMap = function(){
+    // Find and clear the view target
+    var $target = this.$view.find(".map-view");
+    $target.svg("destroy");
+
+    // Make an SVG object
+    $target.svg({settings: {width:800,height:600}});
+    var svgMap = $target.svg("get");
+
+    var minLat = 1000; var maxLat = -1000;
+    var minLong = 1000; var maxLong = -1000;
+    for(town in this.towns){
+        minLat = Math.min(this.towns[town].lat, minLat);
+        maxLat = Math.max(this.towns[town].lat, maxLat);
+        minLong = Math.min(this.towns[town].long, minLong);
+        maxLong = Math.max(this.towns[town].long, maxLong);
+    }
+
+    console.log(minLat, maxLat);
+    console.log(minLong, maxLong);
+
+    // Functions converting lat/longitudes into percentages.
+    var latFunc = lat => (lat - minLat) / (maxLat - minLat);
+    var longFunc = long => (long - minLong) / (maxLong - minLong);
+
+    for(town in this.towns){
+        var x = percentFormat(0.1 + 0.8 * longFunc(this.towns[town].long));
+        var y = percentFormat(0.1 + 0.8 * (1- latFunc(this.towns[town].lat)));
+        var radius = 5;
+        var fillColour = "red";
+        var dot = svgMap.circle(x, y, radius, {fill: fillColour});
+        dot.setAttribute("title", town);
+        this.towns[town].dot = dot;
+    }
+
+}
+
 /// If given a valid day, update the view to match the info at that day.
 Visualizer.prototype.updateDay = function(day){
     // clamp day to the valid range
-    day = day > this.maxDays-1 ? this.maxDays-1 : day < 0 ? 0 : day;
+    day = clamp(day, 0, this.maxDays-1);
 
     this.day = day;
-    $('.current-day').text(day);
-    this.control.range.prop("value", day);
+    $('.current-day').text(1 + day);
+    this.control.$range.prop("value", day);
 
     this.updateView();
 }
@@ -163,23 +201,51 @@ Visualizer.prototype.updateDay = function(day){
 /// Update the view to reflect the currently selected day.
 Visualizer.prototype.updateView = function(){
     this.updateTable();
-    // this.updateMap();
+    this.updateMap();
 }
 
 /// Update the table to reflect the currently selected day.
 Visualizer.prototype.updateTable = function(){
     var currentDay = this.days[this.day];
     var total = 0;
+
     // Update the view further
     for(town in this.towns){
-        // If there's no measurement, then it must be zero
-        total += val = currentDay[town] || 0;
+        val = currentDay[town] || 0;
+        total += val;
+        // Find the table column for the given town
+        $col = this.$table.find('#' + noSpace(town));
+
         // Put the amount of infected
-        $('#' + noSpace(town) + ' .infected').text(val);
-        // Write the percentage of infected if any
-        var percent = val/this.towns[town].size*100;
-        $('#' + noSpace(town) + ' .percent').text(percent? percent.toFixed(1)+'%' : '');
+        $col.find(".infected").text(val);
+        // Write the percentage infected if any
+        var percent = val/this.towns[town].size;
+        $col.find(".percent").text(percent? percentFormat(percent) : '');
     }
     // Put the total infected where we can see it.
     $('.total-infected').text(total);
 }
+
+/// Update the map to reflect the currently selected day.
+Visualizer.prototype.updateMap = function(){
+    var currentDay = this.days[this.day];
+
+    for(town in this.towns){
+        val = currentDay[town] || 0;
+        dot = this.towns[town].dot;
+        dot.setAttribute("r",Math.sqrt(val) * 2 + 2);
+    }
+}
+
+
+//------//
+// Etc. //
+//------//
+
+// Remove all spaces from a given string.
+var noSpace = s => s.split(" ").join('');
+
+// Nicely format a given value p as a percentage showing d digits after the period.
+var percentFormat = (p, d=1) => (100*p).toFixed(d)+'%';
+
+var clamp = (val, l, r) => val > r ? r : val < l ? l : val;
