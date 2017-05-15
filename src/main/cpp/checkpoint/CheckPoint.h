@@ -3,9 +3,9 @@
 
 #include <memory>
 #include <vector>
+#include <hdf5.h>
 #include "calendar/Calendar.h"
 #include "core/Cluster.h"
-#include <hdf5.h>
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
 
@@ -29,29 +29,32 @@ public:
 	/// Closes the wanted file. This is necessary for any of the following functions.
 	void CloseFile();
 
-	/// Writes the MultiSimulationConfig.
+	/// Writes the MultiSimulationConfig in different simulation groups if necessary.
 	void WriteConfig(const MultiSimulationConfig& conf);
 
 	/// Writes the SingleSimulationConfig.
 	void WriteConfig(const SingleSimulationConfig& conf);
 
-	/// Loads a checkpoint from the file in the constructor. The unsigned int tells which checkpoint to use.
+	/// Loads a checkpoint from the file in the constructor. The unsigned date tells which checkpoint to use. The
+	/// clusters will be made with each inner list of clusters all having the same clustertype.
 	Population LoadCheckPoint(boost::gregorian::date date, std::vector<std::vector<Cluster>>& clusters);
 
-	/// Saves the current simulation to a checkpoint with the date.
-	void SaveCheckPoint(const Population& pop, const std::vector<std::vector<stride::Cluster>>& clusters, boost::gregorian::date date);
+	/// Saves the current simulation to a checkpoint with the date as Identifier.
+	void SaveCheckPoint(
+	    const Population& pop, const std::vector<std::vector<stride::Cluster>>& clusters,
+	    boost::gregorian::date date);
 
-	/// Saves the population in a file to a checkpoint to group with the unsigned int as index
-	void CombineCheckPoint(unsigned int groupnum,const std::string& filename);
+	/// Copies the info in the filename under the data of the given simulation
+	void CombineCheckPoint(unsigned int simulation, const std::string& filename);
 
-	/// Puts the h5 for a single simulation into a seperate file
-	void SplitCheckPoint(unsigned int groupnum, std::string filename);
+	/// Copies the info of the asked simulation into the given file
+	void SplitCheckPoint(unsigned int simulation, const std::string& filename);
 
 	/// Loads a SingleSimulationConfig.
-	SingleSimulationConfig LoadSingleConfig(unsigned int id);
+	SingleSimulationConfig LoadSingleConfig(unsigned int simulation);
 
 	/// Writes the holidays from a file. The int pointer represents the group.
-	void WriteHolidays(const std::string& filename, unsigned int* group = NULL);
+	void WriteHolidays(const std::string& filename, unsigned int* simulation = NULL);
 
 	/// Loads the Calendar starting with the given date.
 	Calendar LoadCalendar(boost::gregorian::date date);

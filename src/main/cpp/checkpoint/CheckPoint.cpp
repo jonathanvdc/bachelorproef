@@ -561,7 +561,7 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
 	return result;
 }
 
-void CheckPoint::SplitCheckPoint(unsigned int groupnum, std::string filename)
+void CheckPoint::SplitCheckPoint(unsigned int groupnum, const std::string& filename)
 {
 	std::stringstream ss;
 	ss << "Simulation " << groupnum;
