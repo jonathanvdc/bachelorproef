@@ -21,6 +21,7 @@
 set( EXEC       gtester     )
 set( SRC
 		AliasTest.cpp
+		CheckPointTest.cpp
 		BatchRuns.cpp
 		GeoPosition.cpp
 		main.cpp
@@ -32,7 +33,6 @@ set( SRC
 		PopulationGeneration.cpp
 		RunSimulator.cpp
 		TravelModelGraph.cpp
-		CheckPointTest.cpp
 )
 
 if( Poco_FOUND )

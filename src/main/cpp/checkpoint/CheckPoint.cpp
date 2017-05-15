@@ -5,8 +5,8 @@
  *      Author: cedric
  */
 
-#include "CheckPoint.h"
 #include <hdf5.h>
+#include "CheckPoint.h"
 
 #include <calendar/Calendar.h>
 #include <core/ClusterType.h>
@@ -374,13 +374,32 @@ Population CheckPoint::LoadCheckPoint(unsigned int date, std::vector<std::vector
 		std::string path = groupname + "/" + type;
 		hid_t clusterID = H5Dopen2(m_file, path.c_str(), H5P_DEFAULT);
 		hid_t dspace = H5Dget_space(dset);
+		std::vector<Cluster> typeClusters;
 
 		hsize_t dims[2];
 		H5Sget_simple_extent_dims(dspace, dims, NULL);
 
-		for (hsize_t i = 0; i < dims[0]; i++) {
+		hsize_t start[2];
+		start[0] = 0;
+		start[1] = 0;
+
+		hsize_t count[2];
+		count[0] = 0;
+		count[1] = dims[1];
+
+		hid_t subspace = H5Dget_space(clusterID);
+		H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, NULL, count, NULL);
+		unsigned int data[1][dims[1]];
+
+		H5Dread(clusterID, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
+
+		H5Sclose(subspace);
+
+		Cluster *CurrentCluster = new Cluster(*data[0], (ClusterType)i);
+
+		for (hsize_t j = 1; j < dims[0]; j++) {
 			hsize_t start[2];
-			start[0] = i;
+			start[0] = j;
 			start[1] = 0;
 
 			hsize_t count[2];
@@ -396,7 +415,25 @@ Population CheckPoint::LoadCheckPoint(unsigned int date, std::vector<std::vector
 			H5Dread(clusterID, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
 
 			H5Sclose(subspace);
+
+			if (*data[0] != CurrentCluster->GetId()) {
+				typeClusters.push_back(*CurrentCluster);
+				CurrentCluster = new Cluster(*data[0], (ClusterType)i);
+				continue;
+			}
+
+			unsigned int idPersonToAdd = *data[1];
+
+			result.serial_for(
+			    [this, &idPersonToAdd, &CurrentCluster](const Person& p, unsigned int) {
+				    if(p.GetId() == idPersonToAdd){
+				    	CurrentCluster->AddPerson(p);
+				    }
+			    });
 		}
+
+		typeClusters.push_back(*CurrentCluster);
+		clusters.push_back(typeClusters);
 		H5Dclose(clusterID);
 		H5Sclose(dspace);
 	}

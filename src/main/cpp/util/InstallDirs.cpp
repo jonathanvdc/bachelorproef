@@ -28,6 +28,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <memory>
 #include <string>
+#include <iostream>
 
 #if defined(WIN32)
 #  include <stdlib.h>
