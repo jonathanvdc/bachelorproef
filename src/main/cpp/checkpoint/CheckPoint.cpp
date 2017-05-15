@@ -95,10 +95,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	dims = log_config->output_prefix.size();
 	dataspace = H5Screate_simple(1, &dims, nullptr);
 	attr = H5Acreate2(group, "prefix", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
-	char prefix[log_config->output_prefix.size()];
-	strncpy(prefix, log_config->output_prefix.c_str(), sizeof(prefix));
-	prefix[sizeof(prefix) - 1] = 0;
-	H5Awrite(attr, H5T_NATIVE_CHAR, prefix);
+	H5Awrite(attr, H5T_NATIVE_CHAR, log_config->output_prefix.c_str());
 	H5Sclose(dataspace);
 	H5Aclose(attr);
 

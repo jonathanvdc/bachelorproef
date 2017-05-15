@@ -80,7 +80,7 @@ TEST(CheckPoint, Write_LoadConfig)
 	// TODO: check travelmodel
 }
 
-TEST(CheckPoint, WriteHolidays)
+TEST(CheckPoint, Write_LoadHolidays)
 {
 	boost::property_tree::ptree pt_config;
 	util::InstallDirs::ReadXmlFile("config/run_default.xml", util::InstallDirs::GetRootDir(), pt_config);
@@ -95,6 +95,16 @@ TEST(CheckPoint, WriteHolidays)
 	cp.OpenFile();
 	cp.WriteHolidays(pt_config.get_child("run").get<std::string>("holidays_file", "holidays_flanders_2016.json"));
 	cp.CloseFile();
+
+	cp.OpenFile();
+	Calendar c =cp.LoadCalendar(boost::gregorian::date(2017,01,01));
+	cp.CloseFile();
+
+	EXPECT_EQ(c.GetYear(),2017);
+	EXPECT_EQ(c.GetMonth(),1);
+	EXPECT_EQ(c.GetDay(),1);
+
+
 }
 
 /*
