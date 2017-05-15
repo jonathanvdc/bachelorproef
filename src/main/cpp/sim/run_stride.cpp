@@ -84,13 +84,14 @@ void StrideSimulatorResult::BeforeSimulatorStep(
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(
     const Population& pop, const std::vector<std::vector<Cluster>>& clusters, unsigned int date)
-{	
+{
 	/*
-	cp->OpenFile();
-	cp->SaveCheckPoint(pop,clusters ,date);
-	cp->CloseFile();
+	if (day != 0) {
+		cp->OpenFile();
+		cp->SaveCheckPoint(pop, clusters, date);
+		cp->CloseFile();
+	}
 	*/
-
 	run_clock.Stop();
 	auto infected_count = pop.get_infected_count();
 	cases.push_back(infected_count);
@@ -152,6 +153,7 @@ void run_stride(const MultiSimulationConfig& config)
 		config.log_config->output_prefix = TimeStamp().ToTag();
 	}
 	auto output_prefix = config.log_config->output_prefix;
+
 	/*
 	cp->OpenFile();
 	cp->WriteConfig(config);
@@ -161,6 +163,7 @@ void run_stride(const MultiSimulationConfig& config)
 	foo.common_config->initial_calendar = cp->LoadCalendar(20170504);
 	cp->CloseFile();
 	*/
+
 	cout << "Project output tag:  " << output_prefix << endl << endl;
 
 	// -----------------------------------------------------------------------------------------

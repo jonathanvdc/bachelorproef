@@ -367,7 +367,7 @@ Population CheckPoint::LoadCheckPoint(unsigned int date, std::vector<std::vector
 		result.emplace(toAdd);
 	}
 	std::cout << "Loaded Population" << std::endl;
-
+	/*
 	// loading clusters
 	for (unsigned int i = 0; i < NumOfClusterTypes(); i++) {
 		std::string type = ToString((ClusterType)i);
@@ -437,7 +437,7 @@ Population CheckPoint::LoadCheckPoint(unsigned int date, std::vector<std::vector
 		H5Dclose(clusterID);
 		H5Sclose(dspace);
 	}
-
+	*/
 	return result;
 }
 
