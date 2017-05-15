@@ -57,7 +57,7 @@ public:
 	ClusterId GetId() const { return m_cluster_id; }
 
 	/// Returns the vector of people.
-	std::vector<std::pair<Person, bool>> GetPeople() const { return m_members; }
+	std::vector<Person> GetPeople() const;
 
 	/// Return number of persons in this cluster.
 	std::size_t GetSize() const { return m_members.size(); }
@@ -69,7 +69,6 @@ public:
 	double GetContactRate(const Person& p) const
 	{
 		return g_profiles.at(ToSizeType(m_cluster_type))[EffectiveAge(p.GetAge())] / m_members.size();
-		;
 	}
 
 public:

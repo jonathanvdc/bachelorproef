@@ -1,10 +1,3 @@
-/*
- * CheckPoint.cpp
- *
- *  Created on: Mar 26, 2017
- *      Author: cedric
- */
-
 #include <hdf5.h>
 #include "CheckPoint.h"
 
@@ -62,7 +55,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims = 2;
-	hid_t dataspace = H5Screate_simple(1, &dims, NULL);
+	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
 	hbool_t bools[2];
 	bools[0] = common_config->track_index_case;
 	bools[1] = log_config->generate_person_file;
@@ -72,7 +65,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	H5Aclose(attr);
 
 	dims = 4;
-	dataspace = H5Screate_simple(1, &dims, NULL);
+	dataspace = H5Screate_simple(1, &dims, nullptr);
 	attr = H5Acreate2(group, "uints", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	unsigned int uints[4];
 	uints[0] = common_config->rng_seed;
@@ -84,7 +77,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	H5Aclose(attr);
 
 	dims = 3;
-	dataspace = H5Screate_simple(1, &dims, NULL);
+	dataspace = H5Screate_simple(1, &dims, nullptr);
 	attr = H5Acreate2(group, "doubles", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	double doubles[3];
 	doubles[0] = common_config->r0;
@@ -96,7 +89,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	H5Aclose(attr);
 
 	dims = log_config->output_prefix.size();
-	dataspace = H5Screate_simple(1, &dims, NULL);
+	dataspace = H5Screate_simple(1, &dims, nullptr);
 	attr = H5Acreate2(group, "prefix", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	char prefix[log_config->output_prefix.size()];
 	strncpy(prefix, log_config->output_prefix.c_str(), sizeof(prefix));
@@ -132,7 +125,7 @@ void CheckPoint::OpenFile() { m_file = H5Fopen(m_filename.c_str(), H5F_ACC_RDWR,
 void CheckPoint::WriteHolidays(const std::string& filename, unsigned int* group)
 {
 	hid_t temp = m_file;
-	if (group != NULL) {
+	if (group != nullptr) {
 		std::stringstream ss;
 		ss << "Simulation " << *group;
 		m_file = H5Gopen2(m_file, ss.str().c_str(), H5P_DEFAULT);
@@ -143,7 +136,7 @@ void CheckPoint::WriteHolidays(const std::string& filename, unsigned int* group)
 		H5Gclose(tempCreate);
 	}
 	WriteFileDSet(filename, "holidays");
-	if (group != NULL) {
+	if (group != nullptr) {
 		H5Gclose(m_file);
 		m_file = temp;
 	}
@@ -160,7 +153,7 @@ void CheckPoint::WritePopulation(const Population& pop, boost::gregorian::date d
 	hsize_t entries = 10 + NumOfClusterTypes();
 
 	hsize_t dims[2] = {pop.size(), entries};
-	hid_t dataspace = H5Screate_simple(2, dims, NULL);
+	hid_t dataspace = H5Screate_simple(2, dims, nullptr);
 	std::string spot = datestr + "/Population";
 
 	hid_t chunkP = H5Pcreate(H5P_DATASET_CREATE);
@@ -200,8 +193,8 @@ void CheckPoint::WritePopulation(const Population& pop, boost::gregorian::date d
 
 		hsize_t start[2] = {i, 0};
 		hsize_t count[2] = {1, entries};
-		hid_t chunkspace = H5Screate_simple(2, count, NULL);
-		H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
+		hid_t chunkspace = H5Screate_simple(2, count, nullptr);
+		H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
 		H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, chunkP, data);
 		i++;
 		H5Sclose(chunkspace);
@@ -227,7 +220,7 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims[1] = {dataset.size()};
-	hid_t dataspace = H5Screate_simple(1, dims, NULL);
+	hid_t dataspace = H5Screate_simple(1, dims, nullptr);
 	hid_t dset =
 	    H5Dcreate2(group, setname.c_str(), H5T_NATIVE_CHAR, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(*dataset.begin()));
@@ -253,7 +246,7 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 	hid_t dspace = H5Dget_space(dset);
 
 	hsize_t dims[1];
-	H5Sget_simple_extent_dims(dspace, dims, NULL);
+	H5Sget_simple_extent_dims(dspace, dims, nullptr);
 
 	char data[dims[0]];
 	H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
@@ -276,7 +269,7 @@ void CheckPoint::SaveCheckPoint(
 	}
 }
 
-void CheckPoint::CombineCheckPoint(const std::string& filename, unsigned int groupnum)
+void CheckPoint::CombineCheckPoint(unsigned int groupnum,const std::string& filename)
 {
 	std::stringstream ss;
 	ss << "Simulation " << groupnum;
@@ -301,7 +294,7 @@ void CheckPoint::CombineCheckPoint(const std::string& filename, unsigned int gro
 		return 0;
 	};
 
-	H5Literate(newFile, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, temp, &op_func);
+	H5Literate(newFile, H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, temp, &op_func);
 
 	H5Fclose(newFile);
 	H5Gclose(group);
@@ -321,7 +314,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<s
 	hid_t dspace = H5Dget_space(dset);
 
 	hsize_t dims[2];
-	H5Sget_simple_extent_dims(dspace, dims, NULL);
+	H5Sget_simple_extent_dims(dspace, dims, nullptr);
 
 	Population result;
 
@@ -336,7 +329,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<s
 
 		hid_t subspace = H5Dget_space(dset);
 
-		H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, NULL, count, NULL);
+		H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
 
 		unsigned int data[1][dims[1]];
 
@@ -375,7 +368,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<s
 		std::vector<Cluster> typeClusters;
 
 		hsize_t dims[2];
-		H5Sget_simple_extent_dims(dspace, dims, NULL);
+		H5Sget_simple_extent_dims(dspace, dims, nullptr);
 
 		hsize_t start[2];
 		start[0] = 0;
@@ -386,7 +379,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<s
 		count[1] = dims[1];
 
 		hid_t subspace = H5Dget_space(clusterID);
-		H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, NULL, count, NULL);
+		H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
 		unsigned int data[1][dims[1]];
 
 		H5Dread(clusterID, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
@@ -406,7 +399,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<s
 
 			hid_t subspace = H5Dget_space(clusterID);
 
-			H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, NULL, count, NULL);
+			H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
 
 			unsigned int data[1][dims[1]];
 
@@ -439,7 +432,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<s
 	return result;
 }
 
-SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
+SingleSimulationConfig CheckPoint::LoadSingleConfig()
 {
 	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
 	if (exist <= 0) {
@@ -447,8 +440,8 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
 	}
 
 	SingleSimulationConfig result;
-	std::shared_ptr<CommonSimulationConfig> comCon(new CommonSimulationConfig());
-	std::shared_ptr<LogConfig> logCon(new LogConfig());
+	auto comCon = std::make_shared<CommonSimulationConfig>();
+	auto logCon = std::make_shared<LogConfig>();
 	result.common_config = comCon;
 	result.log_config = logCon;
 
@@ -525,7 +518,7 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
 	return result;
 }
 
-void CheckPoint::SplitCheckPoint(unsigned int groupnum, std::string filename)
+void CheckPoint::SplitCheckPoint(unsigned int groupnum,std::string filename)
 {
 	std::stringstream ss;
 	ss << "Simulation " << groupnum;
@@ -549,7 +542,7 @@ void CheckPoint::SplitCheckPoint(unsigned int groupnum, std::string filename)
 		return 0;
 	};
 
-	H5Literate(group, H5_INDEX_NAME, H5_ITER_NATIVE, NULL, temp, &op_func);
+	H5Literate(group, H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, temp, &op_func);
 
 	H5Fclose(f);
 	H5Gclose(group);
@@ -583,39 +576,37 @@ void CheckPoint::WriteClusters(const std::vector<std::vector<Cluster>>& clusters
 		std::string dsetname = ToString(clvector.front().GetClusterType());
 
 		unsigned int totalSize = 0;
-		std::vector<unsigned int> sizes = {};
+		std::vector<unsigned int> sizes;
 
 		for (auto& cluster : clvector) {
 			totalSize += cluster.GetSize() + 1;
 			sizes.push_back(cluster.GetSize());
 		}
 
-		hsize_t dims[2] = {totalSize, 3};
-		hid_t dataspace = H5Screate_simple(2, dims, NULL);
+		hsize_t dims[2] = {totalSize, 2};
+		hid_t dataspace = H5Screate_simple(2, dims, nullptr);
 
 		hid_t dataset = H5Dcreate2(
 		    group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		unsigned int spot = 0;
 		for (auto& cluster : clvector) {
-			std::vector<std::pair<Person, bool>> people = cluster.GetPeople();
+			auto people = cluster.GetPeople();
 
-			unsigned int data[cluster.GetSize() + 1][3];
+			unsigned int data[cluster.GetSize() + 1][2];
 
 			// Start of new cluster
 			data[0][0] = cluster.GetId();
 			data[0][1] = 0;
-			data[0][2] = 0;
 			// Data in cluster
 			for (unsigned int i = 1; i <= people.size(); i++) {
 				data[i][0] = cluster.GetId();
-				data[i][1] = people[i - 1].first.GetId();
-				data[i][2] = people[i - 1].second;
+				data[i][1] = people[i - 1].GetId();
 			}
 
 			hsize_t start[2] = {spot, 0};
-			hsize_t count[2] = {cluster.GetSize() + 1, 3};
-			hid_t chunkspace = H5Screate_simple(2, count, NULL);
-			H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
+			hsize_t count[2] = {cluster.GetSize() + 1, 2};
+			hid_t chunkspace = H5Screate_simple(2, count, nullptr);
+			H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
 
 			hid_t plist = H5Pcreate(H5P_DATASET_XFER);
 

@@ -124,4 +124,12 @@ void Cluster::UpdateMemberPresence()
         }
 }
 
+std::vector<Person> Cluster::GetPeople() const{
+    std::vector<Person> result;
+    for(auto& i: m_members){
+        result.push_back(i.first);
+    }
+    return result;
+}
+
 } // end_of_namespace
