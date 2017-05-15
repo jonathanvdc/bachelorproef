@@ -39,6 +39,9 @@ public:
 	/// Saves the population in a file to a checkpoint to group with the unsigned int as index
 	void CombineCheckPoint(const std::string&, unsigned int);
 
+	/// Puts the h5 for a single simulation into a seperate file
+	void SplitCheckPoint(unsigned int, std::string);
+
 	/// Writes the MultiSimulationConfig.
 	void WriteConfig(const MultiSimulationConfig&);
 
@@ -50,9 +53,6 @@ public:
 
 	/// Loads a SingleSimulationConfig with id the given id.
 	SingleSimulationConfig LoadSingleConfig(unsigned int id = 0);
-
-	/// Puts the h5 for a single simulation into a seperate file
-	void ToSingleFile(unsigned int, std::string);
 
 	/// Writes the holidays from a file. The int pointer represents the group.
 	void WriteHolidays(const std::string&, unsigned int* group = NULL);
