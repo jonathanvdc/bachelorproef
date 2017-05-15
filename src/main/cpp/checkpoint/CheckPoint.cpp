@@ -22,7 +22,10 @@ using namespace std;
 namespace stride {
 namespace checkpoint {
 
-CheckPoint::CheckPoint(const std::string& filename, unsigned int interval) : m_filename(filename), m_limit(interval),m_lastCh(interval - 1) {}
+CheckPoint::CheckPoint(const std::string& filename, unsigned int interval)
+    : m_filename(filename), m_limit(interval), m_lastCh(interval - 1)
+{
+}
 
 void CheckPoint::CreateFile()
 {
@@ -232,6 +235,7 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 
 void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& setname)
 {
+
 	htri_t exist = H5Lexists(m_file, setname.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
 		FATAL_ERROR("Invalid file");
@@ -241,20 +245,60 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 
 	boost::filesystem::path filename(filestr);
 	std::ofstream out((path / filename).string(), std::ios::out | std::ios::trunc);
-	hid_t dset = H5Dopen(m_file, setname.c_str(), H5P_DEFAULT);
+	/*
+	Piece of code based on code on
+	https://lists.hdfgroup.org/pipermail/hdf-forum_lists.hdfgroup.org/2010-June/003208.html
+	*/
+	std::vector<char> data;
+	hid_t did;
+	herr_t err = 0;
+	hid_t spaceId;
+	hid_t dataType = H5T_NATIVE_CHAR;
 
-	hid_t dspace = H5Dget_space(dset);
-
-	hsize_t dims[1];
-	H5Sget_simple_extent_dims(dspace, dims, nullptr);
-
-	char data[dims[0]];
-	H5Dread(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
-	out.write(data, dims[0]);
-
-	out.close();
-	H5Dclose(dset);
-	H5Sclose(dspace);
+	// std::cout << "HDF5 Data Type: " <<	H5Lite::HDFTypeForPrimitiveAsStr(test) << std::endl;
+	/* Open the dataset. */
+	// std::cout << "  Opening " << dsetName << " for data Retrieval.  "<< std::endl;
+	did = H5Dopen(m_file, setname.c_str(), H5P_DEFAULT);
+	if (did < 0) {
+		std::cout << " Error opening Dataset: " << did << std::endl;
+		return;
+	}
+	if (did >= 0) {
+		spaceId = H5Dget_space(did);
+		if (spaceId > 0) {
+			int32_t rank = H5Sget_simple_extent_ndims(spaceId);
+			if (rank > 0) {
+				std::vector<hsize_t> dims;
+				dims.resize(rank); // Allocate enough room for the dims
+				rank = H5Sget_simple_extent_dims(spaceId, &(dims.front()), NULL);
+				hsize_t numElements = 1;
+				for (std::vector<hsize_t>::iterator iter = dims.begin(); iter < dims.end(); ++iter) {
+					numElements = numElements * (*iter);
+				}
+				// std::cout << "NumElements: " << numElements << std::endl;
+				// Resize the vector
+				data.resize(static_cast<int>(numElements));
+				// for (uint32_t i = 0; i<numElements; ++i) { data[i] = 55555555;}
+				err = H5Dread(did, dataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(data.front()));
+				if (err < 0) {
+					std::cout << "Error Reading Data." << std::endl;
+				}
+			}
+			err = H5Sclose(spaceId);
+			if (err < 0) {
+				std::cout << "Error Closing Data Space" << std::endl;
+			}
+		} else {
+			std::cout << "Error Opening SpaceID" << std::endl;
+		}
+		err = H5Dclose(did);
+		if (err < 0) {
+			std::cout << "Error Closing Dataset" << std::endl;
+		}
+		for (auto& c : data) {
+			out << c;
+		}
+	}
 }
 
 void CheckPoint::SaveCheckPoint(
@@ -269,7 +313,7 @@ void CheckPoint::SaveCheckPoint(
 	}
 }
 
-void CheckPoint::CombineCheckPoint(unsigned int groupnum,const std::string& filename)
+void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& filename)
 {
 	std::stringstream ss;
 	ss << "Simulation " << groupnum;
@@ -418,7 +462,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<s
 			result.serial_for(
 			    [this, &idPersonToAdd, &CurrentCluster](const Person& p, unsigned int) {
 				    if(p.GetId() == idPersonToAdd){
-				    	CurrentCluster->AddPerson(p);
+					CurrentCluster->AddPerson(p);
 				    }
 			    });
 		}
@@ -432,7 +476,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<s
 	return result;
 }
 
-SingleSimulationConfig CheckPoint::LoadSingleConfig()
+SingleSimulationConfig CheckPoint::LoadSingleConfig(unsigned int id)
 {
 	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
 	if (exist <= 0) {
@@ -495,30 +539,29 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 	result.log_config->output_prefix = prefix;
 
 	// travel model
-	/*
-	WriteDSetFile("tmp_pop.xml","Config/popconfig");
-	std::string popconfig = "tmp_pop.xml";
-	std::string geoconfig ="";
+
+	WriteDSetFile("tmp_pop.csv", "Config/popconfig");
+	std::string popconfig = "tmp_pop.csv";
+	std::string geoconfig = "";
 
 	exist = H5Lexists(m_file, "Config/geoconfig", H5P_DEFAULT);
 	if (exist > 0) {
-		WriteDSetFile("tmp_geoconfig.xml","Config/geoconfig");
+		WriteDSetFile("tmp_geoconfig.xml", "Config/geoconfig");
 		geoconfig = "tmp_geoconfig.xml";
 	}
 	std::string household = "";
 	exist = H5Lexists(m_file, "Config/household", H5P_DEFAULT);
 	if (exist > 0) {
-		WriteDSetFile("tmp_household.xml","Config/household");
+		WriteDSetFile("tmp_household.xml", "Config/household");
 		household = "tmp_household.xml";
 	}
-	std::shared_ptr<const multiregion::RegionTravel> travelRef(new
-	multiregion::RegionTravel(id,popconfig,geoconfig,household));
-	result.travel_model=travelRef;
-	*/
+	auto travelRef = make_shared<multiregion::RegionTravel>(id, popconfig, geoconfig, household);
+	result.travel_model = travelRef;
+
 	return result;
 }
 
-void CheckPoint::SplitCheckPoint(unsigned int groupnum,std::string filename)
+void CheckPoint::SplitCheckPoint(unsigned int groupnum, std::string filename)
 {
 	std::stringstream ss;
 	ss << "Simulation " << groupnum;

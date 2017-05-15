@@ -72,19 +72,19 @@ void StrideSimulatorResult::BeforeSimulatorStep(
 {
 	run_clock.Start();
 	// saves the start configuration
+	/*
 	if (day == 0) {
-		/*
 		cp->OpenFile();
 		cp->SaveCheckPoint(pop,clusters, date);
 		cp->CloseFile();
-		*/
 	}
+	*/
 }
 
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(
     const Population& pop, const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date date)
-{
+{	
 	/*
 	if (day != 0) {
 		cp->OpenFile();
@@ -159,8 +159,8 @@ void run_stride(const MultiSimulationConfig& config)
 	cp->WriteConfig(config);
 	cp->CloseFile();
 	cp->OpenFile();
-	SingleSimulationConfig foo = cp->LoadSingleConfig();
-	foo.common_config->initial_calendar = cp->LoadCalendar(20170504);
+	SingleSimulationConfig foo = cp->LoadSingleConfig(0);
+	std::cout<<"prefix: "<<foo.log_config->output_prefix<<std::endl;
 	cp->CloseFile();
 	*/
 
