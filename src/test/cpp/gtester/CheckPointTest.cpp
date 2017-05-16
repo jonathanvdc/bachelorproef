@@ -139,14 +139,45 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 	cp->CloseFile();
 
 	stride::Population origPop = *sim->GetPopulation();
+	ClusterStruct clOrig =sim->GetClusters();
 
-	/*
-	still problems with loading the population
-	*/
+
 	EXPECT_EQ(origPop.size(),popRead.size());
 	EXPECT_EQ(origPop.get_infected_count(),popRead.get_infected_count());
 
-	ClusterStruct clOrig =sim->GetClusters();
+	auto origPopptr = origPop.begin();
+	auto popReadptr = popRead.begin();
+	for(unsigned int i = 0; i < origPop.size(); i++){
+
+		Person origP = *origPopptr;
+		Person readP = *popReadptr;
+
+		EXPECT_EQ(origP.GetId(),readP.GetId());
+		EXPECT_EQ(origP.GetAge(),readP.GetAge());
+		EXPECT_EQ(origP.GetGender(),readP.GetGender());
+		EXPECT_EQ(origP.IsParticipatingInSurvey(),readP.IsParticipatingInSurvey());
+
+		EXPECT_EQ(origP.GetClusterId(ClusterType::Household),readP.GetClusterId(ClusterType::Household));
+		EXPECT_EQ(origP.GetClusterId(ClusterType::School),readP.GetClusterId(ClusterType::School));
+		EXPECT_EQ(origP.GetClusterId(ClusterType::Work),readP.GetClusterId(ClusterType::Work));
+		EXPECT_EQ(origP.GetClusterId(ClusterType::PrimaryCommunity),readP.GetClusterId(ClusterType::PrimaryCommunity));
+		EXPECT_EQ(origP.GetClusterId(ClusterType::SecondaryCommunity),readP.GetClusterId(ClusterType::SecondaryCommunity));
+
+		Health origH = origP.GetHealth();
+		Health readH = readP.GetHealth();
+
+		EXPECT_EQ(origH.GetHealthStatus(),readH.GetHealthStatus());
+		EXPECT_EQ(origH.GetStartInfectiousness(),readH.GetStartInfectiousness());
+		EXPECT_EQ(origH.GetEndInfectiousness(),readH.GetEndInfectiousness());
+		EXPECT_EQ(origH.GetStartSymptomatic(),readH.GetStartSymptomatic());
+		EXPECT_EQ(origH.GetEndSymptomatic(),readH.GetEndSymptomatic());
+		EXPECT_EQ(origH.GetDaysInfected(),readH.GetDaysInfected());
+
+		origPopptr++;
+		popReadptr++;
+	}
+
+
 
 	EXPECT_EQ(clOrig.m_households.size(),clRead.m_households.size());
 	for(unsigned int i = 0; i < clOrig.m_households.size(); i++){
