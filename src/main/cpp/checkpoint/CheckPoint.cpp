@@ -415,7 +415,7 @@ void CheckPoint::LoadCluster(
 
 	hsize_t start = 0;
 
-	hsize_t count = 0;
+	hsize_t count = 1;
 
 	hid_t subspace = H5Dget_space(clusterID);
 	H5Sselect_hyperslab(subspace, H5S_SELECT_SET, &start, nullptr, &count, nullptr);

@@ -134,8 +134,6 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 	ClusterStruct clRead;
 	stride::Population popRead;
 
-	std::cout<<sim->GetPopulation()->size()<<std::endl;
-
 	cp->OpenFile();
 	popRead = cp->LoadCheckPoint(sim->GetDate(),clRead);
 	cp->CloseFile();
@@ -148,9 +146,67 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 	EXPECT_EQ(origPop.size(),popRead.size());
 	EXPECT_EQ(origPop.get_infected_count(),popRead.get_infected_count());
 
-	ClusterStruct origClust =sim->GetClusters();
+	ClusterStruct clOrig =sim->GetClusters();
 
-	
+	EXPECT_EQ(clOrig.m_households.size(),clRead.m_households.size());
+	for(unsigned int i = 0; i < clOrig.m_households.size(); i++){
+		EXPECT_EQ(clOrig.m_households[i].GetSize(),clRead.m_households[i].GetSize());
+		EXPECT_EQ(clOrig.m_households[i].GetId(),clRead.m_households[i].GetId());
+		EXPECT_EQ(clOrig.m_households[i].GetClusterType(),clRead.m_households[i].GetClusterType());
+		auto popClOrig = clOrig.m_households[i].GetPeople();
+		auto popClRead = clRead.m_households[i].GetPeople();
+		for(unsigned int j = 0; j < popClOrig.size(); j++){
+			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		}
+	}
+
+	EXPECT_EQ(clOrig.m_school_clusters.size(),clRead.m_school_clusters.size());
+	for(unsigned int i = 0; i < clOrig.m_school_clusters.size(); i++){
+		EXPECT_EQ(clOrig.m_school_clusters[i].GetSize(),clRead.m_school_clusters[i].GetSize());
+		EXPECT_EQ(clOrig.m_school_clusters[i].GetId(),clRead.m_school_clusters[i].GetId());
+		EXPECT_EQ(clOrig.m_school_clusters[i].GetClusterType(),clRead.m_school_clusters[i].GetClusterType());
+		auto popClOrig = clOrig.m_school_clusters[i].GetPeople();
+		auto popClRead = clRead.m_school_clusters[i].GetPeople();
+		for(unsigned int j = 0; j < popClOrig.size(); j++){
+			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		}
+	}
+
+	EXPECT_EQ(clOrig.m_work_clusters.size(),clRead.m_work_clusters.size());
+	for(unsigned int i = 0; i < clOrig.m_work_clusters.size(); i++){
+		EXPECT_EQ(clOrig.m_work_clusters[i].GetSize(),clRead.m_work_clusters[i].GetSize());
+		EXPECT_EQ(clOrig.m_work_clusters[i].GetId(),clRead.m_work_clusters[i].GetId());
+		EXPECT_EQ(clOrig.m_work_clusters[i].GetClusterType(),clRead.m_work_clusters[i].GetClusterType());
+		auto popClOrig = clOrig.m_work_clusters[i].GetPeople();
+		auto popClRead = clRead.m_work_clusters[i].GetPeople();
+		for(unsigned int j = 0; j < popClOrig.size(); j++){
+			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		}
+	}
+
+	EXPECT_EQ(clOrig.m_primary_community.size(),clRead.m_primary_community.size());
+	for(unsigned int i = 0; i < clOrig.m_primary_community.size(); i++){
+		EXPECT_EQ(clOrig.m_primary_community[i].GetSize(),clRead.m_primary_community[i].GetSize());
+		EXPECT_EQ(clOrig.m_primary_community[i].GetId(),clRead.m_primary_community[i].GetId());
+		EXPECT_EQ(clOrig.m_primary_community[i].GetClusterType(),clRead.m_primary_community[i].GetClusterType());
+		auto popClOrig = clOrig.m_primary_community[i].GetPeople();
+		auto popClRead = clRead.m_primary_community[i].GetPeople();
+		for(unsigned int j = 0; j < popClOrig.size(); j++){
+			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		}
+	}
+
+	EXPECT_EQ(clOrig.m_secondary_community.size(),clRead.m_secondary_community.size());
+	for(unsigned int i = 0; i < clOrig.m_secondary_community.size(); i++){
+		EXPECT_EQ(clOrig.m_secondary_community[i].GetSize(),clRead.m_secondary_community[i].GetSize());
+		EXPECT_EQ(clOrig.m_secondary_community[i].GetId(),clRead.m_secondary_community[i].GetId());
+		EXPECT_EQ(clOrig.m_secondary_community[i].GetClusterType(),clRead.m_secondary_community[i].GetClusterType());
+		auto popClOrig = clOrig.m_secondary_community[i].GetPeople();
+		auto popClRead = clRead.m_secondary_community[i].GetPeople();
+		for(unsigned int j = 0; j < popClOrig.size(); j++){
+			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		}
+	}
 
 }
 /*
