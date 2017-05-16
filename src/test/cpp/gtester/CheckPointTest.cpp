@@ -16,7 +16,6 @@ namespace Tests {
 TEST(CheckPoint, CheckPoint)
 {
 	stride::checkpoint::CheckPoint("test.h5");
-	stride::checkpoint::CheckPoint("test2.h5", 3);
 }
 
 TEST(CheckPoint, CreateFile)
@@ -49,7 +48,7 @@ TEST(CheckPoint, Write_LoadConfig)
 
 	auto toSave = config.AsSingleConfig();
 
-	stride::checkpoint::CheckPoint cp("WriteConfig.h5", 1);
+	stride::checkpoint::CheckPoint cp("WriteConfig.h5");
 	cp.CreateFile();
 	cp.OpenFile();
 	cp.WriteConfig(toSave);
@@ -89,7 +88,7 @@ TEST(CheckPoint, Write_LoadHolidays)
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = 0;
 
-	stride::checkpoint::CheckPoint cp("WriteHolidays.h5", 1);
+	stride::checkpoint::CheckPoint cp("WriteHolidays.h5");
 	cp.CreateFile();
 	boost::filesystem::path f("test.h5");
 	cp.OpenFile();
@@ -105,11 +104,11 @@ TEST(CheckPoint, Write_LoadHolidays)
 	EXPECT_EQ(c.GetDay(),1);
 }
 
-/*
-TEST(CheckPoint, SaveCheckPoint)
+
+TEST(CheckPoint, SaveLoadCheckPoint)
 {
 	boost::property_tree::ptree pt_config;
-	util::InstallDirs::ReadXmlFile("config/run_test_popgen.xml", util::InstallDirs::GetRootDir(), pt_config);
+	util::InstallDirs::ReadXmlFile("config/run_test_save.xml", util::InstallDirs::GetRootDir(), pt_config);
 
 	MultiSimulationConfig config;
 	config.Parse(pt_config.get_child("run"));
@@ -125,16 +124,32 @@ TEST(CheckPoint, SaveCheckPoint)
 
 	auto sim = SimulatorBuilder::Build(config.AsSingleConfig(), file_logger);
 
-	stride::checkpoint::CheckPoint* cp = new stride::checkpoint::CheckPoint("SaveCheckPoint.h5", 1);
-
-	std::cout << sim->GetPopulation()->size() << std::endl;
+	stride::checkpoint::CheckPoint* cp = new stride::checkpoint::CheckPoint("SaveCheckPoint.h5");
 
 	cp->CreateFile();
 	cp->OpenFile();
-	cp->SaveCheckPoint(*sim->GetPopulation(), sim->GetClusters(), 0);
+	cp->SaveCheckPoint(*sim);
 	cp->CloseFile();
-}
 
+	ClusterStruct clRead;
+	stride::Population popRead;
+
+	std::cout<<sim->GetPopulation()->size()<<std::endl;
+
+	cp->OpenFile();
+	popRead = cp->LoadCheckPoint(sim->GetDate(),clRead);
+	cp->CloseFile();
+
+	stride::Population orig = *sim->GetPopulation();
+
+	EXPECT_EQ(orig.size(),popRead.size());
+	/*
+	still problems with loading the population
+	*/
+	//EXPECT_EQ(orig.get_infected_count(),popRead.get_infected_count());
+
+}
+/*
 TEST(CheckPoint, todo)
 {
 

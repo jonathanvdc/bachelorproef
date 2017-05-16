@@ -18,7 +18,7 @@ class CheckPoint
 public:
 	/// Constructor The string is the file for the checkpoints. The unsigned int is the interval between
 	/// checkpoints. An interval of 0 makes no checkpoints.
-	CheckPoint(const std::string& filename, unsigned int interval = 5);
+	CheckPoint(const std::string& filename);
 
 	/// Creates the wanted file and immediately closes it. It will overwrite a file if one of the same name already
 	/// exists.
@@ -65,6 +65,12 @@ private:
 	/// Writes the clusters to a checkpoint.
 	void WriteClusters(const ClusterStruct&, boost::gregorian::date);
 
+	/// Loads one type Cluster
+	void WriteCluster(const std::vector<Cluster>&, hid_t&);
+
+	/// Loads one type Cluster
+	void LoadCluster(std::vector<Cluster>&, unsigned int, const std::string &groupname, const Population&);
+
 	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset
 	void WriteFileDSet(const std::string&, const std::string&);
@@ -75,8 +81,6 @@ private:
 
 	hid_t m_file;		      //< current hdf5 workspace
 	const std::string m_filename; //< filename
-	unsigned int m_limit;	 //< the amount of steps before a checkpoint
-	unsigned int m_lastCh = 0;    //< the amoint of steps since the last checkpoint
 };
 
 } /* namespace checkpoint */

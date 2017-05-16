@@ -22,10 +22,7 @@ using namespace std;
 namespace stride {
 namespace checkpoint {
 
-CheckPoint::CheckPoint(const std::string& filename, unsigned int interval)
-    : m_filename(filename), m_limit(interval), m_lastCh(interval - 1)
-{
-}
+CheckPoint::CheckPoint(const std::string& filename) : m_filename(filename) {}
 
 void CheckPoint::CreateFile()
 {
@@ -151,7 +148,7 @@ void CheckPoint::WritePopulation(const Population& pop, boost::gregorian::date d
 		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		H5Gclose(temp);
 	}
-	hsize_t entries = 10 + NumOfClusterTypes();
+	hsize_t entries = 11 + NumOfClusterTypes();
 
 	hsize_t dims[2] = {pop.size(), entries};
 	hid_t dataspace = H5Screate_simple(2, dims, nullptr);
@@ -175,14 +172,16 @@ void CheckPoint::WritePopulation(const Population& pop, boost::gregorian::date d
 
 		// Health data
 		data[0][4] = (unsigned int)p.GetHealth().IsImmune();
-		data[0][5] = p.GetHealth().GetStartInfectiousness();
-		data[0][6] = p.GetHealth().GetEndInfectiousness();
-		data[0][7] = p.GetHealth().GetStartSymptomatic();
-		data[0][8] = p.GetHealth().GetEndSymptomatic();
-		data[0][9] = p.GetHealth().GetDaysInfected();
+		data[0][5] = (unsigned int)p.GetHealth().IsInfected();
+
+		data[0][6] = p.GetHealth().GetStartInfectiousness();
+		data[0][7] = p.GetHealth().GetEndInfectiousness();
+		data[0][8] = p.GetHealth().GetStartSymptomatic();
+		data[0][9] = p.GetHealth().GetEndSymptomatic();
+		data[0][10] = p.GetHealth().GetDaysInfected();
 
 		// Cluster data
-		unsigned int k = 10;
+		unsigned int k = 11;
 		for (unsigned int j = 0; j < NumOfClusterTypes(); j++) {
 			ClusterType temp = (ClusterType)j;
 			if (ToString(temp) == "Null") {
@@ -302,12 +301,8 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 void CheckPoint::SaveCheckPoint(const Simulator& sim)
 {
 	// TODO: add airport
-	m_lastCh++;
-	if (m_lastCh == m_limit) {
-		m_lastCh = 0;
-		WritePopulation(*sim.GetPopulation(), sim.GetDate());
-		WriteClusters(sim.GetClusters(), sim.GetDate());
-	}
+	WritePopulation(*sim.GetPopulation(), sim.GetDate());
+	WriteClusters(sim.GetClusters(), sim.GetDate());
 }
 
 void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& filename)
@@ -358,7 +353,6 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 	H5Sget_simple_extent_dims(dspace, dims, nullptr);
 
 	Population result;
-
 	for (hsize_t i = 0; i < dims[0]; i++) {
 		hsize_t start[2];
 		start[0] = i;
@@ -374,16 +368,16 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 
 		unsigned int data[1][dims[1]];
 
-		H5Dread(dset, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
+		H5Dread(dset, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data);
 
 		disease::Fate disease;
-		disease.start_infectiousness = data[0][5];
-		disease.start_symptomatic = data[0][7];
-		disease.end_infectiousness = data[0][6];
-		disease.end_symptomatic = data[0][8];
+		disease.start_infectiousness = data[0][6];
+		disease.start_symptomatic = data[0][8];
+		disease.end_infectiousness = data[0][7];
+		disease.end_symptomatic = data[0][9];
 
 		Person toAdd(
-		    data[0][0], data[0][1], data[0][10], data[0][11], data[0][12], data[0][13], data[0][14], disease);
+		    data[0][0], data[0][1], data[0][11], data[0][12], data[0][13], data[0][14], data[0][15], disease);
 
 		if ((bool)data[0][3]) {
 			toAdd.ParticipateInSurvey();
@@ -392,8 +386,10 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 		if ((bool)data[0][4]) {
 			toAdd.GetHealth().SetImmune();
 		}
-
-		for (unsigned int i = 0; i < data[0][9]; i++) {
+		if ((bool)data[0][5]) {
+			toAdd.GetHealth().StartInfection();
+		}
+		for (unsigned int i = 0; i < data[0][10]; i++) {
 			toAdd.GetHealth().Update();
 		}
 
@@ -401,19 +397,46 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 	}
 
 	// loading clusters
-	/*
-	for (unsigned int i = 0; i < NumOfClusterTypes(); i++) {
-		std::string type = ToString((ClusterType)i);
-		std::string path = groupname + "/" + type;
-		hid_t clusterID = H5Dopen2(m_file, path.c_str(), H5P_DEFAULT);
-		hid_t dspace = H5Dget_space(dset);
-		std::vector<Cluster> typeClusters;
+	LoadCluster(clusters.m_households, 0, groupname,result);
+	LoadCluster(clusters.m_school_clusters, 1, groupname,result);
+	LoadCluster(clusters.m_work_clusters, 2, groupname,result);
+	LoadCluster(clusters.m_primary_community, 3, groupname,result);
+	LoadCluster(clusters.m_secondary_community, 4, groupname,result);
 
-		hsize_t dims[2];
-		H5Sget_simple_extent_dims(dspace, dims, nullptr);
+	return result;
+}
 
+void CheckPoint::LoadCluster(std::vector<Cluster>& clusters, unsigned int i, const std::string& groupname,const Population &result)
+{
+	std::string type = ToString((ClusterType)i);
+	std::string path = groupname + "/" + type;
+	hid_t clusterID = H5Dopen2(m_file, path.c_str(), H5P_DEFAULT);
+	hid_t dspace = H5Dget_space(clusterID);
+
+	hsize_t dims[2];
+	H5Sget_simple_extent_dims(dspace, dims, nullptr);
+
+	hsize_t start[2];
+	start[0] = 0;
+	start[1] = 0;
+
+	hsize_t count[2];
+	count[0] = 0;
+	count[1] = dims[1];
+
+	hid_t subspace = H5Dget_space(clusterID);
+	H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
+	unsigned int data[1][dims[1]];
+
+	H5Dread(clusterID, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
+
+	H5Sclose(subspace);
+
+	Cluster* CurrentCluster = new Cluster(*data[0], (ClusterType)i);
+
+	for (hsize_t j = 1; j < dims[0]; j++) {
 		hsize_t start[2];
-		start[0] = 0;
+		start[0] = j;
 		start[1] = 0;
 
 		hsize_t count[2];
@@ -421,96 +444,33 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 		count[1] = dims[1];
 
 		hid_t subspace = H5Dget_space(clusterID);
+
 		H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
+
 		unsigned int data[1][dims[1]];
 
 		H5Dread(clusterID, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
 
 		H5Sclose(subspace);
 
-		Cluster* CurrentCluster = new Cluster(*data[0], (ClusterType)i);
+		if (*data[0] != CurrentCluster->GetId()) {
+			clusters.emplace_back(*CurrentCluster);
+			CurrentCluster = new Cluster(*data[0], (ClusterType)i);
+			continue;
+		}
 
-		for (hsize_t j = 1; j < dims[0]; j++) {
-			hsize_t start[2];
-			start[0] = j;
-			start[1] = 0;
+		unsigned int idPersonToAdd = *data[1];
 
-			hsize_t count[2];
-			count[0] = 0;
-			count[1] = dims[1];
-
-			hid_t subspace = H5Dget_space(clusterID);
-
-			H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
-
-			unsigned int data[1][dims[1]];
-
-			H5Dread(clusterID, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
-
-			H5Sclose(subspace);
-
-			if (*data[0] != CurrentCluster->GetId()) {
-				switch (i) {
-				case 0:
-					clusters.m_households.emplace_back(*CurrentCluster);
-					break;
-				case 1:
-					clusters.m_school_clusters.emplace_back(*CurrentCluster);
-					;
-					break;
-				case 2:
-					clusters.m_work_clusters.emplace_back(*CurrentCluster);
-					;
-					break;
-				case 3:
-					clusters.m_primary_community.emplace_back(*CurrentCluster);
-					;
-					break;
-				case 4:
-					clusters.m_secondary_community.emplace_back(*CurrentCluster);
-					;
-					break;
-				}
-				CurrentCluster = new Cluster(*data[0], (ClusterType)i);
-				continue;
+		result.serial_for([this, &idPersonToAdd, &CurrentCluster](const Person& p, unsigned int) {
+			if (p.GetId() == idPersonToAdd) {
+				CurrentCluster->AddPerson(p);
 			}
-
-			unsigned int idPersonToAdd = *data[1];
-
-			result.serial_for([this, &idPersonToAdd, &CurrentCluster](const Person& p, unsigned int) {
-				if (p.GetId() == idPersonToAdd) {
-					CurrentCluster->AddPerson(p);
-				}
-			});
-		}
-
-		switch (i) {
-		case 0:
-			clusters.m_households.emplace_back(*CurrentCluster);
-			break;
-		case 1:
-			clusters.m_school_clusters.emplace_back(*CurrentCluster);
-			;
-			break;
-		case 2:
-			clusters.m_work_clusters.emplace_back(*CurrentCluster);
-			;
-			break;
-		case 3:
-			clusters.m_primary_community.emplace_back(*CurrentCluster);
-			;
-			break;
-		case 4:
-			clusters.m_secondary_community.emplace_back(*CurrentCluster);
-			;
-			break;
-		}
-		H5Dclose(clusterID);
-		H5Sclose(dspace);
+		});
 	}
-	*/
 
-	return result;
+	clusters.emplace_back(*CurrentCluster);
+	H5Dclose(clusterID);
+	H5Sclose(dspace);
 }
 
 SingleSimulationConfig CheckPoint::LoadSingleConfig()
@@ -660,73 +620,61 @@ void CheckPoint::WriteClusters(const ClusterStruct& clusters, boost::gregorian::
 	}
 	hid_t group = H5Gopen2(m_file, datestr.c_str(), H5P_DEFAULT);
 
-	std::vector<int> clusterVector = {0, 1, 2, 3, 4};
-	for (auto& type : clusterVector) {
+	WriteCluster(clusters.m_households, group);
+	WriteCluster(clusters.m_school_clusters, group);
+	WriteCluster(clusters.m_work_clusters, group);
+	WriteCluster(clusters.m_primary_community, group);
+	WriteCluster(clusters.m_secondary_community, group);
 
-		const std::vector<Cluster>* clvector = nullptr;
-		switch (type) {
-		case 0:
-			clvector = &clusters.m_households;
-			break;
-		case 1:
-			clvector = &clusters.m_school_clusters;
-			break;
-		case 2:
-			clvector = &clusters.m_work_clusters;
-			break;
-		case 3:
-			clvector = &clusters.m_primary_community;
-			break;
-		case 4:
-			clvector = &clusters.m_secondary_community;
-			break;
-		}
+	H5Gclose(group);
+}
 
-		std::string dsetname = ToString(clvector->front().GetClusterType());
+void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group)
+{
+	std::string dsetname = ToString(clvector.front().GetClusterType());
 
-		unsigned int totalSize = 0;
-		std::vector<unsigned int> sizes;
+	unsigned int totalSize = 0;
+	std::vector<unsigned int> sizes;
 
-		for (auto& cluster : *(clvector)) {
-			totalSize += cluster.GetSize() + 1;
-			sizes.push_back(cluster.GetSize());
-		}
-
-		hsize_t dims[2] = {totalSize, 2};
-		hid_t dataspace = H5Screate_simple(2, dims, nullptr);
-
-		hid_t dataset = H5Dcreate2(
-		    group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-		unsigned int spot = 0;
-		for (auto cluster = clvector->begin(); cluster < clvector->end(); cluster++) {
-			auto people = cluster->GetPeople();
-
-			unsigned int data[cluster->GetSize() + 1][2];
-
-			// Start of new cluster
-			data[0][0] = cluster->GetId();
-			data[0][1] = 0;
-			// Data in cluster
-			for (unsigned int i = 1; i <= people.size(); i++) {
-				data[i][0] = cluster->GetId();
-				data[i][1] = people[i - 1].GetId();
-			}
-
-			hsize_t start[2] = {spot, 0};
-			hsize_t count[2] = {cluster->GetSize() + 1, 2};
-			hid_t chunkspace = H5Screate_simple(2, count, nullptr);
-			H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
-
-			hid_t plist = H5Pcreate(H5P_DATASET_XFER);
-
-			H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, plist, data);
-			spot += cluster->GetSize() + 1;
-			H5Sclose(chunkspace);
-			H5Pclose(plist);
-		}
-		H5Sclose(dataspace);
-		H5Dclose(dataset);
+	for (auto& cluster : clvector) {
+		totalSize += cluster.GetSize() + 1;
+		sizes.push_back(cluster.GetSize());
 	}
+
+	hsize_t dims[2] = {totalSize, 2};
+	hid_t dataspace = H5Screate_simple(2, dims, nullptr);
+
+	hid_t dataset =
+	    H5Dcreate2(group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	unsigned int spot = 0;
+	for (auto& cluster : clvector) {
+		auto people = cluster.GetPeople();
+
+		unsigned int data[cluster.GetSize() + 1][2];
+
+		// Start of new cluster
+		data[0][0] = cluster.GetId();
+		data[0][1] = 0;
+		// Data in cluster
+		for (unsigned int i = 1; i <= people.size(); i++) {
+			data[i][0] = cluster.GetId();
+			data[i][1] = people[i - 1].GetId();
+		}
+
+		hsize_t start[2] = {spot, 0};
+		hsize_t count[2] = {cluster.GetSize() + 1, 2};
+		hid_t chunkspace = H5Screate_simple(2, count, nullptr);
+		H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
+
+		hid_t plist = H5Pcreate(H5P_DATASET_XFER);
+
+		H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, plist, data);
+		spot += cluster.GetSize() + 1;
+		H5Sclose(chunkspace);
+		H5Pclose(plist);
+	}
+	H5Sclose(dataspace);
+	H5Dclose(dataset);
 }
 
 } /* namespace checkpoint */
