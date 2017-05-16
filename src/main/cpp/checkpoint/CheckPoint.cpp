@@ -399,8 +399,9 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 
 		result.emplace(toAdd);
 	}
-	/*
+
 	// loading clusters
+	/*
 	for (unsigned int i = 0; i < NumOfClusterTypes(); i++) {
 		std::string type = ToString((ClusterType)i);
 		std::string path = groupname + "/" + type;
@@ -427,7 +428,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 
 		H5Sclose(subspace);
 
-		Cluster *CurrentCluster = new Cluster(*data[0], (ClusterType)i);
+		Cluster* CurrentCluster = new Cluster(*data[0], (ClusterType)i);
 
 		for (hsize_t j = 1; j < dims[0]; j++) {
 			hsize_t start[2];
@@ -449,27 +450,66 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 			H5Sclose(subspace);
 
 			if (*data[0] != CurrentCluster->GetId()) {
-				typeClusters.push_back(*CurrentCluster);
+				switch (i) {
+				case 0:
+					clusters.m_households.emplace_back(*CurrentCluster);
+					break;
+				case 1:
+					clusters.m_school_clusters.emplace_back(*CurrentCluster);
+					;
+					break;
+				case 2:
+					clusters.m_work_clusters.emplace_back(*CurrentCluster);
+					;
+					break;
+				case 3:
+					clusters.m_primary_community.emplace_back(*CurrentCluster);
+					;
+					break;
+				case 4:
+					clusters.m_secondary_community.emplace_back(*CurrentCluster);
+					;
+					break;
+				}
 				CurrentCluster = new Cluster(*data[0], (ClusterType)i);
 				continue;
 			}
 
 			unsigned int idPersonToAdd = *data[1];
 
-			result.serial_for(
-			    [this, &idPersonToAdd, &CurrentCluster](const Person& p, unsigned int) {
-				    if(p.GetId() == idPersonToAdd){
+			result.serial_for([this, &idPersonToAdd, &CurrentCluster](const Person& p, unsigned int) {
+				if (p.GetId() == idPersonToAdd) {
 					CurrentCluster->AddPerson(p);
-				    }
-			    });
+				}
+			});
 		}
 
-		typeClusters.push_back(*CurrentCluster);
-		clusters.push_back(typeClusters);
+		switch (i) {
+		case 0:
+			clusters.m_households.emplace_back(*CurrentCluster);
+			break;
+		case 1:
+			clusters.m_school_clusters.emplace_back(*CurrentCluster);
+			;
+			break;
+		case 2:
+			clusters.m_work_clusters.emplace_back(*CurrentCluster);
+			;
+			break;
+		case 3:
+			clusters.m_primary_community.emplace_back(*CurrentCluster);
+			;
+			break;
+		case 4:
+			clusters.m_secondary_community.emplace_back(*CurrentCluster);
+			;
+			break;
+		}
 		H5Dclose(clusterID);
 		H5Sclose(dspace);
 	}
 	*/
+
 	return result;
 }
 
@@ -623,7 +663,7 @@ void CheckPoint::WriteClusters(const ClusterStruct& clusters, boost::gregorian::
 	std::vector<int> clusterVector = {0, 1, 2, 3, 4};
 	for (auto& type : clusterVector) {
 
-		const std::vector<Cluster>* clvector;
+		const std::vector<Cluster>* clvector = nullptr;
 		switch (type) {
 		case 0:
 			clvector = &clusters.m_households;

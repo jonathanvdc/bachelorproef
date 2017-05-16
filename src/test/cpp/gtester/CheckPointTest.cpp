@@ -103,8 +103,6 @@ TEST(CheckPoint, Write_LoadHolidays)
 	EXPECT_EQ(c.GetYear(),2017);
 	EXPECT_EQ(c.GetMonth(),1);
 	EXPECT_EQ(c.GetDay(),1);
-
-
 }
 
 /*
