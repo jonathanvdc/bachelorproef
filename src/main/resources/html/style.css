@@ -29,5 +29,17 @@ input.range-input{
 .map-view{
     background-color: #bbb;
     border-radius: 4px;
+    position: relative;
     margin: 10px;
+}
+
+.map-view svg{
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+circle:hover{
+    r: 10px;
+    cursor: pointer;
 }

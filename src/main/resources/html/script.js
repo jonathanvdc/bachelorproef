@@ -39,6 +39,104 @@ function cleanData(data){
 }
 
 
+//------------//
+// Class: RGB //
+//------------//
+
+var RGB = function(r=0,g=0,b=0){
+    this.r = r;
+    this.g = g;
+    this.b = b;
+}
+
+RGB.prototype.mix = function(other, p){
+    var out = new RGB();
+    out.r = this.r * p + other.r * (1 - p);
+    out.g = this.g * p + other.g * (1 - p);
+    out.b = this.b * p + other.b * (1 - p);
+    return out;
+}
+
+RGB.prototype.toString = function(){
+    return "rgb(" + Math.round(this.r) + "," + Math.round(this.g) + "," + Math.round(this.b) + ")";
+}
+
+
+//-----------------//
+// Class: Gradient //
+//-----------------//
+
+function ValCol(val, colour){
+    return {val: val, colour: colour};
+}
+
+var Gradient = function(colourMap){
+    // colourMap is a List[Dict{val, colour}] sorted by increasing val
+    this.colourMap = colourMap;
+}
+
+Gradient.prototype.get = function(val){
+    // Check the upper and lower bounds first
+    if(val <= this.colourMap[0].val)
+        return this.colourMap[0].colour;
+    if(val >= this.colourMap[this.colourMap.length-1].val)
+        return this.colourMap[this.colourMap.length-1].colour;
+
+    // It has to be somewhere in the gradient
+    for(i in this.colourMap){
+        upper = this.colourMap[i];
+        if( val == upper.val)
+            return upper.colour;
+        if( val < upper.val ){
+            lower = this.colourMap[i-1];
+            p = (upper.val - val) / (upper.val - lower.val);
+            return lower.colour.mix(upper.colour, p);
+        }
+    }   
+}
+
+
+//------------//
+// Class: Map //
+//------------//
+
+/// Make a new Map by the following attributes
+/// imageRef: ref to the map image
+/// ratio: horizontal/vertical ratio of the image
+/// min/maxLat/Long: bounding box of the map image
+var Map = function(name, imageRef, imageRatio, minLat, maxLat, minLong, maxLong, overflow=false){
+    this.name = name;
+    this.imageRef = imageRef;
+    this.imageRatio = imageRatio;
+    this.box = {minLat: minLat, maxLat: maxLat, minLong: minLong, maxLong: maxLong};
+}
+
+/// Test if the given box fits inside the map.
+Map.prototype.containsBox = function(box){
+    if(this.box.minLat > box.minLat)
+        return false;
+    if(this.box.maxLat < box.maxLat)
+        return false;
+    if(this.box.minLong > box.minLong)
+        return false;
+    if(this.box.maxLong < box.maxLong)
+        return false;
+    return true;
+}
+
+Map.prototype.fitTo = function(width, height){
+    if(this.imageRatio > width/height)
+        return {width: width, height: width / this.imageRatio};
+    if(this.imageRatio < width/height)
+        return {width: height * this.imageRatio, height: height};
+    return {width: width, height: height};
+}
+
+Map.belgium = new Map("Belgium", "resource/belgium.svg", 1135.92/987.997, 49.2, 51.77, 2.19, 6.87);
+// Todo: Figure out smarter map-to-dot algorithms for non-mercator projections.
+
+Map.maps = [Map.belgium];
+
 //-------------------//
 // Class: Visualizer //
 //-------------------//
@@ -153,37 +251,82 @@ Visualizer.prototype.makeMap = function(){
     // Find and clear the view target
     var $target = this.$view.find(".map-view");
     $target.svg("destroy");
+    $target.html("");
 
-    // Make an SVG object
-    $target.svg({settings: {width:800,height:600}});
-    var svgMap = $target.svg("get");
+    // Set up colour stuff
+    // TODO: those left hand values should scale.
+    var colourMap = [
+        ValCol(0,new RGB()),
+        ValCol(5,new RGB(255,0,0)),
+        ValCol(10,new RGB(255,255,0)),
+        ValCol(15,new RGB(255,255,255)),
+    ];
+    this.gradient = new Gradient(colourMap);
 
-    var minLat = 1000; var maxLat = -1000;
-    var minLong = 1000; var maxLong = -1000;
-    for(town in this.towns){
-        minLat = Math.min(this.towns[town].lat, minLat);
-        maxLat = Math.max(this.towns[town].lat, maxLat);
-        minLong = Math.min(this.towns[town].long, minLong);
-        maxLong = Math.max(this.towns[town].long, maxLong);
+    var box = this.findBox();
+    var width = 800;
+    var height = 600;
+
+    // Check if any of the data fits inside a known map.
+    for(i in Map.maps){
+        theMap = Map.maps[i];
+        if(theMap.containsBox(box)){
+            console.log("Found map: " + theMap.name);
+            box = theMap.box;
+
+            // Find the appropriate size for the map image
+            var o = theMap.fitTo(width, height);
+            width = o.width;
+            height = o.height;
+
+            // Place it on the page
+            $img = $("<img>",{src:theMap.imageRef,width:width,height:height});
+            $target.append($img);
+            break;
+        }
     }
-
-    console.log(minLat, maxLat);
-    console.log(minLong, maxLong);
 
     // Functions converting lat/longitudes into percentages.
-    var latFunc = lat => (lat - minLat) / (maxLat - minLat);
-    var longFunc = long => (long - minLong) / (maxLong - minLong);
+    var latFunc = lat => (lat - box.minLat) / (box.maxLat - box.minLat);
+    var longFunc = long => (long - box.minLong) / (box.maxLong - box.minLong);
 
+    // Make an SVG object
+    $target.svg({settings: {width:width,height:height}});
+    var svgMap = $target.svg("get");
+
+    // Fill it with circles
     for(town in this.towns){
-        var x = percentFormat(0.1 + 0.8 * longFunc(this.towns[town].long));
-        var y = percentFormat(0.1 + 0.8 * (1- latFunc(this.towns[town].lat)));
+        // Determine its features
+        var x = percentFormat(longFunc(this.towns[town].long));
+        var y = percentFormat(1- latFunc(this.towns[town].lat));
         var radius = 5;
         var fillColour = "red";
+
+        // Make and attach the circle
         var dot = svgMap.circle(x, y, radius, {fill: fillColour});
-        dot.setAttribute("title", town);
+
+        // Remember the circle
         this.towns[town].dot = dot;
+
+        // Add a little tooltip
+        dot.setAttribute("title", town);
+        dot.setAttribute("data-toggle", "tooltip");
+        dot.setAttribute("data-container", "body");
+    }
+    refreshTooltips();
+}
+
+Visualizer.prototype.findBox = function(){
+    var out = {minLat: 1000, maxLat: -1000, minLong: 1000, maxLong: -1000};
+
+    for(town in this.towns){
+        out.minLat = Math.min(this.towns[town].lat, out.minLat);
+        out.maxLat = Math.max(this.towns[town].lat, out.maxLat);
+        out.minLong = Math.min(this.towns[town].long, out.minLong);
+        out.maxLong = Math.max(this.towns[town].long, out.maxLong);
     }
 
+    return out;
 }
 
 /// If given a valid day, update the view to match the info at that day.
@@ -233,6 +376,7 @@ Visualizer.prototype.updateMap = function(){
     for(town in this.towns){
         val = currentDay[town] || 0;
         dot = this.towns[town].dot;
+        dot.setAttribute("fill", this.gradient.get(val).toString());
         dot.setAttribute("r",Math.sqrt(val) * 2 + 2);
     }
 }
@@ -248,4 +392,8 @@ var noSpace = s => s.split(" ").join('');
 // Nicely format a given value p as a percentage showing d digits after the period.
 var percentFormat = (p, d=1) => (100*p).toFixed(d)+'%';
 
+// Clamp val to be on [l, r]
 var clamp = (val, l, r) => val > r ? r : val < l ? l : val;
+
+// Refresh Bootstrap's tooltips
+var refreshTooltips = () => $('[data-toggle="tooltip"]').tooltip(); 
