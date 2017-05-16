@@ -66,10 +66,10 @@ private:
 	void WriteClusters(const ClusterStruct&, boost::gregorian::date);
 
 	/// Loads one type Cluster
-	void WriteCluster(const std::vector<Cluster>&, hid_t& , const ClusterType &);
+	void WriteCluster(const std::vector<Cluster>&, hid_t&, const ClusterType&);
 
 	/// Loads one type Cluster
-	void LoadCluster(std::vector<Cluster>&, const ClusterType& , const std::string &groupname, const Population&);
+	void LoadCluster(std::vector<Cluster>&, const ClusterType&, const std::string& groupname, const Population&);
 
 	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset
@@ -81,6 +81,56 @@ private:
 
 	hid_t m_file;		      //< current hdf5 workspace
 	const std::string m_filename; //< filename
+};
+
+struct personData
+{
+	// basic info
+	unsigned int ID;
+	double Age;
+	char Gender;
+	hbool_t Participating;
+	// health info
+	hbool_t Immune;
+	hbool_t Infected;
+	unsigned int StartInf;
+	unsigned int EndInf;
+	unsigned int StartSympt;
+	unsigned int EndSympt;
+	unsigned int TimeInfected;
+	// cluster info
+	unsigned int Household;
+	unsigned int School;
+	unsigned int Work;
+	unsigned int Primary;
+	unsigned int Secondary;
+	personData(const Person& p)
+	{
+		ID = p.GetId();
+		Age = p.GetAge();
+		Gender = p.GetGender();
+		Participating = p.IsParticipatingInSurvey();
+		Immune = p.GetHealth().IsImmune();
+		Infected = p.GetHealth().IsInfected();
+		StartInf = p.GetHealth().GetStartInfectiousness();
+		EndInf = p.GetHealth().GetEndInfectiousness();
+		StartSympt = p.GetHealth().GetStartSymptomatic();
+		EndSympt = p.GetHealth().GetEndSymptomatic();
+		TimeInfected = p.GetHealth().GetDaysInfected();
+
+		Household = p.GetClusterId(ClusterType::Household);
+		School = p.GetClusterId(ClusterType::School);
+		Work = p.GetClusterId(ClusterType::Work);
+		Primary = p.GetClusterId(ClusterType::PrimaryCommunity);
+		Secondary = p.GetClusterId(ClusterType::SecondaryCommunity);
+	}
+	personData() {}
+};
+
+struct clusterData
+{
+	unsigned int ID;
+	unsigned int PersonID;
 };
 
 } /* namespace checkpoint */

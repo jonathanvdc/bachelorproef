@@ -59,14 +59,14 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	hbool_t bools[2];
 	bools[0] = common_config->track_index_case;
 	bools[1] = log_config->generate_person_file;
-	hid_t attr = H5Acreate2(group, "bools", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	hid_t attr = H5Acreate2(group, "bools", H5T_NATIVE_HBOOL, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	H5Awrite(attr, H5T_NATIVE_HBOOL, bools);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
 
 	dims = 5;
 	dataspace = H5Screate_simple(1, &dims, nullptr);
-	attr = H5Acreate2(group, "uints", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	attr = H5Acreate2(group, "uints", H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	unsigned int uints[5];
 	uints[0] = common_config->rng_seed;
 	uints[1] = common_config->number_of_days;
@@ -79,7 +79,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 
 	dims = 3;
 	dataspace = H5Screate_simple(1, &dims, nullptr);
-	attr = H5Acreate2(group, "doubles", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	attr = H5Acreate2(group, "doubles", H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	double doubles[3];
 	doubles[0] = common_config->r0;
 	doubles[1] = common_config->seeding_rate;
@@ -91,7 +91,7 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 
 	dims = log_config->output_prefix.size();
 	dataspace = H5Screate_simple(1, &dims, nullptr);
-	attr = H5Acreate2(group, "prefix", H5T_IEEE_F64LE, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	attr = H5Acreate2(group, "prefix", H5T_NATIVE_CHAR, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	H5Awrite(attr, H5T_NATIVE_CHAR, log_config->output_prefix.c_str());
 	H5Sclose(dataspace);
 	H5Aclose(attr);
@@ -148,58 +148,51 @@ void CheckPoint::WritePopulation(const Population& pop, boost::gregorian::date d
 		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		H5Gclose(temp);
 	}
-	hsize_t entries = 11 + NumOfClusterTypes();
 
-	hsize_t dims[2] = {pop.size(), entries};
-	hid_t dataspace = H5Screate_simple(2, dims, nullptr);
+	hsize_t dims[1] = {pop.size()};
+	hid_t dataspace = H5Screate_simple(1, dims, nullptr);
 	std::string spot = datestr + "/Population";
 
 	hid_t chunkP = H5Pcreate(H5P_DATASET_CREATE);
-	hsize_t chunkDims[2] = {1, entries};
-	H5Pset_chunk(chunkP, 2, chunkDims);
+	hsize_t chunkDims[1] = {1};
+	H5Pset_chunk(chunkP, 1, chunkDims);
 
-	hid_t dataset = H5Dcreate2(m_file, spot.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, chunkP, H5P_DEFAULT);
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(personData));
+
+	H5Tinsert(newType, "ID", HOFFSET(personData, ID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Age", HOFFSET(personData, Age), H5T_NATIVE_DOUBLE);
+	H5Tinsert(newType, "Gender", HOFFSET(personData, Gender), H5T_NATIVE_CHAR);
+	H5Tinsert(newType, "Participating", HOFFSET(personData, Participating), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "Immune", HOFFSET(personData, Immune), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "Infected", HOFFSET(personData, Infected), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "StartInf", HOFFSET(personData, StartInf), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "EndInf", HOFFSET(personData, EndInf), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "StartSympt", HOFFSET(personData, StartSympt), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "EndSympt", HOFFSET(personData, EndSympt), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "TimeInfected", HOFFSET(personData, TimeInfected), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Household", HOFFSET(personData, Household), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "School", HOFFSET(personData, School), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Work", HOFFSET(personData, Work), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Primary", HOFFSET(personData, Primary), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Secondary", HOFFSET(personData, Secondary), H5T_NATIVE_UINT);
+
+	hid_t dataset = H5Dcreate2(m_file, spot.c_str(), newType, dataspace, H5P_DEFAULT, chunkP, H5P_DEFAULT);
 
 	chunkP = H5Pcreate(H5P_DATASET_XFER);
 	unsigned int i = 0;
-	pop.serial_for([this, &entries, &i, &dataspace, &dataset, &chunkP](const Person& p, unsigned int) {
-		unsigned int data[1][entries];
-		// Basic Data
-		data[0][0] = p.GetId();
-		data[0][1] = p.GetAge();
-		data[0][2] = p.GetGender();
-		data[0][3] = p.IsParticipatingInSurvey();
 
-		// Health data
-		data[0][4] = (unsigned int)p.GetHealth().IsImmune();
-		data[0][5] = (unsigned int)p.GetHealth().IsInfected();
+	pop.serial_for([this, &i, &newType, &dataspace, &dataset, &chunkP](const Person& p, unsigned int) {
+		personData data(p);
 
-		data[0][6] = p.GetHealth().GetStartInfectiousness();
-		data[0][7] = p.GetHealth().GetEndInfectiousness();
-		data[0][8] = p.GetHealth().GetStartSymptomatic();
-		data[0][9] = p.GetHealth().GetEndSymptomatic();
-		data[0][10] = p.GetHealth().GetDaysInfected();
-
-		// Cluster data
-		unsigned int k = 11;
-		for (unsigned int j = 0; j < NumOfClusterTypes(); j++) {
-			ClusterType temp = (ClusterType)j;
-			if (ToString(temp) == "Null") {
-				continue;
-			}
-			data[0][k] = p.GetClusterId(temp);
-			k++;
-		}
-
-		hsize_t start[2] = {i, 0};
-		hsize_t count[2] = {1, entries};
-		hid_t chunkspace = H5Screate_simple(2, count, nullptr);
+		hsize_t start[1] = {i};
+		hsize_t count[1] = {1};
+		hid_t chunkspace = H5Screate_simple(1, count, nullptr);
 		H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
-		H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, chunkP, data);
+		H5Dwrite(dataset, newType, chunkspace, dataspace, chunkP, &data);
 		i++;
 		H5Sclose(chunkspace);
 	});
-
+	H5Tclose(newType);
 	H5Dclose(dataset);
 	H5Sclose(dataspace);
 }
@@ -348,118 +341,113 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 	// loading people
 	hid_t dset = H5Dopen(m_file, name.c_str(), H5P_DEFAULT);
 	hid_t dspace = H5Dget_space(dset);
+	hid_t newType = H5Dget_type(dset);
 
-	hsize_t dims[2];
-	H5Sget_simple_extent_dims(dspace, dims, nullptr);
+	hsize_t dims;
+	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
 
 	Population result;
-	for (hsize_t i = 0; i < dims[0]; i++) {
-		hsize_t start[2];
-		start[0] = i;
-		start[1] = 0;
+	for (hsize_t i = 0; i < dims; i++) {
+		hsize_t start = i;
 
-		hsize_t count[2];
-		count[0] = 0;
-		count[1] = dims[1];
+		hsize_t count = 1;
 
-		hid_t subspace = H5Dget_space(dset);
+		hid_t subspace = H5Screate_simple(1, &count, nullptr);
 
-		H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
+		H5Sselect_hyperslab(dspace, H5S_SELECT_SET, &start, nullptr, &count, nullptr);
 
-		unsigned int data[1][dims[1]];
+		personData data;
 
-		H5Dread(dset, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data);
+		H5Dread(dset, newType, subspace, dspace, H5P_DEFAULT, &data);
 
 		disease::Fate disease;
-		disease.start_infectiousness = data[0][6];
-		disease.start_symptomatic = data[0][8];
-		disease.end_infectiousness = data[0][7];
-		disease.end_symptomatic = data[0][9];
+		disease.start_infectiousness = data.StartInf;
+		disease.start_symptomatic = data.StartSympt;
+		disease.end_infectiousness = data.EndInf;
+		disease.end_symptomatic = data.EndSympt;
 
 		Person toAdd(
-		    data[0][0], (double)data[0][1], data[0][11], data[0][12], data[0][13], data[0][14], data[0][15], disease);
+		    data.ID, data.Age, data.Household, data.School, data.Work, data.Primary, data.Secondary, disease);
 
-		if ((bool)data[0][3]) {
+		if (data.Participating) {
 			toAdd.ParticipateInSurvey();
 		}
 
-		if ((bool)data[0][4]) {
+		if (data.Immune) {
 			toAdd.GetHealth().SetImmune();
 		}
-		if ((bool)data[0][5]) {
+		if (data.Infected) {
 			toAdd.GetHealth().StartInfection();
 		}
-		for (unsigned int i = 0; i < data[0][10]; i++) {
+		for (unsigned int i = 0; i < data.TimeInfected; i++) {
 			toAdd.GetHealth().Update();
 		}
 
 		result.emplace(toAdd);
+		H5Sclose(subspace);
 	}
 
+	H5Sclose(dspace);
+	H5Tclose(newType);
+	H5Dclose(dset);
+
 	// loading clusters
-	LoadCluster(clusters.m_households, ClusterType::Household, groupname,result);
-	LoadCluster(clusters.m_school_clusters, ClusterType::School, groupname,result);
-	LoadCluster(clusters.m_work_clusters, ClusterType::Work, groupname,result);
-	LoadCluster(clusters.m_primary_community, ClusterType::PrimaryCommunity, groupname,result);
-	LoadCluster(clusters.m_secondary_community, ClusterType::SecondaryCommunity, groupname,result);
+	LoadCluster(clusters.m_households, ClusterType::Household, groupname, result);
+	LoadCluster(clusters.m_school_clusters, ClusterType::School, groupname, result);
+	LoadCluster(clusters.m_work_clusters, ClusterType::Work, groupname, result);
+	LoadCluster(clusters.m_primary_community, ClusterType::PrimaryCommunity, groupname, result);
+	LoadCluster(clusters.m_secondary_community, ClusterType::SecondaryCommunity, groupname, result);
 
 	return result;
 }
 
-void CheckPoint::LoadCluster(std::vector<Cluster>& clusters, const ClusterType& i, const std::string& groupname,const Population &result)
+void CheckPoint::LoadCluster(
+    std::vector<Cluster>& clusters, const ClusterType& i, const std::string& groupname, const Population& result)
 {
 	std::string type = ToString(i);
 	std::string path = groupname + "/" + type;
 	hid_t clusterID = H5Dopen2(m_file, path.c_str(), H5P_DEFAULT);
 	hid_t dspace = H5Dget_space(clusterID);
+	hid_t newType = H5Dget_type(clusterID);
 
-	hsize_t dims[2];
-	H5Sget_simple_extent_dims(dspace, dims, nullptr);
+	hsize_t dims;
+	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
 
-	hsize_t start[2];
-	start[0] = 0;
-	start[1] = 0;
+	hsize_t start = 0;
 
-	hsize_t count[2];
-	count[0] = 0;
-	count[1] = dims[1];
+	hsize_t count = 0;
 
 	hid_t subspace = H5Dget_space(clusterID);
-	H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
-	unsigned int data[1][dims[1]];
+	H5Sselect_hyperslab(subspace, H5S_SELECT_SET, &start, nullptr, &count, nullptr);
+	clusterData data;
 
-	H5Dread(clusterID, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
+	H5Dread(clusterID, newType, H5S_ALL, subspace, H5P_DEFAULT, &data);
 
 	H5Sclose(subspace);
 
-	Cluster* CurrentCluster = new Cluster(*data[0], i);
+	Cluster* CurrentCluster = new Cluster(data.ID, i);
 
-	for (hsize_t j = 1; j < dims[0]; j++) {
-		hsize_t start[2];
-		start[0] = j;
-		start[1] = 0;
+	for (hsize_t j = 1; j < dims; j++) {
+		hsize_t start = j;
+		hsize_t count = 1;
 
-		hsize_t count[2];
-		count[0] = 0;
-		count[1] = dims[1];
+		hid_t subspace = H5Screate_simple(1, &count, nullptr);
 
-		hid_t subspace = H5Dget_space(clusterID);
+		H5Sselect_hyperslab(dspace, H5S_SELECT_SET, &start, nullptr, &count, nullptr);
 
-		H5Sselect_hyperslab(subspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
+		clusterData data;
 
-		unsigned int data[1][dims[1]];
-
-		H5Dread(clusterID, H5T_NATIVE_UINT, H5S_ALL, subspace, H5P_DEFAULT, data[0]);
+		H5Dread(clusterID, newType, subspace, dspace,H5P_DEFAULT, &data);
 
 		H5Sclose(subspace);
 
-		if (*data[0] != CurrentCluster->GetId()) {
+		if (data.ID != CurrentCluster->GetId()) {
 			clusters.emplace_back(*CurrentCluster);
-			CurrentCluster = new Cluster(*data[0], i);
+			CurrentCluster = new Cluster(data.ID, i);
 			continue;
 		}
 
-		unsigned int idPersonToAdd = *data[1];
+		unsigned int idPersonToAdd = data.PersonID;
 
 		result.serial_for([this, &idPersonToAdd, &CurrentCluster](const Person& p, unsigned int) {
 			if (p.GetId() == idPersonToAdd) {
@@ -469,6 +457,7 @@ void CheckPoint::LoadCluster(std::vector<Cluster>& clusters, const ClusterType& 
 	}
 
 	clusters.emplace_back(*CurrentCluster);
+	H5Tclose(newType);
 	H5Dclose(clusterID);
 	H5Sclose(dspace);
 }
@@ -620,8 +609,8 @@ void CheckPoint::WriteClusters(const ClusterStruct& clusters, boost::gregorian::
 	}
 	hid_t group = H5Gopen2(m_file, datestr.c_str(), H5P_DEFAULT);
 
-	WriteCluster(clusters.m_households, group,ClusterType::Household);
-	WriteCluster(clusters.m_school_clusters, group,ClusterType::School);
+	WriteCluster(clusters.m_households, group, ClusterType::Household);
+	WriteCluster(clusters.m_school_clusters, group, ClusterType::School);
 	WriteCluster(clusters.m_work_clusters, group, ClusterType::Work);
 	WriteCluster(clusters.m_primary_community, group, ClusterType::PrimaryCommunity);
 	WriteCluster(clusters.m_secondary_community, group, ClusterType::SecondaryCommunity);
@@ -629,7 +618,7 @@ void CheckPoint::WriteClusters(const ClusterStruct& clusters, boost::gregorian::
 	H5Gclose(group);
 }
 
-void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group ,const ClusterType& t)
+void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group, const ClusterType& t)
 {
 	std::string dsetname = ToString(t);
 
@@ -640,39 +629,44 @@ void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group
 		totalSize += cluster.GetSize() + 1;
 		sizes.push_back(cluster.GetSize());
 	}
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(clusterData));
 
-	hsize_t dims[2] = {totalSize, 2};
-	hid_t dataspace = H5Screate_simple(2, dims, nullptr);
+	H5Tinsert(newType, "ID", HOFFSET(clusterData, ID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "PersonID", HOFFSET(clusterData, PersonID), H5T_NATIVE_UINT);
+
+	hsize_t dims = totalSize;
+	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
 
 	hid_t dataset =
-	    H5Dcreate2(group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	    H5Dcreate2(group, dsetname.c_str(), newType, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	unsigned int spot = 0;
 	for (auto& cluster : clvector) {
 		auto people = cluster.GetPeople();
 
-		unsigned int data[cluster.GetSize() + 1][2];
+		clusterData data[cluster.GetSize() + 1];
 
 		// Start of new cluster
-		data[0][0] = cluster.GetId();
-		data[0][1] = 0;
+		data[0].ID = cluster.GetId();
+		data[0].PersonID = 0;
 		// Data in cluster
 		for (unsigned int i = 1; i <= people.size(); i++) {
-			data[i][0] = cluster.GetId();
-			data[i][1] = people[i - 1].GetId();
+			data[i].ID = cluster.GetId();
+			data[i].PersonID = people[i - 1].GetId();
 		}
 
-		hsize_t start[2] = {spot, 0};
-		hsize_t count[2] = {cluster.GetSize() + 1, 2};
-		hid_t chunkspace = H5Screate_simple(2, count, nullptr);
-		H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
+		hsize_t start = spot;
+		hsize_t count = cluster.GetSize() + 1;
+		hid_t chunkspace = H5Screate_simple(1, &count, nullptr);
+		H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, &start, nullptr, &count, nullptr);
 
 		hid_t plist = H5Pcreate(H5P_DATASET_XFER);
 
-		H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, plist, data);
+		H5Dwrite(dataset, newType, chunkspace, dataspace, plist, &data);
 		spot += cluster.GetSize() + 1;
 		H5Sclose(chunkspace);
 		H5Pclose(plist);
 	}
+	H5Tclose(newType);
 	H5Sclose(dataspace);
 	H5Dclose(dataset);
 }
