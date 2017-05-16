@@ -377,7 +377,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 		disease.end_symptomatic = data[0][9];
 
 		Person toAdd(
-		    data[0][0], data[0][1], data[0][11], data[0][12], data[0][13], data[0][14], data[0][15], disease);
+		    data[0][0], (double)data[0][1], data[0][11], data[0][12], data[0][13], data[0][14], data[0][15], disease);
 
 		if ((bool)data[0][3]) {
 			toAdd.ParticipateInSurvey();
@@ -397,18 +397,18 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 	}
 
 	// loading clusters
-	LoadCluster(clusters.m_households, 0, groupname,result);
-	LoadCluster(clusters.m_school_clusters, 1, groupname,result);
-	LoadCluster(clusters.m_work_clusters, 2, groupname,result);
-	LoadCluster(clusters.m_primary_community, 3, groupname,result);
-	LoadCluster(clusters.m_secondary_community, 4, groupname,result);
+	LoadCluster(clusters.m_households, ClusterType::Household, groupname,result);
+	LoadCluster(clusters.m_school_clusters, ClusterType::School, groupname,result);
+	LoadCluster(clusters.m_work_clusters, ClusterType::Work, groupname,result);
+	LoadCluster(clusters.m_primary_community, ClusterType::PrimaryCommunity, groupname,result);
+	LoadCluster(clusters.m_secondary_community, ClusterType::SecondaryCommunity, groupname,result);
 
 	return result;
 }
 
-void CheckPoint::LoadCluster(std::vector<Cluster>& clusters, unsigned int i, const std::string& groupname,const Population &result)
+void CheckPoint::LoadCluster(std::vector<Cluster>& clusters, const ClusterType& i, const std::string& groupname,const Population &result)
 {
-	std::string type = ToString((ClusterType)i);
+	std::string type = ToString(i);
 	std::string path = groupname + "/" + type;
 	hid_t clusterID = H5Dopen2(m_file, path.c_str(), H5P_DEFAULT);
 	hid_t dspace = H5Dget_space(clusterID);
@@ -432,7 +432,7 @@ void CheckPoint::LoadCluster(std::vector<Cluster>& clusters, unsigned int i, con
 
 	H5Sclose(subspace);
 
-	Cluster* CurrentCluster = new Cluster(*data[0], (ClusterType)i);
+	Cluster* CurrentCluster = new Cluster(*data[0], i);
 
 	for (hsize_t j = 1; j < dims[0]; j++) {
 		hsize_t start[2];
@@ -455,7 +455,7 @@ void CheckPoint::LoadCluster(std::vector<Cluster>& clusters, unsigned int i, con
 
 		if (*data[0] != CurrentCluster->GetId()) {
 			clusters.emplace_back(*CurrentCluster);
-			CurrentCluster = new Cluster(*data[0], (ClusterType)i);
+			CurrentCluster = new Cluster(*data[0], i);
 			continue;
 		}
 
@@ -620,18 +620,18 @@ void CheckPoint::WriteClusters(const ClusterStruct& clusters, boost::gregorian::
 	}
 	hid_t group = H5Gopen2(m_file, datestr.c_str(), H5P_DEFAULT);
 
-	WriteCluster(clusters.m_households, group);
-	WriteCluster(clusters.m_school_clusters, group);
-	WriteCluster(clusters.m_work_clusters, group);
-	WriteCluster(clusters.m_primary_community, group);
-	WriteCluster(clusters.m_secondary_community, group);
+	WriteCluster(clusters.m_households, group,ClusterType::Household);
+	WriteCluster(clusters.m_school_clusters, group,ClusterType::School);
+	WriteCluster(clusters.m_work_clusters, group, ClusterType::Work);
+	WriteCluster(clusters.m_primary_community, group, ClusterType::PrimaryCommunity);
+	WriteCluster(clusters.m_secondary_community, group, ClusterType::SecondaryCommunity);
 
 	H5Gclose(group);
 }
 
-void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group)
+void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group ,const ClusterType& t)
 {
-	std::string dsetname = ToString(clvector.front().GetClusterType());
+	std::string dsetname = ToString(t);
 
 	unsigned int totalSize = 0;
 	std::vector<unsigned int> sizes;

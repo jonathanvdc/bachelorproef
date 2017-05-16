@@ -66,10 +66,10 @@ private:
 	void WriteClusters(const ClusterStruct&, boost::gregorian::date);
 
 	/// Loads one type Cluster
-	void WriteCluster(const std::vector<Cluster>&, hid_t&);
+	void WriteCluster(const std::vector<Cluster>&, hid_t& , const ClusterType &);
 
 	/// Loads one type Cluster
-	void LoadCluster(std::vector<Cluster>&, unsigned int, const std::string &groupname, const Population&);
+	void LoadCluster(std::vector<Cluster>&, const ClusterType& , const std::string &groupname, const Population&);
 
 	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset
