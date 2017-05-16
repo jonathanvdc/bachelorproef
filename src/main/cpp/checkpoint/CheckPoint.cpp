@@ -300,7 +300,7 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 }
 
 void CheckPoint::SaveCheckPoint(
-    const Population& pop, const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date time)
+    const Population& pop, const ClusterStruct& clusters, boost::gregorian::date time)
 {
 	// TODO: add airport
 	m_lastCh++;
@@ -342,7 +342,7 @@ void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& fil
 	H5Gclose(group);
 }
 
-Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, std::vector<std::vector<Cluster>>& clusters)
+Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct& clusters)
 {
 
 	std::string groupname = to_iso_string(date);
@@ -610,8 +610,9 @@ Calendar CheckPoint::LoadCalendar(boost::gregorian::date date)
 	return result;
 }
 
-void CheckPoint::WriteClusters(const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date date)
+void CheckPoint::WriteClusters(const ClusterStruct& clusters, boost::gregorian::date date)
 {
+	
 	std::string datestr = to_iso_string(date);
 	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
@@ -619,13 +620,35 @@ void CheckPoint::WriteClusters(const std::vector<std::vector<Cluster>>& clusters
 		H5Gclose(temp);
 	}
 	hid_t group = H5Gopen2(m_file, datestr.c_str(), H5P_DEFAULT);
-	for (auto& clvector : clusters) {
-		std::string dsetname = ToString(clvector.front().GetClusterType());
+
+	std::vector<int> clusterVector = {0,1,2,3,4};
+	for (auto& type : clusterVector) {
+
+		const std::vector<Cluster> *clvector;
+		switch(type){
+			case 0:
+				clvector = &clusters.m_households;
+				break;
+			case 1:
+				clvector = &clusters.m_school_clusters;
+				break;
+			case 2:
+				clvector = &clusters.m_work_clusters;
+				break;
+			case 3:
+				clvector = &clusters.m_primary_community;
+				break;
+			case 4:
+				clvector = &clusters.m_secondary_community;
+				break;
+		}
+
+		std::string dsetname = ToString(clvector->front().GetClusterType());
 
 		unsigned int totalSize = 0;
 		std::vector<unsigned int> sizes;
 
-		for (auto& cluster : clvector) {
+		for (auto& cluster : *(clvector)) {
 			totalSize += cluster.GetSize() + 1;
 			sizes.push_back(cluster.GetSize());
 		}
@@ -636,35 +659,36 @@ void CheckPoint::WriteClusters(const std::vector<std::vector<Cluster>>& clusters
 		hid_t dataset = H5Dcreate2(
 		    group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		unsigned int spot = 0;
-		for (auto& cluster : clvector) {
-			auto people = cluster.GetPeople();
+		for (auto cluster = clvector->begin(); cluster < clvector->end(); cluster++) {
+			auto people = cluster->GetPeople();
 
-			unsigned int data[cluster.GetSize() + 1][2];
+			unsigned int data[cluster->GetSize() + 1][2];
 
 			// Start of new cluster
-			data[0][0] = cluster.GetId();
+			data[0][0] = cluster->GetId();
 			data[0][1] = 0;
 			// Data in cluster
 			for (unsigned int i = 1; i <= people.size(); i++) {
-				data[i][0] = cluster.GetId();
+				data[i][0] = cluster->GetId();
 				data[i][1] = people[i - 1].GetId();
 			}
 
 			hsize_t start[2] = {spot, 0};
-			hsize_t count[2] = {cluster.GetSize() + 1, 2};
+			hsize_t count[2] = {cluster->GetSize() + 1, 2};
 			hid_t chunkspace = H5Screate_simple(2, count, nullptr);
 			H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, nullptr, count, nullptr);
 
 			hid_t plist = H5Pcreate(H5P_DATASET_XFER);
 
 			H5Dwrite(dataset, H5T_NATIVE_UINT, chunkspace, dataspace, plist, data);
-			spot += cluster.GetSize() + 1;
+			spot += cluster->GetSize() + 1;
 			H5Sclose(chunkspace);
 			H5Pclose(plist);
 		}
 		H5Sclose(dataspace);
 		H5Dclose(dataset);
 	}
+
 }
 
 } /* namespace checkpoint */

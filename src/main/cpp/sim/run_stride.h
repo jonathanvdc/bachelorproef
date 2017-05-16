@@ -28,6 +28,7 @@
 #include "multiregion/TravelModel.h"
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
+#include "sim/Simulator.h"
 #include "util/Stopwatch.h"
 #include "core/Cluster.h"
 
@@ -51,10 +52,10 @@ public:
 	std::string GetRuntimeString() const { return run_clock.ToString(); }
 
 	/// Performs an action just before a simulator step is performed.
-	void BeforeSimulatorStep(const Population& pop, const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date date);
+	void BeforeSimulatorStep(const Population& pop, const ClusterStruct& clusters, boost::gregorian::date date);
 
 	/// Performs an action just after a simulator step has been performed.
-	void AfterSimulatorStep(const Population& pop, const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date date);
+	void AfterSimulatorStep(const Population& pop, const ClusterStruct& clusters, boost::gregorian::date date);
 
 private:
 	util::Stopwatch<> run_clock;

@@ -68,7 +68,7 @@ std::mutex StrideSimulatorResult::io_mutex;
 
 /// Performs an action just before a simulator step is performed.
 void StrideSimulatorResult::BeforeSimulatorStep(
-    const Population& pop, const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date date)
+    const Population& pop, const ClusterStruct& clusters, boost::gregorian::date date)
 {
 	run_clock.Start();
 	// saves the start configuration
@@ -83,7 +83,7 @@ void StrideSimulatorResult::BeforeSimulatorStep(
 
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(
-    const Population& pop, const std::vector<std::vector<Cluster>>& clusters, boost::gregorian::date date)
+    const Population& pop, const ClusterStruct& clusters, boost::gregorian::date date)
 {	
 	/*
 	if (day != 0) {

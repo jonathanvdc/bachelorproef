@@ -8,6 +8,7 @@
 #include "core/Cluster.h"
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
+#include "sim/Simulator.h"
 
 namespace stride {
 namespace checkpoint {
@@ -37,11 +38,11 @@ public:
 
 	/// Loads a checkpoint from the file in the constructor. The unsigned date tells which checkpoint to use. The
 	/// clusters will be made with each inner list of clusters all having the same clustertype.
-	Population LoadCheckPoint(boost::gregorian::date date, std::vector<std::vector<Cluster>>& clusters);
+	Population LoadCheckPoint(boost::gregorian::date date, ClusterStruct& clusters);
 
 	/// Saves the current simulation to a checkpoint with the date as Identifier.
 	void SaveCheckPoint(
-	    const Population& pop, const std::vector<std::vector<stride::Cluster>>& clusters,
+	    const Population& pop, const ClusterStruct& clusters,
 	    boost::gregorian::date date);
 
 	/// Copies the info in the filename under the data of the given simulation
@@ -64,7 +65,7 @@ private:
 	void WritePopulation(const Population&, boost::gregorian::date);
 
 	/// Writes the clusters to a checkpoint.
-	void WriteClusters(const std::vector<std::vector<Cluster>>&, boost::gregorian::date);
+	void WriteClusters(const ClusterStruct&, boost::gregorian::date);
 
 	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset

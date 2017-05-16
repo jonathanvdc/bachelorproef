@@ -40,6 +40,15 @@ namespace stride {
 
 class Calendar;
 
+struct ClusterStruct
+{
+	std::vector<Cluster> m_households;	  ///< Container with household Clusters.
+	std::vector<Cluster> m_school_clusters;     ///< Container with school Clusters.
+	std::vector<Cluster> m_work_clusters;       ///< Container with work Clusters.
+	std::vector<Cluster> m_primary_community;   ///< Container with primary community Clusters.
+	std::vector<Cluster> m_secondary_community; ///< Container with secondary community  Clusters.
+};
+
 /**
  * Main class that contains and direct the virtual world.
  */
@@ -56,12 +65,9 @@ public:
 	SingleSimulationConfig GetConfiguration() const { return m_config; }
 
 	/// Gets the simulator's date
-	boost::gregorian::date GetDate() const {return m_calendar->GetDate();};
+	boost::gregorian::date GetDate() const { return m_calendar->GetDate(); }
 
-	std::vector<std::vector<Cluster>> GetClusters() const
-	{
-		return {m_households, m_school_clusters, m_work_clusters, m_primary_community, m_secondary_community};
-	}
+	const ClusterStruct& GetClusters() const { return m_clusters; }
 
 	/// Change track_index_case setting.
 	void SetTrackIndexCase(bool track_index_case);
@@ -193,11 +199,7 @@ private:
 	stride::multiregion::VisitorJournal m_visitors;       ///< Visitor journal.
 	stride::multiregion::ExpatriateJournal m_expatriates; ///< Expatriate journal.
 
-	std::vector<Cluster> m_households;	  ///< Container with household Clusters.
-	std::vector<Cluster> m_school_clusters;     ///< Container with school Clusters.
-	std::vector<Cluster> m_work_clusters;       ///< Container with work Clusters.
-	std::vector<Cluster> m_primary_community;   ///< Container with primary community Clusters.
-	std::vector<Cluster> m_secondary_community; ///< Container with secondary community  Clusters.
+	ClusterStruct m_clusters; ///< Struct containing all Clusters.
 
 	std::queue<std::size_t>
 	    m_unused_households;		  ///< A list of unused households which can are eligible for recycling.
