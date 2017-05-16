@@ -40,9 +40,9 @@ public:
 	void Step()
 	{
 		auto pull_data = communicator.Pull();
-		result.BeforeSimulatorStep(*sim->GetPopulation(), sim->GetClusters(),sim->GetDate());
+		result.BeforeSimulatorStep(*sim);
 		auto push_data = sim->TimeStep(pull_data);
-		result.AfterSimulatorStep(*sim->GetPopulation(),sim->GetClusters(),sim->GetDate());
+		result.AfterSimulatorStep(*sim);
 		communicator.Push(push_data);
 	}
 

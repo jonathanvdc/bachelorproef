@@ -68,14 +68,14 @@ std::mutex StrideSimulatorResult::io_mutex;
 
 /// Performs an action just before a simulator step is performed.
 void StrideSimulatorResult::BeforeSimulatorStep(
-    const Population& pop, const ClusterStruct& clusters, boost::gregorian::date date)
+    const Simulator& sim)
 {
 	run_clock.Start();
 	// saves the start configuration
 	/*
 	if (day == 0) {
 		cp->OpenFile();
-		cp->SaveCheckPoint(pop,clusters, date);
+		cp->SaveCheckPoint(sim);
 		cp->CloseFile();
 	}
 	*/
@@ -83,17 +83,17 @@ void StrideSimulatorResult::BeforeSimulatorStep(
 
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(
-    const Population& pop, const ClusterStruct& clusters, boost::gregorian::date date)
+    const Simulator& sim)
 {	
 	/*
 	if (day != 0) {
 		cp->OpenFile();
-		cp->SaveCheckPoint(pop, clusters, date);
+		cp->SaveCheckPoint(sim);
 		cp->CloseFile();
 	}
 	*/
 	run_clock.Stop();
-	auto infected_count = pop.get_infected_count();
+	auto infected_count = sim.GetPopulation()->get_infected_count();
 	cases.push_back(infected_count);
 	day++;
 

@@ -299,15 +299,14 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 	}
 }
 
-void CheckPoint::SaveCheckPoint(
-    const Population& pop, const ClusterStruct& clusters, boost::gregorian::date time)
+void CheckPoint::SaveCheckPoint(const Simulator& sim)
 {
 	// TODO: add airport
 	m_lastCh++;
 	if (m_lastCh == m_limit) {
 		m_lastCh = 0;
-		WritePopulation(pop, time);
-		WriteClusters(clusters, time);
+		WritePopulation(*sim.GetPopulation(), sim.GetDate());
+		WriteClusters(sim.GetClusters(), sim.GetDate());
 	}
 }
 
@@ -536,7 +535,7 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 
 	result.log_config->output_prefix = prefix;
 
-	if(info->data_size == 0){
+	if (info->data_size == 0) {
 		result.log_config->output_prefix = "";
 	}
 
@@ -612,7 +611,7 @@ Calendar CheckPoint::LoadCalendar(boost::gregorian::date date)
 
 void CheckPoint::WriteClusters(const ClusterStruct& clusters, boost::gregorian::date date)
 {
-	
+
 	std::string datestr = to_iso_string(date);
 	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
 	if (exist <= 0) {
@@ -621,26 +620,26 @@ void CheckPoint::WriteClusters(const ClusterStruct& clusters, boost::gregorian::
 	}
 	hid_t group = H5Gopen2(m_file, datestr.c_str(), H5P_DEFAULT);
 
-	std::vector<int> clusterVector = {0,1,2,3,4};
+	std::vector<int> clusterVector = {0, 1, 2, 3, 4};
 	for (auto& type : clusterVector) {
 
-		const std::vector<Cluster> *clvector;
-		switch(type){
-			case 0:
-				clvector = &clusters.m_households;
-				break;
-			case 1:
-				clvector = &clusters.m_school_clusters;
-				break;
-			case 2:
-				clvector = &clusters.m_work_clusters;
-				break;
-			case 3:
-				clvector = &clusters.m_primary_community;
-				break;
-			case 4:
-				clvector = &clusters.m_secondary_community;
-				break;
+		const std::vector<Cluster>* clvector;
+		switch (type) {
+		case 0:
+			clvector = &clusters.m_households;
+			break;
+		case 1:
+			clvector = &clusters.m_school_clusters;
+			break;
+		case 2:
+			clvector = &clusters.m_work_clusters;
+			break;
+		case 3:
+			clvector = &clusters.m_primary_community;
+			break;
+		case 4:
+			clvector = &clusters.m_secondary_community;
+			break;
 		}
 
 		std::string dsetname = ToString(clvector->front().GetClusterType());
@@ -688,7 +687,6 @@ void CheckPoint::WriteClusters(const ClusterStruct& clusters, boost::gregorian::
 		H5Sclose(dataspace);
 		H5Dclose(dataset);
 	}
-
 }
 
 } /* namespace checkpoint */

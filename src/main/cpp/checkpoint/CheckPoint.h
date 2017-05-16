@@ -41,9 +41,7 @@ public:
 	Population LoadCheckPoint(boost::gregorian::date date, ClusterStruct& clusters);
 
 	/// Saves the current simulation to a checkpoint with the date as Identifier.
-	void SaveCheckPoint(
-	    const Population& pop, const ClusterStruct& clusters,
-	    boost::gregorian::date date);
+	void SaveCheckPoint(const Simulator& simulation);
 
 	/// Copies the info in the filename under the data of the given simulation
 	void CombineCheckPoint(unsigned int simulation, const std::string& filename);
