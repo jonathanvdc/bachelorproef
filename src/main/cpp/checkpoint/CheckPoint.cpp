@@ -157,24 +157,24 @@ void CheckPoint::WritePopulation(const Population& pop, boost::gregorian::date d
 	hsize_t chunkDims[1] = {1};
 	H5Pset_chunk(chunkP, 1, chunkDims);
 
-	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(personData));
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(h_personType));
 
-	H5Tinsert(newType, "ID", HOFFSET(personData, ID), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "Age", HOFFSET(personData, Age), H5T_NATIVE_DOUBLE);
-	H5Tinsert(newType, "Gender", HOFFSET(personData, Gender), H5T_NATIVE_CHAR);
-	H5Tinsert(newType, "Participating", HOFFSET(personData, Participating), H5T_NATIVE_HBOOL);
-	H5Tinsert(newType, "Immune", HOFFSET(personData, Immune), H5T_NATIVE_HBOOL);
-	H5Tinsert(newType, "Infected", HOFFSET(personData, Infected), H5T_NATIVE_HBOOL);
-	H5Tinsert(newType, "StartInf", HOFFSET(personData, StartInf), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "EndInf", HOFFSET(personData, EndInf), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "StartSympt", HOFFSET(personData, StartSympt), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "EndSympt", HOFFSET(personData, EndSympt), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "TimeInfected", HOFFSET(personData, TimeInfected), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "Household", HOFFSET(personData, Household), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "School", HOFFSET(personData, School), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "Work", HOFFSET(personData, Work), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "Primary", HOFFSET(personData, Primary), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "Secondary", HOFFSET(personData, Secondary), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "ID", HOFFSET(h_personType, ID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Age", HOFFSET(h_personType, Age), H5T_NATIVE_DOUBLE);
+	H5Tinsert(newType, "Gender", HOFFSET(h_personType, Gender), H5T_NATIVE_CHAR);
+	H5Tinsert(newType, "Participating", HOFFSET(h_personType, Participating), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "Immune", HOFFSET(h_personType, Immune), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "Infected", HOFFSET(h_personType, Infected), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "StartInf", HOFFSET(h_personType, StartInf), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "EndInf", HOFFSET(h_personType, EndInf), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "StartSympt", HOFFSET(h_personType, StartSympt), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "EndSympt", HOFFSET(h_personType, EndSympt), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "TimeInfected", HOFFSET(h_personType, TimeInfected), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Household", HOFFSET(h_personType, Household), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "School", HOFFSET(h_personType, School), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Work", HOFFSET(h_personType, Work), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Primary", HOFFSET(h_personType, Primary), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Secondary", HOFFSET(h_personType, Secondary), H5T_NATIVE_UINT);
 
 	hid_t dataset = H5Dcreate2(m_file, spot.c_str(), newType, dataspace, H5P_DEFAULT, chunkP, H5P_DEFAULT);
 
@@ -182,7 +182,7 @@ void CheckPoint::WritePopulation(const Population& pop, boost::gregorian::date d
 	unsigned int i = 0;
 
 	pop.serial_for([this, &i, &newType, &dataspace, &dataset, &chunkP](const Person& p, unsigned int) {
-		personData data(p);
+		h_personType data(p);
 
 		hsize_t start[1] = {i};
 		hsize_t count[1] = {1};
@@ -207,16 +207,14 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 	}
 	std::ifstream f(fullpath.string());
 
-	std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-	std::vector<char> dataset;
-	std::copy(str.begin(), str.end(), std::back_inserter(dataset));
+	std::vector<char> dataset{std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>()};
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 	hsize_t dims[1] = {dataset.size()};
 	hid_t dataspace = H5Screate_simple(1, dims, nullptr);
 	hid_t dset =
 	    H5Dcreate2(group, setname.c_str(), H5T_NATIVE_CHAR, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, &(*dataset.begin()));
+	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset.data());
 
 	H5Dclose(dset);
 	H5Sclose(dataspace);
@@ -297,7 +295,7 @@ void CheckPoint::SaveCheckPoint(const Simulator& sim)
 	WritePopulation(*sim.GetPopulation(), sim.GetDate());
 	WriteClusters(sim.GetClusters(), sim.GetDate());
 	auto exp = sim.GetExpatriateJournal();
-	WriteExpatriates(exp,sim.GetDate());
+	WriteExpatriates(exp, sim.GetDate());
 }
 
 void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& filename)
@@ -358,7 +356,7 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 
 		H5Sselect_hyperslab(dspace, H5S_SELECT_SET, &start, nullptr, &count, nullptr);
 
-		personData data;
+		h_personType data;
 
 		H5Dread(dset, newType, subspace, dspace, H5P_DEFAULT, &data);
 
@@ -421,13 +419,13 @@ void CheckPoint::LoadCluster(
 
 	hid_t subspace = H5Dget_space(clusterID);
 	H5Sselect_hyperslab(subspace, H5S_SELECT_SET, &start, nullptr, &count, nullptr);
-	clusterData data;
+	h_clusterType data;
 
 	H5Dread(clusterID, newType, H5S_ALL, subspace, H5P_DEFAULT, &data);
 
 	H5Sclose(subspace);
 
-	Cluster* CurrentCluster = new Cluster(data.ID, i);
+	std::unique_ptr<Cluster> CurrentCluster = std::make_unique<Cluster>(data.ID, i);
 
 	for (hsize_t j = 1; j < dims; j++) {
 		hsize_t start = j;
@@ -437,7 +435,7 @@ void CheckPoint::LoadCluster(
 
 		H5Sselect_hyperslab(dspace, H5S_SELECT_SET, &start, nullptr, &count, nullptr);
 
-		clusterData data;
+		h_clusterType data;
 
 		H5Dread(clusterID, newType, subspace, dspace, H5P_DEFAULT, &data);
 
@@ -445,7 +443,7 @@ void CheckPoint::LoadCluster(
 
 		if (data.ID != CurrentCluster->GetId()) {
 			clusters.emplace_back(*CurrentCluster);
-			CurrentCluster = new Cluster(data.ID, i);
+			CurrentCluster = std::make_unique<Cluster>(data.ID, i);
 			continue;
 		}
 
@@ -515,22 +513,17 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 
 	attr = H5Aopen(group, "prefix", H5P_DEFAULT);
 
-	H5A_info_t* info = new H5A_info_t();
+	std::unique_ptr<H5A_info_t> info = std::make_unique<H5A_info_t>();
 
-	H5Aget_info(attr, info);
-
-	char prefix[info->data_size];
-
-	H5Aread(attr, H5T_NATIVE_CHAR, prefix);
+	H5Aget_info(attr, info.get());
+	std::vector<char> prefix(info->data_size, '\0');
+	H5Aread(attr, H5T_NATIVE_CHAR, prefix.data());
 	H5Aclose(attr);
-
-	result.log_config->output_prefix = prefix;
+	result.log_config->output_prefix = std::string(prefix.begin(), prefix.end());
 
 	if (info->data_size == 0) {
 		result.log_config->output_prefix = "";
 	}
-
-	delete info;
 
 	// travel model
 
@@ -631,10 +624,10 @@ void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group
 		totalSize += cluster.GetSize() + 1;
 		sizes.push_back(cluster.GetSize());
 	}
-	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(clusterData));
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(h_clusterType));
 
-	H5Tinsert(newType, "ID", HOFFSET(clusterData, ID), H5T_NATIVE_UINT);
-	H5Tinsert(newType, "PersonID", HOFFSET(clusterData, PersonID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "ID", HOFFSET(h_clusterType, ID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "PersonID", HOFFSET(h_clusterType, PersonID), H5T_NATIVE_UINT);
 
 	hsize_t dims = totalSize;
 	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
@@ -644,7 +637,7 @@ void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group
 	for (auto& cluster : clvector) {
 		auto people = cluster.GetPeople();
 
-		clusterData data[cluster.GetSize() + 1];
+		std::vector<h_clusterType> data{cluster.GetSize() + 1};
 
 		// Start of new cluster
 		data[0].ID = cluster.GetId();
@@ -662,7 +655,7 @@ void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group
 
 		hid_t plist = H5Pcreate(H5P_DATASET_XFER);
 
-		H5Dwrite(dataset, newType, chunkspace, dataspace, plist, &data);
+		H5Dwrite(dataset, newType, chunkspace, dataspace, plist, data.data());
 		spot += cluster.GetSize() + 1;
 		H5Sclose(chunkspace);
 		H5Pclose(plist);
@@ -686,9 +679,7 @@ void CheckPoint::WriteExpatriates(multiregion::ExpatriateJournal& journal, boost
 
 	std::vector<unsigned int> data;
 
-	journal.SerialForeach([&data](const Person& p, unsigned int) { 
-		data.push_back(p.GetId()); 
-	});
+	journal.SerialForeach([&data](const Person& p, unsigned int) { data.push_back(p.GetId()); });
 
 	hsize_t dims = data.size();
 	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);

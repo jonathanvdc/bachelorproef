@@ -83,10 +83,10 @@ public:
 	bool IsVisitor(PersonId id) const { return m_visitors.IsVisitor(id); }
 
 	/// Gets the visitor journal
-	multiregion::VisitorJournal GetVistiorJournal() const {return m_visitors;}
+	multiregion::VisitorJournal GetVistiorJournal() const { return m_visitors; }
 
 	/// Gets the expatriate journal
-	multiregion::ExpatriateJournal GetExpatriateJournal() const {return m_expatriates;}
+	multiregion::ExpatriateJournal GetExpatriateJournal() const { return m_expatriates; }
 
 	/// Runs the given action on every resident who is currently present
 	/// in the simulation. More than one invocation of `action` may be

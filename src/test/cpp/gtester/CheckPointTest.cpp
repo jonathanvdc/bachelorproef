@@ -13,10 +13,7 @@ using namespace stride;
 
 namespace Tests {
 
-TEST(CheckPoint, CheckPoint)
-{
-	stride::checkpoint::CheckPoint("test.h5");
-}
+TEST(CheckPoint, CheckPoint) { stride::checkpoint::CheckPoint("test.h5"); }
 
 TEST(CheckPoint, CreateFile)
 {
@@ -47,6 +44,7 @@ TEST(CheckPoint, Write_LoadConfig)
 	config.common_config->track_index_case = 0;
 
 	auto toSave = config.AsSingleConfig();
+	toSave.log_config->output_prefix = "testPrefix";
 
 	stride::checkpoint::CheckPoint cp("WriteConfig.h5");
 	cp.CreateFile();
@@ -73,7 +71,7 @@ TEST(CheckPoint, Write_LoadConfig)
 	EXPECT_EQ(toSave.log_config->generate_person_file, toCheck.log_config->generate_person_file);
 	EXPECT_EQ(toSave.log_config->log_level, toCheck.log_config->log_level);
 
-	EXPECT_EQ(toSave.GetId(),toCheck.GetId());
+	EXPECT_EQ(toSave.GetId(), toCheck.GetId());
 
 	// TODO: check contents of files
 	// TODO: check travelmodel
@@ -96,14 +94,13 @@ TEST(CheckPoint, Write_LoadHolidays)
 	cp.CloseFile();
 
 	cp.OpenFile();
-	Calendar c =cp.LoadCalendar(boost::gregorian::date(2017,01,01));
+	Calendar c = cp.LoadCalendar(boost::gregorian::date(2017, 01, 01));
 	cp.CloseFile();
 
-	EXPECT_EQ(c.GetYear(),2017);
-	EXPECT_EQ(c.GetMonth(),1);
-	EXPECT_EQ(c.GetDay(),1);
+	EXPECT_EQ(c.GetYear(), 2017);
+	EXPECT_EQ(c.GetMonth(), 1);
+	EXPECT_EQ(c.GetDay(), 1);
 }
-
 
 TEST(CheckPoint, SaveLoadCheckPoint)
 {
@@ -135,110 +132,112 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 	stride::Population popRead;
 
 	cp->OpenFile();
-	popRead = cp->LoadCheckPoint(sim->GetDate(),clRead);
+	popRead = cp->LoadCheckPoint(sim->GetDate(), clRead);
 	cp->CloseFile();
 
 	stride::Population origPop = *sim->GetPopulation();
-	ClusterStruct clOrig =sim->GetClusters();
+	ClusterStruct clOrig = sim->GetClusters();
 
-
-	EXPECT_EQ(origPop.size(),popRead.size());
-	EXPECT_EQ(origPop.get_infected_count(),popRead.get_infected_count());
+	EXPECT_EQ(origPop.size(), popRead.size());
+	EXPECT_EQ(origPop.get_infected_count(), popRead.get_infected_count());
 
 	auto origPopptr = origPop.begin();
 	auto popReadptr = popRead.begin();
-	for(unsigned int i = 0; i < origPop.size(); i++){
+	for (unsigned int i = 0; i < origPop.size(); i++) {
 
 		Person origP = *origPopptr;
 		Person readP = *popReadptr;
 
-		EXPECT_EQ(origP.GetId(),readP.GetId());
-		EXPECT_EQ(origP.GetAge(),readP.GetAge());
-		EXPECT_EQ(origP.GetGender(),readP.GetGender());
-		EXPECT_EQ(origP.IsParticipatingInSurvey(),readP.IsParticipatingInSurvey());
+		EXPECT_EQ(origP.GetId(), readP.GetId());
+		EXPECT_EQ(origP.GetAge(), readP.GetAge());
+		EXPECT_EQ(origP.GetGender(), readP.GetGender());
+		EXPECT_EQ(origP.IsParticipatingInSurvey(), readP.IsParticipatingInSurvey());
 
-		EXPECT_EQ(origP.GetClusterId(ClusterType::Household),readP.GetClusterId(ClusterType::Household));
-		EXPECT_EQ(origP.GetClusterId(ClusterType::School),readP.GetClusterId(ClusterType::School));
-		EXPECT_EQ(origP.GetClusterId(ClusterType::Work),readP.GetClusterId(ClusterType::Work));
-		EXPECT_EQ(origP.GetClusterId(ClusterType::PrimaryCommunity),readP.GetClusterId(ClusterType::PrimaryCommunity));
-		EXPECT_EQ(origP.GetClusterId(ClusterType::SecondaryCommunity),readP.GetClusterId(ClusterType::SecondaryCommunity));
+		EXPECT_EQ(origP.GetClusterId(ClusterType::Household), readP.GetClusterId(ClusterType::Household));
+		EXPECT_EQ(origP.GetClusterId(ClusterType::School), readP.GetClusterId(ClusterType::School));
+		EXPECT_EQ(origP.GetClusterId(ClusterType::Work), readP.GetClusterId(ClusterType::Work));
+		EXPECT_EQ(
+		    origP.GetClusterId(ClusterType::PrimaryCommunity),
+		    readP.GetClusterId(ClusterType::PrimaryCommunity));
+		EXPECT_EQ(
+		    origP.GetClusterId(ClusterType::SecondaryCommunity),
+		    readP.GetClusterId(ClusterType::SecondaryCommunity));
 
 		Health origH = origP.GetHealth();
 		Health readH = readP.GetHealth();
 
-		EXPECT_EQ(origH.GetHealthStatus(),readH.GetHealthStatus());
-		EXPECT_EQ(origH.GetStartInfectiousness(),readH.GetStartInfectiousness());
-		EXPECT_EQ(origH.GetEndInfectiousness(),readH.GetEndInfectiousness());
-		EXPECT_EQ(origH.GetStartSymptomatic(),readH.GetStartSymptomatic());
-		EXPECT_EQ(origH.GetEndSymptomatic(),readH.GetEndSymptomatic());
-		EXPECT_EQ(origH.GetDaysInfected(),readH.GetDaysInfected());
+		EXPECT_EQ(origH.GetHealthStatus(), readH.GetHealthStatus());
+		EXPECT_EQ(origH.GetStartInfectiousness(), readH.GetStartInfectiousness());
+		EXPECT_EQ(origH.GetEndInfectiousness(), readH.GetEndInfectiousness());
+		EXPECT_EQ(origH.GetStartSymptomatic(), readH.GetStartSymptomatic());
+		EXPECT_EQ(origH.GetEndSymptomatic(), readH.GetEndSymptomatic());
+		EXPECT_EQ(origH.GetDaysInfected(), readH.GetDaysInfected());
 
 		origPopptr++;
 		popReadptr++;
 	}
 
-
-
-	EXPECT_EQ(clOrig.m_households.size(),clRead.m_households.size());
-	for(unsigned int i = 0; i < clOrig.m_households.size(); i++){
-		EXPECT_EQ(clOrig.m_households[i].GetSize(),clRead.m_households[i].GetSize());
-		EXPECT_EQ(clOrig.m_households[i].GetId(),clRead.m_households[i].GetId());
-		EXPECT_EQ(clOrig.m_households[i].GetClusterType(),clRead.m_households[i].GetClusterType());
+	EXPECT_EQ(clOrig.m_households.size(), clRead.m_households.size());
+	for (unsigned int i = 0; i < clOrig.m_households.size(); i++) {
+		EXPECT_EQ(clOrig.m_households[i].GetSize(), clRead.m_households[i].GetSize());
+		EXPECT_EQ(clOrig.m_households[i].GetId(), clRead.m_households[i].GetId());
+		EXPECT_EQ(clOrig.m_households[i].GetClusterType(), clRead.m_households[i].GetClusterType());
 		auto popClOrig = clOrig.m_households[i].GetPeople();
 		auto popClRead = clRead.m_households[i].GetPeople();
-		for(unsigned int j = 0; j < popClOrig.size(); j++){
-			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		for (unsigned int j = 0; j < popClOrig.size(); j++) {
+			EXPECT_EQ(popClOrig[j], popClRead[j]);
 		}
 	}
 
-	EXPECT_EQ(clOrig.m_school_clusters.size(),clRead.m_school_clusters.size());
-	for(unsigned int i = 0; i < clOrig.m_school_clusters.size(); i++){
-		EXPECT_EQ(clOrig.m_school_clusters[i].GetSize(),clRead.m_school_clusters[i].GetSize());
-		EXPECT_EQ(clOrig.m_school_clusters[i].GetId(),clRead.m_school_clusters[i].GetId());
-		EXPECT_EQ(clOrig.m_school_clusters[i].GetClusterType(),clRead.m_school_clusters[i].GetClusterType());
+	EXPECT_EQ(clOrig.m_school_clusters.size(), clRead.m_school_clusters.size());
+	for (unsigned int i = 0; i < clOrig.m_school_clusters.size(); i++) {
+		EXPECT_EQ(clOrig.m_school_clusters[i].GetSize(), clRead.m_school_clusters[i].GetSize());
+		EXPECT_EQ(clOrig.m_school_clusters[i].GetId(), clRead.m_school_clusters[i].GetId());
+		EXPECT_EQ(clOrig.m_school_clusters[i].GetClusterType(), clRead.m_school_clusters[i].GetClusterType());
 		auto popClOrig = clOrig.m_school_clusters[i].GetPeople();
 		auto popClRead = clRead.m_school_clusters[i].GetPeople();
-		for(unsigned int j = 0; j < popClOrig.size(); j++){
-			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		for (unsigned int j = 0; j < popClOrig.size(); j++) {
+			EXPECT_EQ(popClOrig[j], popClRead[j]);
 		}
 	}
 
-	EXPECT_EQ(clOrig.m_work_clusters.size(),clRead.m_work_clusters.size());
-	for(unsigned int i = 0; i < clOrig.m_work_clusters.size(); i++){
-		EXPECT_EQ(clOrig.m_work_clusters[i].GetSize(),clRead.m_work_clusters[i].GetSize());
-		EXPECT_EQ(clOrig.m_work_clusters[i].GetId(),clRead.m_work_clusters[i].GetId());
-		EXPECT_EQ(clOrig.m_work_clusters[i].GetClusterType(),clRead.m_work_clusters[i].GetClusterType());
+	EXPECT_EQ(clOrig.m_work_clusters.size(), clRead.m_work_clusters.size());
+	for (unsigned int i = 0; i < clOrig.m_work_clusters.size(); i++) {
+		EXPECT_EQ(clOrig.m_work_clusters[i].GetSize(), clRead.m_work_clusters[i].GetSize());
+		EXPECT_EQ(clOrig.m_work_clusters[i].GetId(), clRead.m_work_clusters[i].GetId());
+		EXPECT_EQ(clOrig.m_work_clusters[i].GetClusterType(), clRead.m_work_clusters[i].GetClusterType());
 		auto popClOrig = clOrig.m_work_clusters[i].GetPeople();
 		auto popClRead = clRead.m_work_clusters[i].GetPeople();
-		for(unsigned int j = 0; j < popClOrig.size(); j++){
-			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		for (unsigned int j = 0; j < popClOrig.size(); j++) {
+			EXPECT_EQ(popClOrig[j], popClRead[j]);
 		}
 	}
 
-	EXPECT_EQ(clOrig.m_primary_community.size(),clRead.m_primary_community.size());
-	for(unsigned int i = 0; i < clOrig.m_primary_community.size(); i++){
-		EXPECT_EQ(clOrig.m_primary_community[i].GetSize(),clRead.m_primary_community[i].GetSize());
-		EXPECT_EQ(clOrig.m_primary_community[i].GetId(),clRead.m_primary_community[i].GetId());
-		EXPECT_EQ(clOrig.m_primary_community[i].GetClusterType(),clRead.m_primary_community[i].GetClusterType());
+	EXPECT_EQ(clOrig.m_primary_community.size(), clRead.m_primary_community.size());
+	for (unsigned int i = 0; i < clOrig.m_primary_community.size(); i++) {
+		EXPECT_EQ(clOrig.m_primary_community[i].GetSize(), clRead.m_primary_community[i].GetSize());
+		EXPECT_EQ(clOrig.m_primary_community[i].GetId(), clRead.m_primary_community[i].GetId());
+		EXPECT_EQ(
+		    clOrig.m_primary_community[i].GetClusterType(), clRead.m_primary_community[i].GetClusterType());
 		auto popClOrig = clOrig.m_primary_community[i].GetPeople();
 		auto popClRead = clRead.m_primary_community[i].GetPeople();
-		for(unsigned int j = 0; j < popClOrig.size(); j++){
-			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		for (unsigned int j = 0; j < popClOrig.size(); j++) {
+			EXPECT_EQ(popClOrig[j], popClRead[j]);
 		}
 	}
 
-	EXPECT_EQ(clOrig.m_secondary_community.size(),clRead.m_secondary_community.size());
-	for(unsigned int i = 0; i < clOrig.m_secondary_community.size(); i++){
-		EXPECT_EQ(clOrig.m_secondary_community[i].GetSize(),clRead.m_secondary_community[i].GetSize());
-		EXPECT_EQ(clOrig.m_secondary_community[i].GetId(),clRead.m_secondary_community[i].GetId());
-		EXPECT_EQ(clOrig.m_secondary_community[i].GetClusterType(),clRead.m_secondary_community[i].GetClusterType());
+	EXPECT_EQ(clOrig.m_secondary_community.size(), clRead.m_secondary_community.size());
+	for (unsigned int i = 0; i < clOrig.m_secondary_community.size(); i++) {
+		EXPECT_EQ(clOrig.m_secondary_community[i].GetSize(), clRead.m_secondary_community[i].GetSize());
+		EXPECT_EQ(clOrig.m_secondary_community[i].GetId(), clRead.m_secondary_community[i].GetId());
+		EXPECT_EQ(
+		    clOrig.m_secondary_community[i].GetClusterType(), clRead.m_secondary_community[i].GetClusterType());
 		auto popClOrig = clOrig.m_secondary_community[i].GetPeople();
 		auto popClRead = clRead.m_secondary_community[i].GetPeople();
-		for(unsigned int j = 0; j < popClOrig.size(); j++){
-			EXPECT_EQ(popClOrig[j],popClRead[j]);
+		for (unsigned int j = 0; j < popClOrig.size(); j++) {
+			EXPECT_EQ(popClOrig[j], popClRead[j]);
 		}
 	}
-
 }
 /*
 TEST(CheckPoint, todo)

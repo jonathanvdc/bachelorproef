@@ -86,56 +86,56 @@ private:
 
 	hid_t m_file;		      //< current hdf5 workspace
 	const std::string m_filename; //< filename
-};
 
-struct personData
-{
-	// basic info
-	unsigned int ID;
-	double Age;
-	char Gender;
-	hbool_t Participating;
-	// health info
-	hbool_t Immune;
-	hbool_t Infected;
-	unsigned int StartInf;
-	unsigned int EndInf;
-	unsigned int StartSympt;
-	unsigned int EndSympt;
-	unsigned int TimeInfected;
-	// cluster info
-	unsigned int Household;
-	unsigned int School;
-	unsigned int Work;
-	unsigned int Primary;
-	unsigned int Secondary;
-	personData(const Person& p)
+	struct h_personType
 	{
-		ID = p.GetId();
-		Age = p.GetAge();
-		Gender = p.GetGender();
-		Participating = p.IsParticipatingInSurvey();
-		Immune = p.GetHealth().IsImmune();
-		Infected = p.GetHealth().IsInfected();
-		StartInf = p.GetHealth().GetStartInfectiousness();
-		EndInf = p.GetHealth().GetEndInfectiousness();
-		StartSympt = p.GetHealth().GetStartSymptomatic();
-		EndSympt = p.GetHealth().GetEndSymptomatic();
-		TimeInfected = p.GetHealth().GetDaysInfected();
+		// basic info
+		unsigned int ID;
+		double Age;
+		char Gender;
+		hbool_t Participating;
+		// health info
+		hbool_t Immune;
+		hbool_t Infected;
+		unsigned int StartInf;
+		unsigned int EndInf;
+		unsigned int StartSympt;
+		unsigned int EndSympt;
+		unsigned int TimeInfected;
+		// cluster info
+		unsigned int Household;
+		unsigned int School;
+		unsigned int Work;
+		unsigned int Primary;
+		unsigned int Secondary;
+		h_personType(const Person& p)
+		{
+			ID = p.GetId();
+			Age = p.GetAge();
+			Gender = p.GetGender();
+			Participating = p.IsParticipatingInSurvey();
+			Immune = p.GetHealth().IsImmune();
+			Infected = p.GetHealth().IsInfected();
+			StartInf = p.GetHealth().GetStartInfectiousness();
+			EndInf = p.GetHealth().GetEndInfectiousness();
+			StartSympt = p.GetHealth().GetStartSymptomatic();
+			EndSympt = p.GetHealth().GetEndSymptomatic();
+			TimeInfected = p.GetHealth().GetDaysInfected();
 
-		Household = p.GetClusterId(ClusterType::Household);
-		School = p.GetClusterId(ClusterType::School);
-		Work = p.GetClusterId(ClusterType::Work);
-		Primary = p.GetClusterId(ClusterType::PrimaryCommunity);
-		Secondary = p.GetClusterId(ClusterType::SecondaryCommunity);
-	}
-	personData() {}
-};
+			Household = p.GetClusterId(ClusterType::Household);
+			School = p.GetClusterId(ClusterType::School);
+			Work = p.GetClusterId(ClusterType::Work);
+			Primary = p.GetClusterId(ClusterType::PrimaryCommunity);
+			Secondary = p.GetClusterId(ClusterType::SecondaryCommunity);
+		}
+		h_personType() {}
+	};
 
-struct clusterData
-{
-	unsigned int ID;
-	unsigned int PersonID;
+	struct h_clusterType
+	{
+		unsigned int ID;
+		unsigned int PersonID;
+	};
 };
 
 } /* namespace checkpoint */
