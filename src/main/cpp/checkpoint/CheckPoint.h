@@ -65,6 +65,11 @@ private:
 	/// Writes the clusters to a checkpoint.
 	void WriteClusters(const ClusterStruct&, boost::gregorian::date);
 
+	/// Writes the visitors to a checkpoint.
+	void WriteVisitors(multiregion::VisitorJournal&, boost::gregorian::date);
+
+	void WriteExpatriates(multiregion::ExpatriateJournal&, boost::gregorian::date);
+
 	/// Loads one type Cluster
 	void WriteCluster(const std::vector<Cluster>&, hid_t&, const ClusterType&);
 

@@ -296,6 +296,8 @@ void CheckPoint::SaveCheckPoint(const Simulator& sim)
 	// TODO: add airport
 	WritePopulation(*sim.GetPopulation(), sim.GetDate());
 	WriteClusters(sim.GetClusters(), sim.GetDate());
+	auto exp = sim.GetExpatriateJournal();
+	WriteExpatriates(exp,sim.GetDate());
 }
 
 void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& filename)
@@ -437,7 +439,7 @@ void CheckPoint::LoadCluster(
 
 		clusterData data;
 
-		H5Dread(clusterID, newType, subspace, dspace,H5P_DEFAULT, &data);
+		H5Dread(clusterID, newType, subspace, dspace, H5P_DEFAULT, &data);
 
 		H5Sclose(subspace);
 
@@ -637,8 +639,7 @@ void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group
 	hsize_t dims = totalSize;
 	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
 
-	hid_t dataset =
-	    H5Dcreate2(group, dsetname.c_str(), newType, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	hid_t dataset = H5Dcreate2(group, dsetname.c_str(), newType, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	unsigned int spot = 0;
 	for (auto& cluster : clvector) {
 		auto people = cluster.GetPeople();
@@ -669,6 +670,36 @@ void CheckPoint::WriteCluster(const std::vector<Cluster>& clvector, hid_t& group
 	H5Tclose(newType);
 	H5Sclose(dataspace);
 	H5Dclose(dataset);
+}
+
+void CheckPoint::WriteExpatriates(multiregion::ExpatriateJournal& journal, boost::gregorian::date date)
+{
+	std::string datestr = to_iso_string(date);
+	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
+	}
+	hid_t group = H5Gopen2(m_file, datestr.c_str(), H5P_DEFAULT);
+
+	std::string dsetname = "Expatriates";
+
+	std::vector<unsigned int> data;
+
+	journal.SerialForeach([&data](const Person& p, unsigned int) { 
+		data.push_back(p.GetId()); 
+	});
+
+	hsize_t dims = data.size();
+	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
+
+	hid_t dataset =
+	    H5Dcreate2(group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dwrite(dataset, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front());
+
+	H5Sclose(dataspace);
+	H5Dclose(dataset);
+	H5Gclose(group);
 }
 
 } /* namespace checkpoint */
