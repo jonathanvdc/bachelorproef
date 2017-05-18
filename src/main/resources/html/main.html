@@ -8,9 +8,11 @@
 
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-
     <link rel="stylesheet" type="text/css" href="jquery.svg/jquery.svg.css"> 
     <script type="text/javascript" src="jquery.svg/jquery.svg.min.js"></script>
+
+    <!-- jQuery UI -->
+    <script src="jquery-ui/jquery-ui.min.js"></script>
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -18,26 +20,20 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
     <!-- Stride -->
+    <script src="colour.js"></script>
     <script src="script.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="control-panel">
+    <div class="control panel">
+        <div class="panel-head">Control panel</div>
+
         <input type="file" class="file-input" accept=".json"/>
 
         <div> DAYS: <span class="days">-</span> </div>
         <div> CURRENT DAY: <span class="current-day">-</span> </div>
         <div> TOTAL INFECTED: <span class="total-infected">-</span> </div>
-
-        <div class="dropdown gradient-input">
-            <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" disabled>
-                Colours <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-                <li><a>a bloo</a></li>
-            </ul>
-        </div>
 
         <div class="day-control">
             <button class="prev-day btn btn-primary btn-xs" disabled>
@@ -53,6 +49,19 @@
             <label>Run <input class="run-input" type="checkbox" disabled></label>
             <label>Loop <input class="loop-input" type="checkbox" disabled></label>
         </div>
+    </div>
+
+    <div class="legend panel">
+        <div class="panel-head">Legend</div>
+
+        <div class="dropdown gradient-input">
+            <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" disabled>
+                Colours <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu"> </ul>
+        </div>
+
+        <div class="legend-view" style="margin-top:10px"> </div>
     </div>
     
     <div id="view" class="container">
