@@ -92,8 +92,63 @@ Gradient.prototype.get = function(val){
             p = (upper.val - val) / (upper.val - lower.val);
             return lower.colour.mix(upper.colour, p);
         }
-    }   
+    }
 }
+
+// Creates a new scaled gradient.
+Gradient.prototype.scale = function(scale){
+    var newMap = [];
+    for(i in this.colourMap){
+        newMap.push(ValCol(this.colourMap[i].val * scale, this.colourMap[i].colour));
+    }
+    return new Gradient(newMap);
+}
+
+
+// black -> red -> yellow -> white
+var heatMap = new Gradient([
+    ValCol(0,   new RGB(0,0,0)),
+    ValCol(1/3, new RGB(255,0,0)),
+    ValCol(2/3, new RGB(255,255,0)),
+    ValCol(1,   new RGB(255,255,255)),
+]);
+
+// cyan -> blue -> black -> red -> yellow -> white
+var superHeatMap = new Gradient([
+    ValCol(0,   new RGB(0,255,255)),
+    ValCol(1/5, new RGB(0,0,255)),
+    ValCol(2/5, new RGB(0,0,0)),
+    ValCol(3/5, new RGB(255,0,0)),
+    ValCol(4/5, new RGB(255,255,0)),
+    ValCol(1,   new RGB(255,255,255)),
+]);
+
+// dark blue -> deep purple -> red -> yellow -> white
+var ultraHeatMap = new Gradient([
+    ValCol(0,   new RGB(0,0,80)),
+    ValCol(1/4, new RGB(128,0,128)),
+    ValCol(2/4, new RGB(255,0,0)),
+    ValCol(3/4, new RGB(255,230,0)),
+    ValCol(1,   new RGB(255,255,255)),
+]);
+
+// red -> yellow -> green -> cyan -> blue -> purple
+var rainbow = new Gradient([
+    ValCol(0,   new RGB(255,0,0)),
+    ValCol(1/5, new RGB(255,255,0)),
+    ValCol(2/5, new RGB(0,255,0)),
+    ValCol(3/5, new RGB(0,255,255)),
+    ValCol(4/5, new RGB(0,0,255)),
+    ValCol(1,   new RGB(255,0,255)),
+]);
+
+// black -> white
+var monochrome = new Gradient([
+    ValCol(0,   new RGB(0)),
+    ValCol(1,   new RGB(255,255,255)),
+]);
+
+Gradient.gradients = {heatMap: heatMap, superHeatMap: superHeatMap, ultraHeatMap: ultraHeatMap, rainbow: rainbow, monochrome: monochrome};
 
 
 //------------//
@@ -124,6 +179,7 @@ Map.prototype.containsBox = function(box){
     return true;
 }
 
+// Returns a {width, height} object that matches the image's ratio that fits inside the given width and height
 Map.prototype.fitTo = function(width, height){
     if(this.imageRatio > width/height)
         return {width: width, height: width / this.imageRatio};
@@ -136,6 +192,7 @@ Map.belgium = new Map("Belgium", "resource/belgium.svg", 1135.92/987.997, 49.2, 
 // Todo: Figure out smarter map-to-dot algorithms for non-mercator projections.
 
 Map.maps = [Map.belgium];
+
 
 //-------------------//
 // Class: Visualizer //
@@ -154,26 +211,81 @@ var Visualizer = function(inputSelector, controlSelector, viewSelector){
 /// Bind into the controls and set the appropriate events.
 Visualizer.prototype.initializeControls = function (controlSelector){
     $c = $(controlSelector);
-    this.control = c = Object();
+    var c = this.control = Object();
+
+    // Find the input elements.
     c.$prevDay = $c.find('.prev-day');
     c.$nextDay = $c.find('.next-day');
     c.$range = $c.find('.range-input');
-    c.all = [c.$prevDay, c.$nextDay, c.$range];
+    c.$run = $c.find('.run-input');
+    c.$loop = $c.find('.loop-input');
+    c.$gradient = $('.gradient-input');
+
+    // Used for enabling-disabling all at once
+    c.all = [c.$prevDay, c.$nextDay, c.$range, c.$run, c.$loop, c.$gradient.find("button")];
 
     // Bind events
     c.$prevDay.on("click", this.prevDay.bind(this));
     c.$nextDay.on("click", this.nextDay.bind(this));
-    c.$range.on("input", () => this.updateDay(parseInt(this.control.$range.val())));
+    c.$range.on("input", () => this.updateDay(parseInt(c.$range.val())));
+    c.$run.on("change", () => {if(c.$run.prop("checked")) this.run()});
 
     // Disable the controls, they're not ready yet.
     this.disableControls();
 }
 
+/// Automatically step through the different days of the simulation.
+Visualizer.prototype.run = async function(){
+    this.runSpeed = 60;
+    var $run = this.control.$run;
+    var $loop = this.control.$loop;
+
+    while($run.prop("checked")){
+        var nextDay = this.day + 1;
+        if( nextDay >= this.maxDays ){
+            if($loop.prop("checked")){
+                nextDay = 0;
+            } else {
+                $run.prop("checked", false);
+                break;
+            }
+        }
+        this.updateDay(nextDay);
+        await sleep(this.runSpeed);
+    }
+}
+
 /// Set up and enable the controls based on the simulation data.
 Visualizer.prototype.configureControls = function(){
+    // Set the slider range
     this.control.$range.prop("max", this.maxDays);
+
+    // Set the different options in the gradient selector
+    var $target = this.control.$gradient.find(".dropdown-menu");
+    $target.html("");
+
+    // let because we're trying to bind gradient to a lambda later
+    for(let gradient in Gradient.gradients){
+        var $a = $("<a>");
+        $a.text(gradient);
+
+        $a.on("click", () => this.selectGradient(gradient))
+
+        var $li = $("<li>");
+        $li.append($a);
+        $target.append($li);
+    }
+
     // Enable the controls
     this.disableControls(false);
+}
+
+/// Select the gradient by the given name.
+Visualizer.prototype.selectGradient = function(name){
+    console.log(name);
+    this.gradient = Gradient.gradients[name].scale(this.maxSingle);
+    this.updateLegend();
+    this.updateMap();
 }
 
 /// Control interface methods:
@@ -195,9 +307,10 @@ Visualizer.prototype.handleFile = function(e) {
 
 /// Actually initialize the Visualizer with the data retrieved from the file.
 Visualizer.prototype.initialize = function(data){
-    // Grab the data parsed from the file
+    // Grab the data parsed from the file and aggregate it
     this.days = data.days;
     this.towns = data.towns;
+    this.aggregateData();
 
     // Put the total number of days
     this.maxDays = this.days.length;
@@ -209,6 +322,24 @@ Visualizer.prototype.initialize = function(data){
 
     // enable the controls
     this.configureControls();
+}
+
+/// Extract useful information from our data.
+Visualizer.prototype.aggregateData = function(){
+    var maxTotal = 0;
+    var maxSingle = 0;
+    for(d in this.days){
+        var total = 0;
+        for(t in this.towns){
+            var single = this.days[d][t] || 0;
+            total += single;
+            maxSingle = Math.max(maxSingle, single);
+        }
+        this.days[d].total = total;
+        maxTotal = Math.max(total, maxTotal);
+    }
+    this.maxTotal = maxTotal;
+    this.maxSingle = maxSingle;
 }
 
 /// Prepare the HTML document with the basic frameworks for our view.
@@ -246,6 +377,29 @@ Visualizer.prototype.makeTable = function(){
     }
 }
 
+/// Initialize the gradient that governs the node colouring.
+Visualizer.prototype.initializeGradient = function($target){
+    this.gradient = Gradient.gradients["ultraHeatMap"].scale(this.maxSingle);
+
+    var $legendWrap = $("<div>", {class: "legend"});
+    $legendWrap.append("<h3>Legend</h3>");
+    this.$legend = $("<div>");
+    $legendWrap.append(this.$legend);
+    $target.append($legendWrap);
+    this.updateLegend();
+}
+
+// Updates the legend to match the contents of the selected colour gradient.
+Visualizer.prototype.updateLegend = function(){
+    this.$legend.html("");
+    for(i in this.gradient.colourMap){
+        $item = $("<div>", {class: "legend-item"});
+        $item.text(Math.round(this.gradient.colourMap[i].val));
+        $item.append($("<span>", {class:"legend-circle",style:"background-color:"+this.gradient.colourMap[i].colour.toString()}));
+        this.$legend.append($item);
+    }
+}
+
 /// Prepare the HTML document with a basic table.
 Visualizer.prototype.makeMap = function(){
     // Find and clear the view target
@@ -253,19 +407,13 @@ Visualizer.prototype.makeMap = function(){
     $target.svg("destroy");
     $target.html("");
 
-    // Set up colour stuff
-    // TODO: those left hand values should scale.
-    var colourMap = [
-        ValCol(0,new RGB()),
-        ValCol(5,new RGB(255,0,0)),
-        ValCol(10,new RGB(255,255,0)),
-        ValCol(15,new RGB(255,255,255)),
-    ];
-    this.gradient = new Gradient(colourMap);
+    this.initializeGradient($target);
 
     var box = this.findBox();
     var width = 800;
-    var height = 600;
+    var height = 800;
+
+    this.sizeFunc = val => Math.sqrt(val) * 8/Math.sqrt(this.maxSingle) + 2;
 
     // Check if any of the data fits inside a known map.
     for(i in Map.maps){
@@ -316,6 +464,8 @@ Visualizer.prototype.makeMap = function(){
     refreshTooltips();
 }
 
+// Find the box of latitudes/longitudes containing all known locations.
+// Returns an object {minLat, maxLat, minLong, maxLong}
 Visualizer.prototype.findBox = function(){
     var out = {minLat: 1000, maxLat: -1000, minLong: 1000, maxLong: -1000};
 
@@ -329,7 +479,7 @@ Visualizer.prototype.findBox = function(){
     return out;
 }
 
-/// If given a valid day, update the view to match the info at that day.
+/// Update the view to match the info at that day.
 Visualizer.prototype.updateDay = function(day){
     // clamp day to the valid range
     day = clamp(day, 0, this.maxDays-1);
@@ -337,6 +487,7 @@ Visualizer.prototype.updateDay = function(day){
     this.day = day;
     $('.current-day').text(1 + day);
     this.control.$range.prop("value", day);
+    $('.total-infected').text(this.days[day].total);
 
     this.updateView();
 }
@@ -350,23 +501,21 @@ Visualizer.prototype.updateView = function(){
 /// Update the table to reflect the currently selected day.
 Visualizer.prototype.updateTable = function(){
     var currentDay = this.days[this.day];
-    var total = 0;
 
-    // Update the view further
+    // Update each column
     for(town in this.towns){
-        val = currentDay[town] || 0;
-        total += val;
+        var count = currentDay[town] || 0;
+
         // Find the table column for the given town
-        $col = this.$table.find('#' + noSpace(town));
+        var $col = this.$table.find('#' + noSpace(town));
 
         // Put the amount of infected
-        $col.find(".infected").text(val);
+        $col.find(".infected").text(count);
+
         // Write the percentage infected if any
-        var percent = val/this.towns[town].size;
+        var percent = count/this.towns[town].size;
         $col.find(".percent").text(percent? percentFormat(percent) : '');
     }
-    // Put the total infected where we can see it.
-    $('.total-infected').text(total);
 }
 
 /// Update the map to reflect the currently selected day.
@@ -377,7 +526,7 @@ Visualizer.prototype.updateMap = function(){
         val = currentDay[town] || 0;
         dot = this.towns[town].dot;
         dot.setAttribute("fill", this.gradient.get(val).toString());
-        dot.setAttribute("r",Math.sqrt(val) * 2 + 2);
+        dot.setAttribute("r", this.sizeFunc(val));
     }
 }
 
@@ -392,8 +541,11 @@ var noSpace = s => s.split(" ").join('');
 // Nicely format a given value p as a percentage showing d digits after the period.
 var percentFormat = (p, d=1) => (100*p).toFixed(d)+'%';
 
-// Clamp val to be on [l, r]
+// Clamp val to [l, r]
 var clamp = (val, l, r) => val > r ? r : val < l ? l : val;
 
 // Refresh Bootstrap's tooltips
 var refreshTooltips = () => $('[data-toggle="tooltip"]').tooltip(); 
+
+// Await a certain length of time.
+var sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
