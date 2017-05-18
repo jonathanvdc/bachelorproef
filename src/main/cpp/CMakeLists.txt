@@ -35,9 +35,9 @@ set(LIB_SRC
 #---
     multiregion/TravelModel.cpp
 #---
-	output/CasesFile.cpp
-	output/PersonFile.cpp
-	output/SummaryFile.cpp
+    output/CasesFile.cpp
+    output/PersonFile.cpp
+    output/SummaryFile.cpp
 #---
     output/CasesFile.cpp
     output/PersonFile.cpp
@@ -60,6 +60,8 @@ set(LIB_SRC
     util/Signals.cpp
 #---
     alias/Alias.cpp
+#---
+    checkpoint/CheckPoint.cpp
 )
 
 if( Poco_FOUND )

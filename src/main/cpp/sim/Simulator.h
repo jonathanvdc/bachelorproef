@@ -40,6 +40,15 @@ namespace stride {
 
 class Calendar;
 
+struct ClusterStruct
+{
+	std::vector<Cluster> m_households;	  ///< Container with household Clusters.
+	std::vector<Cluster> m_school_clusters;     ///< Container with school Clusters.
+	std::vector<Cluster> m_work_clusters;       ///< Container with work Clusters.
+	std::vector<Cluster> m_primary_community;   ///< Container with primary community Clusters.
+	std::vector<Cluster> m_secondary_community; ///< Container with secondary community  Clusters.
+};
+
 /**
  * Main class that contains and direct the virtual world.
  */
@@ -55,6 +64,12 @@ public:
 	/// Gets the simulator's configuration.
 	SingleSimulationConfig GetConfiguration() const { return m_config; }
 
+	/// Gets the simulator's date
+	boost::gregorian::date GetDate() const { return m_calendar->GetDate(); }
+
+	/// Gets the clusters in this simulation
+	const ClusterStruct& GetClusters() const { return m_clusters; }
+
 	/// Change track_index_case setting.
 	void SetTrackIndexCase(bool track_index_case);
 
@@ -66,6 +81,12 @@ public:
 
 	/// Tests if the person is a visitor to this simulation.
 	bool IsVisitor(PersonId id) const { return m_visitors.IsVisitor(id); }
+
+	/// Gets the visitor journal
+	multiregion::VisitorJournal GetVistiorJournal() const { return m_visitors; }
+
+	/// Gets the expatriate journal
+	multiregion::ExpatriateJournal GetExpatriateJournal() const { return m_expatriates; }
 
 	/// Runs the given action on every resident who is currently present
 	/// in the simulation. More than one invocation of `action` may be
@@ -185,13 +206,10 @@ private:
 	stride::multiregion::VisitorJournal m_visitors;       ///< Visitor journal.
 	stride::multiregion::ExpatriateJournal m_expatriates; ///< Expatriate journal.
 
-	std::vector<Cluster> m_households;	  ///< Container with household Clusters.
-	std::vector<Cluster> m_school_clusters;     ///< Container with school Clusters.
-	std::vector<Cluster> m_work_clusters;       ///< Container with work Clusters.
-	std::vector<Cluster> m_primary_community;   ///< Container with primary community Clusters.
-	std::vector<Cluster> m_secondary_community; ///< Container with secondary community  Clusters.
+	ClusterStruct m_clusters; ///< Struct containing all Clusters.
 
-	std::queue<std::size_t> m_unused_households; ///< A list of unused households which can are eligible for recycling.
+	std::queue<std::size_t>
+	    m_unused_households;		  ///< A list of unused households which can are eligible for recycling.
 	std::queue<PersonId> m_unused_person_ids; ///< A list of unused person IDs which are eligible for recycling.
 
 	DiseaseProfile m_disease_profile; ///< Profile of disease.

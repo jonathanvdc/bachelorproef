@@ -21,6 +21,7 @@
 set( EXEC       gtester     )
 set( SRC
 		AliasTest.cpp
+		CheckPointTest.cpp
 		BatchRuns.cpp
 		GeoPosition.cpp
 		main.cpp

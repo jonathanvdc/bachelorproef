@@ -32,10 +32,9 @@ using namespace TCLAP;
 
 /// Main program of the stride simulator.
 int main(int argc, char** argv)
-{
+{	
 	// Set up a signal handler.
 	stride::util::setup_segfault_handler();
-
 	int exit_status = EXIT_SUCCESS;
 	try {
 		// -----------------------------------------------------------------------------------------

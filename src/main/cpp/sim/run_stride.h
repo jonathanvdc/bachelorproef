@@ -28,7 +28,9 @@
 #include "multiregion/TravelModel.h"
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
+#include "sim/Simulator.h"
 #include "util/Stopwatch.h"
+#include "core/Cluster.h"
 
 namespace stride {
 
@@ -50,10 +52,10 @@ public:
 	std::string GetRuntimeString() const { return run_clock.ToString(); }
 
 	/// Performs an action just before a simulator step is performed.
-	void BeforeSimulatorStep(const Population&);
+	void BeforeSimulatorStep(const Simulator& simulator);
 
 	/// Performs an action just after a simulator step has been performed.
-	void AfterSimulatorStep(const Population& pop);
+	void AfterSimulatorStep(const Simulator& simulator);
 
 private:
 	util::Stopwatch<> run_clock;

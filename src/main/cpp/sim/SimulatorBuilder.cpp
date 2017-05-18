@@ -186,23 +186,23 @@ void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 	unsigned int cluster_id = 1;
 
 	for (size_t i = 0; i <= max_id_households; i++) {
-		sim->m_households.emplace_back(Cluster(cluster_id, ClusterType::Household));
+		sim->m_clusters.m_households.emplace_back(Cluster(cluster_id, ClusterType::Household));
 		cluster_id++;
 	}
 	for (size_t i = 0; i <= max_id_school_clusters; i++) {
-		sim->m_school_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
+		sim->m_clusters.m_school_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
 		cluster_id++;
 	}
 	for (size_t i = 0; i <= max_id_work_clusters; i++) {
-		sim->m_work_clusters.emplace_back(Cluster(cluster_id, ClusterType::Work));
+		sim->m_clusters.m_work_clusters.emplace_back(Cluster(cluster_id, ClusterType::Work));
 		cluster_id++;
 	}
 	for (size_t i = 0; i <= max_id_primary_community; i++) {
-		sim->m_primary_community.emplace_back(Cluster(cluster_id, ClusterType::PrimaryCommunity));
+		sim->m_clusters.m_primary_community.emplace_back(Cluster(cluster_id, ClusterType::PrimaryCommunity));
 		cluster_id++;
 	}
 	for (size_t i = 0; i <= max_id_secondary_community; i++) {
-		sim->m_secondary_community.emplace_back(Cluster(cluster_id, ClusterType::SecondaryCommunity));
+		sim->m_clusters.m_secondary_community.emplace_back(Cluster(cluster_id, ClusterType::SecondaryCommunity));
 		cluster_id++;
 	}
 
