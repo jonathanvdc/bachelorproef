@@ -15,21 +15,22 @@ void VisualizerData::AddDay(const Population& pop)
 	days.push_back({});
 	for (const auto& p : pop) {
 		if (p.GetHealth().IsInfected()) {
-			days.back()[pop.Hometown(p).name]++;
+			days.back()[pop.Hometown(p).id]++;
 		}
 	}
 }
 
-const vector<map<string, unsigned int>>& VisualizerData::GetDays() const { return days; }
+const vector<map<size_t, unsigned int>>& VisualizerData::GetDays() const { return days; }
 
 const shared_ptr<ptree> VisualizerData::ToPtree() const
 {
 	auto daysTree = make_shared<ptree>();
 
+	// Create a list: [{townId: infected}]
 	for (const auto& day : days) {
 		ptree data;
 		for (const auto& p : day)
-			data.put(p.first, p.second);
+			data.put(to_string(p.first), p.second);
 		daysTree->push_back(make_pair("", data));
 	}
 

@@ -27,14 +27,15 @@ void VisualizerFile::Print(Atlas::TownMap townMap, const VisualizerData& visuali
 
 	ptree townsTree;
 
-	for (auto& p : townMap){
+	for (auto& p : townMap) {
 		// append a town node for each town in the map:
-		// name : {size, latitude, longitude}
+		// id : {name, size, latitude, longitude}
 		ptree townNode;
+		townNode.put("name", p.second.name);
 		townNode.put("size", p.second.size);
 		townNode.put("lat", p.first.latitude);
 		townNode.put("long", p.first.longitude);
-		townsTree.add_child(p.second.name, townNode);
+		townsTree.add_child(to_string(p.second.id), townNode);
 	}
 
 	std::shared_ptr<ptree> daysTree = visualizer_data.ToPtree();

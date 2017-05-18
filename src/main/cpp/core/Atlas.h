@@ -25,7 +25,10 @@ public:
 	{
 		std::string name;
 		unsigned int size;
-		Town(const std::string& name, const unsigned int size) : name(name), size(size) {}
+		static std::size_t newId;
+		std::size_t id;
+
+		Town(const std::string& name, const unsigned int size) : name(name), size(size), id(newId++) {}
 	};
 
 	using ClusterKey = std::pair<std::size_t, ClusterType>;

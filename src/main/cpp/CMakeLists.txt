@@ -22,6 +22,7 @@ set(LIB_SRC
 #---
     calendar/Calendar.cpp
 #---
+    core/Atlas.cpp
     core/Cluster.cpp
     core/ClusterType.cpp
     core/ContactProfile.cpp
