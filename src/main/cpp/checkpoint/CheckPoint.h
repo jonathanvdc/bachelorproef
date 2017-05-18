@@ -62,6 +62,9 @@ private:
 	/// Writes the current population to a checkpoint.
 	void WritePopulation(const Population&, boost::gregorian::date);
 
+	/// Writes the Atlas
+	void WriteAtlas(const Atlas&);
+
 	/// Writes the clusters to a checkpoint.
 	void WriteClusters(const ClusterStruct&, boost::gregorian::date);
 
@@ -82,6 +85,9 @@ private:
 
 	/// Loads the Visitor journal
 	multiregion::VisitorJournal LoadVisitors(boost::gregorian::date);
+
+	/// Loads the Atlas directly into the population
+	void LoadAtlas(Population&);
 
 	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset
@@ -150,6 +156,14 @@ private:
 		unsigned int RegionID;
 		unsigned int PersonIDHome;
 		unsigned int PersonIDVisitor;
+	};
+
+	struct h_clusterAtlas
+	{
+		unsigned int ClusterID;
+		unsigned int ClusterType;
+		double latitude;
+		double longitude;
 	};
 };
 

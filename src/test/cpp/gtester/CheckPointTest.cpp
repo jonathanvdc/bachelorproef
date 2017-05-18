@@ -238,6 +238,18 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 			EXPECT_EQ(popClOrig[j], popClRead[j]);
 		}
 	}
+
+	Atlas origAtlas = origPop.GetAtlas();
+	Atlas readAtlas = popRead.GetAtlas();
+
+	for(auto &key: origAtlas.map){
+		auto it = readAtlas.map.find(key.first);
+		EXPECT_NE(it,readAtlas.map.end());
+		EXPECT_EQ(key.second.latitude, it->second.latitude);
+		EXPECT_EQ(key.second.longitude, it->second.longitude);
+	}
+
+
 }
 /*
 TEST(CheckPoint, todo)

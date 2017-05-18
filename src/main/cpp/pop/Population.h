@@ -117,6 +117,8 @@ public:
 	/// Gets the number of people in this population.
 	auto size() const -> decltype(people.size()) { return people.size(); }
 
+	const Atlas& GetAtlas() const { return atlas; }
+
 	/// Creates a constant iterator positioned at the first person in this population.
 	const_iterator begin() const { return const_iterator(people.begin()); }
 

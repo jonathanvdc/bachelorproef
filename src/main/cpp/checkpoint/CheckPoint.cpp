@@ -298,6 +298,16 @@ void CheckPoint::SaveCheckPoint(const Simulator& sim, std::size_t day)
 	WriteExpatriates(exp, sim.GetDate());
 	auto vis = sim.GetVistiorJournal();
 	WriteVisitors(vis, sim.GetDate(), day);
+
+	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t group = H5Gcreate2(m_file, "Config", H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+		htri_t exist2 = H5Lexists(group, "Atlas", H5P_DEFAULT);
+		if (exist2 <= 0) {
+			WriteAtlas(sim.GetPopulation()->GetAtlas());
+		}
+		H5Gclose(group);
+	}
 }
 
 void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& filename)
@@ -399,6 +409,8 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 	LoadCluster(clusters.m_work_clusters, ClusterType::Work, groupname, result);
 	LoadCluster(clusters.m_primary_community, ClusterType::PrimaryCommunity, groupname, result);
 	LoadCluster(clusters.m_secondary_community, ClusterType::SecondaryCommunity, groupname, result);
+
+	LoadAtlas(result);
 
 	return result;
 }
@@ -789,7 +801,7 @@ multiregion::VisitorJournal CheckPoint::LoadVisitors(boost::gregorian::date date
 	hsize_t dims;
 	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
 
-	hid_t newType = H5Dget_type(dspace);
+	hid_t newType = H5Dget_type(dset);
 
 	std::vector<h_visitorType> data(dims);
 
@@ -808,6 +820,77 @@ multiregion::VisitorJournal CheckPoint::LoadVisitors(boost::gregorian::date date
 	}
 
 	return result;
+}
+
+void CheckPoint::WriteAtlas(const Atlas& atlas)
+{
+	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
+	}
+
+	std::vector<h_clusterAtlas> data;
+	for (auto& i : atlas.map) {
+		h_clusterAtlas info;
+		info.ClusterID = i.first.first;
+		info.ClusterType = (unsigned int)i.first.second;
+
+		info.latitude = i.second.latitude;
+		info.longitude = i.second.longitude;
+
+		data.push_back(info);
+	}
+
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(h_clusterAtlas));
+
+	H5Tinsert(newType, "ClusterID", HOFFSET(h_clusterAtlas, ClusterID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "ClusterType", HOFFSET(h_clusterAtlas, ClusterType), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Latitude", HOFFSET(h_clusterAtlas, latitude), H5T_NATIVE_DOUBLE);
+	H5Tinsert(newType, "Longitude", HOFFSET(h_clusterAtlas, longitude), H5T_NATIVE_DOUBLE);
+
+	hsize_t dims = data.size();
+	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
+
+	hid_t dataset = H5Dcreate2(m_file, "Config/Atlas", newType, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dwrite(dataset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Tclose(newType);
+	H5Sclose(dataspace);
+	H5Dclose(dataset);
+}
+
+void CheckPoint::LoadAtlas(Population& pop)
+{
+	std::string dsetName = "Config/Atlas";
+	htri_t exist = H5Lexists(m_file, dsetName.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		return;
+	}
+	hid_t dset = H5Dopen2(m_file, dsetName.c_str(), H5P_DEFAULT);
+
+	hid_t dspace = H5Dget_space(dset);
+
+	hsize_t dims;
+	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
+
+	hid_t newType = H5Dget_type(dset);
+
+	std::vector<h_clusterAtlas> data(dims);
+
+	H5Dread(dset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Sclose(dspace);
+	H5Dclose(dset);
+	H5Tclose(newType);
+
+	for (auto& c : data) {
+		Atlas::Key key(c.ClusterID, (ClusterType)c.ClusterType);
+		geo::GeoPosition postion;
+		postion.latitude = c.latitude;
+		postion.longitude = c.longitude;
+		pop.AtlasEmplace(key, postion);
+	}
 }
 
 } /* namespace checkpoint */
