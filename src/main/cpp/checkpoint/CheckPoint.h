@@ -41,7 +41,7 @@ public:
 	Population LoadCheckPoint(boost::gregorian::date date, ClusterStruct& clusters);
 
 	/// Saves the current simulation to a checkpoint with the date as Identifier.
-	void SaveCheckPoint(const Simulator& simulation);
+	void SaveCheckPoint(const Simulator& simulation, std::size_t day);
 
 	/// Copies the info in the filename under the data of the given simulation
 	void CombineCheckPoint(unsigned int simulation, const std::string& filename);
@@ -66,8 +66,9 @@ private:
 	void WriteClusters(const ClusterStruct&, boost::gregorian::date);
 
 	/// Writes the visitors to a checkpoint.
-	void WriteVisitors(multiregion::VisitorJournal&, boost::gregorian::date);
+	void WriteVisitors(multiregion::VisitorJournal&, boost::gregorian::date, std::size_t day);
 
+	/// Writes the expatriates to a checkpoint.
 	void WriteExpatriates(multiregion::ExpatriateJournal&, boost::gregorian::date);
 
 	/// Loads one type Cluster
@@ -75,6 +76,12 @@ private:
 
 	/// Loads one type Cluster
 	void LoadCluster(std::vector<Cluster>&, const ClusterType&, const std::string& groupname, const Population&);
+
+	/// Loads the Expatriate journal
+	multiregion::ExpatriateJournal LoadExpatriates(const Population&, boost::gregorian::date);
+
+	/// Loads the Visitor journal
+	multiregion::VisitorJournal LoadVisitors(boost::gregorian::date);
 
 	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset
@@ -135,6 +142,14 @@ private:
 	{
 		unsigned int ID;
 		unsigned int PersonID;
+	};
+
+	struct h_visitorType
+	{
+		unsigned int DaysLeft;
+		unsigned int RegionID;
+		unsigned int PersonIDHome;
+		unsigned int PersonIDVisitor;
 	};
 };
 

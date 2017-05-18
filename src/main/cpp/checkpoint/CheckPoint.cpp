@@ -289,13 +289,15 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 	}
 }
 
-void CheckPoint::SaveCheckPoint(const Simulator& sim)
+void CheckPoint::SaveCheckPoint(const Simulator& sim, std::size_t day)
 {
 	// TODO: add airport
 	WritePopulation(*sim.GetPopulation(), sim.GetDate());
 	WriteClusters(sim.GetClusters(), sim.GetDate());
 	auto exp = sim.GetExpatriateJournal();
 	WriteExpatriates(exp, sim.GetDate());
+	auto vis = sim.GetVistiorJournal();
+	WriteVisitors(vis, sim.GetDate(), day);
 }
 
 void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& filename)
@@ -686,11 +688,126 @@ void CheckPoint::WriteExpatriates(multiregion::ExpatriateJournal& journal, boost
 
 	hid_t dataset =
 	    H5Dcreate2(group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(dataset, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front());
+	H5Dwrite(dataset, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
 
 	H5Sclose(dataspace);
 	H5Dclose(dataset);
 	H5Gclose(group);
+}
+
+void CheckPoint::WriteVisitors(multiregion::VisitorJournal& journal, boost::gregorian::date date, std::size_t day)
+{
+	std::string datestr = to_iso_string(date);
+	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
+	}
+	hid_t group = H5Gopen2(m_file, datestr.c_str(), H5P_DEFAULT);
+
+	std::string dsetname = "Visitors";
+
+	std::vector<h_visitorType> data(journal.GetVisitorCount());
+
+	for (auto& days : journal.GetVisitors()) {
+		for (auto& place : days.second) {
+			for (auto p : place.second) {
+				h_visitorType i;
+				i.DaysLeft = days.first - day;
+				i.RegionID = place.first;
+				i.PersonIDHome = p.home_id;
+				i.PersonIDVisitor = p.visitor_id;
+				data.push_back(i);
+			}
+		}
+	}
+
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(h_visitorType));
+
+	H5Tinsert(newType, "DaysLeft", HOFFSET(h_visitorType, DaysLeft), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "RegionID", HOFFSET(h_visitorType, RegionID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "PersonIDHome", HOFFSET(h_visitorType, PersonIDHome), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "PersonIDVisitor", HOFFSET(h_visitorType, PersonIDVisitor), H5T_NATIVE_UINT);
+
+	hsize_t dims = data.size();
+	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
+
+	hid_t dataset = H5Dcreate2(group, dsetname.c_str(), newType, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dwrite(dataset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Tclose(newType);
+	H5Sclose(dataspace);
+	H5Dclose(dataset);
+	H5Gclose(group);
+}
+
+multiregion::ExpatriateJournal CheckPoint::LoadExpatriates(const Population& pop, boost::gregorian::date date)
+{
+	multiregion::ExpatriateJournal result;
+	std::string dsetName = to_iso_string(date) + "/Expatriates";
+	htri_t exist = H5Lexists(m_file, dsetName.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		return result;
+	}
+	hid_t dset = H5Dopen2(m_file, dsetName.c_str(), H5P_DEFAULT);
+
+	hid_t dspace = H5Dget_space(dset);
+
+	hsize_t dims;
+	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
+
+	std::vector<unsigned int> data(dims);
+
+	H5Dread(dset, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Sclose(dspace);
+	H5Dclose(dset);
+
+	for (auto& i : data) {
+		pop.serial_for([&i, &result](const Person& p, unsigned int) {
+			if (p.GetId() == i) {
+				result.AddExpatriate(p);
+			}
+		});
+	}
+
+	return result;
+}
+
+multiregion::VisitorJournal CheckPoint::LoadVisitors(boost::gregorian::date date)
+{
+	multiregion::VisitorJournal result;
+	std::string dsetName = to_iso_string(date) + "/Visitors";
+	htri_t exist = H5Lexists(m_file, dsetName.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		return result;
+	}
+	hid_t dset = H5Dopen2(m_file, dsetName.c_str(), H5P_DEFAULT);
+
+	hid_t dspace = H5Dget_space(dset);
+
+	hsize_t dims;
+	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
+
+	hid_t newType = H5Dget_type(dspace);
+
+	std::vector<h_visitorType> data(dims);
+
+	H5Dread(dset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Sclose(dspace);
+	H5Dclose(dset);
+	H5Tclose(newType);
+
+	for (auto& p : data) {
+		multiregion::VisitorId id;
+		id.home_id = p.PersonIDHome;
+		id.visitor_id = p.PersonIDVisitor;
+
+		result.AddVisitor(id, p.RegionID, p.DaysLeft);
+	}
+
+	return result;
 }
 
 } /* namespace checkpoint */

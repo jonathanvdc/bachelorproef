@@ -125,7 +125,7 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 
 	cp->CreateFile();
 	cp->OpenFile();
-	cp->SaveCheckPoint(*sim);
+	cp->SaveCheckPoint(*sim,0);
 	cp->CloseFile();
 
 	ClusterStruct clRead;
