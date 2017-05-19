@@ -31,11 +31,11 @@
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
 #include "util/Errors.h"
+#include "util/ExternalVars.h"
 #include "util/InstallDirs.h"
 #include "util/Parallel.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
-#include "util/ExternalVars.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -53,6 +53,7 @@
 #include <utility>
 
 std::atomic<bool> stride::util::INTERRUPT(false);
+std::atomic<unsigned int> stride::util::INTERVAL(1);
 
 namespace stride {
 
@@ -66,39 +67,40 @@ using namespace checkpoint;
 
 std::mutex StrideSimulatorResult::io_mutex;
 
-// temporary "global" for demo and testing purposes
-//CheckPoint* cp;
+#if USE_HDF5
+CheckPoint* cp;
+#endif
 
 /// Performs an action just before a simulator step is performed.
-void StrideSimulatorResult::BeforeSimulatorStep(
-    const Simulator& sim)
+void StrideSimulatorResult::BeforeSimulatorStep(const Simulator& sim)
 {
 	run_clock.Start();
-	// saves the start configuration
-	/*
+
+#if USE_HDF5
 	if (day == 0) {
+		// saves the start configuration
 		cp->OpenFile();
-		cp->SaveCheckPoint(sim);
+		cp->SaveCheckPoint(sim, day);
 		cp->CloseFile();
 	}
-	*/
+#endif
 
-	if (util::INTERRUPT){
+	if (util::INTERRUPT) {
 		exit(-1);
 	}
 }
 
 /// Performs an action just after a simulator step has been performed.
-void StrideSimulatorResult::AfterSimulatorStep(
-    const Simulator& sim)
-{	
-	/*
-	if (day != 0) {
+void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
+{
+#if USE_HDF5
+	// saves the last configuration or configuration after an interval.
+	if (sim.IsDone() or util::INTERRUPT or day % util::INTERVAL == 0) {
 		cp->OpenFile();
-		cp->SaveCheckPoint(sim);
+		cp->SaveCheckPoint(sim, day);
 		cp->CloseFile();
 	}
-	*/
+#endif
 	run_clock.Stop();
 	auto infected_count = sim.GetPopulation()->get_infected_count();
 	cases.push_back(infected_count);
@@ -108,7 +110,7 @@ void StrideSimulatorResult::AfterSimulatorStep(
 	cout << "Simulation " << setw(3) << id << ": simulated day: " << setw(5) << (day - 1)
 	     << "     Done, infected count: " << setw(10) << infected_count << endl;
 
-	if (util::INTERRUPT){
+	if (util::INTERRUPT) {
 		exit(-1);
 	}
 }
@@ -165,15 +167,11 @@ void run_stride(const MultiSimulationConfig& config)
 	}
 	auto output_prefix = config.log_config->output_prefix;
 
-	/*
+	#if USE_HDF5
 	cp->OpenFile();
 	cp->WriteConfig(config);
 	cp->CloseFile();
-	cp->OpenFile();
-	SingleSimulationConfig foo = cp->LoadSingleConfig();
-	std::cout<<"prefix: "<<foo.log_config->output_prefix<<std::endl;
-	cp->CloseFile();
-	*/
+	#endif
 
 	cout << "Project output tag:  " << output_prefix << endl << endl;
 
@@ -290,15 +288,15 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
 
-	/*
+	#if USE_HDF5
 	cp = new CheckPoint("foo.h5");
 
 	cp->CreateFile();
 	cp->OpenFile();
 	cp->WriteHolidays(pt_config.get_child("run").get<std::string>("holidays_file", "holidays_flanders_2016.json"));
 	cp->CloseFile();
-	*/
-
+	#endif
+	
 	// Run Stride.
 	run_stride(config);
 }

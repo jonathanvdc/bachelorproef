@@ -25,6 +25,7 @@
 #include <iostream>
 #include <tclap/CmdLine.h>
 #include "util/Signals.h"
+#include "util/ExternalVars.h"
 
 using namespace std;
 using namespace stride;
