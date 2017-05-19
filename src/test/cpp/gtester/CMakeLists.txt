@@ -21,7 +21,6 @@
 set( EXEC       gtester     )
 set( SRC
 		AliasTest.cpp
-		CheckPointTest.cpp
 		BatchRuns.cpp
 		GeoPosition.cpp
 		main.cpp
@@ -34,6 +33,12 @@ set( SRC
 		RunSimulator.cpp
 		TravelModelGraph.cpp
 )
+
+if( HDF5_FOUND AND NOT STRIDE_FORCE_NO_HDF5 )
+    set(SRC ${SRC} 
+        CheckPointTest.cpp
+    )
+endif()
 
 if( Poco_FOUND )
 	set( SRC ${SRC} HTTPProtoTest.cpp)
