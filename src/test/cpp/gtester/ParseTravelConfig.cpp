@@ -24,9 +24,9 @@ void assert_default_travel_config(
 	ASSERT_EQ(regions[0]->GetLocalAirports()[0]->routes.size(), 1u);
 	ASSERT_EQ(regions[1]->GetLocalAirports()[0]->routes.size(), 1u);
 	ASSERT_DOUBLE_EQ(regions[0]->GetLocalAirports()[0]->routes[0].passenger_fraction, 3.0);
-	ASSERT_EQ(regions[0]->GetLocalAirports()[0]->routes[0].target, regions[1]->GetLocalAirports()[0]);
+	ASSERT_EQ(regions[0]->GetLocalAirports()[0]->routes[0].target, regions[1]->GetLocalAirports()[0].get());
 	ASSERT_DOUBLE_EQ(regions[1]->GetLocalAirports()[0]->routes[0].passenger_fraction, 1.0);
-	ASSERT_EQ(regions[1]->GetLocalAirports()[0]->routes[0].target, regions[0]->GetLocalAirports()[0]);
+	ASSERT_EQ(regions[1]->GetLocalAirports()[0]->routes[0].target, regions[0]->GetLocalAirports()[0].get());
 }
 
 TEST(ParseTravelModel, ParseDefaultTravelModel)
