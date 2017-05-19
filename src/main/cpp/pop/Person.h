@@ -28,6 +28,12 @@
 #include <iostream>
 #include <memory>
 
+#include "behaviour/behaviour_policies/AlwaysFollowBeliefs.h"
+#include "behaviour/behaviour_policies/NoBehaviour.h"
+
+#include "behaviour/belief_policies/NoBelief.h"
+#include "behaviour/belief_policies/Threshold.h"
+
 namespace stride {
 
 using PersonId = unsigned int;
@@ -38,18 +44,21 @@ enum class ClusterType;
 /**
  * Store and handle person data.
  */
-class PersonData
+template <class BehaviourPolicy, class BeliefPolicy>
+class GenericPersonData
 {
 public:
 	/// Creates a person from the given data.
-	PersonData(
+	GenericPersonData(
 	    double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
-	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
+	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate,
+	    double risk_averseness = 0)
 	    : m_age(age), m_gender('M'), m_household_id(household_id), m_school_id(school_id), m_work_id(work_id),
 	      m_primary_community_id(primary_community_id), m_secondary_community_id(secondary_community_id),
 	      m_at_household(true), m_at_school(true), m_at_work(true), m_at_primary_community(true),
 	      m_at_secondary_community(true), m_health(fate), m_is_participant(false)
 	{
+		BeliefPolicy::Initialize(m_belief_data, risk_averseness);
 	}
 
 	/// Get the age.
@@ -70,6 +79,9 @@ public:
 	/// Return person's health status.
 	const Health& GetHealth() const { return m_health; }
 
+	/// Return person's belief status.
+	const typename BeliefPolicy::Data& GetBeliefData() const { return m_belief_data; }
+
 	/// Check if a person is present today in a given cluster
 	bool IsInCluster(ClusterType c) const;
 
@@ -80,7 +92,10 @@ public:
 	void ParticipateInSurvey() { m_is_participant = true; }
 
 	/// Update the health status and presence in clusters.
-	void Update(bool is_work_off, bool is_school_off);
+	void Update(bool is_work_off, bool is_school_off, double fraction_infected);
+
+	/// Update belief & behaviour upon meeting another Person
+	void Update(std::shared_ptr<const GenericPersonData> p);
 
 private:
 	double m_age;
@@ -103,33 +118,46 @@ private:
 	/// Health info for this person.
 	Health m_health;
 
+	/// Info about this Person's health beliefs.
+	typename BeliefPolicy::Data m_belief_data;
+
 	/// Is this person participating in the social contact study?
 	bool m_is_participant;
 };
 
+extern template class GenericPersonData<NoBehaviour, NoBelief>;
+extern template class GenericPersonData<AlwaysFollowBeliefs, Threshold<true, false>>;
+extern template class GenericPersonData<AlwaysFollowBeliefs, Threshold<false, true>>;
+extern template class GenericPersonData<AlwaysFollowBeliefs, Threshold<true, true>>;
+
 /**
  * Describes a person: personal data tagged by an id.
  */
-class Person
+template <class BehaviourPolicy, class BeliefPolicy>
+class GenericPerson
 {
 public:
+	using PersonData = GenericPersonData<BehaviourPolicy, BeliefPolicy>;
 	/// Creates a person from the given information.
-	Person(
+	GenericPerson(
 	    PersonId id, double age, unsigned int household_id, unsigned int school_id, unsigned int work_id,
-	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate)
-	    : m_id(id), m_data(std::make_shared<PersonData>(
-			    age, household_id, school_id, work_id, primary_community_id, secondary_community_id, fate))
+	    unsigned int primary_community_id, unsigned int secondary_community_id, disease::Fate fate,
+	    double risk_averseness = 0)
+	    : m_id(id), m_data(
+			    std::make_shared<PersonData>(
+				age, household_id, school_id, work_id, primary_community_id, secondary_community_id,
+				fate, risk_averseness))
 	{
 	}
 
 	/// Creates a person from the given id and data.
-	Person(PersonId id, const std::shared_ptr<PersonData>& data) : m_id(id), m_data(data) {}
+	GenericPerson(PersonId id, const std::shared_ptr<PersonData>& data) : m_id(id), m_data(data) {}
 
 	/// Checks if this person is equal to the given person.
-	bool operator==(const Person& p) const { return m_id == p.m_id; }
+	bool operator==(const GenericPerson& p) const { return m_id == p.m_id; }
 
 	/// Checks if this person is not equal to the given person.
-	bool operator!=(const Person& p) const { return !(*this == p); }
+	bool operator!=(const GenericPerson& p) const { return !(*this == p); }
 
 	/// Get the age.
 	double GetAge() const { return m_data->GetAge(); }
@@ -143,14 +171,17 @@ public:
 	/// Return person's health status.
 	Health& GetHealth() const { return m_data->GetHealth(); }
 
+	/// Return person's belief status.
+	const typename BeliefPolicy::Data& GetBeliefData() const { return m_data->GetBeliefData(); }
+
 	/// Get the id.
 	PersonId GetId() const { return m_id; }
 
 	/// Creates a deep copy of this person, including its data.
-	Person Clone() const { return Person(m_id, std::make_shared<PersonData>(*m_data)); }
+	GenericPerson Clone() const { return GenericPerson(m_id, std::make_shared<PersonData>(*m_data)); }
 
 	/// Creates a deep copy of this person and gives it the given id.
-	Person WithId(PersonId new_id) const;
+	GenericPerson WithId(PersonId new_id) const;
 
 	/// Check if a person is present today in a given cluster
 	bool IsInCluster(ClusterType c) const { return m_data->IsInCluster(c); }
@@ -162,7 +193,13 @@ public:
 	void ParticipateInSurvey() const { m_data->ParticipateInSurvey(); }
 
 	/// Update the health status and presence in clusters.
-	void Update(bool is_work_off, bool is_school_off) const { m_data->Update(is_work_off, is_school_off); }
+	void Update(bool is_work_off, bool is_school_off, double fraction_infected) const
+	{
+		m_data->Update(is_work_off, is_school_off, fraction_infected);
+	}
+
+	/// Update belief & behaviour upon meeting another Person
+	void Update(std::shared_ptr<const PersonData> p) const { m_data->Update(p); }
 
 	/// Gets the data that backs this person.
 	std::shared_ptr<PersonData> GetData() const { return m_data; }
@@ -171,6 +208,15 @@ private:
 	PersonId m_id;
 	std::shared_ptr<PersonData> m_data;
 };
+
+extern template class GenericPerson<NoBehaviour, NoBelief>;
+extern template class GenericPerson<AlwaysFollowBeliefs, Threshold<true, false>>;
+extern template class GenericPerson<AlwaysFollowBeliefs, Threshold<false, true>>;
+extern template class GenericPerson<AlwaysFollowBeliefs, Threshold<true, true>>;
+
+// TODO: Where does this belong; here or Simulator?
+using PersonData = GenericPersonData<NoBehaviour, NoBelief>;
+using Person = GenericPerson<NoBehaviour, NoBelief>;
 
 } // end_of_namespace
 
