@@ -35,6 +35,7 @@
 #include "util/Parallel.h"
 #include "util/Stopwatch.h"
 #include "util/TimeStamp.h"
+#include "util/ExternalVars.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -50,6 +51,8 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+
+std::atomic<bool> stride::util::INTERRUPT(false);
 
 namespace stride {
 
@@ -79,6 +82,10 @@ void StrideSimulatorResult::BeforeSimulatorStep(
 		cp->CloseFile();
 	}
 	*/
+
+	if (util::INTERRUPT){
+		exit(-1);
+	}
 }
 
 /// Performs an action just after a simulator step has been performed.
@@ -100,6 +107,10 @@ void StrideSimulatorResult::AfterSimulatorStep(
 	lock_guard<mutex> lock(io_mutex);
 	cout << "Simulation " << setw(3) << id << ": simulated day: " << setw(5) << (day - 1)
 	     << "     Done, infected count: " << setw(10) << infected_count << endl;
+
+	if (util::INTERRUPT){
+		exit(-1);
+	}
 }
 
 /// Prints and returns the number of threads.

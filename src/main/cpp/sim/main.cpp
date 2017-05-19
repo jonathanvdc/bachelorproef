@@ -35,6 +35,7 @@ int main(int argc, char** argv)
 {	
 	// Set up a signal handler.
 	stride::util::setup_segfault_handler();
+	stride::util::setup_interrupt_handler();
 	int exit_status = EXIT_SUCCESS;
 	try {
 		// -----------------------------------------------------------------------------------------

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "util/ExternalVars.h"
 namespace {
 void handle_segfault(int sig)
 {
@@ -37,11 +38,14 @@ void handle_segfault(int sig)
 	backtrace_symbols_fd(array, size, STDERR_FILENO);
 	exit(1);
 }
+
+void handle_interrupt(int sig) { stride::util::INTERRUPT.store(true); }
 }
 
 namespace stride {
 namespace util {
 void setup_segfault_handler() { signal(SIGSEGV, handle_segfault); }
+void setup_interrupt_handler() { signal(SIGINT, handle_interrupt); }
 }
 }
 
@@ -50,6 +54,7 @@ void setup_segfault_handler() { signal(SIGSEGV, handle_segfault); }
 namespace stride {
 namespace util {
 void setup_segfault_handler() {}
+void setup_interrupt_handler() {}
 }
 }
 
