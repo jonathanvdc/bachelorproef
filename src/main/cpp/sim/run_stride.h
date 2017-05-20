@@ -25,13 +25,13 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include "core/Cluster.h"
 #include "multiregion/TravelModel.h"
 #include "output/VisualizerData.h"
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
 #include "sim/Simulator.h"
 #include "util/Stopwatch.h"
-#include "core/Cluster.h"
 
 namespace stride {
 

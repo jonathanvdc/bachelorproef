@@ -21,7 +21,6 @@ namespace stride {
 class Atlas
 {
 public:
-
 	/// A struct storing information on a town/city
 	struct Town
 	{
@@ -33,8 +32,8 @@ public:
 		std::size_t id;
 
 		Town(const std::string& name, const unsigned int size) : name(name), size(size), id(newId++) {}
-		
-		private:
+
+	private:
 		// Static member used to produce unique IDs
 		static std::size_t newId;
 	};

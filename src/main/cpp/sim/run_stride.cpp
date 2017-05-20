@@ -65,11 +65,10 @@ using namespace checkpoint;
 std::mutex StrideSimulatorResult::io_mutex;
 
 // temporary "global" for demo and testing purposes
-//CheckPoint* cp;
+// CheckPoint* cp;
 
 /// Performs an action just before a simulator step is performed.
-void StrideSimulatorResult::BeforeSimulatorStep(
-    const Simulator& sim)
+void StrideSimulatorResult::BeforeSimulatorStep(const Simulator& sim)
 {
 	run_clock.Start();
 	// saves the start configuration
@@ -83,9 +82,8 @@ void StrideSimulatorResult::BeforeSimulatorStep(
 }
 
 /// Performs an action just after a simulator step has been performed.
-void StrideSimulatorResult::AfterSimulatorStep(
-    const Simulator& sim)
-{	
+void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
+{
 	/*
 	if (day != 0) {
 		cp->OpenFile();
