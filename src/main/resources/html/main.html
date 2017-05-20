@@ -9,7 +9,10 @@
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="jquery.svg/jquery.svg.css"> 
+
+    <!-- jQuery SVG -->
     <script type="text/javascript" src="jquery.svg/jquery.svg.min.js"></script>
+    <script type="text/javascript" src="jquery.svg/jquery.svggraph.min.js"></script>
 
     <!-- jQuery UI -->
     <script src="jquery-ui/jquery-ui.min.js"></script>
@@ -27,7 +30,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body style="overflow: hidden">
     <div class="control panel">
         <div class="panel-head">Control panel</div>
 
@@ -74,6 +77,14 @@
             <div> Day: <span class="info current-day">-</span> / <span class="info days">-</span> </div>
             <div> Infected: <span class="info total-infected">-</span> / <span class="info total-people">-</span> = <span class="info percentage-infected">-</span> </div>
             <div> Most infected: <span class="info most-current-infected">-</span> in <span class="info most-current-infected-town clickable">-</span></div>
+        </div>
+    </div>
+
+    <div class="graph panel">
+        <div class="panel-head">Graph</div>
+
+        <div class="panel-body graph-view">
+            <!-- Graph goes here! -->
         </div>
     </div>
 

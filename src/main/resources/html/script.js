@@ -58,7 +58,6 @@ function cleanData(data){
         town.long = parseFloat(town.long);
         townArray.push(town);
     }
-    console.log(townArray.length);
     data.towns = townArray;
 
     for(var i in data.days){
@@ -77,8 +76,10 @@ function cleanData(data){
 var Visualizer = function(inputSelector, controlSelector, viewSelector){
     // Place our hook into the file selector
     $(inputSelector).on('change', f => readSingleFile(f, this.handleFile.bind(this)));
+
     // Place our hooks into the controls
     this.initializeControls(controlSelector);
+
     // Remember our view
     this.$view = $(viewSelector);
 }
@@ -254,6 +255,7 @@ Visualizer.prototype.addAlignmentTestNodes = function(){
 Visualizer.prototype.makeView = function(){
     this.makeTable();
     this.makeMap();
+    this.makeGraph();
 }
 
 /// Prepare the HTML document with a basic table.
@@ -284,6 +286,35 @@ Visualizer.prototype.makeTable = function(){
         $row.append($('<td>', {class:'percent'}));
         $table.append($row);
     }
+}
+
+/// Add a graph view to the page, doesn't need to be updated! 
+Visualizer.prototype.makeGraph = function(){
+    $target = $(".graph-view");
+    $target.svg("destroy");
+    $target.svg({settings: {width: "300px", height:"180px"}});
+    var $svg = $target.svg("get");
+
+    var percentList = [];
+    for(var i in this.days)
+        percentList.push(this.days[i].total * 100 / this.totalSize);
+
+    console.log(percentList.length);
+
+    var percentLabels = [];
+    for(var i=0;i<=100;i+=10) percentLabels.push(i + "%");
+
+    $svg.graph.noDraw();
+
+    $svg.graph.addSeries("Infected", percentList, "#186", "#2b8", 1);
+    $svg.graph.options({barGap:0});
+    $svg.graph.legend.show(false);
+    $svg.graph.area(0.13, 0.1, 0.98, 0.85);
+    $svg.graph.gridlines({stroke: '#aaf', strokeDashArray: '2,4'});
+    $svg.graph.yAxis.ticks(10, 5, 8).labels(percentLabels).scale(0, Math.min(100, this.maxTotal / this.totalSize * 120));
+    $svg.graph.xAxis.ticks(50, 30, 1).labels("", "transparent");
+
+    $svg.graph.redraw();
 }
 
 /// Choose how the circles are coloured.
@@ -333,14 +364,16 @@ Visualizer.prototype.updateLegend = function(){
     }
 }
 
-var panelX = 30;
-var panelY = 450;
+var basePanelX = 30;
+var panelX = basePanelX + 30;
+var basePanelY = 450;
+var panelY = basePanelY + 30;
 
 Visualizer.prototype.makeTownPanel = function(town){
     var x = panelX;
     var y = panelY;
-    panelX = (panelX - 30 + 30) % 330 + 30;
-    panelY = (panelY - 450 + 30) % 240 + 450;
+    panelX = (panelX - basePanelX + 30) % 330 + basePanelX;
+    panelY = (panelY - basePanelY + 30) % 240 + basePanelY;
 
     var text = 
     `<div> Infected: <span class=\"info infected\">-</span> / \
@@ -476,7 +509,7 @@ Visualizer.prototype.updateTable = function(){
 
         // Write the percentage infected if any
         var percent = count/this.towns[town].size;
-        $col.find(".percent").text(percent? percentFormat(percent) : '');
+        $col.find(".percent").text(percentFormat(percent));
     }
 }
 

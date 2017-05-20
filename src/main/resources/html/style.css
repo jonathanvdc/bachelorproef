@@ -18,11 +18,6 @@ body{
     position: absolute;
 }
 
-    .panel.generic{
-        position: absolute;
-        z-index: 11;
-    }
-
     .panel > .panel-head{
         font-size: 1.4em;
         background-color: #ccd;
@@ -39,6 +34,23 @@ body{
         padding-left: 15px;
 
         cursor: all-scroll;
+    }
+    
+    .panel > .panel-body{
+        padding: 0px;
+    }
+
+        .panel.collapsed > .panel-body{
+            visibility: hidden;
+            height: 0;
+            margin-bottom: -10px;
+            margin-top: -10px;
+        }
+
+
+    .generic.panel{
+        position: absolute;
+        z-index: 11;
     }
 
     .control.panel{
@@ -62,22 +74,19 @@ body{
         width: 250px;
     }
 
+    .graph.panel{
+        z-index: 6;
+        top: 450px;
+        left: 30px;
+        min-width: 150px;
+    }
+
     .legend.panel{
         z-index: 7;
         top: 20px;
         right: 240px;
         width: 120px;
     }
-
-    .panel > .panel-body{
-        padding: 0px;
-    }
-
-        .panel.collapsed > .panel-body{
-            visibility: hidden;
-            height: 0;
-            margin: -10;
-        }
 
 .unselectable{
     user-select: none;
@@ -118,7 +127,6 @@ span.info{
     font-weight: bold;
     color: #186;
     text-shadow: 0px 1px 0px #2b8;
-
 }
 
 span.legend-circle{
@@ -180,7 +188,6 @@ input.range-input{
     position: relative;
     margin: 10px;
 }
-
     .map-view svg{
         position: absolute;
         top: 0;
@@ -193,7 +200,6 @@ input.range-input{
     position: relative;
     overflow: hidden;
 }
-
     .map-image-crop > img{
         /* cancel out the 2px border */
         margin:-2px;
@@ -203,7 +209,6 @@ circle{
     stroke: #444;
     stroke-width: 1px;
 }
-
     circle:hover{
         stroke: #222;
         stroke-width: 2px;
