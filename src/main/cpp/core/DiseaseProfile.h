@@ -20,25 +20,25 @@
  * Disease profile.
  */
 
-#include "sim/SimulationConfig.h"
 #include <boost/property_tree/ptree.hpp>
+#include "sim/SimulationConfig.h"
 
 namespace stride {
 
 class DiseaseProfile
 {
 public:
-        /// Initialize.
-        DiseaseProfile() : m_transmission_rate(0.0) {}
+	/// Initialize.
+	DiseaseProfile() : m_transmission_rate(0.0) {}
 
-        /// Return transmission rate.
-        double GetTransmissionRate() { return m_transmission_rate;}
+	/// Return transmission rate.
+	double GetTransmissionRate() { return m_transmission_rate; }
 
-        /// Initialize.
-        void Initialize(const SingleSimulationConfig& config, const boost::property_tree::ptree& pt_disease);
+	/// Initialize.
+	void Initialize(const SingleSimulationConfig& config, const boost::property_tree::ptree& pt_disease);
 
 private:
-        double m_transmission_rate;
+	double m_transmission_rate;
 };
 
 } // namespace

@@ -28,14 +28,19 @@ namespace stride {
 /// Enumerates the cluster types.
 enum class ClusterType
 {
-	Household, School, Work, PrimaryCommunity, SecondaryCommunity, Null
+	Household,
+	School,
+	Work,
+	PrimaryCommunity,
+	SecondaryCommunity,
+	Null
 };
 
 /// Number of Cluster types (not including Null type).
-inline constexpr unsigned int  NumOfClusterTypes() { return 5U; }
+inline constexpr unsigned int NumOfClusterTypes() { return 5U; }
 
 /// Cast for array access.
-inline std::size_t  ToSizeType(ClusterType c) { return static_cast<std::size_t>(c); }
+inline std::size_t ToSizeType(ClusterType c) { return static_cast<std::size_t>(c); }
 
 /// Converts a ClusterType value to corresponding name.
 std::string ToString(ClusterType w);

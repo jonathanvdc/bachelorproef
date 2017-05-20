@@ -20,8 +20,8 @@
  * Header for the ContactHandler class.
  */
 
-#include "util/Random.h"
 #include "math.h"
+#include "util/Random.h"
 
 namespace stride {
 
@@ -32,29 +32,22 @@ class RngHandler
 {
 public:
 	/// Constructor sets the transmission rate and random number generator.
-	RngHandler(unsigned int seed, unsigned int stream_count, unsigned int id)
-			: m_rng(seed)
+	RngHandler(unsigned int seed, unsigned int stream_count, unsigned int id) : m_rng(seed)
 	{
 		m_rng.Split(stream_count, id);
 	}
 
 	/// Convert rate into probability
-	double RateToProbability(double rate)
-	{
-		return 1 - exp(-rate);
-	}
+	double RateToProbability(double rate) { return 1 - exp(-rate); }
 
 	/// Check if two individuals have transmission.
-    bool HasContactAndTransmission(double contact_rate, double transmission_rate)
+	bool HasContactAndTransmission(double contact_rate, double transmission_rate)
 	{
-			return m_rng.NextDouble() < RateToProbability(transmission_rate * contact_rate);
+		return m_rng.NextDouble() < RateToProbability(transmission_rate * contact_rate);
 	}
 
 	/// Check if two individuals have contact.
-	bool HasContact(double contact_rate)
-	{
-			return m_rng.NextDouble() < RateToProbability(contact_rate);
-	}
+	bool HasContact(double contact_rate) { return m_rng.NextDouble() < RateToProbability(contact_rate); }
 
 	///
 	bool HasTransmission(double transmission_rate)
@@ -63,7 +56,7 @@ public:
 	}
 
 private:
-	util::Random              m_rng;                        ///< Random number engine.
+	util::Random m_rng; ///< Random number engine.
 };
 
 } // end_of_namespace

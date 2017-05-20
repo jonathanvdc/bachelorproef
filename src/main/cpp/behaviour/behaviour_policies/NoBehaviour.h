@@ -21,13 +21,11 @@
 
 namespace stride {
 
-class NoBehaviour {
+class NoBehaviour
+{
 
 public:
-	static bool PracticesBehaviour(bool believes_in) {
-		return false;
-	}
-
+	static bool PracticesBehaviour(bool believes_in) { return false; }
 };
 
 } /* namespace stride */

@@ -188,7 +188,8 @@ private:
 	void RecycleHousehold(std::size_t household_id);
 
 	/// Update the contacts in the given clusters.
-	template <LogMode log_level, bool track_index_case = false, typename local_information_policy = NoLocalInformation>
+	template <LogMode log_level, bool track_index_case = false,
+		  typename local_information_policy = NoLocalInformation>
 	void UpdateClusters();
 
 private:

@@ -89,7 +89,7 @@ private:
 	Alias inner_alias;
 	std::vector<T> value_map;
 };
-}
-}
+} // end-of-namespace
+} // end-of-namespace
 
 #endif

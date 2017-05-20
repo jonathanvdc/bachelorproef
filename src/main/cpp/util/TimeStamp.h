@@ -21,11 +21,11 @@
  */
 
 #include <algorithm>
+#include <chrono>
+#include <ctime>
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <ctime>
-#include <chrono>
 
 namespace stride {
 namespace util {
@@ -45,10 +45,9 @@ public:
 	{
 		std::time_t t = std::chrono::system_clock::to_time_t(m_tp);
 		std::string str = std::ctime(&t);
-		//str[str.length() - 1] = ' ';
+		// str[str.length() - 1] = ' ';
 		return str.substr(0, str.length() - 1);
 	}
-
 
 	/// Returns string with the time stamp after eliminating newline.
 	std::string ToTag() const
@@ -70,10 +69,7 @@ public:
 	}
 
 	/// Returns time stamp as a time_t.
-	std::time_t ToTimeT() const
-	{
-		return std::chrono::system_clock::to_time_t(m_tp);
-	}
+	std::time_t ToTimeT() const { return std::chrono::system_clock::to_time_t(m_tp); }
 
 private:
 	std::chrono::system_clock::time_point m_tp;
@@ -82,12 +78,9 @@ private:
 /**
  * TimeStamp helper inserts string representation in output stream.
  */
-inline std::ostream&
-operator<<(std::ostream& os, TimeStamp t) {
-	return (os << t.ToString());
-}
+inline std::ostream& operator<<(std::ostream& os, TimeStamp t) { return (os << t.ToString()); }
 
 } // end namespace
 } // end namespace
 
-#endif  // include guard
+#endif // include guard

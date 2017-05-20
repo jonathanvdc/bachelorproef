@@ -23,10 +23,11 @@
 
 namespace stride {
 
-template<typename BehaviourPolicy, typename BeliefPolicy>
+template <typename BehaviourPolicy, typename BeliefPolicy>
 class GenericPersonData;
 
-class NoBelief {
+class NoBelief
+{
 public:
 	using Data = Nothing;
 
@@ -34,10 +35,12 @@ public:
 
 	static void Update(Data& belief_data, Health& health_data) {}
 
-	template<typename BehaviourPolicy>
-	static void Update(Data& belief_data, std::shared_ptr<const GenericPersonData<BehaviourPolicy, NoBelief>> p) {}
+	template <typename BehaviourPolicy>
+	static void Update(Data& belief_data, std::shared_ptr<const GenericPersonData<BehaviourPolicy, NoBelief>> p)
+	{
+	}
 
-	static bool HasAdopted(const Data& belief_data)  { return false; }
+	static bool HasAdopted(const Data& belief_data) { return false; }
 };
 
 } /* namespace stride */

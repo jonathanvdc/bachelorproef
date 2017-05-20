@@ -43,7 +43,8 @@ class StrideSimulatorResult final
 public:
 	StrideSimulatorResult(multiregion::RegionId id, bool generate_vis)
 	    : id(id), generate_vis_data(generate_vis), run_clock("run_clock", false), day()
-	{}
+	{
+	}
 
 	const multiregion::RegionId id;
 	std::vector<unsigned int> cases;

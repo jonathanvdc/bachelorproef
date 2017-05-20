@@ -10,8 +10,8 @@
 
 namespace stride {
 
-class NoGlobalInformation{
-
+class NoGlobalInformation
+{
 };
 
 } /* namespace stride */

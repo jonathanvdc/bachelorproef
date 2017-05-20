@@ -44,8 +44,9 @@ private:
 class Disease
 {
 public:
-	Disease(Distribution start_infectiousness, Distribution start_symptomatic, Distribution time_infectious,
-			Distribution time_symptomatic)
+	Disease(
+	    Distribution start_infectiousness, Distribution start_symptomatic, Distribution time_infectious,
+	    Distribution time_symptomatic)
 	    : start_infectiousness(start_infectiousness), start_symptomatic(start_symptomatic),
 	      time_infectious(time_infectious), time_symptomatic(time_symptomatic)
 	{

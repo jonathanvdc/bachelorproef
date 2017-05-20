@@ -43,7 +43,7 @@ void Calendar::Initialize(const boost::gregorian::date& start_date, const string
 {
 	// Load the json file
 	boost::property_tree::ptree pt_holidays;
-	const auto file_path { InstallDirs::GetDataDir() /= holidays_file };
+	const auto file_path{InstallDirs::GetDataDir() /= holidays_file};
 	if (!is_regular_file(file_path)) {
 		FATAL_ERROR("Holidays file " + file_path.string() + " not present.");
 	}
@@ -58,21 +58,21 @@ void Calendar::Initialize(const boost::gregorian::date& start_date, const boost:
 
 	// Read in holidays.
 	for (int i = 1; i < 13; i++) {
-		const string month { to_string(i) };
-		const string year { holidays_ptree.get<string>("year", "2016") };
+		const string month{to_string(i)};
+		const string year{holidays_ptree.get<string>("year", "2016")};
 
 		// Read in general holidays.
-		const string general_key { "general." + month };
+		const string general_key{"general." + month};
 		for (auto& date : holidays_ptree.get_child(general_key)) {
-			const string date_string { year + "-" + month + "-" + date.second.get_value<string>() };
+			const string date_string{year + "-" + month + "-" + date.second.get_value<string>()};
 			const auto new_holiday = boost::gregorian::from_simple_string(date_string);
 			m_holidays.push_back(new_holiday);
 		}
 
 		// Read in school holidays.
-		const string school_key { "school." + month };
+		const string school_key{"school." + month};
 		for (auto& date : holidays_ptree.get_child(school_key)) {
-			const string date_string { year + "-" + month + "-" + date.second.get_value<string>() };
+			const string date_string{year + "-" + month + "-" + date.second.get_value<string>()};
 			const auto new_holiday = boost::gregorian::from_simple_string(date_string);
 			m_school_holidays.push_back(new_holiday);
 		}

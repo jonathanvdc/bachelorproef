@@ -23,9 +23,9 @@
 #include "pop/Population.h"
 #include "sim/SimulationConfig.h"
 
-#include <boost/property_tree/ptree.hpp>
 #include <fstream>
 #include <string>
+#include <boost/property_tree/ptree.hpp>
 
 namespace stride {
 namespace output {
@@ -43,15 +43,16 @@ public:
 	~SummaryFile();
 
 	/// Print the given output with corresponding tag.
-	void Print(const SingleSimulationConfig& config, unsigned int population_size,
-	        unsigned int num_cases, unsigned int run_time, unsigned int total_time);
+	void Print(
+	    const SingleSimulationConfig& config, unsigned int population_size, unsigned int num_cases,
+	    unsigned int run_time, unsigned int total_time);
 
 private:
 	/// Generate file name and open the file stream.
 	void Initialize(const std::string& file);
 
 private:
-	std::ofstream 	m_fstream;     ///< The file stream.
+	std::ofstream m_fstream; ///< The file stream.
 };
 
 } // end_of_namespace

@@ -136,8 +136,8 @@ public:
 
 	/// Get the cumulative number of cases.
 	unsigned int get_infected_count() const;
-  
-  	/// Get the fraction of the population that is infected.
+
+	/// Get the fraction of the population that is infected.
 	double get_fraction_infected() const { return double(get_infected_count()) / size(); }
 
 	template <typename BeliefPolicy>
@@ -153,7 +153,7 @@ public:
 		}
 		return total;
 	}
-  
+
 	/// Get the atlas.
 	const Atlas& getAtlas() const { return atlas; }
 
@@ -173,7 +173,7 @@ public:
 	}
 
 	bool has_atlas;
-  
+
 	/// Runs the `action` on every element of this vector. Up to `number_of_threads` instances of
 	/// the `action` are run at the same time. `action` must be invocable with signature
 	/// `void(const Person& person, unsigned int thread_number)`.

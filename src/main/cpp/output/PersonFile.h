@@ -50,7 +50,7 @@ private:
 	void Initialize(const std::string& file);
 
 private:
-	std::ofstream 	m_fstream;  ///< The file stream.
+	std::ofstream m_fstream; ///< The file stream.
 };
 
 } // end_of_namespace

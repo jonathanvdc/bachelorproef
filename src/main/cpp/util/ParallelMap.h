@@ -78,12 +78,11 @@ private:
 	/// An iterator wrapper that acquires read locks to maintain the illusion
 	/// that parallel_for does not mutate any data.
 	template <typename TIterator>
-	class IteratorWrapper final : public std::iterator<
-					  typename std::iterator_traits<TIterator>::iterator_category,
-					  typename std::iterator_traits<TIterator>::value_type,
-					  typename std::iterator_traits<TIterator>::difference_type,
-					  typename std::iterator_traits<TIterator>::pointer,
-					  typename std::iterator_traits<TIterator>::reference>
+	class IteratorWrapper final : public std::iterator<typename std::iterator_traits<TIterator>::iterator_category,
+							   typename std::iterator_traits<TIterator>::value_type,
+							   typename std::iterator_traits<TIterator>::difference_type,
+							   typename std::iterator_traits<TIterator>::pointer,
+							   typename std::iterator_traits<TIterator>::reference>
 	{
 	private:
 		using inner_iterator_type = TIterator;
