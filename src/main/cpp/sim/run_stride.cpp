@@ -72,8 +72,7 @@ void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 	auto infected_count = pop.get_infected_count();
 	cases.push_back(infected_count);
 
-	// TODO: command line flag to suppress visualizer data aggregation
-	if(pop.has_atlas)
+	if(generate_vis_data && pop.has_atlas)
 		visualizer_data.AddDay(pop);
 	
 	day++;
@@ -160,7 +159,6 @@ void run_stride(const MultiSimulationConfig& config)
 		std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>> sim_task;
 	};
 	std::vector<SimulationTuple> tasks;
-	std::vector<std::shared_ptr<multiregion::SimulationTask<StrideSimulatorResult>>> myTasks;
 	for (const auto& single_config : config.GetSingleConfigs()) {
 		multiregion::RegionId region_id = single_config.GetId();
 		cout << "Building simulator #" << region_id << endl;
@@ -179,7 +177,10 @@ void run_stride(const MultiSimulationConfig& config)
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
 		auto task = sim_manager.CreateSimulation(single_config, file_logger, region_id);
-		myTasks.push_back(task);
+
+		// Tell the result not to generate any visualization data unless needed.
+		// task->GetResult().generate_vis_data = single_config.common_config->generate_vis_file;
+
 		tasks.push_back({log_name, sim_output_prefix, single_config, task});
 	}
 	cout << "Done building simulators. " << endl << endl;
@@ -214,10 +215,10 @@ void run_stride(const MultiSimulationConfig& config)
 			person_file.Print(pop);
 		}
 		
-		// TODO: commind line flag to suppress visualizer
-		if(pop->has_atlas){
+		// Visualization
+		if(pop->has_atlas && sim_tuple.sim_config.common_config->generate_vis_file){
 			VisualizerFile vis_file(sim_tuple.sim_output_prefix);
-			vis_file.Print(pop->getAtlas().getTownMap(), sim_result.GetVisualizerData());
+			vis_file.Print(pop->getAtlas().getTownMap(), sim_result.visualizer_data);
 		}
 		
 		cout << endl << endl;
@@ -238,7 +239,7 @@ void run_stride(const MultiSimulationConfig& config)
 void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMultiConfig()); }
 
 /// Run the stride simulator.
-void run_stride(bool track_index_case, const string& config_file_name)
+void run_stride(bool track_index_case, const string& config_file_name, bool gen_vis)
 {
 	// Parse the configuration.
 	ptree pt_config;
@@ -253,6 +254,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	MultiSimulationConfig config;
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
+	config.common_config->generate_vis_file = gen_vis;
 
 	// Run Stride.
 	run_stride(config);

@@ -39,10 +39,14 @@ namespace stride {
 class StrideSimulatorResult final
 {
 public:
-	StrideSimulatorResult(multiregion::RegionId id) : id(id), run_clock("run_clock", false), day() {}
+	StrideSimulatorResult(multiregion::RegionId id, bool generate_vis)
+	    : id(id), generate_vis_data(generate_vis), run_clock("run_clock", false), day()
+	{}
 
 	const multiregion::RegionId id;
 	std::vector<unsigned int> cases;
+	VisualizerData visualizer_data;
+	bool generate_vis_data;
 
 	/// Gets the total run-time for this simulator result.
 	util::Stopwatch<>::TDuration GetRuntime() const { return run_clock.Get(); }
@@ -56,14 +60,9 @@ public:
 	/// Performs an action just after a simulator step has been performed.
 	void AfterSimulatorStep(const Population& pop);
 
-	const VisualizerData& GetVisualizerData() const{
-		return visualizer_data;
-	}
-
 private:
 	util::Stopwatch<> run_clock;
 	int day;
-	VisualizerData visualizer_data;
 	static std::mutex io_mutex;
 };
 
@@ -83,7 +82,7 @@ void run_stride(const MultiSimulationConfig& config);
 void run_stride(const SingleSimulationConfig& config);
 
 /// Runs the simulator with the given configuration file.
-void run_stride(bool track_index_case, const std::string& config_file_name);
+void run_stride(bool track_index_case, const std::string& config_file_name, bool gen_vis = false);
 
 } // end_of_namespace
 
