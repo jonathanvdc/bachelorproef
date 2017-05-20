@@ -1,5 +1,19 @@
 %%!TEX root = ./UserManual.tex
   
-\chapter{Parallelization libraries}
+\chapter{Parallelization}
 
-To speed up simulations, Stride tries to distribute certain workloads across multiple cores. 
+To speed up simulations, Stride tries to distribute certain workloads across multiple processors or processor cores. These workloads include transmitting diseases and updating people's presence in clusters and are typically ``embarrassingly parallel'' problems.
+
+The task of slicing the workload up into chunks and assigning appropriate machine resources to those chunks is delegated to external libraries in varying degrees, depending on the library used.
+
+At the time of writing, three parallelization libraries are supported by Stride: OpenMP, Intel Threading Building Blocks (TBB), and the standard library's threading module. Additionally, a serial implementation of the parallelization libraries' functionality is offered. These options are elaborated on by the sections below.
+
+\section{OpenMP}
+
+\section{Intel Threading Building Blocks}
+
+\section{Standard library threads}
+
+\section{No parallelization}
+
+\section{Performance comparison}
