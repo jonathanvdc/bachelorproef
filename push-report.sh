@@ -26,8 +26,10 @@ git checkout $TARGET_BRANCH || git checkout --orphan $TARGET_BRANCH
 cd ..
 
 # Try to push until we succeed.
-while ! ./push-report-helper.sh; do
+i=0
+while [ i < 3 ] && ! ./push-report-helper.sh; do
     # Sleep for a while.
     sleep 10
     # Try again.
+    i=$((i+1))
 done
