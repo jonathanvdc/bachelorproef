@@ -17,6 +17,10 @@ mono gtest-report-tools/gtest-report-html.exe out/gtest-reports/*.xml --css=gtes
 # Now let's go have some fun with the cloned repo
 cd out
 
+echo "Configuring user..."
+git config user.name "FluBot"
+git config user.email "flu-plus-plus-flubot@outlook.com"
+
 git add .
 
 # If there are no changes to the compiled out (e.g. this is a README update) then just bail.
