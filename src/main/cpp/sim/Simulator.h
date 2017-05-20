@@ -43,11 +43,20 @@ class Calendar;
 
 struct ClusterStruct
 {
-	std::vector<Cluster> m_households;	  ///< Container with household Clusters.
-	std::vector<Cluster> m_school_clusters;     ///< Container with school Clusters.
-	std::vector<Cluster> m_work_clusters;       ///< Container with work Clusters.
-	std::vector<Cluster> m_primary_community;   ///< Container with primary community Clusters.
-	std::vector<Cluster> m_secondary_community; ///< Container with secondary community  Clusters.
+	/// Container with household Clusters.
+	std::vector<Cluster> m_households;
+
+	/// Container with school Clusters.
+	std::vector<Cluster> m_school_clusters;
+
+	/// Container with work Clusters.
+	std::vector<Cluster> m_work_clusters;
+
+	/// Container with primary community Clusters.
+	std::vector<Cluster> m_primary_community;
+
+	/// Container with secondary community Clusters.
+	std::vector<Cluster> m_secondary_community;
 };
 
 /**
@@ -193,30 +202,53 @@ private:
 	void UpdateClusters();
 
 private:
-	SingleSimulationConfig m_config;       ///< Configuration for this simulator.
-	std::shared_ptr<spdlog::logger> m_log; ///< Log for this simulator.
+	/// Configuration for this simulator.
+	SingleSimulationConfig m_config;
+
+	/// Log for this simulator.
+	std::shared_ptr<spdlog::logger> m_log;
 
 private:
-	unsigned int m_num_threads;		    ///< The number of (OpenMP) threads.
-	std::vector<RngHandler> m_rng_handler;      ///< Pointer to the RngHandlers.
-	std::shared_ptr<util::Random> m_travel_rng; ///< A random number generator for travel.
-	LogMode m_log_level;			    ///< Specifies logging mode.
-	std::shared_ptr<Calendar> m_calendar;       ///< Management of calendar.
+	/// The number of (OpenMP) threads.
+	unsigned int m_num_threads;
+
+	/// Pointer to the RngHandlers.
+	std::vector<RngHandler> m_rng_handler;
+
+	/// A random number generator for travel.
+	std::shared_ptr<util::Random> m_travel_rng;
+
+	/// Specifies logging mode.
+	LogMode m_log_level;
+
+	/// Management of calendar.
+	std::shared_ptr<Calendar> m_calendar;
 
 private:
-	std::shared_ptr<Population> m_population;	     ///< Pointer to the Population.
-	stride::multiregion::VisitorJournal m_visitors;       ///< Visitor journal.
-	stride::multiregion::ExpatriateJournal m_expatriates; ///< Expatriate journal.
+	/// Pointer to the Population.
+	std::shared_ptr<Population> m_population;
 
-	ClusterStruct m_clusters; ///< Struct containing all Clusters.
+	/// Visitor journal.
+	stride::multiregion::VisitorJournal m_visitors;
 
-	std::queue<std::size_t>
-	    m_unused_households;		  ///< A list of unused households which can are eligible for recycling.
-	std::queue<PersonId> m_unused_person_ids; ///< A list of unused person IDs which are eligible for recycling.
+	/// Expatriate journal.
+	stride::multiregion::ExpatriateJournal m_expatriates;
 
-	DiseaseProfile m_disease_profile; ///< Profile of disease.
+	/// Struct containing all Clusters.
+	ClusterStruct m_clusters;
 
-	bool m_track_index_case; ///< General simulation or tracking index case.
+	/// A list of unused households which can are eligible for recycling.
+	std::queue<std::size_t> m_unused_households;
+
+	/// A list of unused person IDs which are eligible for recycling.
+	std::queue<PersonId> m_unused_person_ids;
+
+	/// Profile of disease.
+	DiseaseProfile m_disease_profile;
+
+	/// General simulation or tracking index case.
+	bool m_track_index_case;
+
 
 private:
 	friend class SimulatorBuilder;

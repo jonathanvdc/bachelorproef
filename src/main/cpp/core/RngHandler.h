@@ -56,7 +56,8 @@ public:
 	}
 
 private:
-	util::Random m_rng; ///< Random number engine.
+	/// Random number engine.
+	util::Random m_rng;
 };
 
 } // end_of_namespace

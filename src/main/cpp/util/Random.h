@@ -86,8 +86,11 @@ public:
 	void Split(unsigned int total, unsigned int id) { m_engine.split(total, id); }
 
 private:
-	trng::mrg2 m_engine;			     ///< The random number engine.
-	trng::uniform01_dist<double> m_uniform_dist; ///< The random distribution.
+	/// The random number engine.
+	trng::mrg2 m_engine;
+
+	/// The random distribution.
+	trng::uniform01_dist<double> m_uniform_dist;
 };
 
 } // end namespace

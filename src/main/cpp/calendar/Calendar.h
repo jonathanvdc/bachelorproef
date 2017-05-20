@@ -79,10 +79,17 @@ public:
 	void Initialize(const boost::gregorian::date& start_date, const std::string& holidays_file);
 
 private:
-	std::size_t m_day;				       ///< The current simulation day
-	boost::gregorian::date m_date;			       ///< The current simulated day
-	std::vector<boost::gregorian::date> m_holidays;	///< Vector of general holidays
-	std::vector<boost::gregorian::date> m_school_holidays; ///< Vector of school holidays
+	/// The current simulation day
+	std::size_t m_day;
+
+	/// The current simulated day
+	boost::gregorian::date m_date;
+
+	/// Vector of general holidays
+	std::vector<boost::gregorian::date> m_holidays;
+
+	/// Vector of school holidays
+	std::vector<boost::gregorian::date> m_school_holidays;
 };
 
 using CalendarRef = std::shared_ptr<const Calendar>;

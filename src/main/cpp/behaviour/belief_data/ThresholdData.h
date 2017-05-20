@@ -64,13 +64,15 @@ public:
 	void Contact(std::shared_ptr<const GenericPersonData<BehaviourPolicy, BeliefPolicy>> p);
 
 private:
-	unsigned int m_num_contacts;	  ///<
-	unsigned int m_num_contacts_infected; ///<
-	unsigned int m_num_contacts_adopted;  ///<
+	unsigned int m_num_contacts;
+	unsigned int m_num_contacts_infected;
+	unsigned int m_num_contacts_adopted;
 
-	double m_threshold_infected; ///< Fraction of contacts that needs to be infected before person adopts belief.
-	double m_threshold_adopted;  ///< Fraction of contacts that needs to have adopted the belief for person to also
-				     ///adopt.
+	/// Fraction of contacts that needs to be infected before person adopts belief.
+	double m_threshold_infected;
+
+	/// Fraction of contacts that needs to have adopted the belief for person to also adopt.
+	double m_threshold_adopted;
 };
 
 extern template void ThresholdData::Contact<AlwaysFollowBeliefs, Threshold<true, false>>(
@@ -79,13 +81,6 @@ extern template void ThresholdData::Contact<AlwaysFollowBeliefs, Threshold<false
     std::shared_ptr<const GenericPersonData<AlwaysFollowBeliefs, Threshold<false, true>>> p);
 extern template void ThresholdData::Contact<AlwaysFollowBeliefs, Threshold<true, true>>(
     std::shared_ptr<const GenericPersonData<AlwaysFollowBeliefs, Threshold<true, true>>> p);
-
-// extern template return-type name < argument-list > ( parameter-list ) ;
-// extern template ReallyBigFunction<int>();
-// extern template void ThresholdData::Contact<AlwaysFollowBeliefs, Threshold<true, false> >(const
-// GenericPersonData<AlwaysFollowBeliefs, Threshold<true, false> >);
-// extern template<AlwaysFollowBeliefs, Threshold<true, false> >
-// void ThresholdData::Contact(const GenericPersonData<AlwaysFollowBeliefs, Threshold<true, false> >);
 
 } /* namespace stride */
 

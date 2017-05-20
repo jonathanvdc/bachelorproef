@@ -88,10 +88,18 @@ private:
 	void UpdateMemberPresence();
 
 private:
-	ClusterId m_cluster_id;				///< The ID of the Cluster (for logging purposes).
-	ClusterType m_cluster_type;			///< The type of the Cluster (for logging purposes).
-	std::size_t m_index_immune;			///< Index of the first immune member in the Cluster.
-	std::vector<std::pair<Person, bool>> m_members; ///< Container with pointers to Cluster members.
+	/// The ID of the Cluster (for logging purposes).
+	ClusterId m_cluster_id;
+
+	/// The type of the Cluster (for logging purposes).
+	ClusterType m_cluster_type;
+
+	/// Index of the first immune member in the Cluster.
+	std::size_t m_index_immune;
+
+	/// Container with pointers to Cluster members.
+	std::vector<std::pair<Person, bool>> m_members;
+
 	const ContactProfile& m_profile;
 
 private:
