@@ -18,6 +18,7 @@
 #include "sim/SimulationConfig.h"
 #include "util/Errors.h"
 #include "util/InstallDirs.h"
+#include "util/Parallel.h"
 
 namespace stride {
 namespace population {
@@ -362,29 +363,32 @@ bool Generator::FitsModel(const Population& population)
 	Debug("Checking if population fits model...");
 
 	// Check the population size.
-	const double population_ratio = double(population.size()) / double(model->population_size);
+	const double population_ratio =
+	    static_cast<double>(population.size()) / static_cast<double>(model->population_size);
 	if (population_ratio < 0.9 || population_ratio > 1.1) {
 		Debug("Population size deviates more than 10% from goal");
 		return false;
 	}
 
 	// Check the generated persons' ages.
-	for (const auto& person : population) {
-		const int age = person.GetAge();
-		const bool is_student_age = model->IsSchoolAge(age) || model->IsCollegeAge(age);
-		if (person.GetClusterId(ClusterType::School) && !is_student_age) {
-			Debug("Generated student with invalid age: {}", age);
-			return false;
-		}
-		if (person.GetClusterId(ClusterType::Work) && !model->IsEmployableAge(age)) {
-			Debug("Generated employee with invalid age: {}", age);
-			return false;
-		}
-	}
+	std::atomic<bool> all_ages_valid(true);
+	population.parallel_for(
+	    util::parallel::get_number_of_threads(), [this, &all_ages_valid](const Person& person, unsigned int) {
+		    const int age = person.GetAge();
+		    const bool is_student_age = model->IsSchoolAge(age) || model->IsCollegeAge(age);
+		    if (person.GetClusterId(ClusterType::School) && !is_student_age) {
+			    Debug("Generated student with invalid age: {}", age);
+			    all_ages_valid = false;
+		    }
+		    if (person.GetClusterId(ClusterType::Work) && !model->IsEmployableAge(age)) {
+			    Debug("Generated employee with invalid age: {}", age);
+			    all_ages_valid = false;
+		    }
+	    });
 
 	// You could write a billion checks like this, of course. Is it worth it?
 
-	return true;
+	return all_ages_valid;
 }
 
 } // namespace population

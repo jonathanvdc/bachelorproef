@@ -50,21 +50,21 @@ Simulator::Simulator()
 
 void Simulator::SetTrackIndexCase(bool track_index_case) { m_track_index_case = track_index_case; }
 
-template <LogMode log_level, bool track_index_case>
+template <LogMode log_level, bool track_index_case, typename local_information_policy>
 void Simulator::UpdateClusters()
 {
 	auto log = m_log;
 
 	auto action = [this, log](Cluster& cluster, unsigned int thread_id) {
-		Infector<log_level, track_index_case>::Execute(
+		Infector<log_level, track_index_case, local_information_policy>::Execute(
 		    cluster, m_disease_profile, m_rng_handler[thread_id], m_calendar, log);
 	};
 
-	stride::util::parallel::parallel_for(m_households, m_num_threads, action);
-	stride::util::parallel::parallel_for(m_school_clusters, m_num_threads, action);
-	stride::util::parallel::parallel_for(m_work_clusters, m_num_threads, action);
-	stride::util::parallel::parallel_for(m_primary_community, m_num_threads, action);
-	stride::util::parallel::parallel_for(m_secondary_community, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_clusters.m_households, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_clusters.m_school_clusters, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_clusters.m_work_clusters, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_clusters.m_primary_community, m_num_threads, action);
+	stride::util::parallel::parallel_for(m_clusters.m_secondary_community, m_num_threads, action);
 }
 
 void Simulator::AddPersonToClusters(const Person& person)
@@ -72,23 +72,23 @@ void Simulator::AddPersonToClusters(const Person& person)
 	// Cluster id '0' means "not present in any cluster of that type".
 	auto hh_id = person.GetClusterId(ClusterType::Household);
 	if (hh_id > 0) {
-		m_households[hh_id].AddPerson(person);
+		m_clusters.m_households[hh_id].AddPerson(person);
 	}
 	auto sc_id = person.GetClusterId(ClusterType::School);
 	if (sc_id > 0) {
-		m_school_clusters[sc_id].AddPerson(person);
+		m_clusters.m_school_clusters[sc_id].AddPerson(person);
 	}
 	auto wo_id = person.GetClusterId(ClusterType::Work);
 	if (wo_id > 0) {
-		m_work_clusters[wo_id].AddPerson(person);
+		m_clusters.m_work_clusters[wo_id].AddPerson(person);
 	}
 	auto primCom_id = person.GetClusterId(ClusterType::PrimaryCommunity);
 	if (primCom_id > 0) {
-		m_primary_community[primCom_id].AddPerson(person);
+		m_clusters.m_primary_community[primCom_id].AddPerson(person);
 	}
 	auto secCom_id = person.GetClusterId(ClusterType::SecondaryCommunity);
 	if (secCom_id > 0) {
-		m_secondary_community[secCom_id].AddPerson(person);
+		m_clusters.m_secondary_community[secCom_id].AddPerson(person);
 	}
 }
 
@@ -97,23 +97,23 @@ void Simulator::RemovePersonFromClusters(const Person& person)
 	// Cluster id '0' means "not present in any cluster of that type".
 	auto hh_id = person.GetClusterId(ClusterType::Household);
 	if (hh_id > 0) {
-		m_households[hh_id].RemovePerson(person);
+		m_clusters.m_households[hh_id].RemovePerson(person);
 	}
 	auto sc_id = person.GetClusterId(ClusterType::School);
 	if (sc_id > 0) {
-		m_school_clusters[sc_id].RemovePerson(person);
+		m_clusters.m_school_clusters[sc_id].RemovePerson(person);
 	}
 	auto wo_id = person.GetClusterId(ClusterType::Work);
 	if (wo_id > 0) {
-		m_work_clusters[wo_id].RemovePerson(person);
+		m_clusters.m_work_clusters[wo_id].RemovePerson(person);
 	}
 	auto primCom_id = person.GetClusterId(ClusterType::PrimaryCommunity);
 	if (primCom_id > 0) {
-		m_primary_community[primCom_id].RemovePerson(person);
+		m_clusters.m_primary_community[primCom_id].RemovePerson(person);
 	}
 	auto secCom_id = person.GetClusterId(ClusterType::SecondaryCommunity);
 	if (secCom_id > 0) {
-		m_secondary_community[secCom_id].RemovePerson(person);
+		m_clusters.m_secondary_community[secCom_id].RemovePerson(person);
 	}
 }
 
@@ -132,8 +132,8 @@ std::size_t Simulator::GenerateHousehold()
 {
 	std::size_t household_id;
 	if (m_unused_households.empty()) {
-		household_id = m_households.size();
-		m_households.emplace_back(household_id, ClusterType::Household);
+		household_id = m_clusters.m_households.size();
+		m_clusters.m_households.emplace_back(household_id, ClusterType::Household);
 	} else {
 		household_id = m_unused_households.front();
 		m_unused_households.pop();
@@ -166,9 +166,9 @@ void Simulator::AcceptVisitors(const multiregion::SimulationStepInput& input)
 		// Generate local ids and create a household cluster for the visitor.
 		auto id = GeneratePersonId();
 		auto household_id = GenerateHousehold();
-		auto work_id = (*m_travel_rng)(m_work_clusters.size() - 1);
-		auto primary_community_id = (*m_travel_rng)(m_primary_community.size() - 1);
-		auto secondary_community_id = (*m_travel_rng)(m_secondary_community.size() - 1);
+		auto work_id = (*m_travel_rng)(m_clusters.m_work_clusters.size() - 1);
+		auto primary_community_id = (*m_travel_rng)(m_clusters.m_primary_community.size() - 1);
+		auto secondary_community_id = (*m_travel_rng)(m_clusters.m_secondary_community.size() - 1);
 
 		// Insert the visitor in the population.
 		Person local_visitor = *m_population->emplace(
@@ -275,9 +275,11 @@ multiregion::SimulationStepOutput Simulator::TimeStep(const multiregion::Simulat
 	const bool is_work_off{days_off->IsWorkOff()};
 	const bool is_school_off{days_off->IsSchoolOff()};
 
-	for (const auto& p : *m_population) {
-		p.Update(is_work_off, is_school_off);
-	}
+	const double fraction_infected = m_population->get_fraction_infected();
+
+	m_population->parallel_for(m_num_threads, [=](const Person& p, unsigned int) {
+		p.Update(is_work_off, is_school_off, fraction_infected);
+	});
 
 	if (m_track_index_case) {
 		switch (m_log_level) {

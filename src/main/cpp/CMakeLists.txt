@@ -20,6 +20,10 @@
 #============================================================================
 set(LIB_SRC
 #---
+	behaviour/belief_data/ThresholdData.cpp
+	behaviour/belief_policies/Threshold.cpp
+	behaviour/information_policies/InformationPolicy.cpp
+#---
     calendar/Calendar.cpp
 #---
     core/Atlas.cpp
@@ -36,9 +40,9 @@ set(LIB_SRC
 #---
     multiregion/TravelModel.cpp
 #---
-	output/CasesFile.cpp
-	output/PersonFile.cpp
-	output/SummaryFile.cpp
+    output/CasesFile.cpp
+    output/PersonFile.cpp
+    output/SummaryFile.cpp
 #---
     output/CasesFile.cpp
     output/VisualizerFile.cpp
@@ -60,8 +64,11 @@ set(LIB_SRC
 #---
     util/InstallDirs.cpp
     util/Parallel.cpp
+    util/Signals.cpp
 #---
     alias/Alias.cpp
+#---
+    checkpoint/CheckPoint.cpp
 )
 
 set(MAIN_SRC

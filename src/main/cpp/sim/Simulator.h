@@ -21,6 +21,7 @@
  * Header for the Simulator class.
  */
 
+#include "behaviour/information_policies/NoLocalInformation.h"
 #include "core/Cluster.h"
 #include "core/DiseaseProfile.h"
 #include "core/LogMode.h"
@@ -40,6 +41,15 @@ namespace stride {
 
 class Calendar;
 
+struct ClusterStruct
+{
+	std::vector<Cluster> m_households;	  ///< Container with household Clusters.
+	std::vector<Cluster> m_school_clusters;     ///< Container with school Clusters.
+	std::vector<Cluster> m_work_clusters;       ///< Container with work Clusters.
+	std::vector<Cluster> m_primary_community;   ///< Container with primary community Clusters.
+	std::vector<Cluster> m_secondary_community; ///< Container with secondary community  Clusters.
+};
+
 /**
  * Main class that contains and direct the virtual world.
  */
@@ -55,6 +65,12 @@ public:
 	/// Gets the simulator's configuration.
 	SingleSimulationConfig GetConfiguration() const { return m_config; }
 
+	/// Gets the simulator's date
+	boost::gregorian::date GetDate() const { return m_calendar->GetDate(); }
+
+	/// Gets the clusters in this simulation
+	const ClusterStruct& GetClusters() const { return m_clusters; }
+
 	/// Change track_index_case setting.
 	void SetTrackIndexCase(bool track_index_case);
 
@@ -63,6 +79,87 @@ public:
 
 	/// Tests if this simulation has run to completion.
 	bool IsDone() const { return m_calendar->GetSimulationDay() >= m_config.common_config->number_of_days; }
+
+	/// Tests if the person is a visitor to this simulation.
+	bool IsVisitor(PersonId id) const { return m_visitors.IsVisitor(id); }
+
+	/// Gets the visitor journal
+	multiregion::VisitorJournal GetVistiorJournal() const { return m_visitors; }
+
+	/// Gets the expatriate journal
+	multiregion::ExpatriateJournal GetExpatriateJournal() const { return m_expatriates; }
+
+	/// Runs the given action on every resident who is currently present
+	/// in the simulation. More than one invocation of `action` may be
+	/// running simultaneously. `action` must be invocable and have
+	/// signature `void(const Person& person, unsigned int thread_number)`.
+	template <typename TAction>
+	void ParallelForeachPresentResident(const TAction& action)
+	{
+		m_population->parallel_for(m_num_threads, [this, &action](const Person& p, unsigned int thread_number) {
+			if (!IsVisitor(p.GetId())) {
+				action(p, thread_number);
+			}
+		});
+	}
+
+	/// Runs the given action on every resident of the simulation, present
+	/// or otherwise. More than one invocation of `action` may be
+	/// running simultaneously. `action` must be invocable and have
+	/// signature `void(const Person& person, unsigned int thread_number)`.
+	template <typename TAction>
+	void ParallelForeachResident(const TAction& action)
+	{
+		ParallelForeachPresentResident<TAction>(action);
+		m_expatriates.SerialForeach(action);
+	}
+
+	/// Runs the given action on every person who is currently present
+	/// in the simulation, person or otherwise. More than one invocation
+	/// of the action may be running simultaneously. `action` must be
+	/// invocable and have signature
+	/// `void(const Person& person, unsigned int thread_number)`.
+	template <typename TAction>
+	void ParallelForeachPresentPerson(const TAction& action)
+	{
+		m_population->parallel_for(m_num_threads, action);
+	}
+
+	/// Runs the given action on every resident who is currently present
+	/// in the simulation. No more than one invocation of `action` will be
+	/// running simultaneously. `action` must be invocable and have
+	/// signature `void(const Person& person, unsigned int dummy)`.
+	template <typename TAction>
+	void SerialForeachPresentResident(const TAction& action)
+	{
+		m_population->serial_for([this, &action](const Person& p, unsigned int thread_number) {
+			if (!IsVisitor(p.GetId())) {
+				action(p, thread_number);
+			}
+		});
+	}
+
+	/// Runs the given action on every resident of the simulation, present
+	/// or otherwise. No more than one invocation of `action` will be running
+	/// simultaneously. `action` must be invocable and have
+	/// signature `void(const Person& person, unsigned int dummy)`.
+	template <typename TAction>
+	void SerialForeachResident(const TAction& action)
+	{
+		SerialForeachPresentResident<TAction>(action);
+		m_expatriates.SerialForeach(action);
+	}
+
+	/// Runs the given action on every person who is currently present
+	/// in the simulation, person or otherwise. No more than one invocation
+	/// of `action` will be running simultaneously. `action` must be
+	/// invocable and have signature
+	/// `void(const Person& person, unsigned int dummy)`.
+	template <typename TAction>
+	void SerialForeachPresentPerson(const TAction& action)
+	{
+		m_population->serial_for(m_num_threads, action);
+	}
 
 private:
 	/// Accepts visitors from other regions.
@@ -91,7 +188,7 @@ private:
 	void RecycleHousehold(std::size_t household_id);
 
 	/// Update the contacts in the given clusters.
-	template <LogMode log_level, bool track_index_case = false>
+	template <LogMode log_level, bool track_index_case = false, typename local_information_policy = NoLocalInformation>
 	void UpdateClusters();
 
 private:
@@ -110,13 +207,10 @@ private:
 	stride::multiregion::VisitorJournal m_visitors;       ///< Visitor journal.
 	stride::multiregion::ExpatriateJournal m_expatriates; ///< Expatriate journal.
 
-	std::vector<Cluster> m_households;	  ///< Container with household Clusters.
-	std::vector<Cluster> m_school_clusters;     ///< Container with school Clusters.
-	std::vector<Cluster> m_work_clusters;       ///< Container with work Clusters.
-	std::vector<Cluster> m_primary_community;   ///< Container with primary community Clusters.
-	std::vector<Cluster> m_secondary_community; ///< Container with secondary community  Clusters.
+	ClusterStruct m_clusters; ///< Struct containing all Clusters.
 
-	std::queue<std::size_t> m_unused_households; ///< A list of unused households which can are eligible for recycling.
+	std::queue<std::size_t>
+	    m_unused_households;		  ///< A list of unused households which can are eligible for recycling.
 	std::queue<PersonId> m_unused_person_ids; ///< A list of unused person IDs which are eligible for recycling.
 
 	DiseaseProfile m_disease_profile; ///< Profile of disease.

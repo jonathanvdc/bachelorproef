@@ -173,42 +173,43 @@ void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 	unsigned int max_id_secondary_community  = 0U;
 	Population& population                   = *sim->m_population;
 
-	for (const auto& p : population) {
+	population.serial_for([&](const Person& p, unsigned int) -> void
+	{
 		max_id_households            = std::max(max_id_households,          p.GetClusterId(ClusterType::Household));
 		max_id_school_clusters       = std::max(max_id_school_clusters,     p.GetClusterId(ClusterType::School));
 		max_id_work_clusters         = std::max(max_id_work_clusters,       p.GetClusterId(ClusterType::Work));
 		max_id_primary_community     = std::max(max_id_primary_community,   p.GetClusterId(ClusterType::PrimaryCommunity));
 		max_id_secondary_community   = std::max(max_id_secondary_community, p.GetClusterId(ClusterType::SecondaryCommunity));
-
-	}
+	});
 
 	// Keep separate id counter to provide a unique id for every cluster.
 	unsigned int cluster_id = 1;
 
 	for (size_t i = 0; i <= max_id_households; i++) {
-		sim->m_households.emplace_back(Cluster(cluster_id, ClusterType::Household));
+		sim->m_clusters.m_households.emplace_back(Cluster(cluster_id, ClusterType::Household));
 		cluster_id++;
 	}
 	for (size_t i = 0; i <= max_id_school_clusters; i++) {
-		sim->m_school_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
+		sim->m_clusters.m_school_clusters.emplace_back(Cluster(cluster_id, ClusterType::School));
 		cluster_id++;
 	}
 	for (size_t i = 0; i <= max_id_work_clusters; i++) {
-		sim->m_work_clusters.emplace_back(Cluster(cluster_id, ClusterType::Work));
+		sim->m_clusters.m_work_clusters.emplace_back(Cluster(cluster_id, ClusterType::Work));
 		cluster_id++;
 	}
 	for (size_t i = 0; i <= max_id_primary_community; i++) {
-		sim->m_primary_community.emplace_back(Cluster(cluster_id, ClusterType::PrimaryCommunity));
+		sim->m_clusters.m_primary_community.emplace_back(Cluster(cluster_id, ClusterType::PrimaryCommunity));
 		cluster_id++;
 	}
 	for (size_t i = 0; i <= max_id_secondary_community; i++) {
-		sim->m_secondary_community.emplace_back(Cluster(cluster_id, ClusterType::SecondaryCommunity));
+		sim->m_clusters.m_secondary_community.emplace_back(Cluster(cluster_id, ClusterType::SecondaryCommunity));
 		cluster_id++;
 	}
 
-	for (const auto& p : population) {
+	population.serial_for([&](const Person& p, unsigned int) -> void
+	{
 		sim->AddPersonToClusters(p);
-	}
+	});
 }
 
 } // end_of_namespace

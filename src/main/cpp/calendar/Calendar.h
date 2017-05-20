@@ -43,6 +43,8 @@ public:
 	/// Advance the internal calendar by one day
 	void AdvanceDay();
 
+	boost::gregorian::date GetDate() const {return m_date;}
+
 	/// Get the current day of the month
 	std::size_t GetDay() const { return m_date.day(); }
 

@@ -39,6 +39,7 @@ namespace stride {
 class PopulationBuilder
 {
 public:
+
 	/**
 	 * Initializes a Population: add persons, set immunity, seed infection.
 	 *

@@ -21,6 +21,7 @@
 
 #include "run_stride.h"
 
+#include "checkpoint/CheckPoint.h"
 #include "multiregion/ParallelSimulationManager.h"
 #include "multiregion/SimulationManager.h"
 #include "multiregion/TravelModel.h"
@@ -59,17 +60,42 @@ using namespace boost::filesystem;
 using namespace boost::property_tree;
 using namespace std;
 using namespace std::chrono;
+using namespace checkpoint;
 
 std::mutex StrideSimulatorResult::io_mutex;
 
+// temporary "global" for demo and testing purposes
+//CheckPoint* cp;
+
 /// Performs an action just before a simulator step is performed.
-void StrideSimulatorResult::BeforeSimulatorStep(const Population&) { run_clock.Start(); }
+void StrideSimulatorResult::BeforeSimulatorStep(
+    const Simulator& sim)
+{
+	run_clock.Start();
+	// saves the start configuration
+	/*
+	if (day == 0) {
+		cp->OpenFile();
+		cp->SaveCheckPoint(sim);
+		cp->CloseFile();
+	}
+	*/
+}
 
 /// Performs an action just after a simulator step has been performed.
-void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
-{
+void StrideSimulatorResult::AfterSimulatorStep(
+    const Simulator& sim)
+{	
+	/*
+	if (day != 0) {
+		cp->OpenFile();
+		cp->SaveCheckPoint(sim);
+		cp->CloseFile();
+	}
+	*/
+	auto& pop = sim.GetPopulation();
 	run_clock.Stop();
-	auto infected_count = pop.get_infected_count();
+	auto infected_count = sim.GetPopulation()->get_infected_count();
 	cases.push_back(infected_count);
 
 	if (generate_vis_data && pop.has_atlas)
@@ -128,10 +154,22 @@ void run_stride(const MultiSimulationConfig& config)
 	// -----------------------------------------------------------------------------------------
 	// Set output path prefix.
 	// -----------------------------------------------------------------------------------------
-	auto output_prefix = config.log_config->output_prefix;
-	if (output_prefix.length() == 0) {
-		output_prefix = TimeStamp().ToTag();
+
+	if (config.log_config->output_prefix.length() == 0) {
+		config.log_config->output_prefix = TimeStamp().ToTag();
 	}
+	auto output_prefix = config.log_config->output_prefix;
+
+	/*
+	cp->OpenFile();
+	cp->WriteConfig(config);
+	cp->CloseFile();
+	cp->OpenFile();
+	SingleSimulationConfig foo = cp->LoadSingleConfig();
+	std::cout<<"prefix: "<<foo.log_config->output_prefix<<std::endl;
+	cp->CloseFile();
+	*/
+
 	cout << "Project output tag:  " << output_prefix << endl << endl;
 
 	// -----------------------------------------------------------------------------------------
@@ -177,8 +215,9 @@ void run_stride(const MultiSimulationConfig& config)
 		    std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-		auto task = sim_manager.CreateSimulation(single_config, file_logger, region_id);
-		tasks.push_back({log_name, sim_output_prefix, single_config, task});
+		tasks.push_back(
+		    {log_name, sim_output_prefix, single_config,
+		     sim_manager.CreateSimulation(single_config, file_logger, region_id)});
 	}
 	cout << "Done building simulators. " << endl << endl;
 
@@ -252,6 +291,15 @@ void run_stride(bool track_index_case, const string& config_file_name, bool gen_
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
 	config.common_config->generate_vis_file = gen_vis;
+
+	/*
+	cp = new CheckPoint("foo.h5");
+
+	cp->CreateFile();
+	cp->OpenFile();
+	cp->WriteHolidays(pt_config.get_child("run").get<std::string>("holidays_file", "holidays_flanders_2016.json"));
+	cp->CloseFile();
+	*/
 
 	// Run Stride.
 	run_stride(config);
