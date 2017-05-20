@@ -8,6 +8,7 @@
 #include "multiregion/TravelModel.h"
 #include "pop/Person.h"
 #include "util/Errors.h"
+#include "util/Parallel.h"
 
 /**
  * @file Defines data structures that keep track of a region's visitors and expatriates.
@@ -56,6 +57,17 @@ public:
 		auto result = expatriates.find(id)->second;
 		expatriates.erase(id);
 		return result;
+	}
+
+	/// Applies the given action to every person in the expatriate journal.
+	/// `action` must be invocable with signature
+	/// `void(const Person& person, unsigned int dummy)`.
+	template <typename TAction>
+	void SerialForeach(const TAction& action)
+	{
+		for (const auto& pair : expatriates) {
+			action(pair.second, 0);
+		}
 	}
 
 private:

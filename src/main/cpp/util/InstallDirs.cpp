@@ -55,45 +55,45 @@ path     InstallDirs::g_root_dir;
 inline void InstallDirs::Check()
 {
         static bool initialized = false;
-	if (!initialized) {
-		Initialize();
-		initialized = true;
-	}
+    if (!initialized) {
+        Initialize();
+        initialized = true;
+    }
 }
 
 void InstallDirs::Initialize()
 {
-	//------- Retrieving path of executable
-	{
-		// Returns the full path to the currently running executable, or an empty string in case of failure.
-		// http://stackoverflow.com/questions/1023306/finding-current-executables-path-without-proc-self-exe/33249023#33249023
+    //------- Retrieving path of executable
+    {
+        // Returns the full path to the currently running executable, or an empty string in case of failure.
+        // http://stackoverflow.com/questions/1023306/finding-current-executables-path-without-proc-self-exe/33249023#33249023
 
-	        #if defined(WIN32)
+            #if defined(WIN32)
                         char exePath[MAX_PATH];
                         HMODULE hModule = GetModuleHandle(NULL);
                         if (GetModuleFileName(NULL, exePath, sizeof(exePath)) !=0); {
                                 g_exec_path = canonical(system_complete(exePath));
                         }
-		#elif defined(__linux__)
-			char exePath[PATH_MAX + 1];
-		        std::memset(exePath, 0, sizeof exePath);
-		        std::size_t size = ::readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
-		        if (size > 0 && size != sizeof(exePath) - 1) {
+        #elif defined(__linux__)
+            char exePath[PATH_MAX + 1];
+                std::memset(exePath, 0, sizeof exePath);
+                std::size_t size = ::readlink("/proc/self/exe", exePath, sizeof(exePath) - 1);
+                if (size > 0 && size != sizeof(exePath) - 1) {
                                 g_exec_path = canonical(system_complete(exePath));
-		        }
-		#elif defined(__APPLE__)
-			char exePath[PATH_MAX];
-			uint32_t size = sizeof(exePath);
-		        if (_NSGetExecutablePath(exePath, &size) == 0) {
+                }
+        #elif defined(__APPLE__)
+            char exePath[PATH_MAX];
+            uint32_t size = sizeof(exePath);
+                if (_NSGetExecutablePath(exePath, &size) == 0) {
                                 g_exec_path = canonical(system_complete(exePath));
-		        }
-		#endif
-	}
+                }
+        #endif
+    }
 
-	//------- Retrieving root and bin directory (the subdirectory of the install root)
-	{
-	        path exec_dir = g_exec_path.parent_path();
-		if (!g_exec_path.empty()) {
+    //------- Retrieving root and bin directory (the subdirectory of the install root)
+    {
+            path exec_dir = g_exec_path.parent_path();
+        if (!g_exec_path.empty()) {
                         #if (__APPLE__)
                                 if (exec_dir.filename().string() == "MacOS") {
                                         // app
@@ -127,18 +127,18 @@ void InstallDirs::Initialize()
                                         g_bin_dir  = exec_dir;
                                         g_root_dir = exec_dir.parent_path();
                                 }
-		}
-	}
+        }
+    }
 
-	//------- Data Dir
-	{
+    //------- Data Dir
+    {
                 g_data_dir = g_root_dir / "data";
                 g_data_dir = is_directory(g_data_dir) ? g_data_dir : path();
-	}
-	//------- Current Dir
-	{
-	        g_current_dir = system_complete(current_path());
-	}
+    }
+    //------- Current Dir
+    {
+            g_current_dir = system_complete(current_path());
+    }
 }
 
 path InstallDirs::GetBinDir()
@@ -155,8 +155,8 @@ path InstallDirs::GetCurrentDir()
 
 path InstallDirs::GetDataDir()
 {
-	Check();
-	return g_data_dir;
+    Check();
+    return g_data_dir;
 }
 
 path InstallDirs::GetExecPath()
@@ -167,41 +167,41 @@ path InstallDirs::GetExecPath()
 
 path InstallDirs::GetRootDir()
 {
-	Check();
-	return g_root_dir;
+    Check();
+    return g_root_dir;
 }
 
 std::unique_ptr<boost::filesystem::ifstream> InstallDirs::OpenFile(
         const boost::filesystem::path& relative_path,
         const boost::filesystem::path& anchor_path)
 {
-	auto file_path = anchor_path / relative_path;
-	if (!is_regular_file(file_path)) {
-		FATAL_ERROR("File " + file_path.string() + " not present.");
-	}
+    auto file_path = anchor_path / relative_path;
+    if (!is_regular_file(file_path)) {
+        FATAL_ERROR("File " + file_path.string() + " not present.");
+    }
 
         auto stream = std::make_unique<boost::filesystem::ifstream>();
-	stream->open(file_path.string());
-	if (!stream->is_open()) {
-		FATAL_ERROR("Error opening file " + file_path.string());
-	}
+    stream->open(file_path.string());
+    if (!stream->is_open()) {
+        FATAL_ERROR("Error opening file " + file_path.string());
+    }
 
         return stream;
 }
 
 void InstallDirs::ReadXmlFile(
-	const boost::filesystem::path& relative_path,
-	const boost::filesystem::path& anchor_path,
-	boost::property_tree::ptree& result)
+    const boost::filesystem::path& relative_path,
+    const boost::filesystem::path& anchor_path,
+    boost::property_tree::ptree& result)
 {
-	auto stream = OpenFile(relative_path, anchor_path);
-	boost::property_tree::read_xml(*stream, result);
+    auto stream = OpenFile(relative_path, anchor_path);
+    boost::property_tree::read_xml(*stream, result);
 }
 
 std::unique_ptr<boost::filesystem::ifstream> InstallDirs::OpenDataFile(
         const boost::filesystem::path& relative_path)
 {
-	return OpenFile(relative_path, InstallDirs::GetDataDir());
+    return OpenFile(relative_path, InstallDirs::GetDataDir());
 }
 
 } // namespace

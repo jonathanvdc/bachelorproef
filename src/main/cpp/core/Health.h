@@ -101,10 +101,10 @@ public:
 	/// Update progress of the disease.
 	void Update();
 
-private:
 	/// Get the disease counter.
 	unsigned int GetDaysInfected() const { return m_days_infected; }
 
+private:
 	/// Increment disease counter.
 	void IncrementDaysInfected() { m_days_infected++; }
 
