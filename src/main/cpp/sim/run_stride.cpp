@@ -177,10 +177,6 @@ void run_stride(const MultiSimulationConfig& config)
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
 		auto task = sim_manager.CreateSimulation(single_config, file_logger, region_id);
-
-		// Tell the result not to generate any visualization data unless needed.
-		// task->GetResult().generate_vis_data = single_config.common_config->generate_vis_file;
-
 		tasks.push_back({log_name, sim_output_prefix, single_config, task});
 	}
 	cout << "Done building simulators. " << endl << endl;
