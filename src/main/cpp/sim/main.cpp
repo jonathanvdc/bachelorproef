@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 		// -----------------------------------------------------------------------------------------
 		CmdLine cmd("stride", ' ', "1.0", false);
 		SwitchArg         index_case_Arg("r", "r0", "R0 only", cmd, false);
-		SwitchArg         generate_vis_Arg("v", "no-vis", "Don't generate visualization file", cmd, true);
+		SwitchArg         generate_vis_Arg("V", "no-vis", "Don't generate visualization file", cmd, true);
 		ValueArg<string>  config_file_Arg("c", "config", "Config File", false,
 		                                  "./config/run_default.xml", "CONFIGURATION FILE", cmd);
 		cmd.parse(argc, argv);
