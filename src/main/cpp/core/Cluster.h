@@ -21,6 +21,7 @@
  * Header for the core Cluster class.
  */
 
+#include "behaviour/information_policies/NoLocalInformation.h"
 #include "core/ClusterType.h"
 #include "core/ContactProfile.h"
 #include "core/LogMode.h"
@@ -80,7 +81,7 @@ private:
 	std::tuple<bool, std::size_t> SortMembers();
 
 	/// Infector calculates contacts and transmissions.
-	template <LogMode log_level, bool track_index_case>
+	template <LogMode log_level, bool track_index_case, typename local_information_policy>
 	friend class Infector;
 
 	/// Calculate which members are present in the cluster on the current day.

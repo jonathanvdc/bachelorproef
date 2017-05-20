@@ -21,6 +21,7 @@
  * Header for the Simulator class.
  */
 
+#include "behaviour/information_policies/NoLocalInformation.h"
 #include "core/Cluster.h"
 #include "core/DiseaseProfile.h"
 #include "core/LogMode.h"
@@ -187,7 +188,7 @@ private:
 	void RecycleHousehold(std::size_t household_id);
 
 	/// Update the contacts in the given clusters.
-	template <LogMode log_level, bool track_index_case = false>
+	template <LogMode log_level, bool track_index_case = false, typename local_information_policy = NoLocalInformation>
 	void UpdateClusters();
 
 private:

@@ -1,0 +1,102 @@
+<!DOCTYPE html5>
+<html>
+
+<head> 	
+	<link rel="icon" type="image/png" href="resource/favicon.png">
+	<meta name="theme-color" content="#63F574">
+    <title>Stride Visualizer</title>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="jquery.svg/jquery.svg.css"> 
+    <script type="text/javascript" src="jquery.svg/jquery.svg.min.js"></script>
+
+    <!-- jQuery UI -->
+    <script src="jquery-ui/jquery-ui.min.js"></script>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <!-- Stride -->
+    <script src="util.js" type="text/javascript" charset="utf-8"></script>
+    <script src="colour.js" type="text/javascript" charset="utf-8"></script>
+    <script src="map.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="control panel">
+        <div class="panel-head">Control panel</div>
+
+        <div class="panel-body">
+            <div style="margin-bottom:10px">
+                <label class="btn btn-primary btn-sm">
+                    <input type="file" class="file-input" accept=".json" style="display:none"/>
+                    Select file
+                </label>
+                <span class="filename-output">No file selected</span>
+            </div>
+
+            <div class="day-control">
+                <button class="prev-day btn btn-primary btn-xs" disabled>
+                    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                </button>
+
+                <input class="range-input" type="range" value=0 disabled>
+
+                <button class="next-day btn btn-primary btn-xs" disabled>
+                    <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+                </button>
+
+                <div>
+                    <label class="checkbox-wrap">Run <input class="run-input" type="checkbox" disabled></label>
+                    <label class="checkbox-wrap">Loop <input class="loop-input" type="checkbox" disabled></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="general-info panel">
+        <div class="panel-head">General info</div>
+        <div class="panel-body">
+            <div> Total days: <span class="info days">-</span> </div>
+            <div> Most infected: <span class="info most-total-infected">-</span> on day <span class="info most-total-infected-day">-</span> </div>
+        </div>
+    </div>
+
+    <div class="daily-info panel">
+        <div class="panel-head">Daily info</div>
+        <div class="panel-body">
+            <div> Day: <span class="info current-day">-</span> / <span class="info days">-</span> </div>
+            <div> Infected: <span class="info total-infected">-</span> </div>
+            <div> Most infected: <span class="info most-current-infected">-</span> in <span class="info most-current-infected-town">-</span></div>
+        </div>
+    </div>
+
+    <div class="legend panel">
+        <div class="panel-head">Legend</div>
+
+        <div class="panel-body">
+            <div class="dropdown gradient-input">
+                <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" disabled>
+                    Colours <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu"> </ul>
+            </div>
+            <div class="legend-view" style="margin-top:10px"> 
+                <!-- legend goes here -->
+            </div>
+        </div>
+    </div>
+    
+    <div id="view" class="container">
+        <!-- This is where the script puts the views. -->
+        <div class="map-view" width="100%" height="100%"> </div>
+        <div class="table-view"> </div>
+    </div>
+</body>
+
+</html>

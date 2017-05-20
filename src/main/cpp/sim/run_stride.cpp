@@ -28,6 +28,7 @@
 #include "output/CasesFile.h"
 #include "output/PersonFile.h"
 #include "output/SummaryFile.h"
+#include "output/VisualizerFile.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
 #include "util/Errors.h"
@@ -64,11 +65,10 @@ using namespace checkpoint;
 std::mutex StrideSimulatorResult::io_mutex;
 
 // temporary "global" for demo and testing purposes
-//CheckPoint* cp;
+// CheckPoint* cp;
 
 /// Performs an action just before a simulator step is performed.
-void StrideSimulatorResult::BeforeSimulatorStep(
-    const Simulator& sim)
+void StrideSimulatorResult::BeforeSimulatorStep(const Simulator& sim)
 {
 	run_clock.Start();
 	// saves the start configuration
@@ -82,9 +82,8 @@ void StrideSimulatorResult::BeforeSimulatorStep(
 }
 
 /// Performs an action just after a simulator step has been performed.
-void StrideSimulatorResult::AfterSimulatorStep(
-    const Simulator& sim)
-{	
+void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
+{
 	/*
 	if (day != 0) {
 		cp->OpenFile();
@@ -92,9 +91,14 @@ void StrideSimulatorResult::AfterSimulatorStep(
 		cp->CloseFile();
 	}
 	*/
+	auto pop = sim.GetPopulation();
 	run_clock.Stop();
 	auto infected_count = sim.GetPopulation()->get_infected_count();
 	cases.push_back(infected_count);
+
+	if (generate_vis_data && pop->has_atlas)
+		visualizer_data.AddDay(pop);
+
 	day++;
 
 	lock_guard<mutex> lock(io_mutex);
@@ -227,6 +231,7 @@ void run_stride(const MultiSimulationConfig& config)
 		// -----------------------------------------------------------------------------------------
 		// Cases
 		auto sim_result = sim_tuple.sim_task->GetResult();
+		auto pop = sim_tuple.sim_task->GetPopulation();
 		CasesFile cases_file(sim_tuple.sim_output_prefix);
 		cases_file.Print(sim_result.cases);
 
@@ -240,9 +245,14 @@ void run_stride(const MultiSimulationConfig& config)
 
 		// Persons
 		if (sim_tuple.sim_config.log_config->generate_person_file) {
-			auto pop = sim_tuple.sim_task->GetPopulation();
 			PersonFile person_file(sim_tuple.sim_output_prefix);
 			person_file.Print(pop);
+		}
+
+		// Visualization
+		if (pop->has_atlas && sim_tuple.sim_config.common_config->generate_vis_file) {
+			VisualizerFile vis_file(sim_tuple.sim_output_prefix);
+			vis_file.Print(pop->getAtlas().getTownMap(), sim_result.visualizer_data);
 		}
 
 		cout << endl << endl;
@@ -263,7 +273,7 @@ void run_stride(const MultiSimulationConfig& config)
 void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMultiConfig()); }
 
 /// Run the stride simulator.
-void run_stride(bool track_index_case, const string& config_file_name)
+void run_stride(bool track_index_case, const string& config_file_name, bool gen_vis)
 {
 	// Parse the configuration.
 	ptree pt_config;
@@ -278,6 +288,7 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	MultiSimulationConfig config;
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
+	config.common_config->generate_vis_file = gen_vis;
 
 	/*
 	cp = new CheckPoint("foo.h5");

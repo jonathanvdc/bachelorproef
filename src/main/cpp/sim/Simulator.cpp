@@ -50,13 +50,13 @@ Simulator::Simulator()
 
 void Simulator::SetTrackIndexCase(bool track_index_case) { m_track_index_case = track_index_case; }
 
-template <LogMode log_level, bool track_index_case>
+template <LogMode log_level, bool track_index_case, typename local_information_policy>
 void Simulator::UpdateClusters()
 {
 	auto log = m_log;
 
 	auto action = [this, log](Cluster& cluster, unsigned int thread_id) {
-		Infector<log_level, track_index_case>::Execute(
+		Infector<log_level, track_index_case, local_information_policy>::Execute(
 		    cluster, m_disease_profile, m_rng_handler[thread_id], m_calendar, log);
 	};
 
@@ -275,8 +275,10 @@ multiregion::SimulationStepOutput Simulator::TimeStep(const multiregion::Simulat
 	const bool is_work_off{days_off->IsWorkOff()};
 	const bool is_school_off{days_off->IsSchoolOff()};
 
+	const double fraction_infected = m_population->get_fraction_infected();
+
 	m_population->parallel_for(m_num_threads, [=](const Person& p, unsigned int) {
-		p.Update(is_work_off, is_school_off);
+		p.Update(is_work_off, is_school_off, fraction_infected);
 	});
 
 	if (m_track_index_case) {

@@ -38,10 +38,6 @@ if ( MPI_FOUND )
 	set( SRC ${SRC} MpiTests.cpp )
 endif()
 
-if( Poco_FOUND )
-	set( SRC ${SRC} HTTPProtoTest.cpp)
-endif()
-
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
 target_link_libraries( ${EXEC}    ${LIBS} gtest pthread)
 install(TARGETS ${EXEC}  DESTINATION   ${BIN_INSTALL_LOCATION})

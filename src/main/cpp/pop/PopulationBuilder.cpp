@@ -84,6 +84,7 @@ shared_ptr<Population> PopulationBuilder::Build(
 		unsigned int person_id = 0U;
 		while (getline(*pop_file, line)) {
 			const auto values = StringUtils::Split(line, ",");
+                        const auto risk_averseness = values.size() > 6 ? StringUtils::FromString<double>(values[6]) : 0.0;
 			population.emplace(
 			    person_id,
 			    StringUtils::FromString<unsigned int>(values[0]), // age
@@ -92,7 +93,8 @@ shared_ptr<Population> PopulationBuilder::Build(
 			    StringUtils::FromString<unsigned int>(values[3]), // work_id
 			    StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
 			    StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
-			    disease->Sample(rng));			      // Fate
+			    disease->Sample(rng), 			      // Fate
+                            risk_averseness);                                 // risk_averseness
 			++person_id;
 		}
 	} else if (boost::algorithm::ends_with(config.GetPopulationPath(), ".xml")) {
