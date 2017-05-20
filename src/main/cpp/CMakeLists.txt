@@ -26,6 +26,7 @@ set(LIB_SRC
 #---
     calendar/Calendar.cpp
 #---
+    core/Atlas.cpp
     core/Cluster.cpp
     core/ClusterType.cpp
     core/ContactProfile.cpp
@@ -44,6 +45,8 @@ set(LIB_SRC
     output/SummaryFile.cpp
 #---
     output/CasesFile.cpp
+    output/VisualizerFile.cpp
+    output/VisualizerData.cpp
     output/PersonFile.cpp
     output/SummaryFile.cpp
 #---
@@ -67,13 +70,6 @@ set(LIB_SRC
 #---
     checkpoint/CheckPoint.cpp
 )
-
-if( Poco_FOUND )
-    set(LIB_SRC ${LIB_SRC} 
-        http/prototype.cpp
-        http/server.cpp
-    )
-endif()
 
 set(MAIN_SRC
     sim/main.cpp

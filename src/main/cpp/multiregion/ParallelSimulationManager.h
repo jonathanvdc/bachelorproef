@@ -84,7 +84,7 @@ public:
 		auto sim = SimulatorBuilder::Build(configuration, log, number_of_sim_threads);
 		auto id = configuration.travel_model->GetRegionId();
 		auto task = std::make_shared<LocalSimulationTask<TResult, ParallelTaskCommunicator>>(
-		    sim, ParallelTaskCommunicator(id, this), args...);
+		    sim, ParallelTaskCommunicator(id, this), args..., configuration.common_config->generate_vis_file);
 		tasks[id] = task;
 		comm_data.MarkReady(id);
 		active_task_count++;

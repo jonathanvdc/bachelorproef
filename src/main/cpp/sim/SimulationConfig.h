@@ -25,6 +25,7 @@ struct CommonSimulationConfig final
 	CommonSimulationConfig();
 
 	bool track_index_case;
+	bool generate_vis_file;
 
 	/// The initial seed for the random number generator.
 	unsigned int rng_seed;

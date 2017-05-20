@@ -13,7 +13,6 @@ cache:
     # Cache the boost install
     - $HOME/boost_1_63_0/boost
     - $HOME/boost_1_63_0/stage/lib
-    - $HOME/poco
 
 # We're going to need MPI and the mono runtime.
 addons:
