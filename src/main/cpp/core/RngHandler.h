@@ -45,7 +45,7 @@ public:
 	}
 
 	/// Check if two individuals have transmission.
-    bool HasTransmission(double contact_rate, double transmission_rate)
+    bool HasContactAndTransmission(double contact_rate, double transmission_rate)
 	{
 			return m_rng.NextDouble() < RateToProbability(transmission_rate * contact_rate);
 	}
@@ -54,6 +54,12 @@ public:
 	bool HasContact(double contact_rate)
 	{
 			return m_rng.NextDouble() < RateToProbability(contact_rate);
+	}
+
+	///
+	bool HasTransmission(double transmission_rate)
+	{
+		return m_rng.NextDouble() < RateToProbability(transmission_rate);
 	}
 
 private:

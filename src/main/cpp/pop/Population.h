@@ -139,6 +139,23 @@ public:
 	/// Get the cumulative number of cases.
 	unsigned int get_infected_count() const;
 
+	/// Get the fraction of the population that is infected.
+	double get_fraction_infected() const { return double(get_infected_count()) / size(); }
+
+	template <typename BeliefPolicy>
+	unsigned int get_adopted_count() const
+	{
+		unsigned int total{0U};
+		for (const auto& p : *this) {
+			auto belief_data = p.GetBeliefData();
+			bool adopted = BeliefPolicy::HasAdopted(belief_data);
+			if (adopted) {
+				total++;
+			}
+		}
+		return total;
+	}
+
 	/// Store a GeoPosition in the population's atlas.
 	auto AtlasEmplace(const Atlas::Key& key, const geo::GeoPosition& pos) -> decltype(atlas.Emplace(key, pos))
 	{
