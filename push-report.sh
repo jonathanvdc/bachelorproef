@@ -12,9 +12,9 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
 fi
 
 # Save some useful information
-REPO="https://github.com/flu-plus-plus/flu-plus-plus.github.io"
-PASSWORD_REPO="https://flubot:${FLUBOT_PASSWORD}@github.com/flu-plus-plus/flu-plus-plus.github.io"
-SHA=`git rev-parse --verify HEAD`
+export REPO="https://github.com/flu-plus-plus/flu-plus-plus.github.io"
+export PASSWORD_REPO="https://flubot:${FLUBOT_PASSWORD}@github.com/flu-plus-plus/flu-plus-plus.github.io"
+export SHA=`git rev-parse --verify HEAD`
 
 # Clone the existing gh-pages for this repo into out/
 # Create a new empty branch if gh-pages doesn't exist yet (should only happen on first deploy)
