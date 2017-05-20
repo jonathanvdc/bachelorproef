@@ -25,7 +25,6 @@ set( SRC
 		BatchRuns.cpp
 		GeoPosition.cpp
 		main.cpp
-		MpiTests.cpp
 		ParallelTest.cpp
 		ParsePopulationModel.cpp
 		ParseSimulationConfig.cpp
@@ -34,6 +33,10 @@ set( SRC
 		RunSimulator.cpp
 		TravelModelGraph.cpp
 )
+
+if ( MPI_FOUND )
+	set( SRC ${SRC} MpiTests.cpp )
+endif()
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
 target_link_libraries( ${EXEC}    ${LIBS} gtest pthread)
