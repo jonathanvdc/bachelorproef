@@ -205,6 +205,8 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 	if (!is_regular_file(fullpath)) {
 		FATAL_ERROR("Unable to find file: " + fullpath.string());
 	}
+	std::string extension = filep.extension().string();
+	std::cout << extension << std::endl;
 	std::ifstream f(fullpath.string());
 
 	std::vector<char> dataset{std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>()};
@@ -215,13 +217,20 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 	hid_t dset =
 	    H5Dcreate2(group, setname.c_str(), H5T_NATIVE_CHAR, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset.data());
+	H5Sclose(dataspace);
+
+	hsize_t attrDims = extension.size();
+	dataspace = H5Screate_simple(1, &attrDims, nullptr);
+	hid_t attr = H5Acreate2(dset, "extension", H5T_NATIVE_CHAR, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	H5Awrite(attr, H5T_NATIVE_CHAR, extension.c_str());
+	H5Aclose(attr);
 
 	H5Dclose(dset);
 	H5Sclose(dataspace);
 	H5Gclose(group);
 }
 
-void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& setname)
+std::string CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& setname)
 {
 
 	htri_t exist = H5Lexists(m_file, setname.c_str(), H5P_DEFAULT);
@@ -232,7 +241,6 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 	auto path = util::InstallDirs::GetDataDir();
 
 	boost::filesystem::path filename(filestr);
-	std::ofstream out((path / filename).string(), std::ios::out | std::ios::trunc);
 	/*
 	Piece of code based on code on
 	https://lists.hdfgroup.org/pipermail/hdf-forum_lists.hdfgroup.org/2010-June/003208.html
@@ -247,10 +255,27 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 	/* Open the dataset. */
 	// std::cout << "  Opening " << dsetName << " for data Retrieval.  "<< std::endl;
 	did = H5Dopen(m_file, setname.c_str(), H5P_DEFAULT);
+
 	if (did < 0) {
 		std::cout << " Error opening Dataset: " << did << std::endl;
-		return;
+		return "";
 	}
+
+	std::string extension;
+	hid_t attr = H5Aopen(did, "extension", H5P_DEFAULT);
+
+	std::unique_ptr<H5A_info_t> info = std::make_unique<H5A_info_t>();
+
+	H5Aget_info(attr, info.get());
+	std::vector<char> extensionVector(info->data_size, '\0');
+	H5Aread(attr, H5T_NATIVE_CHAR, extensionVector.data());
+	H5Aclose(attr);
+
+	extension = std::string(extensionVector.begin(), extensionVector.end());
+
+	filename.replace_extension(extension);
+
+	std::ofstream out((path / filename).string(), std::ios::out | std::ios::trunc);
 	if (did >= 0) {
 		spaceId = H5Dget_space(did);
 		if (spaceId > 0) {
@@ -287,6 +312,7 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 			out << c;
 		}
 	}
+	return filename.string();
 }
 
 void CheckPoint::SaveCheckPoint(const Simulator& sim, std::size_t day)
@@ -493,11 +519,11 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 	result.common_config = comCon;
 	result.log_config = logCon;
 
-	WriteDSetFile("tmp_matrix.xml", "Config/contact");
-	result.common_config->contact_matrix_file_name = "tmp_matrix.xml";
+	std::string changed = WriteDSetFile("tmp_matrix.xml", "Config/contact");
+	result.common_config->contact_matrix_file_name = changed;
 
-	WriteDSetFile("tmp_disease.xml", "Config/disease");
-	result.common_config->disease_config_file_name = "tmp_disease.xml";
+	changed = WriteDSetFile("tmp_disease.xml", "Config/disease");
+	result.common_config->disease_config_file_name = changed;
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 
@@ -545,20 +571,18 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 
 	// travel model
 
-	WriteDSetFile("tmp_pop.csv", "Config/popconfig");
-	std::string popconfig = "tmp_pop.csv";
+	changed = WriteDSetFile("tmp_pop.csv", "Config/popconfig");
+	std::string popconfig = changed;
 	std::string geoconfig = "";
 
 	exist = H5Lexists(m_file, "Config/geoconfig", H5P_DEFAULT);
 	if (exist > 0) {
-		WriteDSetFile("tmp_geoconfig.xml", "Config/geoconfig");
-		geoconfig = "tmp_geoconfig.xml";
+		geoconfig = WriteDSetFile("tmp_geoconfig.xml", "Config/geoconfig");
 	}
 	std::string household = "";
 	exist = H5Lexists(m_file, "Config/household", H5P_DEFAULT);
 	if (exist > 0) {
-		WriteDSetFile("tmp_household.xml", "Config/household");
-		household = "tmp_household.xml";
+		household = WriteDSetFile("tmp_household.xml", "Config/household");
 	}
 	auto travelRef = make_shared<multiregion::RegionTravel>(id, popconfig, geoconfig, household);
 	result.travel_model = travelRef;
@@ -897,15 +921,16 @@ void CheckPoint::LoadAtlas(Population& pop)
 	}
 }
 
-boost::gregorian::date CheckPoint::GetLastDate() {
+boost::gregorian::date CheckPoint::GetLastDate()
+{
 	boost::gregorian::date result;
 
 	auto op_func = [&result](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
-		if (std::string(name) == "Config"){
+		if (std::string(name) == "Config") {
 			return 0;
 		}
 		boost::gregorian::date toCheck(boost::gregorian::from_undelimited_string(name));
-		if(toCheck > result or result.is_not_a_date()){
+		if (toCheck > result or result.is_not_a_date()) {
 			result = toCheck;
 		}
 		return 0;
@@ -917,7 +942,6 @@ boost::gregorian::date CheckPoint::GetLastDate() {
 
 	H5Literate(m_file, H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, temp, &op_func);
 	return result;
-
 }
 
 } /* namespace checkpoint */

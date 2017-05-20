@@ -96,7 +96,7 @@ private:
 
 	/// Writes a dataset to a file. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset
-	void WriteDSetFile(const std::string&, const std::string&);
+	std::string WriteDSetFile(const std::string&, const std::string&);
 
 	hid_t m_file;		      //< current hdf5 workspace
 	const std::string m_filename; //< filename
