@@ -29,10 +29,10 @@ public:
 	void AddDay(const Population& pop);
 
 	/// Get a reference to the vector of days.
-	const std::vector<std::map<std::size_t, unsigned int>>& GetDays() const;
+	std::vector<std::map<std::size_t, unsigned int>>& GetDays() const;
 
 	/// Convert all stored data into a boost property tree, so that it can be converted to JSON.
-	const std::shared_ptr<boost::property_tree::ptree> ToPtree() const;
+	std::shared_ptr<boost::property_tree::ptree> ToPtree() const;
 };
 
 } // end of namespace

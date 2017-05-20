@@ -20,7 +20,7 @@ VisualizerFile::~VisualizerFile() { m_fstream.close(); }
 
 void VisualizerFile::Initialize(const std::string& file) { m_fstream.open((file + "_vis.json").c_str()); }
 
-void VisualizerFile::Print(Atlas::TownMap townMap, const VisualizerData& visualizer_data)
+void VisualizerFile::Print(Atlas::TownMap& townMap, const VisualizerData& visualizer_data)
 {
 	using boost::property_tree::ptree;
 	using boost::property_tree::write_json;

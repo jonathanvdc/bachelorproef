@@ -21,14 +21,22 @@ namespace stride {
 class Atlas
 {
 public:
+
+	/// A struct storing information on a town/city
 	struct Town
 	{
+		// The name of the town or city
 		std::string name;
+		// The number of inhabitants
 		unsigned int size;
-		static std::size_t newId;
+		// The unique ID
 		std::size_t id;
 
 		Town(const std::string& name, const unsigned int size) : name(name), size(size), id(newId++) {}
+		
+		private:
+		// Static member used to produce unique IDs
+		static std::size_t newId;
 	};
 
 	using ClusterKey = std::pair<std::size_t, ClusterType>;
@@ -42,7 +50,7 @@ public:
 	const geo::GeoPosition& LookupPosition(const ClusterKey& key) const { return cluster_map.at(key); }
 
 	/// Look up a cluster's town. If it isn't found, throw std::out_of_range.
-	const Town LookupTown(const ClusterKey& key) const { return town_map.at(cluster_map.at(key)); }
+	const Town& LookupTown(const ClusterKey& key) const { return town_map.at(cluster_map.at(key)); }
 
 	/// Get the map of towns.
 	const TownMap& getTownMap() const { return town_map; }

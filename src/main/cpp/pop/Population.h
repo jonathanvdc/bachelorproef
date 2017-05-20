@@ -134,7 +134,7 @@ public:
 	unsigned int get_infected_count() const;
 
 	/// Get the atlas.
-	const Atlas& getAtlas() const {return atlas;}
+	const Atlas& getAtlas() const { return atlas; }
 
 	/// Register the map of GeoPositions to Towns to the atlas.
 	void AtlasRegisterTowns(Atlas::TownMap& towns) { atlas.RegisterTowns(towns); }
@@ -146,7 +146,8 @@ public:
 		return atlas.EmplaceCluster(key, pos);
 	}
 
-	Atlas::Town Hometown(const Person& person) const{
+	const Atlas::Town& GetHometown(const Person& person) const
+	{
 		return atlas.LookupTown({person.GetClusterId(ClusterType::Household), ClusterType::Household});
 	}
 

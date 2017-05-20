@@ -26,8 +26,8 @@
 #include "multiregion/TravelModel.h"
 #include "output/CasesFile.h"
 #include "output/PersonFile.h"
-#include "output/VisualizerFile.h"
 #include "output/SummaryFile.h"
+#include "output/VisualizerFile.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
 #include "util/Errors.h"
@@ -72,9 +72,9 @@ void StrideSimulatorResult::AfterSimulatorStep(const Population& pop)
 	auto infected_count = pop.get_infected_count();
 	cases.push_back(infected_count);
 
-	if(generate_vis_data && pop.has_atlas)
+	if (generate_vis_data && pop.has_atlas)
 		visualizer_data.AddDay(pop);
-	
+
 	day++;
 
 	lock_guard<mutex> lock(io_mutex);
@@ -87,7 +87,8 @@ unsigned int print_number_of_threads()
 {
 	unsigned int num_threads = stride::util::parallel::get_number_of_threads();
 	if (stride::util::parallel::using_parallelization_library) {
-		cout << "Using " << stride::util::parallel::parallelization_library_name << " threads: " << num_threads << endl;
+		cout << "Using " << stride::util::parallel::parallelization_library_name << " threads: " << num_threads
+		     << endl;
 	} else {
 		cout << "Not using threads for parallelization." << endl;
 	}
@@ -210,13 +211,13 @@ void run_stride(const MultiSimulationConfig& config)
 			PersonFile person_file(sim_tuple.sim_output_prefix);
 			person_file.Print(pop);
 		}
-		
+
 		// Visualization
-		if(pop->has_atlas && sim_tuple.sim_config.common_config->generate_vis_file){
+		if (pop->has_atlas && sim_tuple.sim_config.common_config->generate_vis_file) {
 			VisualizerFile vis_file(sim_tuple.sim_output_prefix);
 			vis_file.Print(pop->getAtlas().getTownMap(), sim_result.visualizer_data);
 		}
-		
+
 		cout << endl << endl;
 		cout << "  run_time: " << sim_result.GetRuntimeString() << "  -- total time: " << total_clock.ToString()
 		     << endl
