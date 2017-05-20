@@ -10,17 +10,17 @@ namespace stride {
 using namespace std;
 using boost::property_tree::ptree;
 
-void VisualizerData::AddDay(const Population& pop)
+void VisualizerData::AddDay(const std::shared_ptr<const Population>& pop)
 {
 	days.push_back({});
-	for (const auto& p : pop) {
+	for (const auto& p : *pop) {
 		if (p.GetHealth().IsInfected()) {
-			days.back()[pop.GetHometown(p).id]++;
+			days.back()[pop->GetHometown(p).id]++;
 		}
 	}
 }
 
-vector<map<size_t, unsigned int>>& VisualizerData::GetDays() const { return days; }
+const vector<map<size_t, unsigned int>>& VisualizerData::GetDays() const { return days; }
 
 shared_ptr<ptree> VisualizerData::ToPtree() const
 {

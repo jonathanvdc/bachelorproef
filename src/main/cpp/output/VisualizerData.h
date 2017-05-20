@@ -26,10 +26,10 @@ private:
 
 public:
 	/// Register a new day from the given population's current state.
-	void AddDay(const Population& pop);
+	void AddDay(const std::shared_ptr<const Population>& pop);
 
 	/// Get a reference to the vector of days.
-	std::vector<std::map<std::size_t, unsigned int>>& GetDays() const;
+	const std::vector<std::map<std::size_t, unsigned int>>& GetDays() const;
 
 	/// Convert all stored data into a boost property tree, so that it can be converted to JSON.
 	std::shared_ptr<boost::property_tree::ptree> ToPtree() const;

@@ -96,7 +96,7 @@ void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 	auto infected_count = sim.GetPopulation()->get_infected_count();
 	cases.push_back(infected_count);
 
-	if (generate_vis_data && pop.has_atlas)
+	if (generate_vis_data && pop->has_atlas)
 		visualizer_data.AddDay(pop);
 
 	day++;
