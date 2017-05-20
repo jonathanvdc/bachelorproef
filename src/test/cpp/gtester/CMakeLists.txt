@@ -25,7 +25,6 @@ set( SRC
 		BatchRuns.cpp
 		GeoPosition.cpp
 		main.cpp
-		MpiTests.cpp
 		ParallelTest.cpp
 		ParsePopulationModel.cpp
 		ParseSimulationConfig.cpp
@@ -34,6 +33,10 @@ set( SRC
 		RunSimulator.cpp
 		TravelModelGraph.cpp
 )
+
+if ( MPI_FOUND )
+	set( SRC ${SRC} MpiTests.cpp )
+endif()
 
 if( Poco_FOUND )
 	set( SRC ${SRC} HTTPProtoTest.cpp)
