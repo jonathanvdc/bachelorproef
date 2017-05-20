@@ -102,7 +102,7 @@ Visualizer.prototype.initialize = function(data){
     this.towns = data.towns;
     this.aggregateData();
 
-    // Debug method.
+    // Debug
     // this.addAlignmentTestNodes();
 
     // Put the total number of days
@@ -117,6 +117,59 @@ Visualizer.prototype.initialize = function(data){
     this.configureControls();
 }
 
+/// Handler passed to the FileReader, called with the contents of the selected file.
+Visualizer.prototype.handleFile = function(e) {
+    var data = JSON.parse(e.target.result);
+    cleanData(data);
+    this.initialize(data);
+}
+
+/// Extract useful information from our data.
+Visualizer.prototype.aggregateData = function(){
+    // Aggregate from towns
+    var maxTownSize = 0;
+    var totalSize = 0;
+    for(var t in this.towns){
+        var size = this.towns[t].size
+        maxTownSize = Math.max(maxTownSize, size);
+        totalSize += size;
+    }
+    this.maxTownSize = maxTownSize;
+    this.totalSize = totalSize;
+    $(".total-people").text(totalSize);
+
+    // Aggregate from days
+    var maxTotal = 0;
+    var maxTotalDay = 0;
+    var maxSingle = 0;
+    for(var d in this.days){
+        var total = 0;
+        var maxLocalSingle = 0;
+        var maxLocalSingleTown = 0;
+        for(var t in this.towns){
+            var single = this.days[d][t];
+            if(single == undefined)
+                continue;
+            total += single;
+            maxSingle = Math.max(maxSingle, single);
+            if(single > maxLocalSingle){
+                maxLocalSingle = single;
+                maxLocalSingleTown = t;
+            }
+        }
+        this.days[d].total = total;
+        this.days[d].max = {infected: maxLocalSingle, town: maxLocalSingleTown};
+        if(total > maxTotal){
+            maxTotal = total
+            maxTotalDay = d;
+        }
+    }
+    this.maxTotal = maxTotal;
+    $(".most-total-infected").text(maxTotal);
+    $(".most-total-infected-day").text(maxTotalDay);
+    this.maxSingle = maxSingle;
+}
+
 /// Bind into the controls and set the appropriate events.
 Visualizer.prototype.initializeControls = function (controlSelector){
     $c = $(controlSelector);
@@ -129,9 +182,10 @@ Visualizer.prototype.initializeControls = function (controlSelector){
     c.$run = $c.find('.run-input');
     c.$loop = $c.find('.loop-input');
     c.$gradient = $('.gradient-input');
+    c.$colourMode = $('.colour-mode-input');
 
     // Used for enabling-disabling all at once
-    c.all = [c.$prevDay, c.$nextDay, c.$range, c.$run, c.$loop, c.$gradient.find("button")];
+    c.all = [c.$prevDay, c.$nextDay, c.$range, c.$run, c.$loop, c.$gradient.find("button"), c.$colourMode.find("button")];
 
     // Bind events
     c.$prevDay.on("click", this.prevDay.bind(this));
@@ -189,13 +243,6 @@ Visualizer.prototype.configureControls = function(){
     this.disableControls(false);
 }
 
-/// Select the gradient by the given name.
-Visualizer.prototype.selectGradient = function(name){
-    this.gradient = Gradient.gradients[name].scale(this.maxSingle);
-    this.updateLegend();
-    this.updateMap();
-}
-
 /// Control interface methods:
 Visualizer.prototype.prevDay = function(){ this.updateDay(visualizer.day - 1); }
 Visualizer.prototype.nextDay = function(){ this.updateDay(visualizer.day + 1); }
@@ -204,46 +251,6 @@ Visualizer.prototype.nextDay = function(){ this.updateDay(visualizer.day + 1); }
 Visualizer.prototype.disableControls = function(val=true){
     for(i in this.control.all)
         this.control.all[i].prop("disabled", val);
-}
-
-/// Handler passed to the FileReader, called with the contents of the selected file.
-Visualizer.prototype.handleFile = function(e) {
-    var data = JSON.parse(e.target.result);
-    cleanData(data);
-    this.initialize(data);
-}
-
-/// Extract useful information from our data.
-Visualizer.prototype.aggregateData = function(){
-    var maxTotal = 0;
-    var maxTotalDay = 0;
-    var maxSingle = 0;
-    for(var d in this.days){
-        var total = 0;
-        var maxLocalSingle = 0;
-        var maxLocalSingleTown = 0;
-        for(var t in this.towns){
-            var single = this.days[d][t];
-            if(single == undefined)
-                continue;
-            total += single;
-            maxSingle = Math.max(maxSingle, single);
-            if(single > maxLocalSingle){
-                maxLocalSingle = single;
-                maxLocalSingleTown = t;
-            }
-        }
-        this.days[d].total = total;
-        this.days[d].max = {infected: maxLocalSingle, town: maxLocalSingleTown};
-        if(total > maxTotal){
-            maxTotal = total
-            maxTotalDay = d;
-        }
-    }
-    this.maxTotal = maxTotal;
-    $(".most-total-infected").text(maxTotal);
-    $(".most-total-infected-day").text(maxTotalDay);
-    this.maxSingle = maxSingle;
 }
 
 /// Add a few easily recognisible items to the map for testing alignment of coordinates to the map.
@@ -290,9 +297,27 @@ Visualizer.prototype.makeTable = function(){
     }
 }
 
+/// Choose how the circles are coloured.
+/// Options: "count" or "percent"
+Visualizer.prototype.setGradientMode = function(mode){
+    this.colourMode = mode;
+    this.updateLegend();
+    this.updateMap();
+}
+
+/// Select the gradient by the given name.
+Visualizer.prototype.selectGradient = function(name){
+    this.percentGradient = Gradient.gradients[name];
+    this.countGradient = this.percentGradient.scale(this.maxSingle);
+    this.updateLegend();
+    this.updateMap();
+}
+
 /// Initialize the gradient that governs map colouring.
 Visualizer.prototype.initializeLegend = function($target){
-    this.gradient = Gradient.gradients["Ultra heat map"].scale(this.maxSingle);
+    this.colourMode = "count";
+    this.percentGradient = Gradient.gradients["Ultra heat map"];
+    this.countGradient = this.percentGradient.scale(this.maxSingle);
     this.$legend = $(".legend-view");
     this.updateLegend();
 }
@@ -300,10 +325,21 @@ Visualizer.prototype.initializeLegend = function($target){
 // Updates the legend to match the contents of the selected colour gradient.
 Visualizer.prototype.updateLegend = function(){
     this.$legend.html("");
-    for(i in this.gradient.colourMap){
+    for(i in this.countGradient.colourMap){
         $item = $("<div>", {class: "legend-item"});
-        $item.text(Math.round(this.gradient.colourMap[i].val));
-        $item.append($("<span>", {class:"legend-circle",style:"background-color:"+this.gradient.colourMap[i].colour.toString()}));
+
+        var colour;
+        if(this.colourMode == "count"){
+            $item.text(Math.round(this.countGradient.colourMap[i].val));
+            colour = this.countGradient.colourMap[i].colour.toString();
+        }
+        else if(this.colourMode == "percent"){
+            $item.text(percentFormat(this.percentGradient.colourMap[i].val, 0));
+            colour = this.percentGradient.colourMap[i].colour.toString();
+        }
+
+        $item.append($("<span>", {class:"legend-circle",style:"background-color:"+colour}));
+
         this.$legend.append($item);
     }
 }
@@ -321,7 +357,8 @@ Visualizer.prototype.makeMap = function(){
     var width = 1100;
     var height = 800;
 
-    this.sizeFunc = val => Math.sqrt(val) * 8/Math.sqrt(this.maxSingle) + 2;
+    this.infectedSizeFunc = val => Math.sqrt(val) * 8/Math.sqrt(this.maxSingle) + 2;
+    this.townSizeFunc = val => Math.pow(val, 0.3) * 10/Math.pow(this.maxTownSize, 0.3) + 2;
 
     // Check if any of the data fits inside a known map.
     for(i in Map.maps){
@@ -367,6 +404,7 @@ Visualizer.prototype.makeMap = function(){
         dot.setAttribute("title", town.name);
         dot.setAttribute("data-toggle", "tooltip");
         dot.setAttribute("data-container", "body");
+        dot.setAttribute("r", this.townSizeFunc(town.size));
     }
     refreshTooltips();
 }
@@ -432,10 +470,16 @@ Visualizer.prototype.updateTable = function(){
 Visualizer.prototype.updateMap = function(){
     var currentDay = this.days[this.day];
 
-    for(town in this.towns){
-        val = currentDay[town] || 0;
-        dot = this.towns[town].dot;
-        dot.setAttribute("fill", this.gradient.get(val).toString());
-        dot.setAttribute("r", this.sizeFunc(val));
+    for(var town in this.towns){
+        var val = currentDay[town] || 0;
+        var size = this.towns[town].size;
+        var dot = this.towns[town].dot;
+
+        if(this.colourMode == "count")
+            dot.setAttribute("fill", this.countGradient.get(val).toString());
+        else if(this.colourMode == "percent")
+            dot.setAttribute("fill", this.percentGradient.get(val/size).toString());
+
+        // dot.setAttribute("r", this.sizeFunc(val));
     }
 }
