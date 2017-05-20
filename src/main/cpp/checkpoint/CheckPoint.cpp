@@ -301,7 +301,7 @@ void CheckPoint::SaveCheckPoint(const Simulator& sim, std::size_t day)
 
 	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
 	if (exist <= 0) {
-		hid_t group = H5Gcreate2(m_file, "Config", H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+		hid_t group = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 		htri_t exist2 = H5Lexists(group, "Atlas", H5P_DEFAULT);
 		if (exist2 <= 0) {
 			WriteAtlas(sim.GetPopulation()->GetAtlas());
@@ -341,7 +341,7 @@ void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& fil
 	H5Gclose(group);
 }
 
-Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct& clusters)
+void CheckPoint::LoadCheckPoint(boost::gregorian::date date, Simulator& sim)
 {
 
 	std::string groupname = to_iso_string(date);
@@ -403,21 +403,25 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 	H5Tclose(newType);
 	H5Dclose(dset);
 
-	// loading clusters
-	LoadCluster(clusters.m_households, ClusterType::Household, groupname, result);
-	LoadCluster(clusters.m_school_clusters, ClusterType::School, groupname, result);
-	LoadCluster(clusters.m_work_clusters, ClusterType::Work, groupname, result);
-	LoadCluster(clusters.m_primary_community, ClusterType::PrimaryCommunity, groupname, result);
-	LoadCluster(clusters.m_secondary_community, ClusterType::SecondaryCommunity, groupname, result);
-
 	LoadAtlas(result);
 
-	return result;
+	sim.SetPopulation(result);
+	sim.SetExpatriates(LoadExpatriates(result, date));
+	sim.SetVisitors(LoadVisitors(date));
+
+	ClusterStruct clusters;
+	// loading clusters
+	LoadCluster(sim.GetClusters().m_households, ClusterType::Household, groupname, result);
+	LoadCluster(sim.GetClusters().m_school_clusters, ClusterType::School, groupname, result);
+	LoadCluster(sim.GetClusters().m_work_clusters, ClusterType::Work, groupname, result);
+	LoadCluster(sim.GetClusters().m_primary_community, ClusterType::PrimaryCommunity, groupname, result);
+	LoadCluster(sim.GetClusters().m_secondary_community, ClusterType::SecondaryCommunity, groupname, result);
 }
 
 void CheckPoint::LoadCluster(
     std::vector<Cluster>& clusters, const ClusterType& i, const std::string& groupname, const Population& result)
 {
+	clusters.clear();
 	std::string type = ToString(i);
 	std::string path = groupname + "/" + type;
 	hid_t clusterID = H5Dopen2(m_file, path.c_str(), H5P_DEFAULT);
@@ -489,10 +493,10 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 	result.common_config = comCon;
 	result.log_config = logCon;
 
-	WriteDSetFile("tmp_matrix.xml", "Config/disease");
+	WriteDSetFile("tmp_matrix.xml", "Config/contact");
 	result.common_config->contact_matrix_file_name = "tmp_matrix.xml";
 
-	WriteDSetFile("tmp_disease.xml", "Config/contact");
+	WriteDSetFile("tmp_disease.xml", "Config/disease");
 	result.common_config->disease_config_file_name = "tmp_disease.xml";
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
@@ -891,6 +895,29 @@ void CheckPoint::LoadAtlas(Population& pop)
 		postion.longitude = c.longitude;
 		pop.AtlasEmplace(key, postion);
 	}
+}
+
+boost::gregorian::date CheckPoint::GetLastDate() {
+	boost::gregorian::date result;
+
+	auto op_func = [&result](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
+		if (std::string(name) == "Config"){
+			return 0;
+		}
+		boost::gregorian::date toCheck(boost::gregorian::from_undelimited_string(name));
+		if(toCheck > result or result.is_not_a_date()){
+			result = toCheck;
+		}
+		return 0;
+	};
+	auto temp = [](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
+		(*static_cast<decltype(op_func)*>(operator_data))(loc_id, name, info, operator_data);
+		return 0;
+	};
+
+	H5Literate(m_file, H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, temp, &op_func);
+	return result;
+
 }
 
 } /* namespace checkpoint */

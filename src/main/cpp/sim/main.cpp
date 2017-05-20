@@ -45,8 +45,19 @@ int main(int argc, char** argv)
 		CmdLine cmd("stride", ' ', "1.0", false);
 		SwitchArg index_case_Arg("r", "r0", "R0 only", cmd, false);
 		ValueArg<string> config_file_Arg(
-		    "c", "config", "Config File", false, "./config/run_default.xml", "CONFIGURATION FILE", cmd);
+		    "c", "config", "Config File", false, "", "CONFIGURATION FILE", cmd);
+		SwitchArg hdf5("h","hdf5","Run checkpointig",cmd,false);
+
+		ValueArg<string> h5File("f","h5file","HDF5 file to write to",false,"","CHECKPOINT FILE",cmd);
+
+		ValueArg<string> date("l","load","The date to be loaded from the HDF5 file",false,"","NON-DELIMITED DATE",cmd);
+
+		ValueArg<unsigned int> interval("i","interval","the amount of days between each checkpoint. The first and last are not counted.",false,-1,"",cmd);
+
 		cmd.parse(argc, argv);
+
+		stride::util::HDF5.store(hdf5.getValue());
+		stride::util::INTERVAL.store(interval.getValue());
 
 		// -----------------------------------------------------------------------------------------
 		// Print output to command line.
@@ -61,7 +72,7 @@ int main(int argc, char** argv)
 		// -----------------------------------------------------------------------------------------
 		// Run the Stride simulator.
 		// -----------------------------------------------------------------------------------------
-		run_stride(index_case_Arg.getValue(), config_file_Arg.getValue());
+		run_stride(index_case_Arg.getValue(), config_file_Arg.getValue(), h5File.getValue(), date.getValue());
 	} catch (exception& e) {
 		exit_status = EXIT_FAILURE;
 		cerr << "\nEXCEPION THROWN: " << e.what() << endl;

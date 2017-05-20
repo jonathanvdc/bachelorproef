@@ -16,8 +16,7 @@ namespace checkpoint {
 class CheckPoint
 {
 public:
-	/// Constructor The string is the file for the checkpoints. The unsigned int is the interval between
-	/// checkpoints. An interval of 0 makes no checkpoints.
+	/// Constructor The string is the file for the checkpoints.
 	CheckPoint(const std::string& filename);
 
 	/// Creates the wanted file and immediately closes it. It will overwrite a file if one of the same name already
@@ -36,9 +35,8 @@ public:
 	/// Writes the SingleSimulationConfig.
 	void WriteConfig(const SingleSimulationConfig& conf);
 
-	/// Loads a checkpoint from the file in the constructor. The unsigned date tells which checkpoint to use. The
-	/// clusters will be made with each inner list of clusters all having the same clustertype.
-	Population LoadCheckPoint(boost::gregorian::date date, ClusterStruct& clusters);
+	/// Loads all data from a checkpoint into a Simulator. It will not load the configuration.
+	void LoadCheckPoint(boost::gregorian::date date, Simulator& sim);
 
 	/// Saves the current simulation to a checkpoint with the date as Identifier.
 	void SaveCheckPoint(const Simulator& simulation, std::size_t day);
@@ -57,6 +55,9 @@ public:
 
 	/// Loads the Calendar starting with the given date.
 	Calendar LoadCalendar(boost::gregorian::date date);
+
+	/// Search for the last date written.
+	boost::gregorian::date GetLastDate();
 
 private:
 	/// Writes the current population to a checkpoint.

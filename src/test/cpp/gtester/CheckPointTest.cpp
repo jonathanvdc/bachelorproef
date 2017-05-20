@@ -128,15 +128,17 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 	cp->SaveCheckPoint(*sim,0);
 	cp->CloseFile();
 
-	ClusterStruct clRead;
-	stride::Population popRead;
+	Simulator SimRead;
 
 	cp->OpenFile();
-	popRead = cp->LoadCheckPoint(sim->GetDate(), clRead);
+	cp->LoadCheckPoint(sim->GetDate(), SimRead);
 	cp->CloseFile();
 
 	stride::Population origPop = *sim->GetPopulation();
 	ClusterStruct clOrig = sim->GetClusters();
+
+	auto popRead = *SimRead.GetPopulation();
+	auto clRead = SimRead.GetClusters();
 
 	EXPECT_EQ(origPop.size(), popRead.size());
 	EXPECT_EQ(origPop.get_infected_count(), popRead.get_infected_count());

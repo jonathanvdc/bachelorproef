@@ -54,6 +54,7 @@
 
 std::atomic<bool> stride::util::INTERRUPT(false);
 std::atomic<unsigned int> stride::util::INTERVAL(1);
+std::atomic<bool> stride::util::HDF5(false);
 
 namespace stride {
 
@@ -66,22 +67,33 @@ using namespace std::chrono;
 using namespace checkpoint;
 
 std::mutex StrideSimulatorResult::io_mutex;
+bool load = false;
+boost::gregorian::date date;
 
 #if USE_HDF5
 CheckPoint* cp;
 #endif
 
 /// Performs an action just before a simulator step is performed.
-void StrideSimulatorResult::BeforeSimulatorStep(const Simulator& sim)
+void StrideSimulatorResult::BeforeSimulatorStep(Simulator& sim)
 {
 	run_clock.Start();
 
 #if USE_HDF5
-	if (day == 0) {
-		// saves the start configuration
-		cp->OpenFile();
-		cp->SaveCheckPoint(sim, day);
-		cp->CloseFile();
+	if (stride::util::HDF5) {
+		if (load and day == 0) {
+			std::cout<<"Loading old Simulation"<<std::endl;
+			cp->OpenFile();
+			cp->LoadCheckPoint(date, sim);
+			cp->CloseFile();
+			std::cout<<"Loaded old Simulation"<<std::endl;
+		}
+		if (day == 0 and not load) {
+			// saves the start configuration
+			cp->OpenFile();
+			cp->SaveCheckPoint(sim, day);
+			cp->CloseFile();
+		}
 	}
 #endif
 
@@ -94,11 +106,13 @@ void StrideSimulatorResult::BeforeSimulatorStep(const Simulator& sim)
 void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 {
 #if USE_HDF5
-	// saves the last configuration or configuration after an interval.
-	if (sim.IsDone() or util::INTERRUPT or day % util::INTERVAL == 0) {
-		cp->OpenFile();
-		cp->SaveCheckPoint(sim, day);
-		cp->CloseFile();
+	if (stride::util::HDF5) {
+		// saves the last configuration or configuration after an interval.
+		if (sim.IsDone() or util::INTERRUPT or day % util::INTERVAL == 0) {
+			cp->OpenFile();
+			cp->SaveCheckPoint(sim, day);
+			cp->CloseFile();
+		}
 	}
 #endif
 	run_clock.Stop();
@@ -166,12 +180,6 @@ void run_stride(const MultiSimulationConfig& config)
 		config.log_config->output_prefix = TimeStamp().ToTag();
 	}
 	auto output_prefix = config.log_config->output_prefix;
-
-	#if USE_HDF5
-	cp->OpenFile();
-	cp->WriteConfig(config);
-	cp->CloseFile();
-	#endif
 
 	cout << "Project output tag:  " << output_prefix << endl << endl;
 
@@ -272,8 +280,14 @@ void run_stride(const MultiSimulationConfig& config)
 void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMultiConfig()); }
 
 /// Run the stride simulator.
-void run_stride(bool track_index_case, const string& config_file_name)
+void run_stride(
+    bool track_index_case, const string& config_file_name, const std::string& h5_file, const std::string& date)
 {
+	if(config_file_name.empty()){
+		run_stride_noConfig(track_index_case,h5_file,date);
+		return;
+	}
+	std::string realFile(h5_file);
 	// Parse the configuration.
 	ptree pt_config;
 	const auto file_path = canonical(system_complete(config_file_name));
@@ -288,17 +302,86 @@ void run_stride(bool track_index_case, const string& config_file_name)
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
 
-	#if USE_HDF5
-	cp = new CheckPoint("foo.h5");
+	if (config.log_config->output_prefix.length() == 0) {
+		config.log_config->output_prefix = TimeStamp().ToTag();
+	}
+	if (h5_file.empty()){
+		realFile = TimeStamp().ToTag() + ".h5";
+	}
+#if USE_HDF5
+	if (stride::util::HDF5) {
+		cp = new CheckPoint(realFile);
 
-	cp->CreateFile();
-	cp->OpenFile();
-	cp->WriteHolidays(pt_config.get_child("run").get<std::string>("holidays_file", "holidays_flanders_2016.json"));
-	cp->CloseFile();
-	#endif
-	
+		cp->CreateFile();
+		cp->OpenFile();
+		cp->WriteConfig(config);
+		cp->WriteHolidays(
+		    pt_config.get_child("run").get<std::string>("holidays_file", "holidays_flanders_2016.json"));
+		cp->CloseFile();
+	}
+#endif
+
 	// Run Stride.
 	run_stride(config);
+}
+
+void run_stride_noConfig(bool track_index_case, const std::string& h5_file, const std::string& datestr)
+{
+#if USE_HDF5
+	load = true;
+	if (not stride::util::HDF5) {
+		FATAL_ERROR("NOT USING HDF5.");
+	}
+	std::string actualFile = h5_file;
+	if (h5_file.empty()) {
+		std::vector<boost::filesystem::path> hfiles;
+		for (auto& i : boost::make_iterator_range(
+			 boost::filesystem::directory_iterator(InstallDirs::GetCurrentDir()), {})) {
+			if (boost::filesystem::is_regular_file(i) and i.path().extension() == ".h5") {
+				hfiles.push_back(i.path());
+			}
+		}
+		if (hfiles.empty()) {
+			FATAL_ERROR("No valid h5 file found");
+		}
+		boost::filesystem::path besTime = hfiles[0];
+		for (auto& p : hfiles) {
+			if (boost::filesystem::last_write_time(besTime) < boost::filesystem::last_write_time(p)) {
+				besTime = p;
+			}
+		}
+		actualFile = besTime.filename().string();
+	}
+	cp = new CheckPoint(actualFile);
+
+	if (datestr.empty()) {
+		cp->OpenFile();
+		date = cp->GetLastDate();
+		cp->CloseFile();
+	} else {
+		try {
+			date = boost::gregorian::date(boost::gregorian::from_undelimited_string(datestr));
+		} catch (std::exception& e) {
+			date = boost::gregorian::date();
+		}
+	}
+
+	if (date.is_not_a_date()) {
+		FATAL_ERROR("No valid date found.");
+	}
+	cout << "Checkpoint file:  " << actualFile << endl;
+	cout << "Date:  " << boost::gregorian::to_simple_string(date) << endl;
+
+	cp->OpenFile();
+	SingleSimulationConfig config = cp->LoadSingleConfig();
+	config.common_config->initial_calendar = cp->LoadCalendar(date);
+	cp->CloseFile();
+
+	run_stride(config);
+
+#else
+	FATAL_ERROR("HDF5 NOT INSTALLED");
+#endif
 }
 
 } // end_of_namespace
