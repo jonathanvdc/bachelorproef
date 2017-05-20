@@ -42,7 +42,7 @@ if git push $PASSWORD_REPO $TARGET_BRANCH; then
 else
     # Nuke the commit we just made.
     echo "Push failed. Nuking commit..."
-    git reset HEAD^
+    git reset --hard HEAD^
     # Do a git pull.
     git pull $PASSWORD_REPO $TARGET_BRANCH
     cd ..
