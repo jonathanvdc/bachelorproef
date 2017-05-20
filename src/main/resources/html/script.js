@@ -16,19 +16,7 @@ $(document).ready(function(){
     refreshDraggable();
 
     // Make panels collapsible
-    function toggleCollapsed(){
-        var $target = $(this).parents().eq(1);
-        if($target.hasClass("collapsed")){
-            $(this).text("─");
-            $target.removeClass("collapsed");
-        } else {
-            $(this).text("+");
-            $target.addClass("collapsed");
-        }
-    }
-
-    var $x = $("<a>",{class:"collapse-toggle"}).text("─").on("click", toggleCollapsed);
-    $(".panel > .panel-head").append($x);
+    refreshCollapsable();
 })
 
 
@@ -288,7 +276,7 @@ Visualizer.prototype.makeTable = function(){
     // Rows
     for(var i in this.towns){
         var town = this.towns[i];
-        $row = $('<tr>', {id:noSpace(town.name)});
+        $row = $('<tr>', {town:noSpace(town.name)});
         $row.append($('<td>' + town.name + '</td>'));
         $row.append($('<td>' + town.size + '</td>'));
         $row.append($('<td>', {class:'infected'}));
@@ -344,6 +332,28 @@ Visualizer.prototype.updateLegend = function(){
     }
 }
 
+var panelX = 30;
+var panelY = 450;
+
+Visualizer.prototype.makeTownPanel = function(town){
+    var x = panelX;
+    var y = panelY;
+    panelX = (panelX - 30 + 30) % 300 + 30;
+    panelY = (panelY - 450 + 30) % 240 + 450;
+
+    var text = 
+    `<div> Infected: <span class=\"info infected\">-</span> / \
+    <span class=\"info \">${town.size}</span> = \
+    <span class=\"info percent\">-</span> </div>`;
+
+    $panel = makePanel(x, y, town.name ,text);
+    $panel.css("min-width", "200px");
+    $panel.body.attr("town", noSpace(town.name));
+
+    $("body").append($panel);
+    this.updateTable();
+}
+
 /// Prepare the HTML document with a basic table.
 Visualizer.prototype.makeMap = function(){
     // Find and clear the view target
@@ -387,7 +397,7 @@ Visualizer.prototype.makeMap = function(){
 
     // Fill it with circles
     for(var i in this.towns){
-        var town = this.towns[i];
+        let town = this.towns[i];
         // Determine its features
         var x = percentFormat(longFunc(town.long));
         var y = percentFormat(1- latFunc(town.lat));
@@ -405,6 +415,7 @@ Visualizer.prototype.makeMap = function(){
         dot.setAttribute("data-toggle", "tooltip");
         dot.setAttribute("data-container", "body");
         dot.setAttribute("r", this.townSizeFunc(town.size));
+        dot.onclick = ()=>this.makeTownPanel(town);
     }
     refreshTooltips();
 }
@@ -433,6 +444,7 @@ Visualizer.prototype.updateDay = function(day){
     $('.current-day').text(1 + day);
     this.control.$range.prop("value", day);
     $('.total-infected').text(this.days[day].total);
+    $('.percentage-infected').text(percentFormat(this.days[day].total/this.totalSize));
     $('.most-current-infected').text(this.days[day].max.infected);
     $('.most-current-infected-town').text(this.towns[this.days[day].max.town].name);
 
@@ -451,11 +463,11 @@ Visualizer.prototype.updateTable = function(){
     var currentDay = this.days[this.day];
 
     // Update each column
-    for(town in this.towns){
+    for(var town in this.towns){
         var count = currentDay[town] || 0;
 
         // Find the table column for the given town
-        var $col = this.$table.find('#' + noSpace(this.towns[town].name));
+        var $col = $("[town=" + noSpace(this.towns[town].name + "]"));
 
         // Put the amount of infected
         $col.find(".infected").text(count);

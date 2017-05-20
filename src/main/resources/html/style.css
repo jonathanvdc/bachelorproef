@@ -4,15 +4,24 @@ body{
 .panel{
     background-color: #ddd;
     color: black;
+    box-shadow: rgba(0,0,255,0.15) 0px 2px 6px;
 
     border-radius: 6px;
     border-bottom: 2px solid #bbc;
 
     padding: 8px;
     padding-left: 12px;
+    padding-right: 12px;
+    display: inline-block;
+    min-width: 100px;
 
     position: fixed;
 }
+
+    .panel.generic{
+        position: absolute;
+        z-index: 11;
+    }
 
     .panel > .panel-head{
         font-size: 1.4em;
@@ -21,22 +30,15 @@ body{
         border-bottom: 2px solid #bbc;
 
         border-radius: 6px;
-        margin: -9px;
+        margin-top: -9px;
         margin-left: -13px;
+        margin-right: -13px;
         margin-bottom: 8px;
 
         padding: 5px;
         padding-left: 15px;
 
         cursor: all-scroll;
-    }
-
-    .panel > .panel-head > .collapse-toggle{
-        position: absolute;
-        right: 10px;
-        font-weight: bold;
-        cursor: pointer;
-        color: #99D;
     }
 
     .control.panel{
@@ -76,6 +78,34 @@ body{
             height: 0;
             margin: -10;
         }
+
+.unselectable{
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+}
+
+
+.panel-button{
+    cursor: pointer;
+    color: #99D;
+    margin-left:5px;
+    float:right;
+    font-weight: bold;
+}
+    .panel-button:hover{
+        text-decoration: none;
+    }
+    .panel-button.toggle-collapse{
+        margin-right:5px;
+    }
+    .panel-button.close-panel{
+        margin-top:4px;
+        font-size:14px;
+    }
+
 
 .filename-output{
     color: #222;
