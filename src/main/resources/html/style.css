@@ -15,7 +15,7 @@ body{
     display: inline-block;
     min-width: 100px;
 
-    position: fixed;
+    position: absolute;
 }
 
     .panel.generic{
@@ -42,6 +42,7 @@ body{
     }
 
     .control.panel{
+        position: fixed;
         z-index: 10;
         left: 30px;
         top: 20px;
@@ -49,14 +50,14 @@ body{
 
     .general-info.panel{
         z-index: 9;
-        top: 200px;
+        top: 190px;
         left: 30px;
         width: 250px;
     }
 
     .daily-info.panel{
         z-index: 8;
-        top: 330px;
+        top: 320px;
         left: 30px;
         width: 250px;
     }
@@ -66,7 +67,6 @@ body{
         top: 20px;
         right: 240px;
         width: 120px;
-        position: absolute;
     }
 
     .panel > .panel-body{
@@ -87,6 +87,9 @@ body{
     -o-user-select: none;
 }
 
+.clickable{
+    cursor: pointer;
+}
 
 .panel-button{
     cursor: pointer;
@@ -172,8 +175,6 @@ input.range-input{
 .fade.in{
     pointer-events: auto;
 }
-
-
 
 .map-view{
     position: relative;

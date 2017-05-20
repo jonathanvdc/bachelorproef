@@ -155,6 +155,7 @@ Visualizer.prototype.aggregateData = function(){
     this.maxTotal = maxTotal;
     $(".most-total-infected").text(maxTotal);
     $(".most-total-infected-day").text(maxTotalDay);
+    $(".most-total-infected-day").unbind("click").on("click",()=>this.updateDay(maxTotalDay));
     this.maxSingle = maxSingle;
 }
 
@@ -338,7 +339,7 @@ var panelY = 450;
 Visualizer.prototype.makeTownPanel = function(town){
     var x = panelX;
     var y = panelY;
-    panelX = (panelX - 30 + 30) % 300 + 30;
+    panelX = (panelX - 30 + 30) % 330 + 30;
     panelY = (panelY - 450 + 30) % 240 + 450;
 
     var text = 
@@ -447,7 +448,8 @@ Visualizer.prototype.updateDay = function(day){
     $('.percentage-infected').text(percentFormat(this.days[day].total/this.totalSize));
     $('.most-current-infected').text(this.days[day].max.infected);
     $('.most-current-infected-town').text(this.towns[this.days[day].max.town].name);
-
+    $('.most-current-infected-town').unbind("click");
+    $('.most-current-infected-town').on("click", ()=>this.makeTownPanel(this.towns[this.days[day].max.town]));
 
     this.updateView();
 }
