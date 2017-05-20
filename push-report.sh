@@ -30,5 +30,4 @@ while ! ./push-report-helper.sh; do
     # Sleep for a while.
     sleep 10
     # Try again.
-    ./push-report-helper.sh
 done
