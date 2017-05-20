@@ -91,7 +91,7 @@ void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 		cp->CloseFile();
 	}
 	*/
-	auto& pop = sim.GetPopulation();
+	auto pop = sim.GetPopulation();
 	run_clock.Stop();
 	auto infected_count = sim.GetPopulation()->get_infected_count();
 	cases.push_back(infected_count);
