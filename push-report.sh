@@ -22,11 +22,11 @@ echo "Cloning flu-plus-plus.github.io repository..."
 git clone $REPO out
 cd out
 git checkout $TARGET_BRANCH || git checkout --orphan $TARGET_BRANCH
-cd ..
 
 echo "Configuring user..."
 git config user.name "FluBot"
 git config user.email "flu-plus-plus-flubot@outlook.com"
+cd ..
 
 # Try to push until we succeed.
 while ! ./push-report-helper.sh; do
