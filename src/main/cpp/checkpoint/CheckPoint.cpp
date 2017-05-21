@@ -206,7 +206,6 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 		FATAL_ERROR("Unable to find file: " + fullpath.string());
 	}
 	std::string extension = filep.extension().string();
-	std::cout << extension << std::endl;
 	std::ifstream f(fullpath.string());
 
 	std::vector<char> dataset{std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>()};
