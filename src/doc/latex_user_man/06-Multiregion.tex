@@ -34,19 +34,19 @@ Listing \ref{lst:multi-region-travel-model} is an example multi-region travel mo
 \begin{figure}[h]
 	\lstset{language=xml,caption={An example travel model.},label={lst:multi-region-travel-model}}
 	\begin{lstlisting}
-	<?xml version="1.0" encoding="utf-8"?>
-	<travel_model min_trip_duration="1" max_trip_duration="4">
-	<region population_file="pop_nassau.csv" travel_fraction="0.01">
-	<airport name="JFK" passenger_fraction="2">
-	<route passenger_fraction="3">FDR</route>
-	</airport>
-	</region>
-	<region population_file="pop_oklahoma.csv" travel_fraction="0.01">
-	<airport name="FDR">
-	<route>JFK</route>
-	</airport>
-	</region>
-	</travel_model>
+<?xml version="1.0" encoding="utf-8"?>
+<travel_model min_trip_duration="1" max_trip_duration="4">
+  <region population_file="pop_nassau.csv" travel_fraction="0.01">
+    <airport name="JFK" passenger_fraction="2">
+      <route passenger_fraction="3">FDR</route>
+    </airport>
+  </region>
+  <region population_file="pop_oklahoma.csv" travel_fraction="0.01">
+    <airport name="FDR">
+      <route>JFK</route>
+    </airport>
+  </region>
+</travel_model>
 	\end{lstlisting}
 \end{figure}
 
