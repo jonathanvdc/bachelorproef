@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 		// -----------------------------------------------------------------------------------------
 		run_stride(
 		    index_case_Arg.getValue(), config_file_Arg.getValue(), h5File.getValue(), date.getValue(),
-		    generate_vis_Arg.getValue(), hdf5.getValue(), interval.getValue());
+		    generate_vis_Arg.getValue(), !hdf5.getValue(), interval.getValue());
 	} catch (exception& e) {
 
 		exit_status = EXIT_FAILURE;
