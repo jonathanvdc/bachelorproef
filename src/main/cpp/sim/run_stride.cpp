@@ -109,7 +109,7 @@ void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 #if USE_HDF5
 	if (stride::util::HDF5) {
 		// saves the last configuration or configuration after an interval.
-		if (sim.IsDone() or util::INTERRUPT or day % util::INTERVAL == 0) {
+		if (sim.IsDone() or util::INTERRUPT or (day+1) % util::INTERVAL == 0) {
 			cp->OpenFile();
 			cp->SaveCheckPoint(sim, day);
 			cp->CloseFile();
@@ -271,7 +271,7 @@ void run_stride(const MultiSimulationConfig& config)
 		// Visualization
 		if (pop->has_atlas && sim_tuple.sim_config.common_config->generate_vis_file) {
 			VisualizerFile vis_file(sim_tuple.sim_output_prefix);
-			vis_file.Print(pop->getAtlas().getTownMap(), sim_result.visualizer_data);
+			vis_file.Print(pop->GetAtlas().getTownMap(), sim_result.visualizer_data);
 		}
 
 		cout << endl << endl;

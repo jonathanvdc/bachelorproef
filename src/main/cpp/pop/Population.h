@@ -155,9 +155,6 @@ public:
 		}
 		return total;
 	}
-  
-	/// Get the atlas.
-	const Atlas& getAtlas() const { return atlas; }
 
 	/// Register the map of GeoPositions to Towns to the atlas.
 	void AtlasRegisterTowns(Atlas::TownMap& towns) { atlas.RegisterTowns(towns); }
