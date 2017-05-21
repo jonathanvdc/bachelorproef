@@ -125,18 +125,20 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 
 	cp->CreateFile();
 	cp->OpenFile();
-	cp->SaveCheckPoint(*sim);
+	cp->SaveCheckPoint(*sim,0);
 	cp->CloseFile();
 
-	ClusterStruct clRead;
-	stride::Population popRead;
+	Simulator SimRead;
 
 	cp->OpenFile();
-	popRead = cp->LoadCheckPoint(sim->GetDate(), clRead);
+	cp->LoadCheckPoint(sim->GetDate(), SimRead);
 	cp->CloseFile();
 
 	stride::Population origPop = *sim->GetPopulation();
 	ClusterStruct clOrig = sim->GetClusters();
+
+	auto popRead = *SimRead.GetPopulation();
+	auto clRead = SimRead.GetClusters();
 
 	EXPECT_EQ(origPop.size(), popRead.size());
 	EXPECT_EQ(origPop.get_infected_count(), popRead.get_infected_count());
@@ -238,11 +240,17 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 			EXPECT_EQ(popClOrig[j], popClRead[j]);
 		}
 	}
-}
-/*
-TEST(CheckPoint, todo)
-{
+
+	Atlas origAtlas = origPop.GetAtlas();
+	Atlas readAtlas = popRead.GetAtlas();
+
+	for(auto &key: origAtlas.cluster_map){
+		auto it = readAtlas.cluster_map.find(key.first);
+		EXPECT_NE(it,readAtlas.cluster_map.end());
+		EXPECT_EQ(key.second.latitude, it->second.latitude);
+		EXPECT_EQ(key.second.longitude, it->second.longitude);
+	}
+
 
 }
-*/
 } // Tests

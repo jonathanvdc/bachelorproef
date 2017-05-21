@@ -112,6 +112,11 @@ public:
 		return result;
 	}
 
+	const std::unordered_map<std::size_t, std::unordered_map<RegionId, std::vector<VisitorId>>>& GetVisitors() const
+	{
+		return visitors;
+	}
+
 private:
 	/// A dictionary of visitors, grouped by the day of their return trip and the region
 	/// that sent them.

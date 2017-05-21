@@ -8,6 +8,12 @@ namespace util {
 /// stack traces and exiting. This does nothing if HANDLE_SIGNALS is
 /// set to zero.
 void setup_segfault_handler();
+
+/// Sets up a signal handler that handles SIGINT signals by setting
+/// the Interrupt variable to true. This does nothing if HANDLE_SIGNALS
+/// is set to zero.
+void setup_interrupt_handler();
+
 }
 }
 

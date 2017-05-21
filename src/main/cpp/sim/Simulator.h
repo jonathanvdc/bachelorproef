@@ -54,11 +54,23 @@ public:
 	/// Gets the simulator's configuration.
 	SingleSimulationConfig GetConfiguration() const { return m_config; }
 
-	/// Gets the simulator's date
+	/// Gets the simulator's date.
 	boost::gregorian::date GetDate() const { return m_calendar->GetDate(); }
 
-	/// Gets the clusters in this simulation
+	/// Gets the clusters in this simulation. This is for saving.
 	const ClusterStruct& GetClusters() const { return m_clusters; }
+
+	/// Gets the clusters in this simulation. This is for loading.
+	ClusterStruct& GetClusters() { return m_clusters; }
+
+	/// Sets the population.
+	void SetPopulation(const Population& population) { m_population = std::make_shared<Population>(population); }
+
+	/// Sets the visitor journal
+	void SetVisitors(const multiregion::VisitorJournal& visitors) { m_visitors = visitors; }
+
+	/// Sets the expatriate journal
+	void SetExpatriates(const multiregion::ExpatriateJournal& expatriates) { m_expatriates = expatriates; }
 
 	/// Change track_index_case setting.
 	void SetTrackIndexCase(bool track_index_case);
@@ -228,7 +240,6 @@ private:
 
 	/// General simulation or tracking index case.
 	bool m_track_index_case;
-
 
 private:
 	friend class SimulatorBuilder;

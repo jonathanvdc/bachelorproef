@@ -54,25 +54,28 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	}
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
-	hsize_t dims = 2;
+	hsize_t dims = 3;
 	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
-	hbool_t bools[2];
+	hbool_t bools[3];
 	bools[0] = common_config->track_index_case;
 	bools[1] = log_config->generate_person_file;
+	// should always be true
+	bools[2] = common_config->use_checkpoint;
 	hid_t attr = H5Acreate2(group, "bools", H5T_NATIVE_HBOOL, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	H5Awrite(attr, H5T_NATIVE_HBOOL, bools);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
 
-	dims = 5;
+	dims = 6;
 	dataspace = H5Screate_simple(1, &dims, nullptr);
 	attr = H5Acreate2(group, "uints", H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT);
-	unsigned int uints[5];
+	unsigned int uints[6];
 	uints[0] = common_config->rng_seed;
 	uints[1] = common_config->number_of_days;
 	uints[2] = common_config->number_of_survey_participants;
 	uints[3] = (unsigned int)log_config->log_level;
 	uints[4] = conf.GetId();
+	uints[5] = common_config->checkpoint_interval;
 	H5Awrite(attr, H5T_NATIVE_UINT, uints);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
@@ -205,6 +208,7 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 	if (!is_regular_file(fullpath)) {
 		FATAL_ERROR("Unable to find file: " + fullpath.string());
 	}
+	std::string extension = filep.extension().string();
 	std::ifstream f(fullpath.string());
 
 	std::vector<char> dataset{std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>()};
@@ -215,13 +219,20 @@ void CheckPoint::WriteFileDSet(const std::string& filename, const std::string& s
 	hid_t dset =
 	    H5Dcreate2(group, setname.c_str(), H5T_NATIVE_CHAR, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Dwrite(dset, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset.data());
+	H5Sclose(dataspace);
+
+	hsize_t attrDims = extension.size();
+	dataspace = H5Screate_simple(1, &attrDims, nullptr);
+	hid_t attr = H5Acreate2(dset, "extension", H5T_NATIVE_CHAR, dataspace, H5P_DEFAULT, H5P_DEFAULT);
+	H5Awrite(attr, H5T_NATIVE_CHAR, extension.c_str());
+	H5Aclose(attr);
 
 	H5Dclose(dset);
 	H5Sclose(dataspace);
 	H5Gclose(group);
 }
 
-void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& setname)
+std::string CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& setname)
 {
 
 	htri_t exist = H5Lexists(m_file, setname.c_str(), H5P_DEFAULT);
@@ -232,7 +243,6 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 	auto path = util::InstallDirs::GetDataDir();
 
 	boost::filesystem::path filename(filestr);
-	std::ofstream out((path / filename).string(), std::ios::out | std::ios::trunc);
 	/*
 	Piece of code based on code on
 	https://lists.hdfgroup.org/pipermail/hdf-forum_lists.hdfgroup.org/2010-June/003208.html
@@ -247,10 +257,27 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 	/* Open the dataset. */
 	// std::cout << "  Opening " << dsetName << " for data Retrieval.  "<< std::endl;
 	did = H5Dopen(m_file, setname.c_str(), H5P_DEFAULT);
+
 	if (did < 0) {
 		std::cout << " Error opening Dataset: " << did << std::endl;
-		return;
+		return "";
 	}
+
+	std::string extension;
+	hid_t attr = H5Aopen(did, "extension", H5P_DEFAULT);
+
+	std::unique_ptr<H5A_info_t> info = std::make_unique<H5A_info_t>();
+
+	H5Aget_info(attr, info.get());
+	std::vector<char> extensionVector(info->data_size, '\0');
+	H5Aread(attr, H5T_NATIVE_CHAR, extensionVector.data());
+	H5Aclose(attr);
+
+	extension = std::string(extensionVector.begin(), extensionVector.end());
+
+	filename.replace_extension(extension);
+
+	std::ofstream out((path / filename).string(), std::ios::out | std::ios::trunc);
 	if (did >= 0) {
 		spaceId = H5Dget_space(did);
 		if (spaceId > 0) {
@@ -287,15 +314,28 @@ void CheckPoint::WriteDSetFile(const std::string& filestr, const std::string& se
 			out << c;
 		}
 	}
+	return filename.string();
 }
 
-void CheckPoint::SaveCheckPoint(const Simulator& sim)
+void CheckPoint::SaveCheckPoint(const Simulator& sim, std::size_t day)
 {
 	// TODO: add airport
 	WritePopulation(*sim.GetPopulation(), sim.GetDate());
 	WriteClusters(sim.GetClusters(), sim.GetDate());
 	auto exp = sim.GetExpatriateJournal();
 	WriteExpatriates(exp, sim.GetDate());
+	auto vis = sim.GetVistiorJournal();
+	WriteVisitors(vis, sim.GetDate(), day);
+
+	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t group = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		htri_t exist2 = H5Lexists(group, "Atlas", H5P_DEFAULT);
+		if (exist2 <= 0) {
+			WriteAtlas(sim.GetPopulation()->GetAtlas());
+		}
+		H5Gclose(group);
+	}
 }
 
 void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& filename)
@@ -329,7 +369,7 @@ void CheckPoint::CombineCheckPoint(unsigned int groupnum, const std::string& fil
 	H5Gclose(group);
 }
 
-Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct& clusters)
+void CheckPoint::LoadCheckPoint(boost::gregorian::date date, Simulator& sim)
 {
 
 	std::string groupname = to_iso_string(date);
@@ -391,19 +431,25 @@ Population CheckPoint::LoadCheckPoint(boost::gregorian::date date, ClusterStruct
 	H5Tclose(newType);
 	H5Dclose(dset);
 
-	// loading clusters
-	LoadCluster(clusters.m_households, ClusterType::Household, groupname, result);
-	LoadCluster(clusters.m_school_clusters, ClusterType::School, groupname, result);
-	LoadCluster(clusters.m_work_clusters, ClusterType::Work, groupname, result);
-	LoadCluster(clusters.m_primary_community, ClusterType::PrimaryCommunity, groupname, result);
-	LoadCluster(clusters.m_secondary_community, ClusterType::SecondaryCommunity, groupname, result);
+	LoadAtlas(result);
 
-	return result;
+	sim.SetPopulation(result);
+	sim.SetExpatriates(LoadExpatriates(result, date));
+	sim.SetVisitors(LoadVisitors(date));
+
+	ClusterStruct clusters;
+	// loading clusters
+	LoadCluster(sim.GetClusters().m_households, ClusterType::Household, groupname, result);
+	LoadCluster(sim.GetClusters().m_school_clusters, ClusterType::School, groupname, result);
+	LoadCluster(sim.GetClusters().m_work_clusters, ClusterType::Work, groupname, result);
+	LoadCluster(sim.GetClusters().m_primary_community, ClusterType::PrimaryCommunity, groupname, result);
+	LoadCluster(sim.GetClusters().m_secondary_community, ClusterType::SecondaryCommunity, groupname, result);
 }
 
 void CheckPoint::LoadCluster(
     std::vector<Cluster>& clusters, const ClusterType& i, const std::string& groupname, const Population& result)
 {
+	clusters.clear();
 	std::string type = ToString(i);
 	std::string path = groupname + "/" + type;
 	hid_t clusterID = H5Dopen2(m_file, path.c_str(), H5P_DEFAULT);
@@ -475,21 +521,22 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 	result.common_config = comCon;
 	result.log_config = logCon;
 
-	WriteDSetFile("tmp_matrix.xml", "Config/disease");
-	result.common_config->contact_matrix_file_name = "tmp_matrix.xml";
+	std::string changed = WriteDSetFile("tmp_matrix.xml", "Config/contact");
+	result.common_config->contact_matrix_file_name = changed;
 
-	WriteDSetFile("tmp_disease.xml", "Config/contact");
-	result.common_config->disease_config_file_name = "tmp_disease.xml";
+	changed = WriteDSetFile("tmp_disease.xml", "Config/disease");
+	result.common_config->disease_config_file_name = changed;
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 
 	hid_t attr = H5Aopen(group, "bools", H5P_DEFAULT);
-	hbool_t bools[2];
+	hbool_t bools[3];
 	H5Aread(attr, H5T_NATIVE_HBOOL, bools);
 	H5Aclose(attr);
 
 	result.common_config->track_index_case = bools[0];
 	result.log_config->generate_person_file = bools[1];
+	result.common_config->use_checkpoint = bools[2];
 
 	attr = H5Aopen(group, "doubles", H5P_DEFAULT);
 	double doubles[3];
@@ -501,7 +548,7 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 	result.common_config->immunity_rate = doubles[2];
 
 	attr = H5Aopen(group, "uints", H5P_DEFAULT);
-	unsigned int uints[3];
+	unsigned int uints[6];
 	H5Aread(attr, H5T_NATIVE_UINT, uints);
 	H5Aclose(attr);
 
@@ -510,6 +557,7 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 	result.common_config->number_of_survey_participants = uints[2];
 	result.log_config->log_level = (LogMode)uints[3];
 	unsigned int id = uints[4];
+	result.common_config->checkpoint_interval = uints[5];
 
 	attr = H5Aopen(group, "prefix", H5P_DEFAULT);
 
@@ -527,20 +575,18 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 
 	// travel model
 
-	WriteDSetFile("tmp_pop.csv", "Config/popconfig");
-	std::string popconfig = "tmp_pop.csv";
+	changed = WriteDSetFile("tmp_pop.csv", "Config/popconfig");
+	std::string popconfig = changed;
 	std::string geoconfig = "";
 
 	exist = H5Lexists(m_file, "Config/geoconfig", H5P_DEFAULT);
 	if (exist > 0) {
-		WriteDSetFile("tmp_geoconfig.xml", "Config/geoconfig");
-		geoconfig = "tmp_geoconfig.xml";
+		geoconfig = WriteDSetFile("tmp_geoconfig.xml", "Config/geoconfig");
 	}
 	std::string household = "";
 	exist = H5Lexists(m_file, "Config/household", H5P_DEFAULT);
 	if (exist > 0) {
-		WriteDSetFile("tmp_household.xml", "Config/household");
-		household = "tmp_household.xml";
+		household = WriteDSetFile("tmp_household.xml", "Config/household");
 	}
 	auto travelRef = make_shared<multiregion::RegionTravel>(id, popconfig, geoconfig, household);
 	result.travel_model = travelRef;
@@ -677,20 +723,270 @@ void CheckPoint::WriteExpatriates(multiregion::ExpatriateJournal& journal, boost
 
 	std::string dsetname = "Expatriates";
 
-	std::vector<unsigned int> data;
+	std::vector<h_personType> data;
 
-	journal.SerialForeach([&data](const Person& p, unsigned int) { data.push_back(p.GetId()); });
+	journal.SerialForeach([&data](const Person& p, unsigned int) {
+		h_personType tempPerson(p);
+		data.push_back(tempPerson);
+	});
+
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(h_personType));
+
+	H5Tinsert(newType, "ID", HOFFSET(h_personType, ID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Age", HOFFSET(h_personType, Age), H5T_NATIVE_DOUBLE);
+	H5Tinsert(newType, "Gender", HOFFSET(h_personType, Gender), H5T_NATIVE_CHAR);
+	H5Tinsert(newType, "Participating", HOFFSET(h_personType, Participating), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "Immune", HOFFSET(h_personType, Immune), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "Infected", HOFFSET(h_personType, Infected), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "StartInf", HOFFSET(h_personType, StartInf), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "EndInf", HOFFSET(h_personType, EndInf), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "StartSympt", HOFFSET(h_personType, StartSympt), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "EndSympt", HOFFSET(h_personType, EndSympt), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "TimeInfected", HOFFSET(h_personType, TimeInfected), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Household", HOFFSET(h_personType, Household), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "School", HOFFSET(h_personType, School), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Work", HOFFSET(h_personType, Work), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Primary", HOFFSET(h_personType, Primary), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Secondary", HOFFSET(h_personType, Secondary), H5T_NATIVE_UINT);
 
 	hsize_t dims = data.size();
 	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
 
-	hid_t dataset =
-	    H5Dcreate2(group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(dataset, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data.front());
+	hid_t dataset = H5Dcreate2(group, dsetname.c_str(), newType, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dwrite(dataset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
 
 	H5Sclose(dataspace);
 	H5Dclose(dataset);
 	H5Gclose(group);
+}
+
+void CheckPoint::WriteVisitors(multiregion::VisitorJournal& journal, boost::gregorian::date date, std::size_t day)
+{
+	std::string datestr = to_iso_string(date);
+	htri_t exist = H5Lexists(m_file, datestr.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, datestr.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
+	}
+	hid_t group = H5Gopen2(m_file, datestr.c_str(), H5P_DEFAULT);
+
+	std::string dsetname = "Visitors";
+
+	std::vector<h_visitorType> data(journal.GetVisitorCount());
+
+	for (auto& days : journal.GetVisitors()) {
+		for (auto& place : days.second) {
+			for (auto p : place.second) {
+				h_visitorType i;
+				i.DaysLeft = days.first - day;
+				i.RegionID = place.first;
+				i.PersonIDHome = p.home_id;
+				i.PersonIDVisitor = p.visitor_id;
+				data.push_back(i);
+			}
+		}
+	}
+
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(h_visitorType));
+
+	H5Tinsert(newType, "DaysLeft", HOFFSET(h_visitorType, DaysLeft), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "RegionID", HOFFSET(h_visitorType, RegionID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "PersonIDHome", HOFFSET(h_visitorType, PersonIDHome), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "PersonIDVisitor", HOFFSET(h_visitorType, PersonIDVisitor), H5T_NATIVE_UINT);
+
+	hsize_t dims = data.size();
+	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
+
+	hid_t dataset = H5Dcreate2(group, dsetname.c_str(), newType, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dwrite(dataset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Tclose(newType);
+	H5Sclose(dataspace);
+	H5Dclose(dataset);
+	H5Gclose(group);
+}
+
+multiregion::ExpatriateJournal CheckPoint::LoadExpatriates(const Population& pop, boost::gregorian::date date)
+{
+	multiregion::ExpatriateJournal result;
+	std::string dsetName = to_iso_string(date) + "/Expatriates";
+	htri_t exist = H5Lexists(m_file, dsetName.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		return result;
+	}
+	hid_t dset = H5Dopen2(m_file, dsetName.c_str(), H5P_DEFAULT);
+
+	hid_t dspace = H5Dget_space(dset);
+
+	hsize_t dims;
+	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
+
+	hid_t newType = H5Dget_type(dset);
+
+	std::vector<h_personType> data(dims);
+
+	H5Dread(dset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Sclose(dspace);
+	H5Dclose(dset);
+	H5Tclose(newType);
+
+	for (auto& p : data) {
+
+		disease::Fate disease;
+		disease.start_infectiousness = p.StartInf;
+		disease.start_symptomatic = p.StartSympt;
+		disease.end_infectiousness = p.EndInf;
+		disease.end_symptomatic = p.EndSympt;
+
+		Person toAdd(p.ID, p.Age, p.Household, p.School, p.Work, p.Primary, p.Secondary, disease);
+
+		if (p.Participating) {
+			toAdd.ParticipateInSurvey();
+		}
+
+		if (p.Immune) {
+			toAdd.GetHealth().SetImmune();
+		}
+		if (p.Infected) {
+			toAdd.GetHealth().StartInfection();
+		}
+		for (unsigned int i = 0; i < p.TimeInfected; i++) {
+			toAdd.GetHealth().Update();
+		}
+		result.AddExpatriate(toAdd);
+	}
+	return result;
+}
+
+multiregion::VisitorJournal CheckPoint::LoadVisitors(boost::gregorian::date date)
+{
+	multiregion::VisitorJournal result;
+	std::string dsetName = to_iso_string(date) + "/Visitors";
+	htri_t exist = H5Lexists(m_file, dsetName.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		return result;
+	}
+	hid_t dset = H5Dopen2(m_file, dsetName.c_str(), H5P_DEFAULT);
+
+	hid_t dspace = H5Dget_space(dset);
+
+	hsize_t dims;
+	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
+
+	hid_t newType = H5Dget_type(dset);
+
+	std::vector<h_visitorType> data(dims);
+
+	H5Dread(dset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Sclose(dspace);
+	H5Dclose(dset);
+	H5Tclose(newType);
+
+	for (auto& p : data) {
+		multiregion::VisitorId id;
+		id.home_id = p.PersonIDHome;
+		id.visitor_id = p.PersonIDVisitor;
+
+		result.AddVisitor(id, p.RegionID, p.DaysLeft);
+	}
+
+	return result;
+}
+
+void CheckPoint::WriteAtlas(const Atlas& atlas)
+{
+	htri_t exist = H5Lexists(m_file, "Config", H5P_DEFAULT);
+	if (exist <= 0) {
+		hid_t temp = H5Gcreate2(m_file, "Config", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+		H5Gclose(temp);
+	}
+
+	std::vector<h_clusterAtlas> data;
+	for (auto& i : atlas.cluster_map) {
+		h_clusterAtlas info;
+		info.ClusterID = i.first.first;
+		info.ClusterType = (unsigned int)i.first.second;
+
+		info.latitude = i.second.latitude;
+		info.longitude = i.second.longitude;
+
+		data.push_back(info);
+	}
+
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(h_clusterAtlas));
+
+	H5Tinsert(newType, "ClusterID", HOFFSET(h_clusterAtlas, ClusterID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "ClusterType", HOFFSET(h_clusterAtlas, ClusterType), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Latitude", HOFFSET(h_clusterAtlas, latitude), H5T_NATIVE_DOUBLE);
+	H5Tinsert(newType, "Longitude", HOFFSET(h_clusterAtlas, longitude), H5T_NATIVE_DOUBLE);
+
+	hsize_t dims = data.size();
+	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
+
+	hid_t dataset = H5Dcreate2(m_file, "Config/Atlas", newType, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dwrite(dataset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Tclose(newType);
+	H5Sclose(dataspace);
+	H5Dclose(dataset);
+}
+
+void CheckPoint::LoadAtlas(Population& pop)
+{
+	std::string dsetName = "Config/Atlas";
+	htri_t exist = H5Lexists(m_file, dsetName.c_str(), H5P_DEFAULT);
+	if (exist <= 0) {
+		return;
+	}
+	hid_t dset = H5Dopen2(m_file, dsetName.c_str(), H5P_DEFAULT);
+
+	hid_t dspace = H5Dget_space(dset);
+
+	hsize_t dims;
+	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
+
+	hid_t newType = H5Dget_type(dset);
+
+	std::vector<h_clusterAtlas> data(dims);
+
+	H5Dread(dset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+
+	H5Sclose(dspace);
+	H5Dclose(dset);
+	H5Tclose(newType);
+
+	for (auto& c : data) {
+		Atlas::ClusterKey key(c.ClusterID, (ClusterType)c.ClusterType);
+		geo::GeoPosition postion;
+		postion.latitude = c.latitude;
+		postion.longitude = c.longitude;
+		pop.AtlasEmplaceCluster(key, postion);
+	}
+}
+
+boost::gregorian::date CheckPoint::GetLastDate()
+{
+	boost::gregorian::date result;
+
+	auto op_func = [&result](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
+		if (std::string(name) == "Config") {
+			return 0;
+		}
+		boost::gregorian::date toCheck(boost::gregorian::from_undelimited_string(name));
+		if (toCheck > result or result.is_not_a_date()) {
+			result = toCheck;
+		}
+		return 0;
+	};
+	auto temp = [](hid_t loc_id, const char* name, const H5L_info_t* info, void* operator_data) {
+		(*static_cast<decltype(op_func)*>(operator_data))(loc_id, name, info, operator_data);
+		return 0;
+	};
+
+	H5Literate(m_file, H5_INDEX_NAME, H5_ITER_NATIVE, nullptr, temp, &op_func);
+	return result;
 }
 
 } /* namespace checkpoint */

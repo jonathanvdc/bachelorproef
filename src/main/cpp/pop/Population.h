@@ -97,6 +97,9 @@ public:
 	/// Gets the number of people in this population.
 	auto size() const -> decltype(people.size()) { return people.size(); }
 
+	/// Get the atlas.
+	const Atlas& GetAtlas() const { return atlas; }
+
 	/// Creates a constant iterator positioned at the first person in this population.
 	const_iterator begin() const { return const_iterator(people.begin()); }
 
@@ -133,9 +136,6 @@ public:
 		}
 		return total;
 	}
-
-	/// Get the atlas.
-	const Atlas& getAtlas() const { return atlas; }
 
 	/// Register the map of GeoPositions to Towns to the atlas.
 	void AtlasRegisterTowns(Atlas::TownMap& towns) { atlas.RegisterTowns(towns); }

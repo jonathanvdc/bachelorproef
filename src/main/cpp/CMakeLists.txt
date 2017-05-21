@@ -50,9 +50,13 @@ set(LIB_SRC
     util/Signals.cpp
 #---
     alias/Alias.cpp
-#---
-    checkpoint/CheckPoint.cpp
 )
+
+if( HDF5_FOUND AND NOT STRIDE_FORCE_NO_HDF5 )
+    set(LIB_SRC ${LIB_SRC} 
+        checkpoint/CheckPoint.cpp
+    )
+endif()
 
 set(MAIN_SRC
     sim/main.cpp

@@ -16,8 +16,7 @@ namespace checkpoint {
 class CheckPoint
 {
 public:
-	/// Constructor The string is the file for the checkpoints. The unsigned int is the interval between
-	/// checkpoints. An interval of 0 makes no checkpoints.
+	/// Constructor The string is the file for the checkpoints.
 	CheckPoint(const std::string& filename);
 
 	/// Creates the wanted file and immediately closes it. It will overwrite a file if one of the same name already
@@ -36,12 +35,11 @@ public:
 	/// Writes the SingleSimulationConfig.
 	void WriteConfig(const SingleSimulationConfig& conf);
 
-	/// Loads a checkpoint from the file in the constructor. The unsigned date tells which checkpoint to use. The
-	/// clusters will be made with each inner list of clusters all having the same clustertype.
-	Population LoadCheckPoint(boost::gregorian::date date, ClusterStruct& clusters);
+	/// Loads all data from a checkpoint into a Simulator. It will not load the configuration.
+	void LoadCheckPoint(boost::gregorian::date date, Simulator& sim);
 
 	/// Saves the current simulation to a checkpoint with the date as Identifier.
-	void SaveCheckPoint(const Simulator& simulation);
+	void SaveCheckPoint(const Simulator& simulation, std::size_t day);
 
 	/// Copies the info in the filename under the data of the given simulation
 	void CombineCheckPoint(unsigned int simulation, const std::string& filename);
@@ -58,16 +56,23 @@ public:
 	/// Loads the Calendar starting with the given date.
 	Calendar LoadCalendar(boost::gregorian::date date);
 
+	/// Search for the last date written.
+	boost::gregorian::date GetLastDate();
+
 private:
 	/// Writes the current population to a checkpoint.
 	void WritePopulation(const Population&, boost::gregorian::date);
+
+	/// Writes the Atlas
+	void WriteAtlas(const Atlas&);
 
 	/// Writes the clusters to a checkpoint.
 	void WriteClusters(const ClusterStruct&, boost::gregorian::date);
 
 	/// Writes the visitors to a checkpoint.
-	void WriteVisitors(multiregion::VisitorJournal&, boost::gregorian::date);
+	void WriteVisitors(multiregion::VisitorJournal&, boost::gregorian::date, std::size_t day);
 
+	/// Writes the expatriates to a checkpoint.
 	void WriteExpatriates(multiregion::ExpatriateJournal&, boost::gregorian::date);
 
 	/// Loads one type Cluster
@@ -76,13 +81,22 @@ private:
 	/// Loads one type Cluster
 	void LoadCluster(std::vector<Cluster>&, const ClusterType&, const std::string& groupname, const Population&);
 
+	/// Loads the Expatriate journal
+	multiregion::ExpatriateJournal LoadExpatriates(const Population&, boost::gregorian::date);
+
+	/// Loads the Visitor journal
+	multiregion::VisitorJournal LoadVisitors(boost::gregorian::date);
+
+	/// Loads the Atlas directly into the population
+	void LoadAtlas(Population&);
+
 	/// Writes a file to a dataset. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset
 	void WriteFileDSet(const std::string&, const std::string&);
 
 	/// Writes a dataset to a file. The first string is the filename in the data folder. The second string is the
 	/// name of the dataset
-	void WriteDSetFile(const std::string&, const std::string&);
+	std::string WriteDSetFile(const std::string&, const std::string&);
 
 	hid_t m_file;		      //< current hdf5 workspace
 	const std::string m_filename; //< filename
@@ -135,6 +149,22 @@ private:
 	{
 		unsigned int ID;
 		unsigned int PersonID;
+	};
+
+	struct h_visitorType
+	{
+		unsigned int DaysLeft;
+		unsigned int RegionID;
+		unsigned int PersonIDHome;
+		unsigned int PersonIDVisitor;
+	};
+
+	struct h_clusterAtlas
+	{
+		unsigned int ClusterID;
+		unsigned int ClusterType;
+		double latitude;
+		double longitude;
 	};
 };
 

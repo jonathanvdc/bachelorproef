@@ -4,6 +4,10 @@
 #define HANDLE_SIGNALS 1
 #endif
 
+#include <atomic>
+#include "util/ExternalVars.h"
+std::atomic<bool> stride::util::INTERRUPT(false);
+
 #if HANDLE_SIGNALS
 
 #include <execinfo.h>
@@ -37,11 +41,14 @@ void handle_segfault(int sig)
 	backtrace_symbols_fd(array, size, STDERR_FILENO);
 	exit(1);
 }
+
+void handle_interrupt(int sig) { stride::util::INTERRUPT.store(true); }
 }
 
 namespace stride {
 namespace util {
 void setup_segfault_handler() { signal(SIGSEGV, handle_segfault); }
+void setup_interrupt_handler() { signal(SIGINT, handle_interrupt); }
 }
 }
 
@@ -50,6 +57,7 @@ void setup_segfault_handler() { signal(SIGSEGV, handle_segfault); }
 namespace stride {
 namespace util {
 void setup_segfault_handler() {}
+void setup_interrupt_handler() {}
 }
 }
 
