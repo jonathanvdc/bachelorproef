@@ -253,10 +253,4 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 
 
 }
-/*
-TEST(CheckPoint, todo)
-{
-
-}
-*/
 } // Tests
