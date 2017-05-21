@@ -36,8 +36,29 @@ If neither OpenMP nor TBB are installed, then Stride will use a custom paralleli
 
 To use a serial implementation of all parallelization algorithms that rely on the presence of one of the parallelization libraries listed above, set environment variable \texttt{STRIDE\_PARALLELIZATION\_LIBRARY} to \texttt{none}.
 
-Note that the build system will \emph{never} use this option by default, as the implementation based on standard library threads does not have any additional dependencies compared to Stride's required dependencies.
+Note that the build system will \emph{never} use this option by default, as the implementation based on standard library threads does not have any dependencies other than Stride's required dependencies.
 
 \section{Performance comparison}
 
-\section{A note on reproducibility}
+OpenMP, TBB and our custom implementation based on standard library threads are more or less equivalent in terms of performance. Using no parallelization library slows the simulator down, but not dramatically so.
+
+Figure \ref{fig:parallelization-mean-runtimes} shows the mean run-times of the \texttt{run\_popgen\_small.xml}, \texttt{run\_popgen\_medium.xml} and \texttt{run\_popgen\_large.xml} configurations for each parallelization library. These configurations generate a population and then run the simulator on the generated population for one hundred days. They are identical in every way except for the size of the population that is generated.
+
+Each configuration was run ten times per parallelization library. Mean run-times are represented in figure \ref{fig:parallelization-mean-runtimes}. The relative standard deviation for each cell in the table is less than four percent. The measurements were produced by an Intel Core i7-6700K CPU running Ubuntu 17.04, gcc 6.3.0 and TBB 4.4.
+
+\begin{figure}[h]
+	\begin{tabular}{r|r|r|r|r}
+		\textbf{Population size} & \textbf{OpenMP} & \textbf{TBB} & \textbf{STL} & \textbf{none} \\
+		100,000 & 6.00 & 6.09 & 5.80 & 6.69 \\
+		500,000 & 53.01 & 53.34 & 52.08 & 57.97 \\
+		1,000,000 & 169.69 & 166.81 & 167.91 & 178.97
+	\end{tabular}
+	\label{fig:parallelization-mean-runtimes}
+	\caption{Mean run-times for each parallelization library.}
+\end{figure}
+
+What stands out from this table is that our standard library threads--based implementation is competitive with OpenMP and TBB performance-wise, despite using a na\"ive static partitioning scheme.
+
+This can likely be attributed to the homogeneity of the workloads that are parallelized: at the time of writing, parallelization functions are used in such a way that arbitrarily chosen but equally-sized chunks of items to process take roughly the same amount of time to process.
+
+OpenMP and TBB have much more intelligent schedulers than our simple standard library threads--based implementation, but it's hard for them to outperform our simple static scheduler because its behavior is optimal for homogeneous workloads, which the workloads offered by Stride approximate well.
