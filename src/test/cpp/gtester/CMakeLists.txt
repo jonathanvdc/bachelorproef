@@ -1,20 +1,3 @@
-#############################################################################
-#  This is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or any
-#  later version.
-#  The software is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License,
-#  along with the software. If not, see <http://www.gnu.org/licenses/>.
-#  see http://www.gnu.org/licenses/.
-#
-#  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
-#############################################################################
-
-
 #============================================================================
 # Build & install the (OpenMP enabled if OpenMP available) executable.
 #============================================================================
@@ -33,12 +16,15 @@ set( SRC
 		TravelModelGraph.cpp
 )
 
+<<<<<<< HEAD
 if( HDF5_FOUND AND NOT STRIDE_FORCE_NO_HDF5 )
     set(SRC ${SRC} 
         CheckPointTest.cpp
     )
 endif()
 
+=======
+>>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 if ( MPI_FOUND )
 	set( SRC ${SRC} MpiTests.cpp )
 endif()

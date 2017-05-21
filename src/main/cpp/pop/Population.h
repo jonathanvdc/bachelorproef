@@ -1,25 +1,5 @@
 #ifndef POPULATION_H_INCLUDED
 #define POPULATION_H_INCLUDED
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
- *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
- */
-
-/**
- * @file
- * Header file for the core Population class
- */
 
 #include <functional>
 #include <map>
@@ -156,6 +136,12 @@ public:
 		return total;
 	}
 
+<<<<<<< HEAD
+=======
+	/// Get the atlas.
+	const Atlas& getAtlas() const { return atlas; }
+
+>>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 	/// Register the map of GeoPositions to Towns to the atlas.
 	void AtlasRegisterTowns(Atlas::TownMap& towns) { atlas.RegisterTowns(towns); }
 
@@ -172,7 +158,11 @@ public:
 	}
 
 	bool has_atlas;
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 	/// Runs the `action` on every element of this vector. Up to `number_of_threads` instances of
 	/// the `action` are run at the same time. `action` must be invocable with signature
 	/// `void(const Person& person, unsigned int thread_number)`.

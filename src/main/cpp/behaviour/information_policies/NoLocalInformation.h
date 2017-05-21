@@ -10,8 +10,8 @@
 
 namespace stride {
 
-class NoLocalInformation {
-
+class NoLocalInformation
+{
 };
 
 } /* namespace stride */

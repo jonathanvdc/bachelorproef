@@ -14,15 +14,17 @@
 namespace stride {
 
 /// Forward declaration of class GenericPersonData
-template<typename BehaviourPolicy, typename BeliefPolicy>
+template <typename BehaviourPolicy, typename BeliefPolicy>
 class GenericPersonData;
 
 template <bool threshold_infected, bool threshold_adopted>
-class Threshold {
+class Threshold
+{
 public:
 	using Data = ThresholdData;
 
-	static void Initialize(Data& belief_data, double risk_averseness) {
+	static void Initialize(Data& belief_data, double risk_averseness)
+	{
 		if (threshold_infected) {
 			belief_data.SetThresholdInfected(1 - risk_averseness);
 		}
@@ -33,12 +35,17 @@ public:
 
 	static void Update(Data& belief_data, Health& health_data) {}
 
-	template<typename BehaviourPolicy>
-	static void Update(Data& belief_data, std::shared_ptr<const GenericPersonData<BehaviourPolicy, Threshold<threshold_infected, threshold_adopted>>> p) {
-		belief_data.Contact<BehaviourPolicy, Threshold<threshold_infected, threshold_adopted> >(p);
+	template <typename BehaviourPolicy>
+	static void Update(
+	    Data& belief_data,
+	    std::shared_ptr<const GenericPersonData<BehaviourPolicy, Threshold<threshold_infected, threshold_adopted>>>
+		p)
+	{
+		belief_data.Contact<BehaviourPolicy, Threshold<threshold_infected, threshold_adopted>>(p);
 	}
 
-	static bool HasAdopted(const Data& belief_data) {
+	static bool HasAdopted(const Data& belief_data)
+	{
 		if (threshold_infected) {
 			if (belief_data.GetFractionInfected() > belief_data.GetThresholdInfected()) {
 				return true;
@@ -52,15 +59,12 @@ public:
 
 		return false;
 	}
-
 };
-
 
 /// Explicit instantiations in .cpp file
 extern template class Threshold<true, false>;
 extern template class Threshold<false, true>;
 extern template class Threshold<true, true>;
-
 
 #endif /* SRC_MAIN_CPP_BEHAVIOUR_BELIEF_POLICIES_THRESHOLD_H_ */
 

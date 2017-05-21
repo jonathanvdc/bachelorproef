@@ -1,24 +1,3 @@
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
- *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
- */
-
-/**
- * @file
- * Actually run the simulator.
- */
-
 #include "run_stride.h"
 
 #include "checkpoint/CheckPoint.h"
@@ -71,12 +50,20 @@ std::mutex StrideSimulatorResult::io_mutex;
 bool load = false;
 boost::gregorian::date date;
 
+<<<<<<< HEAD
 #if USE_HDF5
 CheckPoint* cp;
 #endif
 
 /// Performs an action just before a simulator step is performed.
 void StrideSimulatorResult::BeforeSimulatorStep(Simulator& sim)
+=======
+// temporary "global" for demo and testing purposes
+// CheckPoint* cp;
+
+/// Performs an action just before a simulator step is performed.
+void StrideSimulatorResult::BeforeSimulatorStep(const Simulator& sim)
+>>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 {
 	run_clock.Start();
 
@@ -106,6 +93,7 @@ void StrideSimulatorResult::BeforeSimulatorStep(Simulator& sim)
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 {
+<<<<<<< HEAD
 #if USE_HDF5
 	if (stride::util::HDF5) {
 		// saves the last configuration or configuration after an interval.
@@ -116,6 +104,15 @@ void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 		}
 	}
 #endif
+=======
+	/*
+	if (day != 0) {
+		cp->OpenFile();
+		cp->SaveCheckPoint(sim);
+		cp->CloseFile();
+	}
+	*/
+>>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 	auto pop = sim.GetPopulation();
 	run_clock.Stop();
 	auto infected_count = sim.GetPopulation()->get_infected_count();
@@ -271,7 +268,11 @@ void run_stride(const MultiSimulationConfig& config)
 		// Visualization
 		if (pop->has_atlas && sim_tuple.sim_config.common_config->generate_vis_file) {
 			VisualizerFile vis_file(sim_tuple.sim_output_prefix);
+<<<<<<< HEAD
 			vis_file.Print(pop->GetAtlas().getTownMap(), sim_result.visualizer_data);
+=======
+			vis_file.Print(pop->getAtlas().getTownMap(), sim_result.visualizer_data);
+>>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 		}
 
 		cout << endl << endl;
@@ -292,9 +293,13 @@ void run_stride(const MultiSimulationConfig& config)
 void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMultiConfig()); }
 
 /// Run the stride simulator.
+<<<<<<< HEAD
 void run_stride(
     bool track_index_case, const string& config_file_name, const std::string& h5_file, const std::string& date,
     bool gen_vis)
+=======
+void run_stride(bool track_index_case, const string& config_file_name, bool gen_vis)
+>>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 {
 	if (config_file_name.empty()) {
 		run_stride_noConfig(track_index_case, h5_file, date);

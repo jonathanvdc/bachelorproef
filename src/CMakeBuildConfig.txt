@@ -1,19 +1,4 @@
 #############################################################################
-#  This file is part of the Stride software. 
-#  It is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by 
-#  the Free Software Foundation, either version 3 of the License, or any 
-#  later version.
-#  The software is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License,
-#  along with the software. If not, see <http://www.gnu.org/licenses/>.
-#  see http://www.gnu.org/licenses/.
-#
-#  Copyright 2016, Willem L, Kuylen E & Broeckhove J
-#############################################################################
 #
 #  Macros related to build & install procedures
 #
@@ -28,17 +13,17 @@ mark_as_advanced( CLEAR CMAKE_CXX_COMPILER   )
 #============================================================================
 # User defined options:
 #============================================================================
-option( STRIDE_INCLUDE_DOC 
-	"Exclude doc directory from build and install."  OFF 
+option( STRIDE_INCLUDE_DOC
+	"Exclude doc directory from build and install."  OFF
 )
-option( STRIDE_FORCE_NO_OPENMP  
-	"Do NOT use OpenMP even if available."  OFF 
+option( STRIDE_FORCE_NO_OPENMP
+	"Do NOT use OpenMP even if available."  OFF
 )
-option( STRIDE_FORCE_NO_HDF5  
-	"Force CMake to act as if HDF5 had not been found."  OFF 
+option( STRIDE_FORCE_NO_HDF5
+	"Force CMake to act as if HDF5 had not been found."  OFF
 )
-option( STRIDE_VERBOSE_TESTING  
-	"Run tests in verbose mode."  OFF 
+option( STRIDE_VERBOSE_TESTING
+	"Run tests in verbose mode."  OFF
 )
 
 #============================================================================
