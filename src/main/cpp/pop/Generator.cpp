@@ -114,13 +114,7 @@ Population Generator::Generate()
 			int town_size = GetRandomTownSize();
 			auto pos = GetRandomGeoPosition();
 			std::string town_name = "town" + std::to_string(towns_created);
-<<<<<<< HEAD
-			bool inserted =
-			    town_map.insert({pos, Atlas::Town(town_name, town_size)})
-				.second;
-=======
 			bool inserted = town_map.insert({pos, Atlas::Town(town_name, town_size)}).second;
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 			if (inserted) {
 				n -= town_size;
 			}

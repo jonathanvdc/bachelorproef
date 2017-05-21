@@ -51,19 +51,11 @@ bool load = false;
 boost::gregorian::date date;
 
 <<<<<<< HEAD
-#if USE_HDF5
-CheckPoint* cp;
+#if USE_HDF5 CheckPoint * cp;
 #endif
 
 /// Performs an action just before a simulator step is performed.
 void StrideSimulatorResult::BeforeSimulatorStep(Simulator& sim)
-=======
-// temporary "global" for demo and testing purposes
-// CheckPoint* cp;
-
-/// Performs an action just before a simulator step is performed.
-void StrideSimulatorResult::BeforeSimulatorStep(const Simulator& sim)
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 {
 	run_clock.Start();
 
@@ -93,26 +85,16 @@ void StrideSimulatorResult::BeforeSimulatorStep(const Simulator& sim)
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 {
-<<<<<<< HEAD
-#if USE_HDF5
-	if (stride::util::HDF5) {
+#if USE_HDF5 if (stride::util::HDF5)
+	{
 		// saves the last configuration or configuration after an interval.
-		if (sim.IsDone() or util::INTERRUPT or (day+1) % util::INTERVAL == 0) {
+		if (sim.IsDone() or util::INTERRUPT or (day + 1) % util::INTERVAL == 0) {
 			cp->OpenFile();
 			cp->SaveCheckPoint(sim, day);
 			cp->CloseFile();
 		}
 	}
 #endif
-=======
-	/*
-	if (day != 0) {
-		cp->OpenFile();
-		cp->SaveCheckPoint(sim);
-		cp->CloseFile();
-	}
-	*/
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 	auto pop = sim.GetPopulation();
 	run_clock.Stop();
 	auto infected_count = sim.GetPopulation()->get_infected_count();
@@ -268,11 +250,7 @@ void run_stride(const MultiSimulationConfig& config)
 		// Visualization
 		if (pop->has_atlas && sim_tuple.sim_config.common_config->generate_vis_file) {
 			VisualizerFile vis_file(sim_tuple.sim_output_prefix);
-<<<<<<< HEAD
 			vis_file.Print(pop->GetAtlas().getTownMap(), sim_result.visualizer_data);
-=======
-			vis_file.Print(pop->getAtlas().getTownMap(), sim_result.visualizer_data);
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 		}
 
 		cout << endl << endl;
@@ -293,13 +271,9 @@ void run_stride(const MultiSimulationConfig& config)
 void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMultiConfig()); }
 
 /// Run the stride simulator.
-<<<<<<< HEAD
 void run_stride(
     bool track_index_case, const string& config_file_name, const std::string& h5_file, const std::string& date,
     bool gen_vis)
-=======
-void run_stride(bool track_index_case, const string& config_file_name, bool gen_vis)
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 {
 	if (config_file_name.empty()) {
 		run_stride_noConfig(track_index_case, h5_file, date);

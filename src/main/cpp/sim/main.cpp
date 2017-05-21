@@ -24,7 +24,6 @@ int main(int argc, char** argv)
 		CmdLine cmd("stride", ' ', "1.0", false);
 		SwitchArg index_case_Arg("r", "r0", "R0 only", cmd, false);
 		SwitchArg generate_vis_Arg("V", "no-vis", "Don't generate visualization file", cmd, true);
-<<<<<<< HEAD
 		ValueArg<string> config_file_Arg("c", "config", "Config File", false, "", "CONFIGURATION FILE", cmd);
 		SwitchArg hdf5("h", "hdf5", "Run checkpointig", cmd, false);
 
@@ -36,10 +35,8 @@ int main(int argc, char** argv)
 		ValueArg<unsigned int> interval(
 		    "i", "interval", "the amount of days between each checkpoint. The first and last are not counted.",
 		    false, -1, "", cmd);
-=======
 		ValueArg<string> config_file_Arg(
 		    "c", "config", "Config File", false, "./config/run_default.xml", "CONFIGURATION FILE", cmd);
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 
 		cmd.parse(argc, argv);
 
@@ -59,13 +56,9 @@ int main(int argc, char** argv)
 		// -----------------------------------------------------------------------------------------
 		// Run the Stride simulator.
 		// -----------------------------------------------------------------------------------------
-<<<<<<< HEAD
 		run_stride(
 		    index_case_Arg.getValue(), config_file_Arg.getValue(), h5File.getValue(), date.getValue(),
 		    generate_vis_Arg.getValue());
-=======
-		run_stride(index_case_Arg.getValue(), config_file_Arg.getValue(), generate_vis_Arg.getValue());
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 	} catch (exception& e) {
 
 		exit_status = EXIT_FAILURE;

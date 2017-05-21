@@ -16,15 +16,12 @@ set( SRC
 		TravelModelGraph.cpp
 )
 
-<<<<<<< HEAD
 if( HDF5_FOUND AND NOT STRIDE_FORCE_NO_HDF5 )
     set(SRC ${SRC} 
         CheckPointTest.cpp
     )
 endif()
 
-=======
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 if ( MPI_FOUND )
 	set( SRC ${SRC} MpiTests.cpp )
 endif()

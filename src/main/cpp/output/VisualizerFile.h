@@ -34,11 +34,7 @@ private:
 	void Initialize(const std::string& file);
 
 private:
-<<<<<<< HEAD
-	std::ofstream m_fstream; ///< The file stream.
-=======
 	std::ofstream m_fstream;
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 };
 
 } // end_of_namespace

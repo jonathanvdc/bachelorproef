@@ -65,16 +65,12 @@ void run_stride(const MultiSimulationConfig& config);
 void run_stride(const SingleSimulationConfig& config);
 
 /// Runs the simulator with the given configuration file.
-<<<<<<< HEAD
 void run_stride(
     bool track_index_case, const std::string& config_file_name, const std::string& h5_file, const std::string& date,
     bool gen_vis = false);
 
 /// Runs the simulator if no config file was given. It will try to load the h5_file.
 void run_stride_noConfig(bool track_index_case, const std::string& h5_file, const std::string& date);
-=======
-void run_stride(bool track_index_case, const std::string& config_file_name, bool gen_vis = false);
->>>>>>> 7c725e4042e52a3bab5dabbdff93de93b56683f2
 
 } // end_of_namespace
 
