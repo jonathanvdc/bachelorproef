@@ -4,6 +4,10 @@
 #define HANDLE_SIGNALS 1
 #endif
 
+#include <atomic>
+std::atomic<bool> stride::util::INTERRUPT(false);
+
+
 #if HANDLE_SIGNALS
 
 #include <execinfo.h>

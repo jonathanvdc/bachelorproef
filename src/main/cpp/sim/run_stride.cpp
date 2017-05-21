@@ -32,7 +32,6 @@
 #include <string>
 #include <utility>
 
-std::atomic<bool> stride::util::INTERRUPT(false);
 std::atomic<unsigned int> stride::util::INTERVAL(1);
 std::atomic<bool> stride::util::HDF5(false);
 
@@ -61,14 +60,14 @@ void StrideSimulatorResult::BeforeSimulatorStep(Simulator& sim)
 
 #if USE_HDF5
 	if (stride::util::HDF5) {
-		if (load and day == 0) {
+		if (load && day == 0) {
 			std::cout << "Loading old Simulation" << std::endl;
 			cp->OpenFile();
 			cp->LoadCheckPoint(date, sim);
 			cp->CloseFile();
 			std::cout << "Loaded old Simulation" << std::endl;
 		}
-		if (day == 0 and not load) {
+		if (day == 0 && !load) {
 			// saves the start configuration
 			cp->OpenFile();
 			cp->SaveCheckPoint(sim, day);
@@ -88,7 +87,7 @@ void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 #if USE_HDF5
 	if (stride::util::HDF5) {
 		// saves the last configuration or configuration after an interval.
-		if (sim.IsDone() or util::INTERRUPT or (day + 1) % util::INTERVAL == 0) {
+		if (sim.IsDone() || util::INTERRUPT || (day + 1) % util::INTERVAL == 0) {
 			cp->OpenFile();
 			cp->SaveCheckPoint(sim, day);
 			cp->CloseFile();
@@ -322,7 +321,7 @@ void run_stride_noConfig(bool track_index_case, const std::string& h5_file, cons
 {
 #if USE_HDF5
 	load = true;
-	if (not stride::util::HDF5) {
+	if (!stride::util::HDF5) {
 		FATAL_ERROR("NOT USING HDF5.");
 	}
 	std::string actualFile = h5_file;
@@ -330,7 +329,7 @@ void run_stride_noConfig(bool track_index_case, const std::string& h5_file, cons
 		std::vector<boost::filesystem::path> hfiles;
 		for (auto& i : boost::make_iterator_range(
 			 boost::filesystem::directory_iterator(InstallDirs::GetCurrentDir()), {})) {
-			if (boost::filesystem::is_regular_file(i) and i.path().extension() == ".h5") {
+			if (boost::filesystem::is_regular_file(i) && i.path().extension() == ".h5") {
 				hfiles.push_back(i.path());
 			}
 		}
