@@ -34,7 +34,7 @@ struct AirRoute final
 	double passenger_fraction;
 
 	/// The target airport.
-	AirportRef target;
+	const Airport* target;
 };
 
 /**

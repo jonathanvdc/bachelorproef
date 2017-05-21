@@ -24,7 +24,6 @@ set( SRC
 		BatchRuns.cpp
 		GeoPosition.cpp
 		main.cpp
-		MpiTests.cpp
 		ParallelTest.cpp
 		ParsePopulationModel.cpp
 		ParseSimulationConfig.cpp
@@ -40,8 +39,8 @@ if( HDF5_FOUND AND NOT STRIDE_FORCE_NO_HDF5 )
     )
 endif()
 
-if( Poco_FOUND )
-	set( SRC ${SRC} HTTPProtoTest.cpp)
+if ( MPI_FOUND )
+	set( SRC ${SRC} MpiTests.cpp )
 endif()
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)

@@ -28,6 +28,7 @@
 #include "output/CasesFile.h"
 #include "output/PersonFile.h"
 #include "output/SummaryFile.h"
+#include "output/VisualizerFile.h"
 #include "sim/Simulator.h"
 #include "sim/SimulatorBuilder.h"
 #include "util/Errors.h"
@@ -82,11 +83,11 @@ void StrideSimulatorResult::BeforeSimulatorStep(Simulator& sim)
 #if USE_HDF5
 	if (stride::util::HDF5) {
 		if (load and day == 0) {
-			std::cout<<"Loading old Simulation"<<std::endl;
+			std::cout << "Loading old Simulation" << std::endl;
 			cp->OpenFile();
 			cp->LoadCheckPoint(date, sim);
 			cp->CloseFile();
-			std::cout<<"Loaded old Simulation"<<std::endl;
+			std::cout << "Loaded old Simulation" << std::endl;
 		}
 		if (day == 0 and not load) {
 			// saves the start configuration
@@ -115,9 +116,14 @@ void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 		}
 	}
 #endif
+	auto pop = sim.GetPopulation();
 	run_clock.Stop();
 	auto infected_count = sim.GetPopulation()->get_infected_count();
 	cases.push_back(infected_count);
+
+	if (generate_vis_data && pop->has_atlas)
+		visualizer_data.AddDay(pop);
+
 	day++;
 
 	lock_guard<mutex> lock(io_mutex);
@@ -244,6 +250,7 @@ void run_stride(const MultiSimulationConfig& config)
 		// -----------------------------------------------------------------------------------------
 		// Cases
 		auto sim_result = sim_tuple.sim_task->GetResult();
+		auto pop = sim_tuple.sim_task->GetPopulation();
 		CasesFile cases_file(sim_tuple.sim_output_prefix);
 		cases_file.Print(sim_result.cases);
 
@@ -257,9 +264,14 @@ void run_stride(const MultiSimulationConfig& config)
 
 		// Persons
 		if (sim_tuple.sim_config.log_config->generate_person_file) {
-			auto pop = sim_tuple.sim_task->GetPopulation();
 			PersonFile person_file(sim_tuple.sim_output_prefix);
 			person_file.Print(pop);
+		}
+
+		// Visualization
+		if (pop->has_atlas && sim_tuple.sim_config.common_config->generate_vis_file) {
+			VisualizerFile vis_file(sim_tuple.sim_output_prefix);
+			vis_file.Print(pop->getAtlas().getTownMap(), sim_result.visualizer_data);
 		}
 
 		cout << endl << endl;
@@ -281,10 +293,11 @@ void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMult
 
 /// Run the stride simulator.
 void run_stride(
-    bool track_index_case, const string& config_file_name, const std::string& h5_file, const std::string& date)
+    bool track_index_case, const string& config_file_name, const std::string& h5_file, const std::string& date,
+    bool gen_vis)
 {
-	if(config_file_name.empty()){
-		run_stride_noConfig(track_index_case,h5_file,date);
+	if (config_file_name.empty()) {
+		run_stride_noConfig(track_index_case, h5_file, date);
 		return;
 	}
 	std::string realFile(h5_file);
@@ -301,11 +314,12 @@ void run_stride(
 	MultiSimulationConfig config;
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
+	config.common_config->generate_vis_file = gen_vis;
 
 	if (config.log_config->output_prefix.length() == 0) {
 		config.log_config->output_prefix = TimeStamp().ToTag();
 	}
-	if (h5_file.empty()){
+	if (h5_file.empty()) {
 		realFile = TimeStamp().ToTag() + ".h5";
 	}
 #if USE_HDF5

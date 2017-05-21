@@ -70,6 +70,7 @@ Population Generator::Generate()
 
 	// The population object we're filling up.
 	Population population;
+	population.has_atlas = true;
 
 	// Throughout this method, `n` is a counter for how many people are
 	// left to accomodate for. When towns, schools, etc. are added to the
@@ -85,8 +86,8 @@ Population Generator::Generate()
 	std::map<GeoPosition, std::vector<CommunityClusterId>> primary_communities;
 	std::map<GeoPosition, std::vector<CommunityClusterId>> secondary_communities;
 
-	// A map from GeoPositions to # of people to generate there.
-	std::map<GeoPosition, int> population_distribution;
+	// A map of locations to Towns (or cities)
+	std::map<GeoPosition, Atlas::Town> town_map;
 
 	// Generate cities.
 	{
@@ -96,7 +97,7 @@ Population Generator::Generate()
 		for (const auto& city : geo_profile->GetCities()) {
 			int city_size = city.relative_population * model->city_ratio * model->population_size;
 			n -= city_size;
-			bool inserted = population_distribution.insert({city.geo_position, city_size}).second;
+			bool inserted = town_map.insert({city.geo_position, Atlas::Town(city.name, city_size)}).second;
 			if (!inserted) {
 				FATAL_ERROR("Overlapping coordinates in geoprofile city list!");
 			}
@@ -111,13 +112,26 @@ Population Generator::Generate()
 		int towns_created = 0;
 		while (n > 0) {
 			int town_size = GetRandomTownSize();
-			bool inserted = population_distribution.insert({GetRandomGeoPosition(), town_size}).second;
+			auto pos = GetRandomGeoPosition();
+			std::string town_name = "town" + std::to_string(towns_created);
+			bool inserted =
+			    town_map.insert({pos, Atlas::Town(town_name, town_size)})
+				.second;
 			if (inserted) {
 				n -= town_size;
 			}
 			towns_created++;
 		}
 		Debug("Created {} towns.", towns_created);
+	}
+
+	// Store all town/city locations in the population's atlas.
+	population.AtlasRegisterTowns(town_map);
+
+	// A map from GeoPositions to # of people to generate there: A dressed-down town_map.
+	std::map<GeoPosition, int> population_distribution;
+	for (const auto& p : town_map) {
+		population_distribution.insert({p.first, p.second.size});
 	}
 
 	// A GeoPosition distribution, biased towards locations with high populations.
@@ -300,28 +314,28 @@ Population Generator::Generate()
 		HouseholdClusterId household_id = 1;
 		for (const auto& p : households)
 			for (auto it = p.second.begin(); it != p.second.end(); ++it)
-				population.AtlasEmplace({household_id++, ClusterType::Household}, p.first);
+				population.AtlasEmplaceCluster({household_id++, ClusterType::Household}, p.first);
 
 		for (const auto& p : schools)
 			for (const auto& school : p.second)
 				for (SchoolClusterId id : school)
-					population.AtlasEmplace({id, ClusterType::School}, p.first);
+					population.AtlasEmplaceCluster({id, ClusterType::School}, p.first);
 
 		for (const auto& p : colleges)
 			for (SchoolClusterId id : p.second)
-				population.AtlasEmplace({id, ClusterType::School}, p.first);
+				population.AtlasEmplaceCluster({id, ClusterType::School}, p.first);
 
 		for (const auto& p : workplaces)
 			for (WorkClusterId id : p.second)
-				population.AtlasEmplace({id, ClusterType::Work}, p.first);
+				population.AtlasEmplaceCluster({id, ClusterType::Work}, p.first);
 
 		for (const auto& p : primary_communities)
 			for (CommunityClusterId id : p.second)
-				population.AtlasEmplace({id, ClusterType::PrimaryCommunity}, p.first);
+				population.AtlasEmplaceCluster({id, ClusterType::PrimaryCommunity}, p.first);
 
 		for (const auto& p : secondary_communities)
 			for (CommunityClusterId id : p.second)
-				population.AtlasEmplace({id, ClusterType::SecondaryCommunity}, p.first);
+				population.AtlasEmplaceCluster({id, ClusterType::SecondaryCommunity}, p.first);
 	}
 
 	/* {
