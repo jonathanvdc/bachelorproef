@@ -515,6 +515,7 @@ Visualizer.prototype.findBox = function(){
 /// Update the view to match the info at that day.
 Visualizer.prototype.updateDay = function(day){
     // clamp day to the valid range
+    day = parseInt(day);
     day = clamp(day, 0, this.maxDays-1);
 
     this.day = day;
