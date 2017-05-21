@@ -50,8 +50,8 @@ std::mutex StrideSimulatorResult::io_mutex;
 bool load = false;
 boost::gregorian::date date;
 
-<<<<<<< HEAD
-#if USE_HDF5 CheckPoint * cp;
+#if USE_HDF5
+CheckPoint* cp;
 #endif
 
 /// Performs an action just before a simulator step is performed.
@@ -85,8 +85,8 @@ void StrideSimulatorResult::BeforeSimulatorStep(Simulator& sim)
 /// Performs an action just after a simulator step has been performed.
 void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 {
-#if USE_HDF5 if (stride::util::HDF5)
-	{
+#if USE_HDF5
+	if (stride::util::HDF5) {
 		// saves the last configuration or configuration after an interval.
 		if (sim.IsDone() or util::INTERRUPT or (day + 1) % util::INTERVAL == 0) {
 			cp->OpenFile();

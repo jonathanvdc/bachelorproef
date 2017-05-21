@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 		SwitchArg index_case_Arg("r", "r0", "R0 only", cmd, false);
 		SwitchArg generate_vis_Arg("V", "no-vis", "Don't generate visualization file", cmd, true);
 		ValueArg<string> config_file_Arg("c", "config", "Config File", false, "", "CONFIGURATION FILE", cmd);
-		SwitchArg hdf5("h", "hdf5", "Run checkpointig", cmd, false);
+		SwitchArg hdf5("h", "no-hdf5", "Run without checkpointig", cmd, false);
 
 		ValueArg<string> h5File("f", "h5file", "HDF5 file to write to", false, "", "CHECKPOINT FILE", cmd);
 
@@ -35,12 +35,10 @@ int main(int argc, char** argv)
 		ValueArg<unsigned int> interval(
 		    "i", "interval", "the amount of days between each checkpoint. The first and last are not counted.",
 		    false, -1, "", cmd);
-		ValueArg<string> config_file_Arg(
-		    "c", "config", "Config File", false, "./config/run_default.xml", "CONFIGURATION FILE", cmd);
 
 		cmd.parse(argc, argv);
 
-		stride::util::HDF5.store(hdf5.getValue());
+		stride::util::HDF5.store(not hdf5.getValue());
 		stride::util::INTERVAL.store(interval.getValue());
 
 		// -----------------------------------------------------------------------------------------
