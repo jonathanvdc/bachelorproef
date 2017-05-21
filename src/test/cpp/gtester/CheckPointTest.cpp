@@ -244,9 +244,9 @@ TEST(CheckPoint, SaveLoadCheckPoint)
 	Atlas origAtlas = origPop.GetAtlas();
 	Atlas readAtlas = popRead.GetAtlas();
 
-	for(auto &key: origAtlas.map){
-		auto it = readAtlas.map.find(key.first);
-		EXPECT_NE(it,readAtlas.map.end());
+	for(auto &key: origAtlas.cluster_map){
+		auto it = readAtlas.cluster_map.find(key.first);
+		EXPECT_NE(it,readAtlas.cluster_map.end());
 		EXPECT_EQ(key.second.latitude, it->second.latitude);
 		EXPECT_EQ(key.second.longitude, it->second.longitude);
 	}

@@ -859,7 +859,7 @@ void CheckPoint::WriteAtlas(const Atlas& atlas)
 	}
 
 	std::vector<h_clusterAtlas> data;
-	for (auto& i : atlas.map) {
+	for (auto& i : atlas.cluster_map) {
 		h_clusterAtlas info;
 		info.ClusterID = i.first.first;
 		info.ClusterType = (unsigned int)i.first.second;
@@ -913,11 +913,11 @@ void CheckPoint::LoadAtlas(Population& pop)
 	H5Tclose(newType);
 
 	for (auto& c : data) {
-		Atlas::Key key(c.ClusterID, (ClusterType)c.ClusterType);
+		Atlas::ClusterKey key(c.ClusterID, (ClusterType)c.ClusterType);
 		geo::GeoPosition postion;
 		postion.latitude = c.latitude;
 		postion.longitude = c.longitude;
-		pop.AtlasEmplace(key, postion);
+		pop.AtlasEmplaceCluster(key, postion);
 	}
 }
 
