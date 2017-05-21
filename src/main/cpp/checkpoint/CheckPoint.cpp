@@ -718,16 +718,37 @@ void CheckPoint::WriteExpatriates(multiregion::ExpatriateJournal& journal, boost
 
 	std::string dsetname = "Expatriates";
 
-	std::vector<unsigned int> data;
+	std::vector<h_personType> data;
 
-	journal.SerialForeach([&data](const Person& p, unsigned int) { data.push_back(p.GetId()); });
+	journal.SerialForeach([&data](const Person& p, unsigned int) {
+		h_personType tempPerson(p);
+		data.push_back(tempPerson);
+	});
+
+	hid_t newType = H5Tcreate(H5T_COMPOUND, sizeof(h_personType));
+
+	H5Tinsert(newType, "ID", HOFFSET(h_personType, ID), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Age", HOFFSET(h_personType, Age), H5T_NATIVE_DOUBLE);
+	H5Tinsert(newType, "Gender", HOFFSET(h_personType, Gender), H5T_NATIVE_CHAR);
+	H5Tinsert(newType, "Participating", HOFFSET(h_personType, Participating), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "Immune", HOFFSET(h_personType, Immune), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "Infected", HOFFSET(h_personType, Infected), H5T_NATIVE_HBOOL);
+	H5Tinsert(newType, "StartInf", HOFFSET(h_personType, StartInf), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "EndInf", HOFFSET(h_personType, EndInf), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "StartSympt", HOFFSET(h_personType, StartSympt), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "EndSympt", HOFFSET(h_personType, EndSympt), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "TimeInfected", HOFFSET(h_personType, TimeInfected), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Household", HOFFSET(h_personType, Household), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "School", HOFFSET(h_personType, School), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Work", HOFFSET(h_personType, Work), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Primary", HOFFSET(h_personType, Primary), H5T_NATIVE_UINT);
+	H5Tinsert(newType, "Secondary", HOFFSET(h_personType, Secondary), H5T_NATIVE_UINT);
 
 	hsize_t dims = data.size();
 	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
 
-	hid_t dataset =
-	    H5Dcreate2(group, dsetname.c_str(), H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Dwrite(dataset, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+	hid_t dataset = H5Dcreate2(group, dsetname.c_str(), newType, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+	H5Dwrite(dataset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
 
 	H5Sclose(dataspace);
 	H5Dclose(dataset);
@@ -795,21 +816,41 @@ multiregion::ExpatriateJournal CheckPoint::LoadExpatriates(const Population& pop
 	hsize_t dims;
 	H5Sget_simple_extent_dims(dspace, &dims, nullptr);
 
-	std::vector<unsigned int> data(dims);
+	hid_t newType = H5Dget_type(dset);
 
-	H5Dread(dset, H5T_NATIVE_UINT, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
+	std::vector<h_personType> data(dims);
+
+	H5Dread(dset, newType, H5S_ALL, H5S_ALL, H5P_DEFAULT, data.data());
 
 	H5Sclose(dspace);
 	H5Dclose(dset);
+	H5Tclose(newType);
 
-	for (auto& i : data) {
-		pop.serial_for([&i, &result](const Person& p, unsigned int) {
-			if (p.GetId() == i) {
-				result.AddExpatriate(p);
-			}
-		});
+	for (auto& p : data) {
+
+		disease::Fate disease;
+		disease.start_infectiousness = p.StartInf;
+		disease.start_symptomatic = p.StartSympt;
+		disease.end_infectiousness = p.EndInf;
+		disease.end_symptomatic = p.EndSympt;
+
+		Person toAdd(p.ID, p.Age, p.Household, p.School, p.Work, p.Primary, p.Secondary, disease);
+
+		if (p.Participating) {
+			toAdd.ParticipateInSurvey();
+		}
+
+		if (p.Immune) {
+			toAdd.GetHealth().SetImmune();
+		}
+		if (p.Infected) {
+			toAdd.GetHealth().StartInfection();
+		}
+		for (unsigned int i = 0; i < p.TimeInfected; i++) {
+			toAdd.GetHealth().Update();
+		}
+		result.AddExpatriate(toAdd);
 	}
-
 	return result;
 }
 

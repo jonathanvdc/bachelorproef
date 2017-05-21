@@ -4,6 +4,7 @@
 #define HANDLE_SIGNALS 1
 #endif
 
+#include "util/ExternalVars.h"
 #include <atomic>
 std::atomic<bool> stride::util::INTERRUPT(false);
 
@@ -16,7 +17,6 @@ std::atomic<bool> stride::util::INTERRUPT(false);
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "util/ExternalVars.h"
 namespace {
 void handle_segfault(int sig)
 {
