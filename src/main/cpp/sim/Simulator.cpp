@@ -1,24 +1,3 @@
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
- *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
- */
-
-/**
- * @file
- * Implementation of the Simulator class.
- */
-
 #include "Simulator.h"
 
 #include "alias/Alias.h"
@@ -234,10 +213,11 @@ multiregion::SimulationStepOutput Simulator::ReturnVisitors()
 	    alias::BiasedRandomValueGenerator<multiregion::RegionId>::CreateDistribution(probabilities, *m_travel_rng);
 
 	// Gather the people we're going to ship off to another region.
-	auto number_of_visitors = static_cast<std::size_t>(std::max(
-	    0.0, std::floor(
-		     static_cast<double>(m_population->size() - m_visitors.GetVisitorCount()) *
-		     travel_model->GetTravelFraction())));
+	auto number_of_visitors = static_cast<std::size_t>(
+	    std::max(
+		0.0, std::floor(
+			 static_cast<double>(m_population->size() - m_visitors.GetVisitorCount()) *
+			 travel_model->GetTravelFraction())));
 
 	for (auto visitor :
 	     m_population->get_random_persons(*m_travel_rng, number_of_visitors, [this](const Person& p) -> bool {

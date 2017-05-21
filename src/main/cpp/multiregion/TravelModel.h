@@ -126,8 +126,8 @@ public:
 	    const boost::property_tree::ptree& ptree, RegionId first_region_id = 0);
 
 	using BoostEdgeWeightProperty = boost::property<boost::edge_weight_t, double>;
-	using BoostGraph = boost::adjacency_list<
-	    boost::vecS, boost::vecS, boost::directedS, AirportDescription, BoostEdgeWeightProperty>;
+	using BoostGraph = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, AirportDescription,
+						 BoostEdgeWeightProperty>;
 
 	/// Creates a boost graph that is equivalent to the graph defined by this travel model.
 	BoostGraph ToBoostGraph() const;

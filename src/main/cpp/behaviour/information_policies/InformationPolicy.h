@@ -10,12 +10,11 @@
 
 namespace stride {
 
-template<typename GlobalPolicy, typename LocalPolicy>
-class InformationPolicy {
-
+template <typename GlobalPolicy, typename LocalPolicy>
+class InformationPolicy
+{
 };
 
 } // end_of_namespace
-
 
 #endif /* SRC_MAIN_CPP_BEHAVIOUR_INFORMATIONPOLICY_H_ */

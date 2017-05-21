@@ -1,24 +1,3 @@
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
- *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
- */
-
-/**
- * @file
- * Actually run the simulator.
- */
-
 #include "run_stride.h"
 
 #include "checkpoint/CheckPoint.h"
@@ -109,7 +88,7 @@ void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 #if USE_HDF5
 	if (stride::util::HDF5) {
 		// saves the last configuration or configuration after an interval.
-		if (sim.IsDone() or util::INTERRUPT or (day+1) % util::INTERVAL == 0) {
+		if (sim.IsDone() or util::INTERRUPT or (day + 1) % util::INTERVAL == 0) {
 			cp->OpenFile();
 			cp->SaveCheckPoint(sim, day);
 			cp->CloseFile();

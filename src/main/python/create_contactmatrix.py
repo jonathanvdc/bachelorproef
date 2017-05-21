@@ -1,20 +1,4 @@
 #!/usr/bin/python
-#############################################################################
-#  This file is part of the Stride software. 
-#  It is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by 
-#  the Free Software Foundation, either version 3 of the License, or any 
-#  later version.
-#  The software is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License,
-#  along with the software. If not, see <http://www.gnu.org/licenses/>.
-#  see http://www.gnu.org/licenses/.
-#
-#  Copyright 2016, Willem L, Kuylen E & Broeckhove J
-#############################################################################
 
 """
 Create an age-based contact matrix in XML-format.
@@ -45,10 +29,10 @@ def createFromCSV(household_file, work_file, school_file, community_file_week, c
             cluster_file = community_file_weekend
         else:
             cluster_file = community_file_week
-    
+
         with open(cluster_file, 'r') as f:
             part_age = 0
-            
+
             reader = csv.DictReader(f, delimiter=';')
             for row in reader:
                 # make participant element
@@ -62,12 +46,12 @@ def createFromCSV(household_file, work_file, school_file, community_file_week, c
                     # get number of contacts
                     key = "age" + str(cnt_age)
                     rate = float(row[key].replace(',','.'))
-                    
+
                     if cluster_type == "household":
                         rate = rate*10
                     elif cluster_type == "work":
                         rate = rate*2.5
-                    
+
                     ET.SubElement(contact, "rate").text = str(rate)
                 part_age += 1
 

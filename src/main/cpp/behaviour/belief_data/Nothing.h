@@ -3,8 +3,9 @@
 
 namespace stride {
 
-class Nothing {};
-
+class Nothing
+{
+};
 }
 
 #endif /* SRC_MAIN_CPP_BEHAVIOUR_BELIEF_DATA_NOTHING_H_ */

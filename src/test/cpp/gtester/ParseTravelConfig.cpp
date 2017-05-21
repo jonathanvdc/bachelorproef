@@ -9,8 +9,7 @@
 
 namespace Tests {
 
-void assert_default_travel_config(
-	const std::vector<stride::multiregion::RegionTravelRef>& regions)
+void assert_default_travel_config(const std::vector<stride::multiregion::RegionTravelRef>& regions)
 {
 	ASSERT_EQ(regions.size(), 2u);
 	ASSERT_EQ(regions[0]->GetRegionPopulationPath(), "pop_nassau.csv");

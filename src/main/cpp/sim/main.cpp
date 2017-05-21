@@ -1,24 +1,3 @@
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
- *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
- */
-
-/**
- * @file
- * Main program: command line handling.
- */
-
 #include "run_stride.h"
 
 #include <exception>
@@ -46,7 +25,7 @@ int main(int argc, char** argv)
 		SwitchArg index_case_Arg("r", "r0", "R0 only", cmd, false);
 		SwitchArg generate_vis_Arg("V", "no-vis", "Don't generate visualization file", cmd, true);
 		ValueArg<string> config_file_Arg("c", "config", "Config File", false, "", "CONFIGURATION FILE", cmd);
-		SwitchArg hdf5("h", "hdf5", "Run checkpointig", cmd, false);
+		SwitchArg hdf5("h", "no-hdf5", "Run without checkpointig", cmd, false);
 
 		ValueArg<string> h5File("f", "h5file", "HDF5 file to write to", false, "", "CHECKPOINT FILE", cmd);
 
@@ -59,7 +38,7 @@ int main(int argc, char** argv)
 
 		cmd.parse(argc, argv);
 
-		stride::util::HDF5.store(hdf5.getValue());
+		stride::util::HDF5.store(not hdf5.getValue());
 		stride::util::INTERVAL.store(interval.getValue());
 
 		// -----------------------------------------------------------------------------------------

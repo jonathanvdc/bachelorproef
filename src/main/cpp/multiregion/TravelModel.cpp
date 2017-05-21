@@ -137,10 +137,11 @@ std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
 		    region.get<std::string>("<xmlattr>.geodistribution_profile", "");
 		auto region_reference_households_path = region.get<std::string>("<xmlattr>.reference_households", "");
 		auto region_travel_fraction = region.get<double>("<xmlattr>.travel_fraction");
-		results.push_back(std::make_shared<RegionTravel>(
-		    region_id, region_population_path, region_geodistribution_profile_path,
-		    region_reference_households_path, region_travel_fraction, min_trip_duration, max_trip_duration,
-		    airport_list));
+		results.push_back(
+		    std::make_shared<RegionTravel>(
+			region_id, region_population_path, region_geodistribution_profile_path,
+			region_reference_households_path, region_travel_fraction, min_trip_duration, max_trip_duration,
+			airport_list));
 		region_id++;
 	}
 	return results;
