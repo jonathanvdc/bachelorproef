@@ -51,7 +51,7 @@ bool load = false;
 boost::gregorian::date date;
 
 #if USE_HDF5
-CheckPoint* cp;
+std::unique_ptr<CheckPoint> cp;
 #endif
 
 /// Performs an action just before a simulator step is performed.
@@ -303,7 +303,7 @@ void run_stride(
 	}
 #if USE_HDF5
 	if (stride::util::HDF5) {
-		cp = new CheckPoint(realFile);
+		cp = std::make_unique<CheckPoint>(realFile);
 
 		cp->CreateFile();
 		cp->OpenFile();
@@ -345,7 +345,7 @@ void run_stride_noConfig(bool track_index_case, const std::string& h5_file, cons
 		}
 		actualFile = besTime.filename().string();
 	}
-	cp = new CheckPoint(actualFile);
+	cp = std::make_unique<CheckPoint>(actualFile);
 
 	if (datestr.empty()) {
 		cp->OpenFile();
