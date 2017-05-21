@@ -122,6 +122,14 @@ Visualizer.prototype.aggregateData = function(){
         var size = this.towns[t].size
         maxTownSize = Math.max(maxTownSize, size);
         totalSize += size;
+        var max = {day: 0, infected: 0};
+        for(var d in this.days){
+            if( this.days[d][t] > max.infected){
+                max.day = d;
+                max.infected = this.days[d][t];
+            }
+        }
+        this.towns[t].max = max;
     }
     this.maxTownSize = maxTownSize;
     this.totalSize = totalSize;
@@ -262,28 +270,35 @@ Visualizer.prototype.makeView = function(){
 Visualizer.prototype.makeTable = function(){
     // Find and clear the view target
     $target = this.$view.find(".table-view");
-    $target.html('');
+    $target.html("");
 
     // Make a table
-    this.$table = $table = $('<table>', {class:'table table-striped table-condensed'});
+    this.$table = $table = $("<table>", {class:"table table-striped table-condensed"});
     $target.append($table);
 
     // Header
-    $row = $('<tr>');
-    $row.append($('<th>Name</th>'));
-    $row.append($('<th>Inhabitants</th>'));
-    $row.append($('<th>Infected</th>'));
-    $row.append($('<th>Percentage</th>'));
+    $row = $("<tr>");
+    $row.append($("<th>Name</th>"));
+    $row.append($("<th>Inhabitants</th>"));
+    $row.append($("<th>Current infected</th>"));
+    $row.append($("<th>Most infected</th>"));
     $table.append($row);
 
     // Rows
-    for(var i in this.towns){
+    for(let i in this.towns){
         var town = this.towns[i];
-        $row = $('<tr>', {town:noSpace(town.name)});
-        $row.append($('<td>' + town.name + '</td>'));
-        $row.append($('<td>' + town.size + '</td>'));
-        $row.append($('<td>', {class:'infected'}));
-        $row.append($('<td>', {class:'percent'}));
+        $row = $("<tr>",{town:noSpace(town.name)});
+        $row.append($("<td>").append($("<a>",{class:"clickable",onclick:`visualizer.makeTownPanel(${i})`}).text(town.name)));
+        $row.append($("<td>").text(town.size));
+        $current = $("<td>");
+        $current.append($("<span>", {class:"infected"}));
+        $current.append(" : ");
+        $current.append($("<span>", {class:"percent"}));
+        $row.append($current);
+        $max = $("<td>");
+        $max.append(`${town.max.infected} on day `);
+        $max.append($("<a>",{class:"clickable",onclick:`visualizer.updateDay(${town.max.day})`}).text(town.max.day));
+        $row.append($max);
         $table.append($row);
     }
 }
@@ -299,8 +314,6 @@ Visualizer.prototype.makeGraph = function(){
     for(var i in this.days)
         percentList.push(this.days[i].total * 100 / this.totalSize);
 
-    console.log(percentList.length);
-
     var percentLabels = [];
     for(var i=0;i<=100;i+=10) percentLabels.push(i + "%");
 
@@ -311,7 +324,7 @@ Visualizer.prototype.makeGraph = function(){
     $svg.graph.legend.show(false);
     $svg.graph.area(0.13, 0.1, 0.98, 0.85);
     $svg.graph.gridlines({stroke: '#aaf', strokeDashArray: '2,4'});
-    $svg.graph.yAxis.ticks(10, 5, 8).labels(percentLabels).scale(0, Math.min(100, this.maxTotal / this.totalSize * 120));
+    $svg.graph.yAxis.ticks(10, 5, 8).labels(percentLabels).scale(0, clamp(this.maxTotal / this.totalSize * 120, 10, 100));
     $svg.graph.xAxis.ticks(50, 30, 1).labels("", "transparent");
 
     $svg.graph.redraw();
@@ -369,22 +382,52 @@ var panelX = basePanelX + 30;
 var basePanelY = 450;
 var panelY = basePanelY + 30;
 
-Visualizer.prototype.makeTownPanel = function(town){
+Visualizer.prototype.makeTownPanel = function(townId){
+    var town = this.towns[townId];
+
     var x = panelX;
     var y = panelY;
     panelX = (panelX - basePanelX + 30) % 330 + basePanelX;
     panelY = (panelY - basePanelY + 30) % 240 + basePanelY;
 
     var text = 
-    `<div> Infected: <span class=\"info infected\">-</span> / \
-    <span class=\"info \">${town.size}</span> = \
-    <span class=\"info percent\">-</span> </div>`;
+    `<div> Infected: <span class=\"info infected\">-</span> /
+    <span class=\"info \">${town.size}</span> =
+    <span class=\"info percent\">-</span> </div>
+    <div> Most infected: <span class=\"info\">${town.max.infected}</span> on day
+    <span class=\"info clickable\" onclick="visualizer.updateDay(${town.max.day})">${town.max.day}</span> </div>`;
 
-    $panel = makePanel(x, y, town.name ,text);
+    $panel = makePanel(x, y, town.name, text);
     $panel.css("min-width", "200px");
     $panel.body.attr("town", noSpace(town.name));
 
     $("body").append($panel);
+
+    var $target = $("<div>");
+    $panel.body.append($target);
+    $target.svg("destroy");
+    $target.svg({settings: {width: "220px", height:"120px"}});
+    var $svg = $target.svg("get");
+
+    var percentList = [];
+    for(var i in this.days)
+        percentList.push((this.days[i][townId]||0) * 100 / town.size);
+
+    var percentLabels = [];
+    for(var i=0;i<=100;i+=10) percentLabels.push(i + "%");
+
+    $svg.graph.noDraw();
+
+    $svg.graph.addSeries("Infected", percentList, "#186", "#2b8", 1);
+    $svg.graph.options({barGap:0});
+    $svg.graph.legend.show(false);
+    $svg.graph.area(0.18, 0.1, 0.98, 0.85);
+    $svg.graph.gridlines({stroke: '#aaf', strokeDashArray: '2,4'});
+    $svg.graph.yAxis.ticks(10, 5, 8).labels(percentLabels).scale(0, clamp(town.max.infected / town.size * 120, 10, 100));
+    $svg.graph.xAxis.ticks(50, 30, 1).labels("", "transparent");
+
+    $svg.graph.redraw();
+
     this.updateTable();
 }
 
@@ -430,7 +473,7 @@ Visualizer.prototype.makeMap = function(){
     var svgMap = $target.svg("get");
 
     // Fill it with circles
-    for(var i in this.towns){
+    for(let i in this.towns){
         let town = this.towns[i];
         // Determine its features
         var x = percentFormat(longFunc(town.long));
@@ -449,7 +492,7 @@ Visualizer.prototype.makeMap = function(){
         dot.setAttribute("data-toggle", "tooltip");
         dot.setAttribute("data-container", "body");
         dot.setAttribute("r", this.townSizeFunc(town.size));
-        dot.onclick = ()=>this.makeTownPanel(town);
+        dot.onclick = ()=>this.makeTownPanel(i);
     }
     refreshTooltips();
 }
@@ -482,7 +525,7 @@ Visualizer.prototype.updateDay = function(day){
     $('.most-current-infected').text(this.days[day].max.infected);
     $('.most-current-infected-town').text(this.towns[this.days[day].max.town].name);
     $('.most-current-infected-town').unbind("click");
-    $('.most-current-infected-town').on("click", ()=>this.makeTownPanel(this.towns[this.days[day].max.town]));
+    $('.most-current-infected-town').on("click", ()=>this.makeTownPanel(this.days[day].max.town));
 
     this.updateView();
 }
