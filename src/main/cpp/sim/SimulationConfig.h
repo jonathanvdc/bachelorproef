@@ -102,7 +102,10 @@ struct SingleSimulationConfig final
 
 	/// Gets a path to the geodistribution profile file for this simulation.
 	/// (This string is empty if the population is read from a CSV file.)
-	std::string GetGeodistributionProfilePath() const { return travel_model->GetRegionGeodistributionProfilePath(); };
+	std::string GetGeodistributionProfilePath() const
+	{
+		return travel_model->GetRegionGeodistributionProfilePath();
+	};
 
 	/// Gets a path to the reference households file for this simulation.
 	/// (This string is empty if the population is read from a CSV file.)

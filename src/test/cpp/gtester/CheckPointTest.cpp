@@ -94,12 +94,12 @@ TEST(CheckPoint, Write_LoadHolidays)
 	cp.CloseFile();
 
 	cp.OpenFile();
-	Calendar c = cp.LoadCalendar(boost::gregorian::date(2017, 01, 01));
+	Calendar c = cp.LoadCalendar(boost::gregorian::date(2017, 1, 1));
 	cp.CloseFile();
 
-	EXPECT_EQ(c.GetYear(), 2017);
-	EXPECT_EQ(c.GetMonth(), 1);
-	EXPECT_EQ(c.GetDay(), 1);
+	EXPECT_EQ(c.GetYear(), 2017U);
+	EXPECT_EQ(c.GetMonth(), 1U);
+	EXPECT_EQ(c.GetDay(), 1U);
 }
 
 TEST(CheckPoint, SaveLoadCheckPoint)

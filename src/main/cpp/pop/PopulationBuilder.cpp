@@ -1,24 +1,3 @@
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
- *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
- */
-
-/**
- * @file
- * Initialize populations.
- */
-
 #include "PopulationBuilder.h"
 
 #include "core/Disease.h"
@@ -84,7 +63,8 @@ shared_ptr<Population> PopulationBuilder::Build(
 		unsigned int person_id = 0U;
 		while (getline(*pop_file, line)) {
 			const auto values = StringUtils::Split(line, ",");
-                        const auto risk_averseness = values.size() > 6 ? StringUtils::FromString<double>(values[6]) : 0.0;
+			const auto risk_averseness =
+			    values.size() > 6 ? StringUtils::FromString<double>(values[6]) : 0.0;
 			population.emplace(
 			    person_id,
 			    StringUtils::FromString<unsigned int>(values[0]), // age
@@ -93,8 +73,8 @@ shared_ptr<Population> PopulationBuilder::Build(
 			    StringUtils::FromString<unsigned int>(values[3]), // work_id
 			    StringUtils::FromString<unsigned int>(values[4]), // primary_community_id
 			    StringUtils::FromString<unsigned int>(values[5]), // secondary_community_id
-			    disease->Sample(rng), 			      // Fate
-                            risk_averseness);                                 // risk_averseness
+			    disease->Sample(rng),			      // Fate
+			    risk_averseness);				      // risk_averseness
 			++person_id;
 		}
 	} else if (boost::algorithm::ends_with(config.GetPopulationPath(), ".xml")) {

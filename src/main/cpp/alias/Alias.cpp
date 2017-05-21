@@ -78,5 +78,6 @@ std::size_t Alias::Next()
 		return m_alias[roll];
 	}
 }
-}
-}
+
+} // end-of-namespace
+} // end-of-namespace
