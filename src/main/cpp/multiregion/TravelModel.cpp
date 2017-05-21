@@ -117,7 +117,7 @@ std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
 				auto route_passenger_fraction = route.get<double>("<xmlattr>.passenger_fraction", 1.0);
 				auto route_target_airport = airport_map[route.get_value<std::string>()];
 				airport_map[airport_name]->routes.push_back(
-				    {route_passenger_fraction, route_target_airport});
+				    {route_passenger_fraction, route_target_airport.get()});
 			}
 		}
 	}
@@ -137,10 +137,11 @@ std::vector<RegionTravelRef> RegionTravel::ParseRegionTravel(
 		    region.get<std::string>("<xmlattr>.geodistribution_profile", "");
 		auto region_reference_households_path = region.get<std::string>("<xmlattr>.reference_households", "");
 		auto region_travel_fraction = region.get<double>("<xmlattr>.travel_fraction");
-		results.push_back(std::make_shared<RegionTravel>(
-		    region_id, region_population_path, region_geodistribution_profile_path,
-		    region_reference_households_path, region_travel_fraction, min_trip_duration, max_trip_duration,
-		    airport_list));
+		results.push_back(
+		    std::make_shared<RegionTravel>(
+			region_id, region_population_path, region_geodistribution_profile_path,
+			region_reference_households_path, region_travel_fraction, min_trip_duration, max_trip_duration,
+			airport_list));
 		region_id++;
 	}
 	return results;
@@ -152,17 +153,17 @@ RegionTravel::BoostGraph RegionTravel::ToBoostGraph() const
 
 	// Add all airports to the graph as vertices and create a map of airports
 	// to these vertices.
-	std::unordered_map<AirportRef, BoostGraph::vertex_descriptor> vertex_mapping;
+	std::unordered_map<const Airport*, BoostGraph::vertex_descriptor> vertex_mapping;
 	for (const auto& airport : *all_airports) {
 		BoostGraph::vertex_descriptor vertex = boost::add_vertex(result);
 
 		result[vertex] = airport->GetDescription();
-		vertex_mapping[airport] = vertex;
+		vertex_mapping[airport.get()] = vertex;
 	}
 
 	// Encode the routes as edges.
 	for (const auto& airport : *all_airports) {
-		const auto& src = vertex_mapping[airport];
+		const auto& src = vertex_mapping[airport.get()];
 		for (const auto& route : airport->routes) {
 			const auto& tgt = vertex_mapping[route.target];
 			BoostEdgeWeightProperty edge = route.passenger_fraction;

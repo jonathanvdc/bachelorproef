@@ -1,20 +1,3 @@
-#############################################################################
-#  This is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or any
-#  later version.
-#  The software is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#  You should have received a copy of the GNU General Public License,
-#  along with the software. If not, see <http://www.gnu.org/licenses/>.
-#  see http://www.gnu.org/licenses/.
-#
-#  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
-#############################################################################
-
-
 #============================================================================
 # Build & install the (OpenMP enabled if OpenMP available) executable.
 #============================================================================
@@ -25,7 +8,6 @@ set( SRC
 		BatchRuns.cpp
 		GeoPosition.cpp
 		main.cpp
-		MpiTests.cpp
 		ParallelTest.cpp
 		ParsePopulationModel.cpp
 		ParseSimulationConfig.cpp
@@ -34,6 +16,10 @@ set( SRC
 		RunSimulator.cpp
 		TravelModelGraph.cpp
 )
+
+if ( MPI_FOUND )
+	set( SRC ${SRC} MpiTests.cpp )
+endif()
 
 add_executable(${EXEC}   ${SRC} $<TARGET_OBJECTS:libstride> $<TARGET_OBJECTS:trng>)
 target_link_libraries( ${EXEC}    ${LIBS} gtest pthread)

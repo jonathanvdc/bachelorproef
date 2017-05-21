@@ -1,25 +1,5 @@
 #ifndef CLUSTER_H_INCLUDED
 #define CLUSTER_H_INCLUDED
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
- *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
- */
-
-/**
- * @file
- * Header for the core Cluster class.
- */
 
 #include "behaviour/information_policies/NoLocalInformation.h"
 #include "core/ClusterType.h"
@@ -88,10 +68,18 @@ private:
 	void UpdateMemberPresence();
 
 private:
-	ClusterId m_cluster_id;				///< The ID of the Cluster (for logging purposes).
-	ClusterType m_cluster_type;			///< The type of the Cluster (for logging purposes).
-	std::size_t m_index_immune;			///< Index of the first immune member in the Cluster.
-	std::vector<std::pair<Person, bool>> m_members; ///< Container with pointers to Cluster members.
+	/// The ID of the Cluster (for logging purposes).
+	ClusterId m_cluster_id;
+
+	/// The type of the Cluster (for logging purposes).
+	ClusterType m_cluster_type;
+
+	/// Index of the first immune member in the Cluster.
+	std::size_t m_index_immune;
+
+	/// Container with pointers to Cluster members.
+	std::vector<std::pair<Person, bool>> m_members;
+
 	const ContactProfile& m_profile;
 
 private:

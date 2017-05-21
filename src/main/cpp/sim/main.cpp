@@ -1,24 +1,3 @@
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
- *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
- */
-
-/**
- * @file
- * Main program: command line handling.
- */
-
 #include "run_stride.h"
 
 #include <exception>
@@ -32,7 +11,7 @@ using namespace TCLAP;
 
 /// Main program of the stride simulator.
 int main(int argc, char** argv)
-{	
+{
 	// Set up a signal handler.
 	stride::util::setup_segfault_handler();
 	int exit_status = EXIT_SUCCESS;
@@ -45,7 +24,7 @@ int main(int argc, char** argv)
 		SwitchArg generate_vis_Arg("V", "no-vis", "Don't generate visualization file", cmd, true);
 		ValueArg<string> config_file_Arg(
 		    "c", "config", "Config File", false, "./config/run_default.xml", "CONFIGURATION FILE", cmd);
-    
+
 		cmd.parse(argc, argv);
 
 		// -----------------------------------------------------------------------------------------
@@ -62,8 +41,7 @@ int main(int argc, char** argv)
 		// Run the Stride simulator.
 		// -----------------------------------------------------------------------------------------
 		run_stride(index_case_Arg.getValue(), config_file_Arg.getValue(), generate_vis_Arg.getValue());
-	}
-	catch (exception& e) {
+	} catch (exception& e) {
 		exit_status = EXIT_FAILURE;
 		cerr << "\nEXCEPION THROWN: " << e.what() << endl;
 	} catch (...) {
