@@ -54,6 +54,12 @@ struct CommonSimulationConfig final
 	/// The name of the age contact matrix file.
 	std::string contact_matrix_file_name;
 
+	/// Wether or not a checkpoint should be used
+	bool use_checkpoint;
+
+	/// The amount of days between 2 checkpoints. The first and last will be saved regardless.
+	unsigned int checkpoint_interval;
+
 	/// Fills this configuration with data from the given ptree.
 	void Parse(const boost::property_tree::ptree& pt);
 };

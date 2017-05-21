@@ -4,10 +4,9 @@
 #define HANDLE_SIGNALS 1
 #endif
 
-#include "util/ExternalVars.h"
 #include <atomic>
+#include "util/ExternalVars.h"
 std::atomic<bool> stride::util::INTERRUPT(false);
-
 
 #if HANDLE_SIGNALS
 

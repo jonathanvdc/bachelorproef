@@ -54,25 +54,28 @@ void CheckPoint::WriteConfig(const SingleSimulationConfig& conf)
 	}
 
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
-	hsize_t dims = 2;
+	hsize_t dims = 3;
 	hid_t dataspace = H5Screate_simple(1, &dims, nullptr);
-	hbool_t bools[2];
+	hbool_t bools[3];
 	bools[0] = common_config->track_index_case;
 	bools[1] = log_config->generate_person_file;
+	// should always be true
+	bools[2] = common_config->use_checkpoint;
 	hid_t attr = H5Acreate2(group, "bools", H5T_NATIVE_HBOOL, dataspace, H5P_DEFAULT, H5P_DEFAULT);
 	H5Awrite(attr, H5T_NATIVE_HBOOL, bools);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
 
-	dims = 5;
+	dims = 6;
 	dataspace = H5Screate_simple(1, &dims, nullptr);
 	attr = H5Acreate2(group, "uints", H5T_NATIVE_UINT, dataspace, H5P_DEFAULT, H5P_DEFAULT);
-	unsigned int uints[5];
+	unsigned int uints[6];
 	uints[0] = common_config->rng_seed;
 	uints[1] = common_config->number_of_days;
 	uints[2] = common_config->number_of_survey_participants;
 	uints[3] = (unsigned int)log_config->log_level;
 	uints[4] = conf.GetId();
+	uints[5] = common_config->checkpoint_interval;
 	H5Awrite(attr, H5T_NATIVE_UINT, uints);
 	H5Sclose(dataspace);
 	H5Aclose(attr);
@@ -527,12 +530,13 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 	hid_t group = H5Gopen2(m_file, "Config", H5P_DEFAULT);
 
 	hid_t attr = H5Aopen(group, "bools", H5P_DEFAULT);
-	hbool_t bools[2];
+	hbool_t bools[3];
 	H5Aread(attr, H5T_NATIVE_HBOOL, bools);
 	H5Aclose(attr);
 
 	result.common_config->track_index_case = bools[0];
 	result.log_config->generate_person_file = bools[1];
+	result.common_config->use_checkpoint = bools[2];
 
 	attr = H5Aopen(group, "doubles", H5P_DEFAULT);
 	double doubles[3];
@@ -544,7 +548,7 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 	result.common_config->immunity_rate = doubles[2];
 
 	attr = H5Aopen(group, "uints", H5P_DEFAULT);
-	unsigned int uints[3];
+	unsigned int uints[6];
 	H5Aread(attr, H5T_NATIVE_UINT, uints);
 	H5Aclose(attr);
 
@@ -553,6 +557,7 @@ SingleSimulationConfig CheckPoint::LoadSingleConfig()
 	result.common_config->number_of_survey_participants = uints[2];
 	result.log_config->log_level = (LogMode)uints[3];
 	unsigned int id = uints[4];
+	result.common_config->checkpoint_interval = uints[5];
 
 	attr = H5Aopen(group, "prefix", H5P_DEFAULT);
 

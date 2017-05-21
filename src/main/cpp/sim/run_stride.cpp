@@ -32,9 +32,6 @@
 #include <string>
 #include <utility>
 
-std::atomic<unsigned int> stride::util::INTERVAL(1);
-std::atomic<bool> stride::util::HDF5(false);
-
 namespace stride {
 
 using namespace output;
@@ -59,7 +56,7 @@ void StrideSimulatorResult::BeforeSimulatorStep(Simulator& sim)
 	run_clock.Start();
 
 #if USE_HDF5
-	if (stride::util::HDF5) {
+	if (sim.GetConfiguration().common_config->use_checkpoint) {
 		if (load && day == 0) {
 			std::cout << "Loading old Simulation" << std::endl;
 			cp->OpenFile();
@@ -85,9 +82,10 @@ void StrideSimulatorResult::BeforeSimulatorStep(Simulator& sim)
 void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 {
 #if USE_HDF5
-	if (stride::util::HDF5) {
+	if (sim.GetConfiguration().common_config->use_checkpoint) {
 		// saves the last configuration or configuration after an interval.
-		if (sim.IsDone() || util::INTERRUPT || (day + 1) % util::INTERVAL == 0) {
+		if (sim.IsDone() || util::INTERRUPT ||
+		    (day + 1) % sim.GetConfiguration().common_config->checkpoint_interval == 0) {
 			cp->OpenFile();
 			cp->SaveCheckPoint(sim, day);
 			cp->CloseFile();
@@ -272,10 +270,10 @@ void run_stride(const SingleSimulationConfig& config) { run_stride(config.AsMult
 /// Run the stride simulator.
 void run_stride(
     bool track_index_case, const string& config_file_name, const std::string& h5_file, const std::string& date,
-    bool gen_vis)
+    bool gen_vis, bool checkpoint, unsigned int interval)
 {
-	if (config_file_name.empty()) {
-		run_stride_noConfig(track_index_case, h5_file, date);
+	if (config_file_name.empty() and checkpoint) {
+		run_stride_noConfig(track_index_case, h5_file, date, gen_vis, interval);
 		return;
 	}
 	std::string realFile(h5_file);
@@ -293,6 +291,8 @@ void run_stride(
 	config.Parse(pt_config.get_child("run"));
 	config.common_config->track_index_case = track_index_case;
 	config.common_config->generate_vis_file = gen_vis;
+	config.common_config->use_checkpoint = checkpoint;
+	config.common_config->checkpoint_interval = interval;
 
 	if (config.log_config->output_prefix.length() == 0) {
 		config.log_config->output_prefix = TimeStamp().ToTag();
@@ -301,7 +301,7 @@ void run_stride(
 		realFile = TimeStamp().ToTag() + ".h5";
 	}
 #if USE_HDF5
-	if (stride::util::HDF5) {
+	if (config.common_config->use_checkpoint) {
 		cp = std::make_unique<CheckPoint>(realFile);
 
 		cp->CreateFile();
@@ -317,13 +317,11 @@ void run_stride(
 	run_stride(config);
 }
 
-void run_stride_noConfig(bool track_index_case, const std::string& h5_file, const std::string& datestr)
+void run_stride_noConfig(
+    bool track_index_case, const std::string& h5_file, const std::string& datestr, bool gen_vis, unsigned int interval)
 {
 #if USE_HDF5
 	load = true;
-	if (!stride::util::HDF5) {
-		FATAL_ERROR("NOT USING HDF5.");
-	}
 	std::string actualFile = h5_file;
 	if (h5_file.empty()) {
 		std::vector<boost::filesystem::path> hfiles;
@@ -368,6 +366,8 @@ void run_stride_noConfig(bool track_index_case, const std::string& h5_file, cons
 	SingleSimulationConfig config = cp->LoadSingleConfig();
 	config.common_config->initial_calendar = cp->LoadCalendar(date);
 	cp->CloseFile();
+	config.common_config->generate_vis_file = gen_vis;
+	config.common_config->checkpoint_interval = interval;
 
 	run_stride(config);
 

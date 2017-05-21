@@ -3,7 +3,6 @@
 #include <exception>
 #include <iostream>
 #include <tclap/CmdLine.h>
-#include "util/ExternalVars.h"
 #include "util/Signals.h"
 
 using namespace std;
@@ -38,9 +37,6 @@ int main(int argc, char** argv)
 
 		cmd.parse(argc, argv);
 
-		stride::util::HDF5.store(not hdf5.getValue());
-		stride::util::INTERVAL.store(interval.getValue());
-
 		// -----------------------------------------------------------------------------------------
 		// Print output to command line.
 		// -----------------------------------------------------------------------------------------
@@ -56,7 +52,7 @@ int main(int argc, char** argv)
 		// -----------------------------------------------------------------------------------------
 		run_stride(
 		    index_case_Arg.getValue(), config_file_Arg.getValue(), h5File.getValue(), date.getValue(),
-		    generate_vis_Arg.getValue());
+		    generate_vis_Arg.getValue(), hdf5.getValue(), interval.getValue());
 	} catch (exception& e) {
 
 		exit_status = EXIT_FAILURE;

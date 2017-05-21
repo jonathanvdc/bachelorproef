@@ -241,7 +241,6 @@ private:
 	/// General simulation or tracking index case.
 	bool m_track_index_case;
 
-
 private:
 	friend class SimulatorBuilder;
 };
