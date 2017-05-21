@@ -1,8 +1,6 @@
 #ifndef SIGNALS_H_INCLUDED
 #define SIGNALS_H_INCLUDED
 
-#include <atomic>
-
 namespace stride {
 namespace util {
 
