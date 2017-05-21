@@ -56,8 +56,8 @@ private:
 	std::map<std::weak_ptr<const void>, CallbackType, std::owner_less<std::weak_ptr<const void>>> m_observers;
 };
 
-template<typename E>
-template<typename U>
+template <typename E>
+template <typename U>
 void Subject<E>::Register(const std::shared_ptr<U>& u, CallbackType f)
 {
 	m_observers.insert(make_pair(std::static_pointer_cast<const void>(u), f));
@@ -70,13 +70,13 @@ void Subject<E>::Unregister(const std::shared_ptr<U>& u)
 	m_observers.erase(std::static_pointer_cast<const void>(u));
 }
 
-template<typename E>
+template <typename E>
 void Subject<E>::UnregisterAll()
 {
 	m_observers.clear();
 }
 
-template<typename E>
+template <typename E>
 void Subject<E>::Notify(const EventType& e)
 {
 	for (const auto& o : m_observers) {

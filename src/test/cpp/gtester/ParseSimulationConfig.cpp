@@ -9,25 +9,24 @@
 
 namespace Tests {
 
-void assert_default_travel_config(
-	const std::vector<stride::multiregion::RegionTravelRef>& regions);
+void assert_default_travel_config(const std::vector<stride::multiregion::RegionTravelRef>& regions);
 
 TEST(ParseSimulationConfig, ParseDefaultSimulationConfig)
 {
-    // <rng_seed>1</rng_seed>
-    // <r0>11</r0>
-    // <seeding_rate>0.002</seeding_rate>
-    // <immunity_rate>0.8</immunity_rate>
-    // <population_file>pop_nassau.csv</population_file>
-    // <num_days>50</num_days>
-    // <output_prefix></output_prefix>
-    // <disease_config_file>disease_measles.xml</disease_config_file>
-    // <generate_person_file>1</generate_person_file>
-    // <num_participants_survey>10</num_participants_survey>
-    // <start_date>2017-01-01</start_date>
-    // <holidays_file>holidays_none.json</holidays_file>
-    // <age_contact_matrix_file>contact_matrix_average.xml</age_contact_matrix_file>
-    // <log_level>Transmissions</log_level>
+	// <rng_seed>1</rng_seed>
+	// <r0>11</r0>
+	// <seeding_rate>0.002</seeding_rate>
+	// <immunity_rate>0.8</immunity_rate>
+	// <population_file>pop_nassau.csv</population_file>
+	// <num_days>50</num_days>
+	// <output_prefix></output_prefix>
+	// <disease_config_file>disease_measles.xml</disease_config_file>
+	// <generate_person_file>1</generate_person_file>
+	// <num_participants_survey>10</num_participants_survey>
+	// <start_date>2017-01-01</start_date>
+	// <holidays_file>holidays_none.json</holidays_file>
+	// <age_contact_matrix_file>contact_matrix_average.xml</age_contact_matrix_file>
+	// <log_level>Transmissions</log_level>
 
 	std::ifstream pop_file{"../config/run_default.xml"};
 	boost::property_tree::ptree pt;
@@ -65,20 +64,20 @@ TEST(ParseSimulationConfig, ExceptionOnInvalidFile)
 
 TEST(ParseSimulationConfig, ParseTravelSimulationConfig)
 {
-    // <rng_seed>1</rng_seed>
-    // <r0>11</r0>
-    // <seeding_rate>0.002</seeding_rate>
-    // <immunity_rate>0.8</immunity_rate>
-    // <travel_file>travel_test.xml</travel_file>
-    // <num_days>50</num_days>
-    // <output_prefix></output_prefix>
-    // <disease_config_file>disease_measles.xml</disease_config_file>
-    // <generate_person_file>1</generate_person_file>
-    // <num_participants_survey>10</num_participants_survey>
-    // <start_date>2017-01-01</start_date>
-    // <holidays_file>holidays_none.json</holidays_file>
-    // <age_contact_matrix_file>contact_matrix_average.xml</age_contact_matrix_file>
-    // <log_level>Transmissions</log_level>
+	// <rng_seed>1</rng_seed>
+	// <r0>11</r0>
+	// <seeding_rate>0.002</seeding_rate>
+	// <immunity_rate>0.8</immunity_rate>
+	// <travel_file>travel_test.xml</travel_file>
+	// <num_days>50</num_days>
+	// <output_prefix></output_prefix>
+	// <disease_config_file>disease_measles.xml</disease_config_file>
+	// <generate_person_file>1</generate_person_file>
+	// <num_participants_survey>10</num_participants_survey>
+	// <start_date>2017-01-01</start_date>
+	// <holidays_file>holidays_none.json</holidays_file>
+	// <age_contact_matrix_file>contact_matrix_average.xml</age_contact_matrix_file>
+	// <log_level>Transmissions</log_level>
 
 	std::ifstream pop_file{"../config/run_travel_test.xml"};
 	boost::property_tree::ptree pt;

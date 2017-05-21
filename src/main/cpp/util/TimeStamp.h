@@ -1,31 +1,12 @@
 #ifndef TIMEKEEPER_TIMESTAMP_H_INCLUDED
 #define TIMEKEEPER_TIMESTAMP_H_INCLUDED
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
- */
-
-/**
- * @file
- * TimeStamp class.
- */
 
 #include <algorithm>
+#include <chrono>
+#include <ctime>
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <ctime>
-#include <chrono>
 
 namespace stride {
 namespace util {
@@ -45,10 +26,9 @@ public:
 	{
 		std::time_t t = std::chrono::system_clock::to_time_t(m_tp);
 		std::string str = std::ctime(&t);
-		//str[str.length() - 1] = ' ';
+		// str[str.length() - 1] = ' ';
 		return str.substr(0, str.length() - 1);
 	}
-
 
 	/// Returns string with the time stamp after eliminating newline.
 	std::string ToTag() const
@@ -70,10 +50,7 @@ public:
 	}
 
 	/// Returns time stamp as a time_t.
-	std::time_t ToTimeT() const
-	{
-		return std::chrono::system_clock::to_time_t(m_tp);
-	}
+	std::time_t ToTimeT() const { return std::chrono::system_clock::to_time_t(m_tp); }
 
 private:
 	std::chrono::system_clock::time_point m_tp;
@@ -82,12 +59,9 @@ private:
 /**
  * TimeStamp helper inserts string representation in output stream.
  */
-inline std::ostream&
-operator<<(std::ostream& os, TimeStamp t) {
-	return (os << t.ToString());
-}
+inline std::ostream& operator<<(std::ostream& os, TimeStamp t) { return (os << t.ToString()); }
 
 } // end namespace
 } // end namespace
 
-#endif  // include guard
+#endif // include guard

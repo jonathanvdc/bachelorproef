@@ -1,24 +1,5 @@
 #ifndef RANDOM_H_INCLUDED
 #define RANDOM_H_INCLUDED
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S & Broeckhove J
- */
-
-/**
- * @file
- * Header for the Random Number Generator class.
- */
 
 #include <trng/mrg2.hpp>
 #include <trng/uniform01_dist.hpp>
@@ -86,8 +67,11 @@ public:
 	void Split(unsigned int total, unsigned int id) { m_engine.split(total, id); }
 
 private:
-	trng::mrg2 m_engine;			     ///< The random number engine.
-	trng::uniform01_dist<double> m_uniform_dist; ///< The random distribution.
+	/// The random number engine.
+	trng::mrg2 m_engine;
+
+	/// The random distribution.
+	trng::uniform01_dist<double> m_uniform_dist;
 };
 
 } // end namespace

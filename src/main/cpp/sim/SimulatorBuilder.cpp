@@ -1,24 +1,3 @@
-/*
- *  This is free software: you can redistribute it and/or modify it
- *  under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  any later version.
- *  The software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  You should have received a copy of the GNU General Public License
- *  along with the software. If not, see <http://www.gnu.org/licenses/>.
- *
- *  Copyright 2017, Willem L, Kuylen E, Stijven S, Broeckhove J
- *  Aerts S, De Haes C, Van der Cruysse J & Van Hauwe L
- */
-
-/**
- * @file
- * Implementation of the Simulator class.
- */
-
 #include "SimulatorBuilder.h"
 
 #include "calendar/Calendar.h"
@@ -29,15 +8,15 @@
 #include "core/LogMode.h"
 #include "pop/Population.h"
 #include "pop/PopulationBuilder.h"
+#include "sim/SimulationConfig.h"
 #include "util/Errors.h"
 #include "util/InstallDirs.h"
-#include "sim/SimulationConfig.h"
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
 namespace stride {
 
@@ -46,140 +25,126 @@ using namespace boost::filesystem;
 using namespace boost::property_tree;
 using namespace stride::util;
 
-shared_ptr<Simulator> SimulatorBuilder::Build(const string& config_file_name,
-        const std::shared_ptr<spdlog::logger>& log,
-        unsigned int num_threads, bool track_index_case)
+shared_ptr<Simulator> SimulatorBuilder::Build(
+    const string& config_file_name, const std::shared_ptr<spdlog::logger>& log, unsigned int num_threads,
+    bool track_index_case)
 {
-        // Configuration file.
-        ptree pt_config;
-        InstallDirs::ReadXmlFile(
-                config_file_name,
-                InstallDirs::GetCurrentDir(), pt_config);
+	// Configuration file.
+	ptree pt_config;
+	InstallDirs::ReadXmlFile(config_file_name, InstallDirs::GetCurrentDir(), pt_config);
 
-        // Done.
-        return Build(pt_config, log, num_threads, track_index_case);
+	// Done.
+	return Build(pt_config, log, num_threads, track_index_case);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(
-        const ptree& pt_config,
-        const std::shared_ptr<spdlog::logger>& log,
-        unsigned int num_threads, bool track_index_case)
+    const ptree& pt_config, const std::shared_ptr<spdlog::logger>& log, unsigned int num_threads, bool track_index_case)
 {
-        SingleSimulationConfig config;
-        config.Parse(pt_config.get_child("run"));
-        config.common_config->track_index_case = track_index_case;
-        return Build(config, log, num_threads);
+	SingleSimulationConfig config;
+	config.Parse(pt_config.get_child("run"));
+	config.common_config->track_index_case = track_index_case;
+	return Build(config, log, num_threads);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(
-        const SingleSimulationConfig& config,
-        const std::shared_ptr<spdlog::logger>& log,
-        unsigned int num_threads)
+    const SingleSimulationConfig& config, const std::shared_ptr<spdlog::logger>& log, unsigned int num_threads)
 {
-        // Disease file.
-        ptree pt_disease;
-        InstallDirs::ReadXmlFile(
-                config.common_config->disease_config_file_name,
-                InstallDirs::GetDataDir(), pt_disease);
+	// Disease file.
+	ptree pt_disease;
+	InstallDirs::ReadXmlFile(config.common_config->disease_config_file_name, InstallDirs::GetDataDir(), pt_disease);
 
-        // Contact file.
-        ptree pt_contact;
-        InstallDirs::ReadXmlFile(
-                config.common_config->contact_matrix_file_name,
-                InstallDirs::GetDataDir(), pt_contact);
+	// Contact file.
+	ptree pt_contact;
+	InstallDirs::ReadXmlFile(config.common_config->contact_matrix_file_name, InstallDirs::GetDataDir(), pt_contact);
 
-        // Done.
-        return Build(config, pt_disease, pt_contact, log, num_threads);
+	// Done.
+	return Build(config, pt_disease, pt_contact, log, num_threads);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(
-        const ptree& pt_config,
-        const ptree& pt_disease,
-        const ptree& pt_contact,
-        const std::shared_ptr<spdlog::logger>& log,
-        unsigned int number_of_threads,
-        bool track_index_case)
+    const ptree& pt_config, const ptree& pt_disease, const ptree& pt_contact,
+    const std::shared_ptr<spdlog::logger>& log, unsigned int number_of_threads, bool track_index_case)
 {
-        SingleSimulationConfig config;
-        config.Parse(pt_config.get_child("run"));
-        config.common_config->track_index_case = track_index_case;
-        return Build(config, pt_disease, pt_contact, log, number_of_threads);
+	SingleSimulationConfig config;
+	config.Parse(pt_config.get_child("run"));
+	config.common_config->track_index_case = track_index_case;
+	return Build(config, pt_disease, pt_contact, log, number_of_threads);
 }
 
 shared_ptr<Simulator> SimulatorBuilder::Build(
-        const SingleSimulationConfig& config,
-        const ptree& pt_disease,
-        const ptree& pt_contact,
-        const std::shared_ptr<spdlog::logger>& log,
-        unsigned int number_of_threads)
+    const SingleSimulationConfig& config, const ptree& pt_disease, const ptree& pt_contact,
+    const std::shared_ptr<spdlog::logger>& log, unsigned int number_of_threads)
 {
-        auto sim = make_shared<Simulator>();
+	auto sim = make_shared<Simulator>();
 
-        // Initialize the simulator's configuration.
-        sim->m_config = config;
+	// Initialize the simulator's configuration.
+	sim->m_config = config;
 
-        // Initialize the simulator's log.
-        sim->m_log = log;
+	// Initialize the simulator's log.
+	sim->m_log = log;
 
-        // Initialize track_index_case policy
-        sim->m_track_index_case = config.common_config->track_index_case;
+	// Initialize track_index_case policy
+	sim->m_track_index_case = config.common_config->track_index_case;
 
-        // Initialize number of threads.
-        sim->m_num_threads = number_of_threads;
+	// Initialize number of threads.
+	sim->m_num_threads = number_of_threads;
 
-        // Initialize calendar.
-        sim->m_calendar = make_shared<Calendar>(config.common_config->initial_calendar);
+	// Initialize calendar.
+	sim->m_calendar = make_shared<Calendar>(config.common_config->initial_calendar);
 
-        // Get log level.
-        sim->m_log_level = config.log_config->log_level;
+	// Get log level.
+	sim->m_log_level = config.log_config->log_level;
 
-        // Create a random number generator for the simulator.
-        auto rng = std::make_shared<Random>(config.common_config->rng_seed);
+	// Create a random number generator for the simulator.
+	auto rng = std::make_shared<Random>(config.common_config->rng_seed);
 
-        // Build population.
-        sim->m_travel_rng = rng;
-        sim->m_population = PopulationBuilder::Build(config, pt_disease, *rng, log);
+	// Build population.
+	sim->m_travel_rng = rng;
+	sim->m_population = PopulationBuilder::Build(config, pt_disease, *rng, log);
 
-        // Initialize clusters.
-        InitializeClusters(sim);
+	// Initialize clusters.
+	InitializeClusters(sim);
 
-        // Initialize disease profile.
-        sim->m_disease_profile.Initialize(config, pt_disease);
+	// Initialize disease profile.
+	sim->m_disease_profile.Initialize(config, pt_disease);
 
-        // Initialize Rng handlers
-        unsigned int new_seed = (*rng)(numeric_limits<unsigned int>::max());
-        for (size_t i = 0; i < sim->m_num_threads; i++) {
-                sim->m_rng_handler.emplace_back(RngHandler(new_seed, sim->m_num_threads, i));
-        }
+	// Initialize Rng handlers
+	unsigned int new_seed = (*rng)(numeric_limits<unsigned int>::max());
+	for (size_t i = 0; i < sim->m_num_threads; i++) {
+		sim->m_rng_handler.emplace_back(RngHandler(new_seed, sim->m_num_threads, i));
+	}
 
-        // Initialize contact profiles.
-        Cluster::AddContactProfile(ClusterType::Household,     ContactProfile(ClusterType::Household, pt_contact));
-        Cluster::AddContactProfile(ClusterType::School,        ContactProfile(ClusterType::School, pt_contact));
-        Cluster::AddContactProfile(ClusterType::Work,          ContactProfile(ClusterType::Work, pt_contact));
-        Cluster::AddContactProfile(ClusterType::PrimaryCommunity,  ContactProfile(ClusterType::PrimaryCommunity, pt_contact));
-        Cluster::AddContactProfile(ClusterType::SecondaryCommunity,   ContactProfile(ClusterType::SecondaryCommunity, pt_contact));
+	// Initialize contact profiles.
+	Cluster::AddContactProfile(ClusterType::Household, ContactProfile(ClusterType::Household, pt_contact));
+	Cluster::AddContactProfile(ClusterType::School, ContactProfile(ClusterType::School, pt_contact));
+	Cluster::AddContactProfile(ClusterType::Work, ContactProfile(ClusterType::Work, pt_contact));
+	Cluster::AddContactProfile(
+	    ClusterType::PrimaryCommunity, ContactProfile(ClusterType::PrimaryCommunity, pt_contact));
+	Cluster::AddContactProfile(
+	    ClusterType::SecondaryCommunity, ContactProfile(ClusterType::SecondaryCommunity, pt_contact));
 
-        // Done.
-        return sim;
+	// Done.
+	return sim;
 }
 
 void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 {
 	// Determine number of clusters.
-	unsigned int max_id_households           = 0U;
-	unsigned int max_id_school_clusters      = 0U;
-	unsigned int max_id_work_clusters        = 0U;
-	unsigned int max_id_primary_community    = 0U;
-	unsigned int max_id_secondary_community  = 0U;
-	Population& population                   = *sim->m_population;
+	unsigned int max_id_households = 0U;
+	unsigned int max_id_school_clusters = 0U;
+	unsigned int max_id_work_clusters = 0U;
+	unsigned int max_id_primary_community = 0U;
+	unsigned int max_id_secondary_community = 0U;
+	Population& population = *sim->m_population;
 
-	population.serial_for([&](const Person& p, unsigned int) -> void
-	{
-		max_id_households            = std::max(max_id_households,          p.GetClusterId(ClusterType::Household));
-		max_id_school_clusters       = std::max(max_id_school_clusters,     p.GetClusterId(ClusterType::School));
-		max_id_work_clusters         = std::max(max_id_work_clusters,       p.GetClusterId(ClusterType::Work));
-		max_id_primary_community     = std::max(max_id_primary_community,   p.GetClusterId(ClusterType::PrimaryCommunity));
-		max_id_secondary_community   = std::max(max_id_secondary_community, p.GetClusterId(ClusterType::SecondaryCommunity));
+	population.serial_for([&](const Person& p, unsigned int) -> void {
+		max_id_households = std::max(max_id_households, p.GetClusterId(ClusterType::Household));
+		max_id_school_clusters = std::max(max_id_school_clusters, p.GetClusterId(ClusterType::School));
+		max_id_work_clusters = std::max(max_id_work_clusters, p.GetClusterId(ClusterType::Work));
+		max_id_primary_community =
+		    std::max(max_id_primary_community, p.GetClusterId(ClusterType::PrimaryCommunity));
+		max_id_secondary_community =
+		    std::max(max_id_secondary_community, p.GetClusterId(ClusterType::SecondaryCommunity));
 	});
 
 	// Keep separate id counter to provide a unique id for every cluster.
@@ -202,14 +167,12 @@ void SimulatorBuilder::InitializeClusters(shared_ptr<Simulator> sim)
 		cluster_id++;
 	}
 	for (size_t i = 0; i <= max_id_secondary_community; i++) {
-		sim->m_clusters.m_secondary_community.emplace_back(Cluster(cluster_id, ClusterType::SecondaryCommunity));
+		sim->m_clusters.m_secondary_community.emplace_back(
+		    Cluster(cluster_id, ClusterType::SecondaryCommunity));
 		cluster_id++;
 	}
 
-	population.serial_for([&](const Person& p, unsigned int) -> void
-	{
-		sim->AddPersonToClusters(p);
-	});
+	population.serial_for([&](const Person& p, unsigned int) -> void { sim->AddPersonToClusters(p); });
 }
 
 } // end_of_namespace
