@@ -1,4 +1,5 @@
 from __future__ import division
+from collections import OrderedDict
 
 
 def compute_stats(data):
@@ -39,7 +40,7 @@ def microseconds_to_seconds(microseconds):
 
 
 def lines_to_data(lines):
-    results = {}
+    results = OrderedDict()
     test_name = ""
     for line in lines:
         if line.startswith('#'):
