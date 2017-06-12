@@ -22,14 +22,14 @@ class VisualizerData
 {
 private:
 	/// Vector of days: Each day is a map from Town names to the amount of infected.
-	std::vector<std::map<std::size_t, unsigned int>> days;
+	std::vector<std::map<std::size_t, int>> days;
 
 public:
 	/// Register a new day from the given population's current state.
 	void AddDay(const std::shared_ptr<const Population>& pop);
 
 	/// Get a reference to the vector of days.
-	const std::vector<std::map<std::size_t, unsigned int>>& GetDays() const;
+	const std::vector<std::map<std::size_t, int>>& GetDays() const;
 
 	/// Convert all stored data into a boost property tree, so that it can be converted to JSON.
 	std::shared_ptr<boost::property_tree::ptree> ToPtree() const;
