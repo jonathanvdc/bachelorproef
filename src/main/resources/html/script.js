@@ -445,7 +445,12 @@ Visualizer.prototype.updateLegend = function(){
     }
 }
 Visualizer.prototype.makeTownPanel = function(townId){
-    var panel = new TownPanel(this, townId);
+    var panel = this.townPanels.filter(t=>t.id == townId);
+    if(panel.length != 0){
+        panel[0].toTop();
+        return;
+    }
+    panel = new TownPanel(this, townId);
     this.townPanels.push(panel);
     this.updateTable();
 } 

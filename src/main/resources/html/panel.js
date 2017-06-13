@@ -111,3 +111,7 @@ TownPanel.prototype.makeGraph = function(){
 TownPanel.prototype.remove = function(){
     this.$element.remove();
 }
+
+TownPanel.prototype.toTop = function(){
+    $('body').append(this.$element);
+}
