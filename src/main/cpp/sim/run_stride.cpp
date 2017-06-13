@@ -97,8 +97,14 @@ void StrideSimulatorResult::AfterSimulatorStep(const Simulator& sim)
 	auto infected_count = sim.GetPopulation()->get_infected_count();
 	cases.push_back(infected_count);
 
-	if (generate_vis_data && pop->has_atlas)
+	if (generate_vis_data && pop->has_atlas) {
 		visualizer_data.AddDay(pop);
+		// Every 10 days, or if the simulation is done: Update the visualization file.
+		if (sim.IsDone() || util::INTERRUPT || (day + 1) % 10 == 0) {
+			VisualizerFile vis_file(sim.GetConfiguration().log_config->output_prefix);
+			vis_file.Print(visualizer_data);
+		}
+	}
 
 	day++;
 
@@ -242,12 +248,6 @@ void run_stride(const MultiSimulationConfig& config)
 		if (sim_tuple.sim_config.log_config->generate_person_file) {
 			PersonFile person_file(sim_tuple.sim_output_prefix);
 			person_file.Print(pop);
-		}
-
-		// Visualization
-		if (pop->has_atlas && sim_tuple.sim_config.common_config->generate_vis_file) {
-			VisualizerFile vis_file(sim_tuple.sim_output_prefix);
-			vis_file.Print(pop->GetAtlas().getTownMap(), sim_result.visualizer_data);
 		}
 
 		cout << endl << endl;

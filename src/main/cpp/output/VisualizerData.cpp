@@ -12,6 +12,9 @@ using boost::property_tree::ptree;
 
 void VisualizerData::AddDay(const std::shared_ptr<const Population>& pop)
 {
+	if(!townsTree)
+		RegisterTowns(pop->GetAtlas().getTownMap());
+
 	days.push_back({});
 	for (const auto& p : *pop) {
 		if (p.GetHealth().IsInfected()) {
@@ -20,14 +23,29 @@ void VisualizerData::AddDay(const std::shared_ptr<const Population>& pop)
 	}
 }
 
+
+void VisualizerData::RegisterTowns(const Atlas::TownMap& townMap)
+{
+	townsTree = make_shared<ptree>();
+
+	for (auto& p : townMap) {
+		// append a town node for each town in the map:
+		// id : {name, size, lat, long}
+		ptree townNode;
+		townNode.put("name", p.second.name);
+		townNode.put("size", p.second.size);
+		townNode.put("lat", p.first.latitude);
+		townNode.put("long", p.first.longitude);
+		townsTree->add_child(to_string(p.second.id), townNode);
+	}
+}
+
 const vector<map<size_t, int>>& VisualizerData::GetDays() const { return days; }
 
-shared_ptr<ptree> VisualizerData::ToPtree() const
+shared_ptr<ptree> VisualizerData::GetDaysTree()
 {
-	auto daysTree = make_shared<ptree>();
-
-	// Create a list: [{townId: deltaInfected}]
-	for (int i = 0; i < days.size(); i++) {
+	// First update our stored ptree to include all added days.
+	for (int i = daysTree->size(); i < days.size(); i++) {
 		ptree data;
 		const auto& currentDay = days[i];
 
