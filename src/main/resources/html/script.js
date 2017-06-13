@@ -24,19 +24,6 @@ $(document).ready(function(){
 // File reading stuff //
 //--------------------//
 
-/// Handler passed to the file selector, called when a file is selected.
-function readSingleFile(f, handler) {
-    var file = f.target.files[0];
-    if (!file) {
-        console.log("File not found!");
-        return;
-    }
-    $(".filename-output").text(file.name);
-    var reader = new FileReader();
-    reader.onload = handler;
-    reader.readAsText(file);
-}
-
 /// Method called on town/city names to turn them nicer.
 function nameFormat(name){
     var num = parseInt(name.slice(4));
@@ -85,7 +72,7 @@ function cleanData(data){
 /// Make a new Visualizer bound to the given elements.
 var Visualizer = function(inputSelector, controlSelector, viewSelector){
     // Place our hook into the file selector
-    $(inputSelector).on('change', f => readSingleFile(f, this.handleFile.bind(this)));
+    $(inputSelector).on('change', (f => this.readFile(f.target.files[0], this.initializeFromFile.bind(this))).bind(this));
 
     // Place our hooks into the controls
     this.initializeControls(controlSelector);
@@ -116,11 +103,76 @@ Visualizer.prototype.initialize = function(data){
     this.configureControls();
 }
 
-/// Handler passed to the FileReader, called with the contents of the selected file.
-Visualizer.prototype.handleFile = function(e) {
+/// Handler passed to the file selector, called when a file is selected.
+/// The argument 'handler' is called when the file is read.
+Visualizer.prototype.readFile = function(f, handler){
+    this.file = f;
+    if (!this.file) {
+        console.log("File not found!");
+        return;
+    }
+    $(".filename-output").text(this.file.name);
+    var reader = new FileReader();
+    reader.onload = handler;
+    reader.readAsText(this.file);
+}
+
+/// Handler passed to readSingleFile.
+/// Uses the given file to initialize the visualizer completely.
+Visualizer.prototype.initializeFromFile = function(e) {
     var data = JSON.parse(e.target.result);
     cleanData(data);
+
+    this.fileLastModifiedTime = this.file.lastModifiedDate.getTime();
+    this.fileUpdateInterval = setInterval(this.checkFileUpdated.bind(this), 100);
+
     this.initialize(data);
+}
+
+/// Handler passed to readSingleFile.
+/// Gets new day data from the file and updates the visualizer where necessary.
+Visualizer.prototype.updateFromFile = function(e) {
+    var data = JSON.parse(e.target.result);
+    cleanData(data);
+
+    this.fileLastModifiedTime = this.file.lastModifiedDate.getTime();
+
+    // Grab the data parsed from the file and aggregate it
+    console.log("Adding " + (data.days.length - this.days.length) + " new days from file.");
+    this.days = data.days;
+    this.aggregateData();
+
+    // Put the total number of days
+    this.maxDays = this.days.length;
+    $('.days').text(this.maxDays);
+    
+    // update the views where necessary:
+    // table: nothing
+
+    // graph: remake it entirely!
+    this.makeGraph();
+
+    // map: Rescale the colour gradient to match the possibly updated maxSingle
+    this.countGradient = this.percentGradient.scale(this.maxSingle);
+    this.updateLegend();
+
+    // Update the slider's range
+    this.control.$range.prop("max", this.maxDays);
+
+    // Update to the already selected day!
+    this.updateDay(this.day);
+}
+
+/// Handler passed to the FileReader, called with the contents of the selected file.
+Visualizer.prototype.checkFileUpdated = function() {
+    if (this.fileLastModifiedTime != this.file.lastModifiedDate.getTime()){
+        console.log("File updated at " + this.file.lastModifiedDate + ", updating views.");
+
+        // Make sure updateFromFile isn't called multiple times.
+        clearInterval(this.fileUpdateInterval);
+        this.readFile(this.file, this.updateFromFile.bind(this));
+        this.fileUpdateInterval = setInterval(this.checkFileUpdated.bind(this), 100);
+    }
 }
 
 /// Extract useful information from our data.
@@ -317,6 +369,7 @@ Visualizer.prototype.makeTable = function(){
 Visualizer.prototype.makeGraph = function(){
     $target = $(".graph-view");
     $target.svg("destroy");
+    $target.html("");
     $target.svg({settings: {width: "300px", height:"180px"}});
     var $svg = $target.svg("get");
 
@@ -357,7 +410,7 @@ Visualizer.prototype.selectGradient = function(name){
 }
 
 /// Initialize the gradient that governs map colouring.
-Visualizer.prototype.initializeLegend = function($target){
+Visualizer.prototype.initializeLegend = function(){
     this.colourMode = "count";
     this.percentGradient = Gradient.gradients["Ultra heat map"];
     this.countGradient = this.percentGradient.scale(this.maxSingle);
@@ -448,7 +501,7 @@ Visualizer.prototype.makeMap = function(){
     $target.svg("destroy");
     $target.html("");
 
-    this.initializeLegend($target);
+    this.initializeLegend();
 
     var box = this.findBox();
     var width = 1100;
@@ -489,10 +542,9 @@ Visualizer.prototype.makeMap = function(){
         var x = percentFormat(longFunc(town.long));
         var y = percentFormat(1- latFunc(town.lat));
         var radius = 5;
-        var fillColour = "red";
 
         // Make and attach the circle
-        var dot = svgMap.circle(x, y, radius, {fill: fillColour});
+        var dot = svgMap.circle(x, y, radius);
 
         // Remember the circle for later
         town.dot = dot;
