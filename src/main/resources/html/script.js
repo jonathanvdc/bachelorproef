@@ -79,6 +79,9 @@ var Visualizer = function(inputSelector, controlSelector, viewSelector){
 
     // Remember our view
     this.$view = $(viewSelector);
+
+    // Remember that there aren't any panels yet.
+    this.townPanels = [];
 }
 
 /// Actually initialize the Visualizer with the data retrieved from the file.
@@ -106,11 +109,8 @@ Visualizer.prototype.initialize = function(data){
 /// Handler passed to the file selector, called when a file is selected.
 /// The argument 'handler' is called when the file is read.
 Visualizer.prototype.readFile = function(f, handler){
+    if (!f) return;
     this.file = f;
-    if (!this.file) {
-        console.log("File not found!");
-        return;
-    }
     $(".filename-output").text(this.file.name);
     var reader = new FileReader();
     reader.onload = handler;
@@ -149,12 +149,16 @@ Visualizer.prototype.updateFromFile = function(e) {
     // update the views where necessary:
     // table: nothing
 
-    // graph: remake it entirely!
+    // graph: remake it entirely
     this.makeGraph();
 
     // map: Rescale the colour gradient to match the possibly updated maxSingle
     this.countGradient = this.percentGradient.scale(this.maxSingle);
     this.updateLegend();
+
+    // panels: remake each of their graphs entirely
+    for (var i in this.townPanels)
+        this.townPanels[i].makeGraph();
 
     // Update the slider's range
     this.control.$range.prop("max", this.maxDays);
@@ -323,6 +327,7 @@ Visualizer.prototype.addAlignmentTestNodes = function(){
 
 /// Prepare the HTML document with the basic frameworks for our view.
 Visualizer.prototype.makeView = function(){
+    this.removeTownPanels();
     this.makeTable();
     this.makeMap();
     this.makeGraph();
@@ -439,59 +444,16 @@ Visualizer.prototype.updateLegend = function(){
         this.$legend.append($item);
     }
 }
-
-var basePanelX = 30;
-var panelX = basePanelX + 30;
-var basePanelY = 450;
-var panelY = basePanelY + 30;
-
 Visualizer.prototype.makeTownPanel = function(townId){
-    var town = this.towns[townId];
-
-    var x = panelX;
-    var y = panelY;
-    panelX = (panelX - basePanelX + 30) % 330 + basePanelX;
-    panelY = (panelY - basePanelY + 30) % 240 + basePanelY;
-
-    var text = 
-    `<div> Infected: <span class=\"info infected\">-</span> /
-    <span class=\"info \">${town.size}</span> =
-    <span class=\"info percent\">-</span> </div>
-    <div> Most infected: <span class=\"info\">${town.max.infected}</span> on day
-    <span class=\"info clickable\" onclick="visualizer.updateDay(${town.max.day})">${town.max.day}</span> </div>`;
-
-    $panel = makePanel(x, y, town.name, text);
-    $panel.css("min-width", "200px");
-    $panel.body.attr("town", noSpace(town.name));
-
-    $("body").append($panel);
-
-    var $target = $("<div>");
-    $panel.body.append($target);
-    $target.svg("destroy");
-    $target.svg({settings: {width: "220px", height:"120px"}});
-    var $svg = $target.svg("get");
-
-    var percentList = [];
-    for(var i in this.days)
-        percentList.push((this.days[i][townId]||0) * 100 / town.size);
-
-    var percentLabels = [];
-    for(var i=0;i<=100;i+=10) percentLabels.push(i + "%");
-
-    $svg.graph.noDraw();
-
-    $svg.graph.addSeries("Infected", percentList, "#186", "#2b8", 1);
-    $svg.graph.options({barGap:0});
-    $svg.graph.legend.show(false);
-    $svg.graph.area(0.18, 0.1, 0.98, 0.85);
-    $svg.graph.gridlines({stroke: '#aaf', strokeDashArray: '2,4'});
-    $svg.graph.yAxis.ticks(10, 5, 8).labels(percentLabels).scale(0, clamp(town.max.infected / town.size * 120, 10, 100));
-    $svg.graph.xAxis.ticks(50, 30, 1).labels("", "transparent");
-
-    $svg.graph.redraw();
-
+    var panel = new TownPanel(this, townId);
+    this.townPanels.push(panel);
     this.updateTable();
+} 
+Visualizer.prototype.removeTownPanels = function(){
+    for(var i in this.townPanels){
+        this.townPanels[i].remove();
+    }
+    this.townPanels = [];
 }
 
 /// Prepare the HTML document with a basic table.
