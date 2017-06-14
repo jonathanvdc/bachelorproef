@@ -8,15 +8,15 @@
 
 Visualization files (\texttt{*\_vis.json}) are only able to be produced by the simulator when working with a population generated from a geographical distribution, as otherwise there's no data to determine the locations of clusters on a map. Generation of visualization files is also prevented with use of the \texttt{-V} or \texttt{{-}-no-vis} flag.
 
-During a simulation the simulator will automatically add new information to the visualization file after every 10 simulated days. In this state the file can already be used to visualize the intermediate simulation results. Furthermore, once loaded into the visualizer, any updates to the file will automatically cause the visualizer to retrieve the latest data and visualize it.
+The simulator will add new data to the visualization file with every 10th simulated day. This means the file can be used to visualize simulation results even before the simulator finishes running. To help with this, once the file has been specified to the visualizer, it will automatically load the latest data from the file in the case it is updated.
 
 \subsection{Format}
 
 The visualization file employs the following json format:
 
-A nameless Object containing two fields:
+The root of the file is an Object with two fields:
 \begin{compactitem}	
-	\item \texttt{towns}: An array of town Objects:
+	\item \texttt{towns}: An array of town Objects, each with four fields:
 	\begin{compactitem}	
 		\item \texttt{name}: The town's name.
 		\item \texttt{size}: The town's number of inhabitants.
@@ -24,23 +24,24 @@ A nameless Object containing two fields:
 		\item \texttt{long}: The town's longitude.
 	\end{compactitem}
 	\pagebreak
-	\item \texttt{days}: An array of Objects:\\
-	At \texttt{days[0]}: An Object:
+	
+	\item \texttt{days}: An array of various Objects:\\
+	\texttt{days[0]}: An Object with multiple fields:
 	\begin{compactitem}				
-		\item \texttt{\$townId} : The number of infected in \texttt{towns[\$townId]} on the first (0\textsuperscript{th}) day.\\
-		If no entry for a specific \texttt{\$townId} exists its value is assumed to be 0.
+		\item \texttt{\$townId} : The number of infected in \texttt{towns[\$townId]} on the first day.\\
+		If a specific \texttt{\$townId} field is not present, its value is assumed to be 0.
 	\end{compactitem}
-	At \texttt{days[n]} for $n > 0$: An Object:
+	\texttt{days[n]} for $n > 0$: An Object with multiple fields:
 	\begin{compactitem}				
 		\item \texttt{\$townId} : The difference in number of infected in \texttt{towns[\$townId]} between the n\textsuperscript{th} day and the previous day.\\
-		If no entry for a specific \texttt{\$townId} exists its value is assumed to be 0.
+		If a specific \texttt{\$townId} field is not present, its value is assumed to be 0.
 	\end{compactitem}
 	
-	\vspace{4pt}	
+	\vspace{4pt}
 	If a certain day contains no entries its place may instead hold an empty string.
 \end{compactitem}
-	
-	
+
+All values are allowed to be 
 
 \section{The Visualizer}
 
