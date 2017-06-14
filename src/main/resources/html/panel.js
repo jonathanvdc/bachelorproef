@@ -43,7 +43,7 @@ function makePanel(x=30, y=30, title="", body=""){
 
 var basePanelX = 30;
 var panelX = basePanelX + 30;
-var basePanelY = 450;
+var basePanelY = 460;
 var panelY = basePanelY + 30;
 
 /// Make a new panel for the specified town, tied to the given visualizer.
@@ -79,7 +79,7 @@ var TownPanel = function(visualizer, townId){
 
 TownPanel.prototype.makeGraph = function(){
     var $target = this.$graph;
-    var town = visualizer.towns[this.id];
+    var town = this.visualizer.towns[this.id];
 
     // Clear out the previous graph.
     $target.svg("destroy");
@@ -106,6 +106,14 @@ TownPanel.prototype.makeGraph = function(){
     $svg.graph.xAxis.ticks(50, 30, 1).labels("", "transparent");
 
     $svg.graph.redraw();
+
+    // Day indicator
+    var $wrap = $("<div>",{class:"indicator-wrapper"});
+    var $indicator = $("<div>",{class:"indicator"});
+    $wrap.append($indicator);
+    $target.append($wrap);
+
+    this.visualizer.updateGraph();
 }
 
 TownPanel.prototype.remove = function(){

@@ -30,6 +30,7 @@ function nameFormat(name){
     if(name.slice(0,4) == "town" && !isNaN(num))
         return "Town " + num;
     else
+        // Apply title case
         return name.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase());
 }
 
@@ -120,6 +121,7 @@ Visualizer.prototype.readFile = function(f, handler){
 /// Handler passed to readSingleFile.
 /// Uses the given file to initialize the visualizer completely.
 Visualizer.prototype.initializeFromFile = function(e) {
+    clearInterval(this.fileUpdateInterval);
     var data = JSON.parse(e.target.result);
     cleanData(data);
 
@@ -167,9 +169,10 @@ Visualizer.prototype.updateFromFile = function(e) {
     this.updateDay(this.day);
 }
 
-/// Handler passed to the FileReader, called with the contents of the selected file.
+/// Method called at an interval, tests whether or not the source file has been modified.
+/// If it has been modified, it will read the new data and refresh the visualizer to match.
 Visualizer.prototype.checkFileUpdated = function() {
-    if (this.fileLastModifiedTime != this.file.lastModifiedDate.getTime()){
+    if (this.fileLastModifiedTime > this.file.lastModifiedDate.getTime()){
         console.log("File updated at " + this.file.lastModifiedDate + ", updating views.");
 
         // Make sure updateFromFile isn't called multiple times.
@@ -200,6 +203,7 @@ Visualizer.prototype.aggregateData = function(){
     this.maxTownSize = maxTownSize;
     this.totalSize = totalSize;
     $(".total-people").text(totalSize);
+    $(".total-towns").text(this.towns.length);
 
     // Aggregate from days
     var maxTotal = 0;
@@ -325,6 +329,27 @@ Visualizer.prototype.addAlignmentTestNodes = function(){
     this.towns.push({name:"Tip of India", size:10,lat:8.077824, long:77.551041});
 }
 
+/// Add a new panel for the specified town.
+/// If such a panel already exists, pop it to the front of the panels.
+Visualizer.prototype.makeTownPanel = function(townId){
+    var panel = this.townPanels.filter(t=>t.id == townId);
+    if(panel.length != 0){
+        panel[0].toTop();
+        return;
+    }
+    panel = new TownPanel(this, townId);
+    this.townPanels.push(panel);
+    this.updateTable();
+}
+
+/// Remove all town panels, called when a new input file is loaded.
+Visualizer.prototype.removeTownPanels = function(){
+    for(var i in this.townPanels){
+        this.townPanels[i].remove();
+    }
+    this.townPanels = [];
+}
+
 /// Prepare the HTML document with the basic frameworks for our view.
 Visualizer.prototype.makeView = function(){
     this.removeTownPanels();
@@ -396,6 +421,14 @@ Visualizer.prototype.makeGraph = function(){
     $svg.graph.xAxis.ticks(50, 30, 1).labels("", "transparent");
 
     $svg.graph.redraw();
+
+    // Day indicator
+    var $wrap = $("<div>",{class:"indicator-wrapper"});
+    var $indicator = $("<div>",{class:"indicator"});
+    $wrap.append($indicator);
+    $target.append($wrap);
+
+    this.updateGraph();
 }
 
 /// Choose how the circles are coloured.
@@ -444,21 +477,20 @@ Visualizer.prototype.updateLegend = function(){
         this.$legend.append($item);
     }
 }
-Visualizer.prototype.makeTownPanel = function(townId){
-    var panel = this.townPanels.filter(t=>t.id == townId);
-    if(panel.length != 0){
-        panel[0].toTop();
-        return;
+
+// Find the box of latitudes/longitudes containing all known locations.
+// Returns an object {minLat, maxLat, minLong, maxLong}
+Visualizer.prototype.findBox = function(){
+    var out = {minLat: 1000, maxLat: -1000, minLong: 1000, maxLong: -1000};
+
+    for(town in this.towns){
+        out.minLat = Math.min(this.towns[town].lat, out.minLat);
+        out.maxLat = Math.max(this.towns[town].lat, out.maxLat);
+        out.minLong = Math.min(this.towns[town].long, out.minLong);
+        out.maxLong = Math.max(this.towns[town].long, out.maxLong);
     }
-    panel = new TownPanel(this, townId);
-    this.townPanels.push(panel);
-    this.updateTable();
-} 
-Visualizer.prototype.removeTownPanels = function(){
-    for(var i in this.townPanels){
-        this.townPanels[i].remove();
-    }
-    this.townPanels = [];
+
+    return out;
 }
 
 /// Prepare the HTML document with a basic table.
@@ -526,21 +558,6 @@ Visualizer.prototype.makeMap = function(){
     refreshTooltips();
 }
 
-// Find the box of latitudes/longitudes containing all known locations.
-// Returns an object {minLat, maxLat, minLong, maxLong}
-Visualizer.prototype.findBox = function(){
-    var out = {minLat: 1000, maxLat: -1000, minLong: 1000, maxLong: -1000};
-
-    for(town in this.towns){
-        out.minLat = Math.min(this.towns[town].lat, out.minLat);
-        out.maxLat = Math.max(this.towns[town].lat, out.maxLat);
-        out.minLong = Math.min(this.towns[town].long, out.minLong);
-        out.maxLong = Math.max(this.towns[town].long, out.maxLong);
-    }
-
-    return out;
-}
-
 /// Update the view to match the info at that day.
 Visualizer.prototype.updateDay = function(day){
     // clamp day to the valid range
@@ -564,6 +581,7 @@ Visualizer.prototype.updateDay = function(day){
 Visualizer.prototype.updateView = function(){
     this.updateTable();
     this.updateMap();
+    this.updateGraph();
 }
 
 /// Update the table to reflect the currently selected day.
@@ -602,4 +620,9 @@ Visualizer.prototype.updateMap = function(){
 
         // dot.setAttribute("r", this.sizeFunc(val));
     }
+}
+
+/// Update all graphs to reflect the currently selected day.
+Visualizer.prototype.updateGraph = function(){
+    $('.indicator-wrapper > .indicator').css({left: percentFormat(this.day/this.maxDays, 4)});
 }
