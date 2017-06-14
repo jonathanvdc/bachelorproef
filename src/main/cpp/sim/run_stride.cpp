@@ -214,16 +214,17 @@ void run_stride(const MultiSimulationConfig& config)
 		    std::numeric_limits<size_t>::max());
 		file_logger->set_pattern("%v"); // Remove meta data from log => time-stamp of logging
 
-		tasks.push_back(
-		    {log_name, sim_output_prefix, single_config,
-		     sim_manager.CreateSimulation(single_config, file_logger, region_id)});
+		tasks.push_back({log_name, sim_output_prefix, single_config,
+				 sim_manager.CreateSimulation(single_config, file_logger, region_id)});
 	}
 	cout << "Done building simulators. " << endl << endl;
 
 	// -----------------------------------------------------------------------------------------
 	// Run the simulation.
 	// -----------------------------------------------------------------------------------------
+	Stopwatch<> sim_clock("sim_clock", true);
 	sim_manager.WaitAll();
+	sim_clock.Stop();
 
 	// Generate output files for the simulations.
 	for (const auto& sim_tuple : tasks) {
@@ -261,7 +262,11 @@ void run_stride(const MultiSimulationConfig& config)
 	// -----------------------------------------------------------------------------------------
 	// Print final message to command line.
 	// -----------------------------------------------------------------------------------------
-	cout << "Exiting at:         " << TimeStamp().ToString() << endl << endl;
+	cout << endl << endl;
+	cout << "total time: " << total_clock.ToString() << endl
+	     << "total simulation time: " << sim_clock.ToString() << endl
+	     << "Exiting at: " << TimeStamp().ToString() << endl
+	     << endl;
 }
 
 /// Run the stride simulator.
