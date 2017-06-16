@@ -1,11 +1,29 @@
 \boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {1}HDF5 checkpointing}{2}{section.1}
+\contentsline {section}{\numberline {1}HDF5 checkpointing}{3}{section.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {2}Parallellization}{2}{section.2}
+\contentsline {section}{\numberline {2}Parallellization}{3}{section.2}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3}Synthetic population generation}{2}{section.3}
+\contentsline {section}{\numberline {3}Synthetic population generation}{3}{section.3}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {4}Multi-region simulations}{2}{section.4}
+\contentsline {subsection}{\numberline {3.1}Challenges}{3}{subsection.3.1}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5}Visualization tool}{2}{section.5}
+\contentsline {subsection}{\numberline {3.2}Implementation details}{3}{subsection.3.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4}Multi-region simulations}{4}{section.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {5}Visualization tool}{4}{section.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {6}Overarching tasks}{4}{section.6}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.1}Team cooperation}{4}{subsection.6.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.2}Workflow}{4}{subsection.6.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.3}Tests and CI}{4}{subsection.6.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.4}Documentation}{4}{subsection.6.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.5}The Gantt chart}{4}{subsection.6.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {6.6}Merging with \texttt {comp}}{4}{subsection.6.6}

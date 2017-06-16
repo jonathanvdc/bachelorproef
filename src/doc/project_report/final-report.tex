@@ -27,13 +27,33 @@ This document is a retrospective report for our bachelor's degree group project:
 % TODO
 
 \section{Synthetic population generation}
-% TODO
+The population generation sub-task was fully implemented: if Stride is run with a population model XML file as the \texttt{population\_file}, the parameters in that file are used to generate a population from scratch.
+
+\subsection{Challenges}
+The population generator was challenging in an unusual way, compared to the rest of the project: integrating it into the other pieces was simple, but the requirements were trickier to adhere to.
+
+We initially wrote the population generation code following the first version of the specification as closely as possible, but we (and other groups) concluded that it was difficult, if not impossible, to generate populations for which all the requirements it specified held simultaneously. This part of the spec ended up getting rewritten, meaning we had to start over from scratch.
+
+Generating towns that lie geographically between the specified cities was harder than expected. We measure the convex hull spanned by the pre-existing cities, and sample random points inside it. This way, the simulation area for a geo-distribution profile like \texttt{belgium\_population\_major.csv} is roughly Belgium-shaped, but this only works because Belgium is approximately convex to begin with.
+
+\subsection{Implementation details}
+Our generator returns a twofold result: the generated \texttt{Population} contains a collection of person data fitting the parameters defined in the model, for the simulator, and also an \texttt{Atlas} object, which contains geographical data about the generated towns and cities, for the Visualization tool to use.
+
+Lynn wrote both the initial and final versions of the generator.
 
 \section{Multi-region simulations}
 % TODO
 
 \section{Visualization tool}
 % TODO
+
+\section{Overarching tasks}
+\subsection{Team cooperation} % how did we divide work? etc.
+\subsection{Workflow} % talk about issues and GitHub PRs
+\subsection{Tests and CI} % Jenkins, Travis, test reports
+\subsection{Documentation}
+\subsection{The Gantt chart}
+\subsection{Merging with \texttt{comp}}
 
 \pagebreak
 \printbibliography
