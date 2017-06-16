@@ -87,6 +87,32 @@ void map_test(const MapForType<int, int>& run_for)
 	}
 }
 
+int fac(int n)
+{
+	if (n <= 0)
+		return 1;
+	else
+		return n * fac(n - 1);
+}
+
+static stride::util::parallel::ParallelMap<int, int> create_perf_test_map()
+{
+	stride::util::parallel::ParallelMap<int, int> values;
+	for (std::size_t i = 0; i < 2000000u; i++) {
+		values[i] = 0;
+	}
+	return values;
+}
+
+static stride::util::parallel::ParallelMap<int, int> perf_test_map = create_perf_test_map();
+
+void map_perf_test(const MapForType<int, int>& run_for)
+{
+	for (int i = 0; i < 20; i++) {
+		run_for(perf_test_map, [](const int& key, int& val, unsigned int) { val = fac(key % 20); });
+	}
+}
+
 TEST(Parallel, MapSerial)
 {
 	map_test([](stride::util::parallel::ParallelMap<int, int>& values, const MapActionType<int, int>& action) {
@@ -104,7 +130,21 @@ TEST(Parallel, MapParallel)
 TEST(Parallel, MapPseudoParallel)
 {
 	map_test([](stride::util::parallel::ParallelMap<int, int>& values, const MapActionType<int, int>& action) {
-		stride::util::parallel::parallel_for(values, 1, action);
+		stride::util::parallel::parallel_for(values, 1u, action);
+	});
+}
+
+TEST(Parallel, MapPerfSerial)
+{
+	map_perf_test([](stride::util::parallel::ParallelMap<int, int>& values, const MapActionType<int, int>& action) {
+		stride::util::parallel::serial_for(values, action);
+	});
+}
+
+TEST(Parallel, MapPerfParallel)
+{
+	map_perf_test([](stride::util::parallel::ParallelMap<int, int>& values, const MapActionType<int, int>& action) {
+		stride::util::parallel::parallel_for(values, 2u, action);
 	});
 }
 
