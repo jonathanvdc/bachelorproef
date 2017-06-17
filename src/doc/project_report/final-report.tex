@@ -47,7 +47,7 @@ The user manual includes a detailed overview of how the configuration process wo
 
 \subsubsection{Approach}
 
-We also tried to parallelize operations on (dense) \typename{std}{map<K, V>} contents. It proved somewhat difficult to carve up the data structure in chunks before processing each chunk separately. \typename{std}{map<K, V>} does not provide an API that allows us to create such chunks nor does it support getting an iterator to the $n$th element like an \typename{std}{vector<T>}.
+We also tried to parallelize operations on (dense) \typename{std}{map<K, V>} contents. In this context it proved somewhat difficult to carve up the data structure in chunks before processing each chunk separately. \typename{std}{map<K, V>} does not provide an API that allows us to create such chunks nor does it support getting an iterator to the $n$th element like an \typename{std}{vector<T>}.
 
 We resorted to a clever trick: we request the minimum and maximum keys in the \typename{std}{map<K, V>} and partition $\left[\text{min}, \text{max}\right]$ into $n$ ranges $\left[k_i, k_{i+1}\right)$ of (quasi-)equal length. We then request iterators to the key-value pairs with key $k_i$.
 
