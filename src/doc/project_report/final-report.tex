@@ -115,7 +115,36 @@ Lynn wrote both the initial and final versions of the generator.
 % TODO
 
 \section{Visualization tool}
-% TODO
+We went through various different approaches to implementing visualization during the course of our project.
+
+\subsection{Component-based approach}
+Our first approach was to simply extend the simulator with a component that would allow it to render directly to a window as it ran. We quickly decided on \textit{Awesomium} as a suitable visualization library. \textit{Awesomium} boasted to be a HTML-based visualization component compatible with both Windows and Linux builds. We made a very small prototype to verify that the library worked, but when we eventually tried to use it to create a visualization window we discovered that its functionality on Linux had been largely overstated. We found it to be completely useless for our purposes, so we removed it from the project.
+
+We tried to find a replacement in \textit{Qt}, which also boasts an option for HTML-based visualization and multi-platform support. However, after many attempts over a few days, we found it to be very difficult to successfully integrate \textit{Qt} in our project.
+
+These setbacks ended up giving us more room to think about our approach, and instead of moving on to a third visualization library we began to consider the potential downsides of this approach entirely: This approach would not easily allow us to locally visualize a simulation running on a remote server, and it would also make it difficult to implement a way to start the visualization in the middle of a simulation.
+
+\subsection{Server-based approach}
+With these issues in mind, we considered a different approach: Extending the simulation with an HTTP server component that would act as an interface allowing external applications to request information. Concretely, the external application would be a web page running in a browser.
+
+This approach would resolve the issues with the component-based approach: Visualizing a simulation running on a remote server would only require setting up a VPN connection. As for starting a visualization in the middle of the simulation's run, the fact the simulation and visualization are independent applications automatically requires and also simplifies this feature.
+
+To this end, we started with integrating \textit{POCO} into the project, a library allowing us to create the desired REST API which would be the interface between the simulation and the visualization.
+
+Issues with this approach, however, was that it did not allow a practical way to visualize a simulation after it had closed, and that the demand for a REST API added unnecessary complexity to implementing the communication between the simulation and the visualization.
+
+Due to these factors we decided to remove \textit{POCO} from the project, and led us to our final approach to visualization.
+
+\subsection{File-based approach}
+The file-based approach means the visualizer simply outputs all relevant visualization information as a file so that an external tool can visualize it. Concretely, it outputs the data as a \textit{json} file, and the visualization tool is a web page that runs in a browser.
+
+This approach improves upon the previous ones as now the visualization data exists in a more permanent medium. The simulator is no longer required to be running in order to get access the visualization. Visualization of a remote simulation is still possible, although it now requires synchronizing the output file locally.
+
+A remaining hurdle was the desire to get visualization while the simulation is still running, as initially the file was only written at the end of the simulation, which could potentially take a while. The solution to this was to make the simulator periodically append new data to the output file, and giving the visualizer the ability to detect and read these changes in order to keep its view up-to-date.
+
+A further advantage of this approach is that the interface between the simulation and the visualization is a simple \textit{json} format, described in the user manual. This allows for easy adjustments to the file format that don't require complex changes in the implementations of the visualizer or the simulator.
+
+Sibert implemented visualization.
 
 \section{Overarching tasks}
 \subsection{Team cooperation} % how did we divide work? etc.
