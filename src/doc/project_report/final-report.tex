@@ -96,6 +96,8 @@ Note that \typename{stride::util::parallel}{ParallelMap<K, V>} is \emph{not} a t
 
 The table above shows that \typename{stride::util::parallel}{ParallelMap<K, V>} is quite effective for its intended purpose: processing map elements in parallel results in a significant speedup. Most importantly, the speedup factor increases with the number of elements in the map, which makes \typename{stride::util::parallel}{ParallelMap<K, V>} quite suitable for the large collections managed by Stride.
 
+Jonathan implemented parallelization.
+
 \section{Synthetic population generation}
 The population generation sub-task was fully implemented: if Stride is run with a population model XML file as the \texttt{population\_file}, the parameters in that file are used to generate a population from scratch.
 
@@ -112,7 +114,28 @@ Our generator returns a twofold result: the generated \texttt{Population} contai
 Lynn wrote both the initial and final versions of the generator.
 
 \section{Multi-region simulations}
-% TODO
+
+We implemented single-process, shared-memory multi-region simulations, but didn't have for multi-process/multi-machine simulations.
+
+\subsection{Single-process, shared-memory multi-region simulations}
+
+The process of implementing single-process, shared-memory multi-region simulations consisted of two parts: refactoring the codebase in preparation for multi-region simulations and actually implementing multi-region simulations. The former task proved to be especially challenging as Stride simulations used to rely on (race-conflict--prone) global variables and adding or removing people from a simulation was only supported at simulation set-up time.
+
+Once refactored, the codebase was updated with support for multi-region simulations. This consisted mostly of designing data structures and adding logic to exchange people between simulations.
+
+The user manual gives a good overview of what multi-region simulations can do.
+
+Jonathan implemented multi-region simulations.
+
+\subsection{Notes on MPI-based multi-region simulation}
+
+We had planned to implement MPI-based multi-region simulation6 setup and transfer by serializing the state of a single-region simulation as a checkpoint, sending the checkpoint to another machine or process as a byte stream and then deserializing the checkpoint into a simulation. We imagined that using HDF5-based checkpoints over an ad-hoc format would save us work, reduce code duplication and reduce serialized checkpoint sizes.
+
+Sadly, checkpointing support materialized later than expected---key single-region simulation checkpointing functionality landed in the master branch just after the beta presentation. Even then, the checkpointing API was not yet entirely suitable for usage in MPI-based multi-region simulations.
+
+Our struggles with integrating checkpointing in MPI-based multi-region simulations can be attributed in part to the fact that restoring a checkpoint does a whole lot more than just recreating the state of a single-region simulation. Furthermore, some of our assumptions about HDF5's capabilities were invalidated. For example, we took for granted that HDF5 would be able to produce and consume in-memory byte streams. This turned out not to be the case, further adding to the list of workarounds we would need to implement to deliver a \emph{prerequisite} to MPI-based multi-region simulation support.
+
+Faced with daunting technical difficulties and a tight schedule, we decided to forgo MPI-based multi-region simulations and focus our efforts elsewhere.
 
 \section{Visualization tool}
 % TODO
